@@ -280,55 +280,136 @@ export default function SoSuchLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>So &amp; Such (B1)</h2>
-      <div className="not-prose mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-5">
-          <div className="text-xs font-bold uppercase text-sky-600 mb-2">SO + adjective / adverb</div>
-          <div className="grid gap-2 text-sm text-slate-700 italic">
-            <div>It was <b>so cold</b>.</div>
-            <div>She speaks <b>so quickly</b>.</div>
-            <div>He is <b>so talented</b>.</div>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">SO / SUCH</h2>
+        <p className="text-slate-500 text-sm">Intensifiers — making adjectives, adverbs and noun phrases stronger</p>
+      </div>
+
+      {/* 3 gradient cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">SO + adjective</div>
+          <Formula parts={[{ text: "so", color: "green" }, { text: "+", dim: true }, { text: "adjective", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>It was so cold.</div>
+            <div>He is so talented.</div>
           </div>
         </div>
-        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
-          <div className="text-xs font-bold uppercase text-violet-600 mb-2">SUCH (a) + noun phrase</div>
-          <div className="grid gap-2 text-sm text-slate-700 italic">
-            <div>It was <b>such a cold day</b>.</div>
-            <div>They are <b>such talented people</b>.</div>
-            <div>It was <b>such beautiful weather</b>.</div>
+        <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-red-600 mb-3">SO + adverb</div>
+          <Formula parts={[{ text: "so", color: "red" }, { text: "+", dim: true }, { text: "adverb", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>She speaks so quickly.</div>
+            <div>He runs so fast.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">SUCH (a) + noun phrase</div>
+          <Formula parts={[{ text: "such (a)", color: "violet" }, { text: "+", dim: true }, { text: "adj + noun", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>Such a cold day.</div>
+            <div>Such talented people.</div>
           </div>
         </div>
       </div>
 
-      <h3>Patterns</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-5">
-        <div className="grid gap-2">
-          {[
-            ["Pattern", "Example"],
-            ["so + adj", "so tired, so beautiful, so far"],
-            ["so + adv", "so quickly, so well, so hard"],
-            ["such a/an + adj + singular noun", "such a good idea, such an amazing view"],
-            ["such + adj + plural noun", "such lovely children, such talented people"],
-            ["such + adj + uncountable noun", "such terrible weather, such good food"],
-          ].map((row, i) => (
-            <div key={i} className={`grid grid-cols-2 gap-4 text-sm ${i === 0 ? "font-bold text-slate-500 text-xs uppercase pb-2 border-b" : "text-slate-700"}`}>
-              <span className={i === 0 ? "" : "font-semibold text-slate-900"}>{row[0]}</span>
-              <span className="italic">{row[1]}</span>
-            </div>
-          ))}
+      {/* 2-col usage cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-2">Use SO</div>
+          <div className="text-sm text-slate-700">When the next word is an adjective alone or an adverb — no noun follows immediately.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">It was <strong>so</strong> cold. / She speaks <strong>so</strong> quickly.</div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-600 mb-2">Use SUCH</div>
+          <div className="text-sm text-slate-700">When a noun (or adjective + noun) follows. Use <em>such a/an</em> with singular countable nouns.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">It was <strong>such a</strong> cold day. / <strong>Such</strong> beautiful weather.</div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-2">SO / SUCH … THAT</div>
+          <div className="text-sm text-slate-700">Both can be followed by a <em>that</em>-clause to show a result.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">It was so cold <strong>that</strong> we stayed inside. / It was such a cold day <strong>that</strong> we stayed inside.</div>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-amber-600 mb-2">Uncountable &amp; Plural Nouns</div>
+          <div className="text-sm text-slate-700">No article with uncountable or plural nouns — just <em>such</em>.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">Such terrible weather. / Such lovely children.</div>
         </div>
       </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800">
-          <span className="font-black text-slate-900">💡 Quick rule:</span> If the next word is a <b>noun</b> (or adj + noun) → use <b>such</b>. If the next word is an <b>adjective alone</b> or an <b>adverb</b> → use <b>so</b>.
-          <div className="mt-2 grid gap-1 italic text-slate-700 text-xs">
-            <div>It was <b>so</b> cold. (adj alone → so)</div>
-            <div>It was <b>such a</b> cold day. (adj + noun → such a)</div>
-          </div>
+      {/* Quick reference table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">PATTERNS AT A GLANCE</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Pattern</th>
+                <th className="text-left py-2 font-black text-slate-700">Example</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr><td className="py-2 pr-4 text-slate-600 font-semibold">so + adj</td><td className="py-2 text-slate-600 italic">so tired, so beautiful</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 font-semibold">so + adv</td><td className="py-2 text-slate-600 italic">so quickly, so well</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 font-semibold">such a/an + adj + singular noun</td><td className="py-2 text-slate-600 italic">such a good idea, such an amazing view</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 font-semibold">such + adj + plural noun</td><td className="py-2 text-slate-600 italic">such lovely children</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 font-semibold">such + adj + uncountable noun</td><td className="py-2 text-slate-600 italic">such terrible weather, such good food</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistake</div>
+        <Ex en="It was such cold that we wore coats." correct={false} />
+        <Ex en="It was so cold that we wore coats." correct={true} />
+        <Ex en="She's so talented singer." correct={false} />
+        <Ex en="She's such a talented singer." correct={true} />
+      </div>
+
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Quick rule:</span> If the next word is a noun (or adj + noun) use <em>such</em>. If the next word is an adjective alone or adverb, use <em>so</em>.
+      </div>
+    </div>
+  );
+}
+
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

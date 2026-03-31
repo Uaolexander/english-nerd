@@ -282,68 +282,163 @@ export default function ReportedStatementsLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>Reported Speech — Statements (B1)</h2>
-      <p>We use <b>reported speech</b> (indirect speech) to say what someone said without quoting their exact words. The most common reporting verb is <b>said</b> or <b>told</b>.</p>
-
-      <h3>Tense backshift</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-5">
-        <div className="grid gap-2">
-          {[
-            ["Direct speech", "Reported speech"],
-            ["Present Simple: I work", "Past Simple: she worked"],
-            ["Present Continuous: I am going", "Past Continuous: she was going"],
-            ["Present Perfect: I have done", "Past Perfect: she had done"],
-            ["Past Simple: I went", "Past Perfect: she had gone"],
-            ["will", "would"],
-            ["can", "could"],
-            ["must", "had to"],
-          ].map((row, i) => (
-            <div key={i} className={`grid grid-cols-2 gap-4 text-sm ${i === 0 ? "font-bold text-slate-500 text-xs uppercase pb-2 border-b" : "text-slate-700 italic"}`}>
-              <span>{row[0]}</span>
-              <span>{row[1]}</span>
-            </div>
-          ))}
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">REPORTED SPEECH — STATEMENTS</h2>
+        <p className="text-slate-500 text-sm">Tense backshift, said vs told, pronoun and time expression changes</p>
       </div>
 
-      <h3>Said vs Told</h3>
-      <div className="not-prose grid gap-3 md:grid-cols-2">
-        {[
-          { use: "say / said — no object", color: "border-violet-200 bg-violet-50 text-violet-700", ex: "She said (that) she was tired.\n✗ She said me that…" },
-          { use: "tell / told — needs object", color: "border-sky-200 bg-sky-50 text-sky-700", ex: "He told me that he would be late.\n✗ He told that…" },
-        ].map(({ use, color, ex }) => (
-          <div key={use} className={`rounded-xl border p-4 ${color}`}>
-            <div className="text-sm font-black mb-1">{use}</div>
-            <div className="text-sm text-slate-600 whitespace-pre-line italic">{ex}</div>
+      {/* 3 gradient cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">Basic Structure</div>
+          <Formula parts={[
+            { text: "said/told", color: "green" },
+            { text: "(that)", color: "slate" },
+            { text: "reported clause", color: "sky" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>She said she was tired.</div>
+            <div>He told me he would be late.</div>
           </div>
-        ))}
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">SAY — no object</div>
+          <Formula parts={[
+            { text: "subject", color: "slate" },
+            { text: "said", color: "sky" },
+            { text: "(that) + clause", color: "sky" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>She said she was tired. ✓</div>
+            <div className="text-red-500 line-through not-italic">She said me that… ✗</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-600 mb-3">TELL — needs object</div>
+          <Formula parts={[
+            { text: "subject", color: "slate" },
+            { text: "told", color: "violet" },
+            { text: "object", color: "yellow" },
+            { text: "(that) + clause", color: "violet" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>He told me he was late. ✓</div>
+            <div className="text-red-500 line-through not-italic">He told that… ✗</div>
+          </div>
+        </div>
       </div>
 
-      <h3>Pronoun &amp; time expression changes</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-5">
-        <div className="grid gap-2">
-          {[
-            ["Direct", "Reported"],
-            ["I → she/he", "we → they"],
-            ["my → her/his", "our → their"],
-            ["here → there", "this → that"],
-            ["now → then", "today → that day"],
-            ["tomorrow → the next day", "yesterday → the day before"],
-          ].map((row, i) => (
-            <div key={i} className={`grid grid-cols-2 gap-4 text-sm ${i === 0 ? "font-bold text-slate-500 text-xs uppercase pb-2 border-b" : "text-slate-700"}`}>
-              <span>{row[0]}</span>
-              <span>{row[1]}</span>
-            </div>
+      {/* Tense backshift table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">TENSE BACKSHIFT — ONE STEP BACK IN TIME</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Direct speech</th>
+                <th className="text-left py-2 font-black text-slate-700">Reported speech</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr><td className="py-2 pr-4 text-slate-600 italic">Present Simple: I work</td><td className="py-2 text-slate-600 italic">Past Simple: she worked</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">Present Continuous: I am going</td><td className="py-2 text-slate-600 italic">Past Continuous: she was going</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">Present Perfect: I have done</td><td className="py-2 text-slate-600 italic">Past Perfect: she had done</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">Past Simple: I went</td><td className="py-2 text-slate-600 italic">Past Perfect: she had gone</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">will</td><td className="py-2 text-slate-600 italic">would</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">can</td><td className="py-2 text-slate-600 italic">could</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600 italic">must</td><td className="py-2 text-slate-600 italic">had to</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Time expression changes */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">TIME EXPRESSION CHANGES</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Direct</th>
+                <th className="text-left py-2 font-black text-slate-700">Reported</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr><td className="py-2 pr-4 text-slate-600">now</td><td className="py-2 text-slate-600">then</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600">today</td><td className="py-2 text-slate-600">that day</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600">tomorrow</td><td className="py-2 text-slate-600">the next day / the following day</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600">yesterday</td><td className="py-2 text-slate-600">the day before</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600">here</td><td className="py-2 text-slate-600">there</td></tr>
+              <tr><td className="py-2 pr-4 text-slate-600">this</td><td className="py-2 text-slate-600">that</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Key words */}
+      <div>
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Key Reporting Verbs</div>
+        <div className="flex flex-wrap gap-2">
+          {["said", "told", "explained", "admitted", "promised", "claimed", "added", "mentioned"].map((w) => (
+            <span key={w} className="rounded-lg border border-sky-200 bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-800">{w}</span>
           ))}
         </div>
       </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800">
-          <span className="font-black text-slate-900">💡 'that' is optional:</span> Both <i>&quot;She said <b>that</b> she was tired&quot;</i> and <i>&quot;She said she was tired&quot;</i> are correct. In spoken English, <i>that</i> is often omitted.
-        </div>
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistakes</div>
+        <Ex en="She said me that she was tired." correct={false} />
+        <Ex en="She told me that she was tired." correct={true} />
+        <Ex en="He told that he would be late." correct={false} />
+        <Ex en="He said that he would be late." correct={true} />
       </div>
+
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Key tip:</span> The word <strong>that</strong> is optional in reported speech — &ldquo;She said she was tired&rdquo; and &ldquo;She said that she was tired&rdquo; are both correct. In spoken English, <em>that</em> is usually dropped.
+      </div>
+    </div>
+  );
+}
+
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

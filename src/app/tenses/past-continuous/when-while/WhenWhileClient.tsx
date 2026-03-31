@@ -99,7 +99,7 @@ const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
   4: "Complex",
 };
 
-function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+function Formula({ parts }: { parts: Array<{ text?: string; color?: string; dim?: boolean }> }) {
   const colors: Record<string, string> = {
     sky:    "bg-sky-100 text-sky-800 border-sky-200",
     yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",

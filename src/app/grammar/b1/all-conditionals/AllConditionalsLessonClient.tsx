@@ -282,55 +282,179 @@ export default function AllConditionalsLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>All Conditionals — Quick Reference (B1)</h2>
-
-      <div className="not-prose mt-4 grid gap-4">
-        {[
-          {
-            type: "Zero Conditional",
-            structure: "If + present simple → present simple",
-            use: "Facts, scientific laws, habits — always true",
-            ex: "If you heat water to 100°C, it boils.",
-            color: "border-sky-200 bg-sky-50",
-            badge: "bg-sky-200 text-sky-800",
-          },
-          {
-            type: "First Conditional",
-            structure: "If + present simple → will + infinitive",
-            use: "Real, possible future situations",
-            ex: "If it rains tomorrow, I'll stay home.",
-            color: "border-violet-200 bg-violet-50",
-            badge: "bg-violet-200 text-violet-800",
-          },
-          {
-            type: "Second Conditional",
-            structure: "If + past simple → would + infinitive",
-            use: "Hypothetical, unlikely or impossible situations",
-            ex: "If I had a million pounds, I'd travel the world.",
-            color: "border-emerald-200 bg-emerald-50",
-            badge: "bg-emerald-200 text-emerald-800",
-          },
-        ].map(({ type, structure, use, ex, color, badge }) => (
-          <div key={type} className={`rounded-2xl border p-5 ${color}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-black ${badge}`}>{type}</span>
-            </div>
-            <div className="text-sm font-black text-slate-900 mb-1">{structure}</div>
-            <div className="text-sm text-slate-600 mb-2">{use}</div>
-            <div className="text-sm text-slate-700 italic">{ex}</div>
-          </div>
-        ))}
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">ALL CONDITIONALS OVERVIEW</h2>
+        <p className="text-slate-500 text-sm">Zero, First, and Second conditionals — when to use each and how to form them</p>
       </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800 space-y-2">
-          <div className="font-black text-slate-900">💡 Key rules for all conditionals:</div>
-          <div>✓ <b>Never use 'will' in the if-clause</b>: If it rains (not: if it will rain)</div>
-          <div>✓ <b>Second conditional: 'were' for all persons</b>: If I were you… (formal)</div>
-          <div>✓ <b>Comma only when if-clause comes first</b>: If it rains, I'll stay. / I'll stay if it rains.</div>
+      {/* 3 gradient cards for the three conditionals */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">Zero Conditional</div>
+          <Formula parts={[
+            { text: "If", color: "slate" },
+            { text: "present simple", color: "sky" },
+            { text: "→", dim: true },
+            { text: "present simple", color: "sky" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>If you heat water, it boils.</div>
+            <div>If I'm tired, I go to bed.</div>
+          </div>
+          <div className="mt-3 text-xs text-slate-500">Use: facts, laws, habits — always true</div>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">First Conditional</div>
+          <Formula parts={[
+            { text: "If", color: "slate" },
+            { text: "present simple", color: "green" },
+            { text: "→", dim: true },
+            { text: "will + verb", color: "yellow" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>If it rains, I'll stay home.</div>
+            <div>If he calls, I'll answer.</div>
+          </div>
+          <div className="mt-3 text-xs text-slate-500">Use: real, possible future situations</div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-600 mb-3">Second Conditional</div>
+          <Formula parts={[
+            { text: "If", color: "slate" },
+            { text: "past simple", color: "violet" },
+            { text: "→", dim: true },
+            { text: "would + verb", color: "violet" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>If I had £1M, I'd travel.</div>
+            <div>If I were you, I'd apologise.</div>
+          </div>
+          <div className="mt-3 text-xs text-slate-500">Use: hypothetical, unreal or unlikely</div>
         </div>
       </div>
+
+      {/* Usage cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-2">Zero — General Truth</div>
+          <div className="text-sm text-slate-700">Use when something is always true — a fact, scientific law, or reliable habit. Both clauses use present simple.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">If you mix red and blue, you get purple.</div>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-2">First — Real Future</div>
+          <div className="text-sm text-slate-700">Use for realistic, possible future outcomes. The if-clause sets a condition; the result clause uses will.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">If she studies hard, she'll pass the exam.</div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-600 mb-2">Second — Unreal Present</div>
+          <div className="text-sm text-slate-700">Use for imaginary or unlikely situations. The past tense in the if-clause signals unreality — not past time.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">If I lived in Paris, I'd visit the Louvre every week.</div>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-amber-600 mb-2">Comma Rule</div>
+          <div className="text-sm text-slate-700">Put a comma after the if-clause when it comes first. No comma is needed when the main clause comes first.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">If it rains, I'll stay. / I'll stay if it rains.</div>
+        </div>
+      </div>
+
+      {/* Quick reference table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">QUICK REFERENCE — ALL THREE TYPES</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Type</th>
+                <th className="text-left py-2 pr-4 font-black text-slate-700">If-clause</th>
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Result clause</th>
+                <th className="text-left py-2 font-black text-slate-700">Meaning</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Zero</td>
+                <td className="py-2 pr-4 text-slate-600">present simple</td>
+                <td className="py-2 pr-4 text-slate-600">present simple</td>
+                <td className="py-2 text-slate-600">always true</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">First</td>
+                <td className="py-2 pr-4 text-slate-600">present simple</td>
+                <td className="py-2 pr-4 text-slate-600">will + infinitive</td>
+                <td className="py-2 text-slate-600">real / possible future</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Second</td>
+                <td className="py-2 pr-4 text-slate-600">past simple</td>
+                <td className="py-2 pr-4 text-slate-600">would + infinitive</td>
+                <td className="py-2 text-slate-600">hypothetical / unreal</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Key words */}
+      <div>
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Key Words & Phrases</div>
+        <div className="flex flex-wrap gap-2">
+          {["if", "unless", "when", "as long as", "provided that", "would", "will", "might", "could"].map((w) => (
+            <span key={w} className="rounded-lg border border-sky-200 bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-800">{w}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistakes</div>
+        <Ex en="If it will rain tomorrow, I'll stay home." correct={false} />
+        <Ex en="If it rains tomorrow, I'll stay home." correct={true} />
+        <Ex en="If I would have money, I'd buy a car." correct={false} />
+        <Ex en="If I had money, I'd buy a car." correct={true} />
+      </div>
+
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Key tip:</span> Never use <strong>will</strong> or <strong>would</strong> in the if-clause. Use present simple for zero/first conditionals and past simple for second conditionals — even though you are talking about the present or future.
+      </div>
+    </div>
+  );
+}
+
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

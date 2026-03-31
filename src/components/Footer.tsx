@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-white/8 px-6 py-10">
+    <footer className="border-t border-white/8 bg-[#0B0B0D] px-6 py-10">
       <div className="mx-auto max-w-5xl">
 
         {/* Top: brand + nav columns spread full width */}

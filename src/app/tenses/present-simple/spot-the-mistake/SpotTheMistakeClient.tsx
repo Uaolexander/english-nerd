@@ -192,7 +192,7 @@ export default function SpotTheMistakeClient() {
         const idx = clickedIdx[q.id];
         const clickedToken = idx !== undefined ? tokens[idx] : null;
         const rightWord = clickedToken != null && normWord(clickedToken.text) === normWord(q.wrongWord);
-        const rightFix = normWord(typedFix[q.id] ?? "") === normWord(q.correction);
+        const rightFix = q.correction.some(c => normWord(typedFix[q.id] ?? "") === normWord(c));
         if (rightWord && rightFix) correct++;
       } else {
         if (q.correct.some((c) => normSentence(typed[q.id] ?? "") === normSentence(c))) correct++;

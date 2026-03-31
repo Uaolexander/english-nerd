@@ -328,7 +328,7 @@ function Explanation() {
             <div>📋 Scheduled facts</div>
           </div>
           <div className="space-y-1.5">
-            <Ex en="\"The phone is ringing.\" → \"I'll get it!\"" />
+            <Ex en={`"The phone is ringing." → "I'll get it!"`} />
             <Ex en="I think it will rain tomorrow." />
             <Ex en="I'll help you move the boxes." />
           </div>

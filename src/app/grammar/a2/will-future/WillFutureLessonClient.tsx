@@ -320,79 +320,154 @@ export default function WillFutureLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>Will — Future (A2)</h2>
-      <p>
-        <b>Will</b> is used the same way for <b>all subjects</b> — no conjugation needed. It is followed by the <b>base form</b> of the verb (no to, no -s, no -ing).
-      </p>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">WILL — FUTURE</h2>
+        <p className="text-slate-500 text-sm">Predictions, spontaneous decisions, promises and offers</p>
+      </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-white p-5">
-        <div className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Structure</div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {[
-            { label: "Positive", form: "Subject + will + verb", ex: "I/She/They will go." },
-            { label: "Negative", form: "Subject + won't + verb", ex: "He won't come. (= will not)" },
-            { label: "Question", form: "Will + subject + verb?", ex: "Will she be there?" },
-          ].map(({ label, form, ex }) => (
-            <div key={label} className="rounded-xl border border-black/10 bg-slate-50 p-4">
-              <div className="text-xs font-bold text-slate-500 mb-1">{label}</div>
-              <div className="text-sm font-bold text-slate-800">{form}</div>
-              <div className="mt-1 text-sm text-slate-600 italic">{ex}</div>
-            </div>
+      {/* 3 gradient cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">Affirmative (+)</div>
+          <Formula parts={[{ text: "Subject", color: "sky" }, { text: "+", dim: true }, { text: "will", color: "yellow" }, { text: "+", dim: true }, { text: "base verb", color: "green" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>She will call you.</div>
+            <div>I&apos;ll be there at 8.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-red-600 mb-3">Negative (−)</div>
+          <Formula parts={[{ text: "Subject", color: "sky" }, { text: "+", dim: true }, { text: "won't", color: "red" }, { text: "+", dim: true }, { text: "base verb", color: "green" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>He won&apos;t come.</div>
+            <div>They won&apos;t be late.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">Question (?)</div>
+          <Formula parts={[{ text: "Will", color: "yellow" }, { text: "+", dim: true }, { text: "subject", color: "sky" }, { text: "+", dim: true }, { text: "base verb", color: "green" }, { text: "?", dim: true }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>Will she be there?</div>
+            <div>Will you help me?</div>
+          </div>
+        </div>
+      </div>
+
+      {/* When to use will */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-xs font-bold uppercase text-slate-500 mb-2">Prediction / opinion</div>
+          <div className="text-sm text-slate-700 italic">I think it will rain tomorrow.</div>
+          <div className="text-sm text-slate-700 italic">She will probably pass the exam.</div>
+        </div>
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-xs font-bold uppercase text-slate-500 mb-2">Spontaneous decision (decided NOW)</div>
+          <div className="text-sm text-slate-700 italic">&ldquo;There&apos;s no coffee left.&rdquo; — &ldquo;I&apos;ll buy some.&rdquo;</div>
+        </div>
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-xs font-bold uppercase text-slate-500 mb-2">Promise</div>
+          <div className="text-sm text-slate-700 italic">I promise I will call you every day.</div>
+        </div>
+        <div className="rounded-2xl border border-black/10 bg-white p-5">
+          <div className="text-xs font-bold uppercase text-slate-500 mb-2">Offer or request</div>
+          <div className="text-sm text-slate-700 italic">I&apos;ll carry that for you. / Will you help me?</div>
+        </div>
+      </div>
+
+      {/* Will vs Going to table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">Will vs Going to — Quick Guide</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10 bg-slate-50">
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Situation</th>
+                <th className="px-4 py-3 text-left font-bold text-sky-700">Use will</th>
+                <th className="px-4 py-3 text-left font-bold text-violet-700">Use going to</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr className="bg-white">
+                <td className="px-4 py-3 text-slate-700">Decision timing</td>
+                <td className="px-4 py-3 text-slate-900">Decided right now</td>
+                <td className="px-4 py-3 text-slate-900">Already decided before</td>
+              </tr>
+              <tr className="bg-slate-50/50">
+                <td className="px-4 py-3 text-slate-700">Predictions</td>
+                <td className="px-4 py-3 text-slate-900">Opinion, no evidence</td>
+                <td className="px-4 py-3 text-slate-900">Visible evidence right now</td>
+              </tr>
+              <tr className="bg-white">
+                <td className="px-4 py-3 text-slate-700">Example</td>
+                <td className="px-4 py-3 italic text-slate-600">&ldquo;I&apos;ll have the soup.&rdquo; (decides now)</td>
+                <td className="px-4 py-3 italic text-slate-600">&ldquo;I&apos;m going to have the soup.&rdquo; (planned)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Key words */}
+      <div>
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Key Words (prediction signals)</div>
+        <div className="flex flex-wrap gap-2">
+          {["I think", "I hope", "probably", "maybe", "perhaps", "I'm sure", "I believe"].map((w) => (
+            <span key={w} className="rounded-lg border border-sky-200 bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-800">{w}</span>
           ))}
         </div>
       </div>
 
-      <h3>When to use will</h3>
-      <div className="not-prose grid gap-3 md:grid-cols-2">
-        {[
-          { when: "Prediction / opinion", ex: "I think it will rain tomorrow. / She will probably pass." },
-          { when: "Spontaneous decision (decided NOW)", ex: "'There's no coffee left.' — 'I'll buy some.' (decided at this moment)" },
-          { when: "Promise", ex: "I promise I will call you every day." },
-          { when: "Offer or request", ex: "I'll carry that for you. / Will you help me?" },
-        ].map(({ when, ex }) => (
-          <div key={when} className="rounded-xl border border-black/10 bg-slate-50 p-4">
-            <div className="text-sm font-bold text-slate-800 mb-1">{when}</div>
-            <div className="text-sm text-slate-600 italic">{ex}</div>
-          </div>
-        ))}
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistakes</div>
+        <Ex en="She didn't will come. (wrong auxiliary)" correct={false} />
+        <Ex en="She won't come." correct={true} />
+        <Ex en="I will to call you later." correct={false} />
+        <Ex en="I will call you later." correct={true} />
       </div>
 
-      <h3>Will vs Going to — quick guide</h3>
-      <div className="not-prose overflow-x-auto rounded-2xl border border-black/10">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-black/10 bg-slate-50">
-              <th className="px-4 py-3 text-left font-bold text-slate-700">Situation</th>
-              <th className="px-4 py-3 text-left font-bold text-sky-700">Use will</th>
-              <th className="px-4 py-3 text-left font-bold text-violet-700">Use going to</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black/5">
-            <tr className="bg-white">
-              <td className="px-4 py-3 text-slate-700">Decision timing</td>
-              <td className="px-4 py-3 text-slate-900">Decided right now</td>
-              <td className="px-4 py-3 text-slate-900">Already decided before</td>
-            </tr>
-            <tr className="bg-slate-50/50">
-              <td className="px-4 py-3 text-slate-700">Predictions</td>
-              <td className="px-4 py-3 text-slate-900">No visible evidence (opinion)</td>
-              <td className="px-4 py-3 text-slate-900">Visible evidence right now</td>
-            </tr>
-            <tr className="bg-white">
-              <td className="px-4 py-3 text-slate-700">Example</td>
-              <td className="px-4 py-3 italic text-slate-600">"I&apos;ll have the soup." (decides in restaurant)</td>
-              <td className="px-4 py-3 italic text-slate-600">"I&apos;m going to have the soup." (knew before)</td>
-            </tr>
-          </tbody>
-        </table>
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Contraction tip:</span> In spoken English, <b>will</b> is almost always contracted: <b>I&apos;ll, you&apos;ll, he&apos;ll, she&apos;ll, it&apos;ll, we&apos;ll, they&apos;ll</b>. The negative <b>will not</b> contracts to <b>won&apos;t</b> — never <i>willn&apos;t</i>.
       </div>
+    </div>
+  );
+}
 
-      <div className="not-prose mt-5 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800">
-          <span className="font-black text-slate-900">Contraction tip:</span> In spoken English, <b>will</b> is almost always contracted: <b>I&apos;ll, you&apos;ll, he&apos;ll, she&apos;ll, it&apos;ll, we&apos;ll, they&apos;ll</b>. The negative <b>will not</b> becomes <b>won&apos;t</b> — not <i>willn&apos;t</i>.
-        </div>
-      </div>
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

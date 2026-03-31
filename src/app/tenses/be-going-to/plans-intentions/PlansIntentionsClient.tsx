@@ -352,8 +352,8 @@ function Explanation() {
             { text: "verb (decided RIGHT NOW)", color: "green" },
           ]} />
           <div className="space-y-1.5">
-            <Ex en="\"We have no coffee.\" → \"I'll get some.\" (decided just now)" />
-            <Ex en="\"The phone is ringing.\" → \"I'll answer it.\" (spontaneous)" />
+            <Ex en={`"We have no coffee." → "I'll get some." (decided just now)`} />
+            <Ex en={`"The phone is ringing." → "I'll answer it." (spontaneous)`} />
             <Ex en="Key: will if the decision was NOT made before speaking." />
           </div>
         </div>

@@ -382,7 +382,7 @@ function Explanation() {
         </div>
         <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4">
           <div className="text-xs font-black uppercase tracking-wide text-sky-700 mb-2">❓ Question</div>
-          <Formula parts={[{text:"Am/Is/Are",color:"sky"},{dim:true,text:"+"},{text:"subject"},{dim:true,text:"+"},{text:"going to"},{dim:true,text:"+"},{text:"verb"},"?"]} />
+          <Formula parts={[{text:"Am/Is/Are",color:"sky"},{dim:true,text:"+"},{text:"subject"},{dim:true,text:"+"},{text:"going to"},{dim:true,text:"+"},{text:"verb"},{text:"?"}]} />
           <div className="mt-3 space-y-2">
             <Ex en="Are you going to stay?" />
             <Ex en="Is she going to call?" />

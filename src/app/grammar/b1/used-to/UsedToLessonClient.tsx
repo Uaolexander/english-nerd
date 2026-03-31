@@ -282,59 +282,162 @@ export default function UsedToLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>Used to (B1)</h2>
-      <p>We use <b>used to + infinitive</b> to talk about <b>past habits</b> (things we did regularly) and <b>past states</b> (how things were) that are no longer true now.</p>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">USED TO</h2>
+        <p className="text-slate-500 text-sm">Past habits and states that no longer happen</p>
+      </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-white p-5">
-        <div className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Forms</div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {[
-            { label: "Positive", rows: ["I / She used to live here.", "They used to play every day."] },
-            { label: "Negative", rows: ["I didn't use to like it.", "She didn't use to smoke."] },
-            { label: "Question", rows: ["Did you use to live here?", "Did they use to play?"] },
-            { label: "Short answers", rows: ["Yes, I did. / No, I didn't.", "Yes, she did. / No, she didn't."] },
-          ].map(({ label, rows }) => (
-            <div key={label} className="rounded-xl border border-black/10 bg-slate-50 p-4">
-              <div className="text-xs font-bold text-slate-500 mb-2">{label}</div>
-              {rows.map((r) => <div key={r} className="text-sm text-slate-800 italic">{r}</div>)}
-            </div>
+      {/* 3 gradient cards for formula */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">Affirmative (+)</div>
+          <Formula parts={[{ text: "subject" }, { text: "+", dim: true }, { text: "used to", color: "green" }, { text: "+", dim: true }, { text: "infinitive", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>She used to live in Paris.</div>
+            <div>They used to play every day.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-red-600 mb-3">Negative (−)</div>
+          <Formula parts={[{ text: "subject" }, { text: "+", dim: true }, { text: "didn't", color: "red" }, { text: "+", dim: true }, { text: "use to", color: "green" }, { text: "+", dim: true }, { text: "infinitive", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>I didn&apos;t use to like fish.</div>
+            <div>She didn&apos;t use to smoke.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">Question (?)</div>
+          <Formula parts={[{ text: "Did", color: "yellow" }, { text: "+", dim: true }, { text: "subject" }, { text: "+", dim: true }, { text: "use to", color: "green" }, { text: "+", dim: true }, { text: "infinitive", color: "sky" }]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>Did you use to live here?</div>
+            <div>Did they use to play?</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2-col usage cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-2">Past Habits</div>
+          <div className="text-sm text-slate-700">Actions done regularly in the past that no longer happen.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">I used to play tennis every weekend. (I don&apos;t anymore)</div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-2">Past States</div>
+          <div className="text-sm text-slate-700">Situations or conditions that were true in the past but are no longer true now.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">She used to be very shy. (She isn&apos;t now)</div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-600 mb-2">Contrast with Present</div>
+          <div className="text-sm text-slate-700">Often implies things are different now — great for storytelling.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">I didn&apos;t use to like coffee, but now I love it.</div>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-amber-600 mb-2">Used to vs Past Simple</div>
+          <div className="text-sm text-slate-700">Used to = repeated habit/state. Past Simple = one completed event.</div>
+          <div className="mt-2 italic text-slate-600 text-sm">We visited them in 2019. (once) vs We used to visit every summer. (habit)</div>
+        </div>
+      </div>
+
+      {/* Quick reference table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">USED TO — FORMS AT A GLANCE</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Form</th>
+                <th className="text-left py-2 pr-4 font-black text-slate-700">Structure</th>
+                <th className="text-left py-2 font-black text-slate-700">Example</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Positive</td>
+                <td className="py-2 pr-4 text-slate-600">subject + used to + inf</td>
+                <td className="py-2 text-slate-600 italic">He used to walk to school.</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Negative</td>
+                <td className="py-2 pr-4 text-slate-600">subject + didn&apos;t use to + inf</td>
+                <td className="py-2 text-slate-600 italic">I didn&apos;t use to like it.</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Question</td>
+                <td className="py-2 pr-4 text-slate-600">Did + subject + use to + inf</td>
+                <td className="py-2 text-slate-600 italic">Did she use to work here?</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 text-slate-600 font-semibold">Short answer</td>
+                <td className="py-2 pr-4 text-slate-600">Yes, I did. / No, I didn&apos;t.</td>
+                <td className="py-2 text-slate-600 italic">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Time expressions */}
+      <div>
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Time Markers</div>
+        <div className="flex flex-wrap gap-2">
+          {["when I was young", "as a child", "in those days", "back then", "years ago", "before", "once"].map((w) => (
+            <span key={w} className="rounded-lg border border-sky-200 bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-800">{w}</span>
           ))}
         </div>
       </div>
 
-      <h3>When to use 'used to'</h3>
-      <div className="not-prose grid gap-3 md:grid-cols-2">
-        {[
-          { use: "Past habits (no longer true)", color: "border-violet-200 bg-violet-50 text-violet-700", ex: "I used to play tennis every week. (I don't now)" },
-          { use: "Past states (no longer true)", color: "border-sky-200 bg-sky-50 text-sky-700", ex: "She used to be shy. (She isn't now)" },
-          { use: "Contrast with the present", color: "border-emerald-200 bg-emerald-50 text-emerald-700", ex: "I didn't use to like coffee, but now I love it." },
-          { use: "Questions about the past", color: "border-amber-200 bg-amber-50 text-amber-700", ex: "Did you use to live near here?" },
-        ].map(({ use, color, ex }) => (
-          <div key={use} className={`rounded-xl border p-4 ${color}`}>
-            <div className="text-sm font-black mb-1">{use}</div>
-            <div className="text-sm text-slate-600 italic">{ex}</div>
-          </div>
-        ))}
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistake</div>
+        <Ex en="Did she used to live here?" correct={false} />
+        <Ex en="Did she use to live here?" correct={true} />
+        <Ex en="She didn't used to like fish." correct={false} />
+        <Ex en="She didn't use to like fish." correct={true} />
       </div>
 
-      <h3>Used to vs Past Simple</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-5 space-y-3 text-sm text-slate-700">
-        <div>
-          <b>Used to</b> = repeated habit or state, implies contrast with now:<br />
-          <span className="italic">We <b>used to</b> visit them every summer. (we don&apos;t anymore)</span>
-        </div>
-        <div>
-          <b>Past Simple</b> = single completed event, or sequence:<br />
-          <span className="italic">We <b>visited</b> them in 2019. (once, specific trip)</span>
-        </div>
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Key tip:</span> After <em>did</em>, always write <em>use to</em> (no -d). The -d only appears in the affirmative: <em>used to</em>.
       </div>
+    </div>
+  );
+}
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800">
-          <span className="font-black text-slate-900">⚠️ Common mistake:</span> In questions and negatives, drop the -d from &quot;used&quot;: <b>Did she use to…?</b> / <b>She didn&apos;t use to…</b> — NOT &quot;did she <i>used</i> to&quot;.
-        </div>
-      </div>
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

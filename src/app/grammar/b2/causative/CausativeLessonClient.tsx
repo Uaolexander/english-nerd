@@ -282,69 +282,170 @@ export default function CausativeLessonClient() {
 
 function Explanation() {
   return (
-    <div className="prose max-w-none prose-slate">
-      <h2>Causative: have / get (B2)</h2>
-      <p>The causative structure means you <b>arrange for someone else to do something</b> for you — you don&apos;t do it yourself. The structure is: <b>have / get + object + past participle</b>.</p>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">CAUSATIVE HAVE / GET</h2>
+        <p className="text-slate-500 text-sm">Arrange for someone else to do something — or describe something bad that happened to you.</p>
+      </div>
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-white p-5">
-        <div className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Structure</div>
-        <div className="flex items-center gap-2 text-sm flex-wrap">
-          {["have / get", "+", "object", "+", "past participle"].map((p, i) => (
-            <span key={i} className={p === "+" ? "text-slate-400 font-bold text-lg" : "rounded-xl border border-black/10 bg-orange-50 px-3 py-1.5 font-bold text-orange-700"}>{p}</span>
+      {/* 3 gradient cards for formula */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-600 mb-3">Affirmative (+)</div>
+          <Formula parts={[
+            { text: "have / get", color: "green" },
+            { text: "+", dim: true },
+            { text: "object", color: "sky" },
+            { text: "+", dim: true },
+            { text: "past participle", color: "yellow" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>I had my hair cut.</div>
+            <div>She gets her car serviced.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-red-600 mb-3">Negative (−)</div>
+          <Formula parts={[
+            { text: "didn't have", color: "red" },
+            { text: "+", dim: true },
+            { text: "object", color: "sky" },
+            { text: "+", dim: true },
+            { text: "past participle", color: "yellow" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>I didn&apos;t have my car fixed.</div>
+            <div>We didn&apos;t get it done.</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-600 mb-3">Question (?)</div>
+          <Formula parts={[
+            { text: "Did you have", color: "sky" },
+            { text: "+", dim: true },
+            { text: "object", color: "violet" },
+            { text: "+", dim: true },
+            { text: "past participle", color: "yellow" },
+          ]} />
+          <div className="mt-3 space-y-1 text-sm text-slate-600 italic">
+            <div>Did you have it repaired?</div>
+            <div>Where do you get your hair cut?</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2-col usage cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-emerald-700 mb-2">have something done</div>
+          <p className="text-sm text-slate-600 mb-2">More formal. Common in writing and professional contexts.</p>
+          <div className="italic text-sm text-slate-700">I had my windows cleaned.</div>
+        </div>
+        <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-sky-700 mb-2">get something done</div>
+          <p className="text-sm text-slate-600 mb-2">More informal / colloquial. Implies making an effort to arrange it.</p>
+          <div className="italic text-sm text-slate-700">I got my windows cleaned.</div>
+        </div>
+        <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-violet-700 mb-2">Involuntary causative</div>
+          <p className="text-sm text-slate-600 mb-2">Both <b>have</b> and <b>get</b> describe something bad that happened to you (not arranged).</p>
+          <div className="italic text-sm text-slate-700">She had her bag stolen. / He got his car broken into.</div>
+        </div>
+        <div className="rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-5">
+          <div className="text-xs font-bold uppercase text-orange-700 mb-2">Works in all tenses</div>
+          <p className="text-sm text-slate-600 mb-2">The have / get + object + pp structure works in any tense.</p>
+          <div className="italic text-sm text-slate-700">She&apos;s going to have her hair dyed. / You should get your brakes checked.</div>
+        </div>
+      </div>
+
+      {/* Quick reference table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF3A3] text-sm font-black">!</span>
+          <span className="font-black text-slate-900 text-sm">TENSE EXAMPLES</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="py-2 pr-4 text-left font-black text-slate-700">Tense</th>
+                <th className="py-2 text-left font-black text-slate-700">Example</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {[
+                ["Present Simple", "She has her nails done every week."],
+                ["Past Simple", "We had the roof repaired last month."],
+                ["Present Perfect", "I've had my passport renewed."],
+                ["Future (will)", "They will have the venue decorated."],
+                ["Going to", "She's going to get her hair dyed."],
+                ["Modal", "You should get your brakes checked."],
+              ].map(([tense, ex]) => (
+                <tr key={tense}>
+                  <td className="py-2 pr-4 font-bold text-slate-700 whitespace-nowrap">{tense}</td>
+                  <td className="py-2 italic text-slate-600">{ex}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Key words */}
+      <div>
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Key Words</div>
+        <div className="flex flex-wrap gap-2">
+          {["have done", "get done", "object + pp", "arranged", "involuntary", "by someone else"].map((w) => (
+            <span key={w} className="rounded-lg border border-sky-200 bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-800">{w}</span>
           ))}
         </div>
-        <div className="mt-3 italic text-slate-700 text-sm">I had my hair cut. / She got her car repaired.</div>
       </div>
 
-      <h3>have vs get</h3>
-      <div className="not-prose grid gap-3 md:grid-cols-2 mt-2">
-        <div className="rounded-2xl border border-black/10 bg-white p-4">
-          <div className="font-bold text-orange-700 mb-1">have something done</div>
-          <div className="text-sm text-slate-600">More formal. Common in writing and professional contexts.</div>
-          <div className="mt-2 italic text-sm text-slate-800">I had my windows cleaned.</div>
-        </div>
-        <div className="rounded-2xl border border-black/10 bg-white p-4">
-          <div className="font-bold text-orange-700 mb-1">get something done</div>
-          <div className="text-sm text-slate-600">More informal/colloquial. Also implies making more effort.</div>
-          <div className="mt-2 italic text-sm text-slate-800">I got my windows cleaned.</div>
-        </div>
+      {/* Common mistakes */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase text-slate-500 mb-3">Common Mistake</div>
+        <Ex en="I had repaired my car." correct={false} />
+        <Ex en="I had my car repaired." correct={true} />
       </div>
 
-      <h3>Involuntary causative (bad events)</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-4 mt-2">
-        <p className="text-sm text-slate-700">Both <b>have</b> and <b>get</b> can describe something bad that happened to you — not arranged, but suffered:</p>
-        <div className="mt-2 space-y-1">
-          {["She had her bag stolen. (= her bag was stolen)", "He got his car broken into. (= someone broke into his car)"].map(e => (
-            <div key={e} className="italic text-sm text-slate-800">{e}</div>
-          ))}
-        </div>
+      {/* Amber tip */}
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <span className="font-black">Key tip:</span> The object always comes <strong>before</strong> the past participle. &ldquo;Had repaired my car&rdquo; means you repaired it yourself — not causative!
       </div>
+    </div>
+  );
+}
 
-      <h3>All tenses — same structure</h3>
-      <div className="not-prose rounded-2xl border border-black/10 bg-white p-5 mt-2">
-        <div className="space-y-2 text-sm">
-          {[
-            { tense: "Present Simple", ex: "She has her nails done every week." },
-            { tense: "Past Simple", ex: "We had the roof repaired last month." },
-            { tense: "Present Perfect", ex: "I've had my passport renewed." },
-            { tense: "Future (will)", ex: "They will have the venue decorated." },
-            { tense: "Going to", ex: "She's going to get her hair dyed." },
-            { tense: "Modal", ex: "You should get your brakes checked." },
-          ].map(({ tense, ex }) => (
-            <div key={tense} className="grid grid-cols-[140px_1fr] gap-2 rounded-xl border border-black/10 bg-slate-50 p-2.5">
-              <span className="font-bold text-orange-700 text-xs self-center">{tense}</span>
-              <span className="italic text-slate-800">{ex}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
 
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
-        <div className="text-sm text-slate-800">
-          <span className="font-black text-slate-900">⚠ Word order:</span> The object always comes <b>before</b> the past participle. <br />
-          ✅ <i>I had my car repaired.</i> &nbsp; ❌ <i>~~I had repaired my car.~~</i> (= I repaired it myself)
-        </div>
-      </div>
+function Ex({ en, correct = true }: { en: string; correct?: boolean }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 ${correct ? "bg-white border border-black/8" : "bg-red-50 border border-red-100"}`}>
+      <span className="text-sm shrink-0">{correct ? "✅" : "❌"}</span>
+      <div className={`font-semibold text-sm ${correct ? "text-slate-900" : "text-red-700 line-through"}`}>{en}</div>
     </div>
   );
 }

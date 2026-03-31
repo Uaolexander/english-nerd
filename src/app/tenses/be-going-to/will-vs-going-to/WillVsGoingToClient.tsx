@@ -348,7 +348,7 @@ function Explanation() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <Ex en="\"No coffee!\" → \"I'll get some.\"" />
+            <Ex en={`"No coffee!" → "I'll get some."`} />
             <Ex en="I'll be there on time — I promise." />
             <Ex en="I think prices will fall." />
           </div>
