@@ -318,22 +318,39 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   return (
     <main className="min-h-screen bg-[#F6F6F7]">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="mx-auto max-w-2xl">
 
         {/* Breadcrumb */}
-        <div className="mb-6 flex items-center gap-1.5 text-xs text-slate-400">
+        <div className="mb-5 flex items-center gap-1.5 text-xs text-slate-400">
           <a href="/" className="hover:text-slate-600 transition">Home</a>
           <span>/</span>
           <span className="text-slate-600">Account</span>
         </div>
 
+        {/* ── 3-column grid ─────────────────────────────────────────── */}
+        <div className="grid xl:grid-cols-[220px_1fr_256px] gap-5 items-start">
+
+          {/* ══ LEFT: AdSense ══ */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-3.5">
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
+              <div className="flex h-[600px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-xs text-slate-300">
+                300 × 600
+              </div>
+            </div>
+          </aside>
+
+          {/* ══ CENTER ══ */}
+          <div className="min-w-0 space-y-4">
+
         {/* ── Profile header card ─────────────────────────────────────── */}
-        <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] px-6 py-5 sm:px-7">
-          <div className="flex items-center gap-4 sm:gap-5">
+        <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+          {/* Top accent strip */}
+          <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-300 to-[#F5DA20]" />
+          <div className="flex items-center gap-4 px-5 py-5 sm:gap-6 sm:px-7">
 
             {/* Avatar */}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <div className="shrink-0 h-16 w-16 sm:h-[72px] sm:w-[72px] overflow-hidden rounded-2xl ring-2 ring-slate-100 shadow-sm">
+            <div className="shrink-0 h-16 w-16 sm:h-[76px] sm:w-[76px] overflow-hidden rounded-full ring-4 ring-[#F5DA20]/30 shadow-md">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
               ) : (
@@ -345,16 +362,16 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-black text-slate-900 leading-none sm:text-2xl truncate">
-                {name.trim() || <span className="text-slate-400 font-semibold">No name yet</span>}
+              <h1 className="text-xl font-black text-slate-900 leading-tight sm:text-2xl truncate">
+                {name.trim() || <span className="text-slate-400 font-medium italic">No name yet</span>}
               </h1>
-              <p className="mt-1 text-sm text-slate-400 truncate">{email}</p>
+              <p className="mt-0.5 text-sm text-slate-400 truncate">{email}</p>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
                 </span>
-                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Free</span>
-                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-400">Since {memberSince(createdAt)}</span>
+                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Free plan</span>
+                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-400">Member since {memberSince(createdAt)}</span>
                 {isOAuth && <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">Google</span>}
               </div>
             </div>
@@ -363,7 +380,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-100 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+              className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
             >
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -395,11 +412,9 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           ))}
         </div>
 
-      </div>{/* end max-w-2xl */}
-
         {/* ══════════════ PROFILE TAB ══════════════ */}
         {tab === "profile" && (
-          <form onSubmit={handleProfileSave} className="mt-5 space-y-4 mx-auto max-w-2xl">
+          <form onSubmit={handleProfileSave} className="space-y-4">
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
               <p className="mb-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Profile information</p>
               <div className="space-y-5">
@@ -459,19 +474,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
         {/* ══════════════ PROGRESS TAB ══════════════ */}
         {tab === "progress" && (
-          <div className="mt-5 grid xl:grid-cols-[220px_1fr_256px] gap-5 items-start">
-
-            {/* ── Left: AdSense ───────────────────────────────── */}
-            <aside className="hidden xl:block">
-              <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-4">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
-                <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-xs text-slate-300">
-                  300 × 600
-                </div>
-              </div>
-            </aside>
-
-            {/* ── Center: main progress stats ─────────────────── */}
           <div className="space-y-4">
 
             {stats.totalCompleted === 0 ? (
@@ -581,66 +583,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 )}
               </>
             )}
-          </div>{/* end center column */}
-
-            {/* ── Right: Recommendations ──────────────────────── */}
-            <aside className="hidden xl:block">
-              <div className="sticky top-24 space-y-4">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 px-1">Recommended for you</p>
-
-                {recs.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center">
-                    <p className="text-sm text-slate-400">No recommendations yet.</p>
-                  </div>
-                ) : recs.map((rec) => {
-                  const c = LEVEL_COLORS[rec.level];
-                  return (
-                    <a
-                      key={rec.slug}
-                      href={rec.href}
-                      className="group block overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
-                    >
-                      {/* Topic image */}
-                      <div className="relative h-32 w-full overflow-hidden bg-slate-100">
-                        <img
-                          src={rec.img}
-                          alt={rec.title}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
-                        {/* Level badge */}
-                        <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase text-white ${c.badge}`}>
-                          {rec.level.toUpperCase()}
-                        </span>
-                      </div>
-                      {/* Info */}
-                      <div className="px-4 py-3.5">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Grammar · {LEVEL_LABELS[rec.level]}</p>
-                        <p className="mt-1 text-sm font-black text-slate-900 leading-snug group-hover:text-[#0B0B0D] transition">{rec.title}</p>
-                        <div className="mt-2.5 flex items-center gap-1 text-[11px] font-bold text-[#0B0B0D]">
-                          Start lesson
-                          <svg className="h-3 w-3 transition group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                })}
-
-                {/* See all link */}
-                {recs.length > 0 && (
-                  <a href={`/grammar/${recs[0].level}`} className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-500 transition hover:border-slate-300 hover:text-slate-800">
-                    See all {recs[0].level.toUpperCase()} topics
-                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                  </a>
-                )}
-              </div>
-            </aside>
-
           </div>
         )}
 
         {/* ══════════════ SECURITY TAB ══════════════ */}
         {tab === "security" && (
-          <div className="mt-5 space-y-4 mx-auto max-w-2xl">
+          <div className="space-y-4">
 
             {/* Login method */}
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
@@ -731,7 +679,53 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           </div>
         )}
 
-      </div>{/* end max-w-6xl */}
+          </div>
+          {/* ══ RIGHT: Recommendations ══ */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 space-y-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {recs.map((rec) => {
+                const colors = LEVEL_COLORS[rec.level] ?? LEVEL_COLORS.a1;
+                return (
+                  <a
+                    key={rec.slug}
+                    href={rec.href}
+                    className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:shadow-md hover:-translate-y-0.5"
+                  >
+                    <div className="relative h-28 w-full overflow-hidden bg-slate-100">
+                      <img
+                        src={rec.img}
+                        alt={rec.title}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                      <span className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow ${colors.badge}`}>
+                        {rec.level.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="px-3.5 py-3">
+                      <p className="text-xs font-bold leading-snug text-slate-800 group-hover:text-slate-900 transition">
+                        {rec.title}
+                      </p>
+                      <p className="mt-1 text-[10px] text-slate-400">Grammar · 4 exercises</p>
+                    </div>
+                  </a>
+                );
+              })}
+              <a
+                href="/grammar"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+              >
+                Browse all topics
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </a>
+            </div>
+          </aside>
+
+        </div>
+      </div>
     </main>
   );
 }
