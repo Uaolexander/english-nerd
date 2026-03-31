@@ -81,13 +81,147 @@ const LEVEL_LABELS: Record<string, string> = {
   c1: "C1 — Advanced",
 };
 
-const LEVEL_COLORS: Record<string, { bar: string; text: string; bg: string }> = {
-  a1: { bar: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50" },
-  a2: { bar: "bg-sky-500",     text: "text-sky-700",     bg: "bg-sky-50"     },
-  b1: { bar: "bg-violet-500",  text: "text-violet-700",  bg: "bg-violet-50"  },
-  b2: { bar: "bg-amber-500",   text: "text-amber-700",   bg: "bg-amber-50"   },
-  c1: { bar: "bg-rose-500",    text: "text-rose-700",    bg: "bg-rose-50"    },
+const LEVEL_COLORS: Record<string, { bar: string; text: string; bg: string; badge: string }> = {
+  a1: { bar: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50", badge: "bg-emerald-500" },
+  a2: { bar: "bg-sky-500",     text: "text-sky-700",     bg: "bg-sky-50",     badge: "bg-sky-500"     },
+  b1: { bar: "bg-violet-500",  text: "text-violet-700",  bg: "bg-violet-50",  badge: "bg-violet-500"  },
+  b2: { bar: "bg-amber-500",   text: "text-amber-700",   bg: "bg-amber-50",   badge: "bg-amber-500"   },
+  c1: { bar: "bg-rose-500",    text: "text-rose-700",    bg: "bg-rose-50",    badge: "bg-rose-500"    },
 };
+
+// ── Grammar topic catalog (for recommendations) ────────────────────────────
+
+type TopicRec = { slug: string; title: string; img: string; href: string; level: string };
+
+const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level">[]> = {
+  a1: [
+    { slug: "to-be-am-is-are",              title: "To Be: am / is / are",        img: "/topics/a1/to-be-am-is-are.jpg",                href: "/grammar/a1/to-be-am-is-are" },
+    { slug: "present-simple-i-you-we-they", title: "Present Simple I/You/We",     img: "/topics/a1/present-simple-i-you-we-they.jpg",   href: "/grammar/a1/present-simple-i-you-we-they" },
+    { slug: "articles-a-an",                title: "Articles: a / an",            img: "/topics/a1/articles-a-an.jpg",                  href: "/grammar/a1/articles-a-an" },
+    { slug: "plural-nouns",                 title: "Plural Nouns",                img: "/topics/a1/plural-nouns.jpg",                   href: "/grammar/a1/plural-nouns" },
+    { slug: "subject-pronouns",             title: "Subject Pronouns",            img: "/topics/a1/subject-pronouns.jpg",               href: "/grammar/a1/subject-pronouns" },
+    { slug: "there-is-there-are",           title: "There is / There are",        img: "/topics/a1/there-is-there-are.jpg",             href: "/grammar/a1/there-is-there-are" },
+    { slug: "adverbs-frequency",            title: "Adverbs of Frequency",        img: "/topics/a1/adverbs-of-frequency.jpg",           href: "/grammar/a1/adverbs-frequency" },
+    { slug: "can-cant",                     title: "Can / Can't",                 img: "/topics/a1/can-cant.jpg",                       href: "/grammar/a1/can-cant" },
+    { slug: "wh-questions",                 title: "Wh- Questions",               img: "/topics/a1/wh-questions.jpg",                   href: "/grammar/a1/wh-questions" },
+    { slug: "some-any",                     title: "Some / Any",                  img: "/topics/a1/some-any.jpg",                       href: "/grammar/a1/some-any" },
+    { slug: "possessive-adjectives",        title: "Possessive Adjectives",       img: "/topics/a1/possessive-adjectives.jpg",          href: "/grammar/a1/possessive-adjectives" },
+    { slug: "present-simple-he-she-it",     title: "Present Simple He/She/It",    img: "/topics/a1/present-simple-he-she-it.jpg",       href: "/grammar/a1/present-simple-he-she-it" },
+    { slug: "this-that-these-those",        title: "This / That / These / Those", img: "/topics/a1/this-that-these-those.jpg",          href: "/grammar/a1/this-that-these-those" },
+    { slug: "prepositions-place",           title: "Prepositions of Place",       img: "/topics/a1/prepositions-of-place.jpg",          href: "/grammar/a1/prepositions-place" },
+    { slug: "countable-uncountable",        title: "Countable & Uncountable",     img: "/topics/a1/countable-uncountable.jpg",          href: "/grammar/a1/countable-uncountable" },
+    { slug: "have-has-got",                 title: "Have Got / Has Got",          img: "/topics/a1/have-has-got.jpg",                   href: "/grammar/a1/have-has-got" },
+    { slug: "much-many-basic",              title: "Much / Many",                 img: "/topics/a1/much-many.jpg",                      href: "/grammar/a1/much-many-basic" },
+    { slug: "prepositions-time-in-on-at",   title: "Prepositions of Time",        img: "/topics/a1/prepositions-of-time-in-on-at.jpg",  href: "/grammar/a1/prepositions-time-in-on-at" },
+    { slug: "present-simple-negative",      title: "Present Simple Negative",     img: "/topics/a1/present-simple-negative.jpg",        href: "/grammar/a1/present-simple-negative" },
+    { slug: "present-simple-questions",     title: "Present Simple Questions",    img: "/topics/a1/present-simple-questions.jpg",       href: "/grammar/a1/present-simple-questions" },
+  ],
+  a2: [
+    { slug: "past-simple-regular",              title: "Past Simple (Regular)",       img: "/topics/a2/past-simple-regular.jpg",            href: "/grammar/a2/past-simple-regular" },
+    { slug: "past-simple-irregular",            title: "Past Simple (Irregular)",     img: "/topics/a2/past-simple-irregular.jpg",          href: "/grammar/a2/past-simple-irregular" },
+    { slug: "present-continuous",               title: "Present Continuous",          img: "/topics/a2/present-continuous.jpg",             href: "/grammar/a2/present-continuous" },
+    { slug: "comparative-adjectives",           title: "Comparative Adjectives",      img: "/topics/a2/comparative-adjectives.jpg",         href: "/grammar/a2/comparative-adjectives" },
+    { slug: "superlative-adjectives",           title: "Superlative Adjectives",      img: "/topics/a2/superlative-adjectives.jpg",         href: "/grammar/a2/superlative-adjectives" },
+    { slug: "going-to",                         title: "Going To",                    img: "/topics/a2/going-to.jpg",                       href: "/grammar/a2/going-to" },
+    { slug: "will-future",                      title: "Will / Future",               img: "/topics/a2/will-future.jpg",                    href: "/grammar/a2/will-future" },
+    { slug: "articles-the",                     title: "Article: The",                img: "/topics/a2/articles-the.jpg",                   href: "/grammar/a2/articles-the" },
+    { slug: "conjunctions",                     title: "Conjunctions",                img: "/topics/a2/conjunctions.jpg",                   href: "/grammar/a2/conjunctions" },
+    { slug: "have-to",                          title: "Have To / Don't Have To",     img: "/topics/a2/have-to.jpg",                        href: "/grammar/a2/have-to" },
+    { slug: "past-simple-negative-questions",   title: "Past Simple Q & Neg.",        img: "/topics/a2/past-simple-negative-questions.jpg", href: "/grammar/a2/past-simple-negative-questions" },
+    { slug: "adverbs-manner",                   title: "Adverbs of Manner",           img: "/topics/a2/adverbs-manner.jpg",                 href: "/grammar/a2/adverbs-manner" },
+    { slug: "object-pronouns",                  title: "Object Pronouns",             img: "/topics/a2/object-pronouns.jpg",                href: "/grammar/a2/object-pronouns" },
+    { slug: "possessive-pronouns",              title: "Possessive Pronouns",         img: "/topics/a2/possessive-pronouns.jpg",            href: "/grammar/a2/possessive-pronouns" },
+    { slug: "prepositions-movement",            title: "Prepositions of Movement",    img: "/topics/a2/prepositions-movement.jpg",          href: "/grammar/a2/prepositions-movement" },
+    { slug: "present-perfect-intro",            title: "Present Perfect Intro",       img: "/topics/a2/present-perfect-intro.jpg",          href: "/grammar/a2/present-perfect-intro" },
+    { slug: "should-shouldnt",                  title: "Should / Shouldn't",          img: "/topics/a2/should-shouldnt.jpg",                href: "/grammar/a2/should-shouldnt" },
+    { slug: "time-expressions-past",            title: "Time Expressions (Past)",     img: "/topics/a2/time-expressions-past.jpg",          href: "/grammar/a2/time-expressions-past" },
+    { slug: "verb-infinitive",                  title: "Verb + Infinitive",           img: "/topics/a2/verb-infinitive.jpg",                href: "/grammar/a2/verb-infinitive" },
+    { slug: "verb-ing",                         title: "Verb + -ing",                 img: "/topics/a2/verb-ing.jpg",                       href: "/grammar/a2/verb-ing" },
+  ],
+  b1: [
+    { slug: "all-conditionals",             title: "All Conditionals",             img: "/topics/b1/all-conditionals.jpg",              href: "/grammar/b1/all-conditionals" },
+    { slug: "as-as-comparison",             title: "As ... As Comparison",         img: "/topics/b1/as-as-comparison.jpg",              href: "/grammar/b1/as-as-comparison" },
+    { slug: "modal-deduction",              title: "Modal Verbs: Deduction",       img: "/topics/b1/modal-deduction.jpg",               href: "/grammar/b1/modal-deduction" },
+    { slug: "modal-possibility",            title: "Modal Verbs: Possibility",     img: "/topics/b1/modal-possibility.jpg",             href: "/grammar/b1/modal-possibility" },
+    { slug: "passive-past",                 title: "Passive (Past)",               img: "/topics/b1/passive-past.jpg",                  href: "/grammar/b1/passive-past" },
+    { slug: "passive-present",              title: "Passive (Present)",            img: "/topics/b1/passive-present.jpg",               href: "/grammar/b1/passive-present" },
+    { slug: "past-continuous",              title: "Past Continuous",              img: "/topics/b1/past-continuous.jpg",               href: "/grammar/b1/past-continuous" },
+    { slug: "past-perfect",                 title: "Past Perfect",                 img: "/topics/b1/past-perfect.jpg",                  href: "/grammar/b1/past-perfect" },
+    { slug: "phrasal-verbs",                title: "Phrasal Verbs",                img: "/topics/b1/phrasal-verbs.jpg",                 href: "/grammar/b1/phrasal-verbs" },
+    { slug: "present-perfect-continuous",   title: "Present Perfect Continuous",   img: "/topics/b1/present-perfect-continuous.jpg",   href: "/grammar/b1/present-perfect-continuous" },
+    { slug: "relative-clauses-defining",    title: "Relative Clauses (Def.)",      img: "/topics/b1/relative-clauses-defining.jpg",     href: "/grammar/b1/relative-clauses-defining" },
+    { slug: "relative-clauses-non-defining",title: "Relative Clauses (Non-def.)",  img: "/topics/b1/relative-clauses-non-defining.jpg", href: "/grammar/b1/relative-clauses-non-defining" },
+    { slug: "reported-questions",           title: "Reported Questions",           img: "/topics/b1/reported-questions.jpg",            href: "/grammar/b1/reported-questions" },
+    { slug: "reported-statements",          title: "Reported Statements",          img: "/topics/b1/reported-statements.jpg",           href: "/grammar/b1/reported-statements" },
+    { slug: "second-conditional",           title: "Second Conditional",           img: "/topics/b1/second-conditional.jpg",            href: "/grammar/b1/second-conditional" },
+    { slug: "so-such",                      title: "So / Such",                    img: "/topics/b1/so-such.jpg",                       href: "/grammar/b1/so-such" },
+    { slug: "too-enough",                   title: "Too / Enough",                 img: "/topics/b1/too-enough.jpg",                    href: "/grammar/b1/too-enough" },
+    { slug: "used-to",                      title: "Used To",                      img: "/topics/b1/used-to.jpg",                       href: "/grammar/b1/used-to" },
+    { slug: "wish-past",                    title: "Wish (Past)",                  img: "/topics/b1/wish-past.jpg",                     href: "/grammar/b1/wish-past" },
+    { slug: "would-past-habits",            title: "Would (Past Habits)",          img: "/topics/b1/would-past-habits.jpg",             href: "/grammar/b1/would-past-habits" },
+    { slug: "zero-first-conditional",       title: "Zero & First Conditional",     img: "/topics/b1/zero-first-conditional.jpg",        href: "/grammar/b1/zero-first-conditional" },
+  ],
+  b2: [
+    { slug: "all-conditionals-b2",       title: "All Conditionals (B2)",       img: "/topics/b2/all-conditionals-b2.jpg",         href: "/grammar/b2/all-conditionals-b2" },
+    { slug: "causative",                 title: "Causative Have/Get",           img: "/topics/b2/causative.jpg",                   href: "/grammar/b2/causative" },
+    { slug: "cleft-sentences",           title: "Cleft Sentences",              img: "/topics/b2/cleft-sentences.jpg",             href: "/grammar/b2/cleft-sentences" },
+    { slug: "future-continuous",         title: "Future Continuous",            img: "/topics/b2/future-continuous.jpg",           href: "/grammar/b2/future-continuous" },
+    { slug: "future-perfect",            title: "Future Perfect",               img: "/topics/b2/future-perfect.jpg",              href: "/grammar/b2/future-perfect" },
+    { slug: "gerunds-infinitives",       title: "Gerunds & Infinitives",        img: "/topics/b2/gerunds-infinitives.jpg",         href: "/grammar/b2/gerunds-infinitives" },
+    { slug: "inversion",                 title: "Inversion",                    img: "/topics/b2/inversion.jpg",                   href: "/grammar/b2/inversion" },
+    { slug: "linking-words",             title: "Linking Words",                img: "/topics/b2/linking-words.jpg",               href: "/grammar/b2/linking-words" },
+    { slug: "mixed-conditionals",        title: "Mixed Conditionals",           img: "/topics/b2/mixed-conditionals.jpg",          href: "/grammar/b2/mixed-conditionals" },
+    { slug: "modal-perfect",             title: "Modal Perfect",                img: "/topics/b2/modal-perfect.jpg",               href: "/grammar/b2/modal-perfect" },
+    { slug: "participle-clauses",        title: "Participle Clauses",           img: "/topics/b2/participle-clauses.jpg",          href: "/grammar/b2/participle-clauses" },
+    { slug: "passive-advanced",          title: "Passive (Advanced)",           img: "/topics/b2/passive-advanced.jpg",            href: "/grammar/b2/passive-advanced" },
+    { slug: "past-perfect-continuous",   title: "Past Perfect Continuous",      img: "/topics/b2/past-perfect-continuous.jpg",     href: "/grammar/b2/past-perfect-continuous" },
+    { slug: "quantifiers-advanced",      title: "Quantifiers (Advanced)",       img: "/topics/b2/quantifiers-advanced.jpg",        href: "/grammar/b2/quantifiers-advanced" },
+    { slug: "relative-clauses-advanced", title: "Relative Clauses (Adv.)",      img: "/topics/b2/relative-clauses-advanced.jpg",   href: "/grammar/b2/relative-clauses-advanced" },
+    { slug: "reported-speech-advanced",  title: "Reported Speech (Adv.)",       img: "/topics/b2/reported-speech-advanced.jpg",    href: "/grammar/b2/reported-speech-advanced" },
+    { slug: "third-conditional",         title: "Third Conditional",            img: "/topics/b2/third-conditional.jpg",           href: "/grammar/b2/third-conditional" },
+    { slug: "wish-would",                title: "Wish + Would",                 img: "/topics/b2/wish-would.jpg",                  href: "/grammar/b2/wish-would" },
+  ],
+  c1: [
+    { slug: "advanced-discourse-markers",  title: "Discourse Markers",          img: "/topics/c1/advanced-discourse-markers.jpg",  href: "/grammar/c1/advanced-discourse-markers" },
+    { slug: "advanced-inversion",          title: "Inversion (Advanced)",        img: "/topics/c1/advanced-inversion.jpg",          href: "/grammar/c1/advanced-inversion" },
+    { slug: "advanced-modals",             title: "Advanced Modals",             img: "/topics/c1/advanced-modals.jpg",             href: "/grammar/c1/advanced-modals" },
+    { slug: "advanced-participle-clauses", title: "Participle Clauses (Adv.)",   img: "/topics/c1/advanced-participle-clauses.jpg", href: "/grammar/c1/advanced-participle-clauses" },
+    { slug: "advanced-relative-clauses",   title: "Relative Clauses (Adv.)",     img: "/topics/c1/advanced-relative-clauses.jpg",   href: "/grammar/c1/advanced-relative-clauses" },
+    { slug: "complex-noun-phrases",        title: "Complex Noun Phrases",        img: "/topics/c1/complex-noun-phrases.jpg",        href: "/grammar/c1/complex-noun-phrases" },
+    { slug: "complex-passives",            title: "Complex Passives",            img: "/topics/c1/complex-passives.jpg",            href: "/grammar/c1/complex-passives" },
+    { slug: "concession-contrast",         title: "Concession & Contrast",       img: "/topics/c1/concession-contrast.jpg",         href: "/grammar/c1/concession-contrast" },
+    { slug: "ellipsis-substitution",       title: "Ellipsis & Substitution",     img: "/topics/c1/ellipsis-substitution.jpg",       href: "/grammar/c1/ellipsis-substitution" },
+    { slug: "extraposition",               title: "Extraposition",               img: "/topics/c1/extraposition.jpg",               href: "/grammar/c1/extraposition" },
+    { slug: "fronting-emphasis",           title: "Fronting & Emphasis",         img: "/topics/c1/fronting-emphasis.jpg",           href: "/grammar/c1/fronting-emphasis" },
+    { slug: "hedging-language",            title: "Hedging Language",            img: "/topics/c1/hedging-language.jpg",            href: "/grammar/c1/hedging-language" },
+    { slug: "inverted-conditionals",       title: "Inverted Conditionals",       img: "/topics/c1/inverted-conditionals.jpg",       href: "/grammar/c1/inverted-conditionals" },
+    { slug: "nominalisation",              title: "Nominalisation",              img: "/topics/c1/nominalisation.jpg",              href: "/grammar/c1/nominalisation" },
+    { slug: "passive-infinitives",         title: "Passive Infinitives",         img: "/topics/c1/passive-infinitives.jpg",         href: "/grammar/c1/passive-infinitives" },
+    { slug: "reported-speech-c1",          title: "Reported Speech (C1)",        img: "/topics/c1/reported-speech-c1.jpg",          href: "/grammar/c1/reported-speech-c1" },
+    { slug: "subjunctive",                 title: "Subjunctive",                 img: "/topics/c1/subjunctive.jpg",                 href: "/grammar/c1/subjunctive" },
+    { slug: "word-formation",              title: "Word Formation",              img: "/topics/c1/word-formation.jpg",              href: "/grammar/c1/word-formation" },
+  ],
+};
+
+function getRecommendations(stats: ProgressStats): TopicRec[] {
+  const recentSlugs = new Set(stats.recentActivity.map((a) => a.slug));
+  const levels = ["a1", "a2", "b1", "b2", "c1"] as const;
+
+  // Find focus level: first with incomplete exercises
+  let focusLevel: string = "a1";
+  if (stats.totalCompleted > 0) {
+    for (const lvl of levels) {
+      const done = stats.byLevel[lvl]?.completed ?? 0;
+      if (done < LEVEL_TOTALS[lvl]) { focusLevel = lvl; break; }
+    }
+  }
+
+  const topics = GRAMMAR_TOPICS[focusLevel] ?? [];
+  const notDone = topics.filter((t) => !recentSlugs.has(t.slug));
+  // Fallback: if all recently done, just take first 2 from the level
+  const pool = notDone.length >= 2 ? notDone : topics;
+  return pool.slice(0, 2).map((t) => ({ ...t, level: focusLevel }));
+}
 
 function scoreColor(score: number) {
   if (score >= 80) return "text-emerald-600";
@@ -179,9 +313,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  const recs = getRecommendations(stats);
+
   return (
     <main className="min-h-screen bg-[#F6F6F7]">
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-2xl">
 
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-1.5 text-xs text-slate-400">
@@ -258,9 +395,11 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           ))}
         </div>
 
+      </div>{/* end max-w-2xl */}
+
         {/* ══════════════ PROFILE TAB ══════════════ */}
         {tab === "profile" && (
-          <form onSubmit={handleProfileSave} className="mt-5 space-y-4">
+          <form onSubmit={handleProfileSave} className="mt-5 space-y-4 mx-auto max-w-2xl">
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
               <p className="mb-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Profile information</p>
               <div className="space-y-5">
@@ -320,7 +459,20 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
         {/* ══════════════ PROGRESS TAB ══════════════ */}
         {tab === "progress" && (
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 grid xl:grid-cols-[220px_1fr_256px] gap-5 items-start">
+
+            {/* ── Left: AdSense ───────────────────────────────── */}
+            <aside className="hidden xl:block">
+              <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-4">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
+                <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-xs text-slate-300">
+                  300 × 600
+                </div>
+              </div>
+            </aside>
+
+            {/* ── Center: main progress stats ─────────────────── */}
+          <div className="space-y-4">
 
             {stats.totalCompleted === 0 ? (
               /* ── Empty state ── */
@@ -429,12 +581,66 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 )}
               </>
             )}
+          </div>{/* end center column */}
+
+            {/* ── Right: Recommendations ──────────────────────── */}
+            <aside className="hidden xl:block">
+              <div className="sticky top-24 space-y-4">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 px-1">Recommended for you</p>
+
+                {recs.length === 0 ? (
+                  <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center">
+                    <p className="text-sm text-slate-400">No recommendations yet.</p>
+                  </div>
+                ) : recs.map((rec) => {
+                  const c = LEVEL_COLORS[rec.level];
+                  return (
+                    <a
+                      key={rec.slug}
+                      href={rec.href}
+                      className="group block overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+                    >
+                      {/* Topic image */}
+                      <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                        <img
+                          src={rec.img}
+                          alt={rec.title}
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                        {/* Level badge */}
+                        <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase text-white ${c.badge}`}>
+                          {rec.level.toUpperCase()}
+                        </span>
+                      </div>
+                      {/* Info */}
+                      <div className="px-4 py-3.5">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Grammar · {LEVEL_LABELS[rec.level]}</p>
+                        <p className="mt-1 text-sm font-black text-slate-900 leading-snug group-hover:text-[#0B0B0D] transition">{rec.title}</p>
+                        <div className="mt-2.5 flex items-center gap-1 text-[11px] font-bold text-[#0B0B0D]">
+                          Start lesson
+                          <svg className="h-3 w-3 transition group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
+                      </div>
+                    </a>
+                  );
+                })}
+
+                {/* See all link */}
+                {recs.length > 0 && (
+                  <a href={`/grammar/${recs[0].level}`} className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-500 transition hover:border-slate-300 hover:text-slate-800">
+                    See all {recs[0].level.toUpperCase()} topics
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </a>
+                )}
+              </div>
+            </aside>
+
           </div>
         )}
 
         {/* ══════════════ SECURITY TAB ══════════════ */}
         {tab === "security" && (
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 space-y-4 mx-auto max-w-2xl">
 
             {/* Login method */}
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
@@ -525,7 +731,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           </div>
         )}
 
-      </div>
+      </div>{/* end max-w-6xl */}
     </main>
   );
 }
