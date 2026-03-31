@@ -39,11 +39,22 @@ export default function CertificateModal({ level, score, onClose, onSaved }: Pro
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      const canvas = await html2canvas(certRef.current, {
+      // Clone the cert element into a temp container outside the scaled preview
+      // wrapper — html2canvas picks up parent CSS transforms and clips, which
+      // causes the scaled preview context to corrupt the output PDF.
+      const clone = certRef.current.cloneNode(true) as HTMLElement;
+      const tmp = document.createElement("div");
+      tmp.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:794px;height:562px;overflow:visible;z-index:-1;transform:none;";
+      tmp.appendChild(clone);
+      document.body.appendChild(tmp);
+
+      const canvas = await html2canvas(clone, {
         scale: 3,
         useCORS: true,
         backgroundColor: "#ffffff",
       });
+
+      document.body.removeChild(tmp);
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
