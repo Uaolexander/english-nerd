@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AccountClient from "./AccountClient";
-import type { ProgressStats } from "./AccountClient";
+import type { ProgressStats, CertificateRecord } from "./AccountClient";
 
 export const metadata: Metadata = {
   title: "My Account — English Nerd",
@@ -81,6 +81,23 @@ export default async function AccountPage() {
     testResults,
   };
 
+  // Fetch certificates
+  const { data: certRows } = await supabase
+    .from("certificates")
+    .select("id, level, score_percent, score_correct, score_total, holder_name, issued_at")
+    .eq("user_id", user.id)
+    .order("issued_at", { ascending: false });
+
+  const certificates: CertificateRecord[] = (certRows ?? []).map((r) => ({
+    id: r.id,
+    level: r.level,
+    scorePercent: r.score_percent,
+    scoreCorrect: r.score_correct,
+    scoreTotal: r.score_total,
+    holderName: r.holder_name,
+    issuedAt: r.issued_at,
+  }));
+
   return (
     <AccountClient
       email={user.email ?? ""}
@@ -89,6 +106,7 @@ export default async function AccountPage() {
       createdAt={user.created_at}
       provider={user.app_metadata?.provider ?? "email"}
       stats={stats}
+      certificates={certificates}
     />
   );
 }

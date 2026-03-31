@@ -6,6 +6,16 @@ import { createClient } from "@/lib/supabase/client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+export type CertificateRecord = {
+  id: string;
+  level: string;
+  scorePercent: number;
+  scoreCorrect: number;
+  scoreTotal: number;
+  holderName: string;
+  issuedAt: string;
+};
+
 export type ProgressStats = {
   totalCompleted: number;
   avgScore: number | null;
@@ -30,6 +40,7 @@ type Props = {
   createdAt: string;
   provider: string;
   stats: ProgressStats;
+  certificates: CertificateRecord[];
 };
 
 type Tab = "profile" | "security" | "progress";
@@ -338,9 +349,116 @@ function scoreBg(score: number) {
   return "bg-red-50 border-red-100 text-red-700";
 }
 
+// ── CertificateRow: renders one saved certificate + re-download button ─────
+
+const CERT_LEVEL_COLORS: Record<string, string> = {
+  A1: "bg-emerald-100 text-emerald-800",
+  A2: "bg-sky-100 text-sky-800",
+  B1: "bg-violet-100 text-violet-800",
+  B2: "bg-amber-100 text-amber-800",
+  C1: "bg-rose-100 text-rose-800",
+};
+
+function CertificateRow({ cert }: { cert: CertificateRecord }) {
+  const [downloading, setDownloading] = useState(false);
+
+  async function reDownload() {
+    setDownloading(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const container = document.createElement("div");
+      container.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:794px;height:562px;z-index:-1;";
+
+      const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+      container.innerHTML = `
+        <div id="cert-dl" style="width:794px;height:562px;background:#fff;position:relative;font-family:Georgia,'Times New Roman',serif;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+          <div style="position:absolute;top:0;left:0;width:8px;bottom:0;background:#F5DA20;"></div>
+          <div style="position:absolute;top:0;right:0;width:8px;bottom:0;background:#F5DA20;"></div>
+          <div style="position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(0,0,0,0.08);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 60px;">
+            <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
+            <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Certificate of Achievement</p>
+            <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
+            <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
+            <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has successfully completed the English Grammar Placement Test</p>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;">
+              <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
+                <span style="font-size:32px;font-weight:700;color:#0F0F12;line-height:1;">${cert.level}</span>
+                <span style="font-size:11px;font-weight:700;color:rgba(0,0,0,0.6);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">${{ A1:"Beginner",A2:"Elementary",B1:"Intermediate",B2:"Upper-Intermediate",C1:"Advanced" }[cert.level] ?? ""}</span>
+              </div>
+              <div style="width:1px;height:60px;background:rgba(0,0,0,0.1);"></div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                  <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scoreCorrect}/${cert.scoreTotal}</span>
+                  <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">correct answers</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                  <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scorePercent}%</span>
+                  <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">score</span>
+                </div>
+              </div>
+            </div>
+            <div style="width:120px;height:1px;background:rgba(0,0,0,0.12);margin-bottom:16px;"></div>
+            <div style="text-align:center;">
+              <p style="font-size:11px;color:rgba(0,0,0,0.35);margin-bottom:4px;margin-top:0;">${issuedDate}</p>
+              <p style="font-size:9px;color:rgba(0,0,0,0.2);margin-top:0;letter-spacing:0.5px;">englishnerd.cc · This is an informal assessment, not an official CEFR certificate.</p>
+            </div>
+          </div>
+        </div>`;
+
+      document.body.appendChild(container);
+      const el = container.querySelector("#cert-dl") as HTMLElement;
+      const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
+      document.body.removeChild(container);
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      pdf.addImage(imgData, "PNG", 0, 0, 297, 210);
+      pdf.save(`EnglishNerd_Certificate_${cert.holderName.replace(/\s+/g, "_")}.pdf`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5">
+      {/* Level badge */}
+      <span className={`shrink-0 rounded-xl px-3 py-1.5 text-base font-black ${CERT_LEVEL_COLORS[cert.level] ?? "bg-slate-100 text-slate-700"}`}>
+        {cert.level}
+      </span>
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-slate-900 truncate">{cert.holderName}</p>
+        <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
+      </div>
+      {/* Download */}
+      <button
+        onClick={reDownload}
+        disabled={downloading}
+        className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-900 disabled:opacity-40"
+      >
+        {downloading ? (
+          <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+        ) : (
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        )}
+        {downloading ? "…" : "PDF"}
+      </button>
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats }: Props) {
+export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -725,6 +843,18 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                     <div>
                       <p className="text-sm font-black text-slate-900">Perfect score!</p>
                       <p className="text-xs text-slate-500">You got 100% on at least one exercise. Keep it up!</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Certificates ── */}
+                {certificates.length > 0 && (
+                  <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-5">
+                    <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">My Certificates</p>
+                    <div className="space-y-3">
+                      {certificates.map((cert) => (
+                        <CertificateRow key={cert.id} cert={cert} />
+                      ))}
                     </div>
                   </div>
                 )}

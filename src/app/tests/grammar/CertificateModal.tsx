@@ -16,9 +16,10 @@ type Props = {
   level: Level;
   score: { correct: number; total: number; percent: number };
   onClose: () => void;
+  onSaved?: () => void; // called after cert is saved to DB
 };
 
-export default function CertificateModal({ level, score, onClose }: Props) {
+export default function CertificateModal({ level, score, onClose, onSaved }: Props) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,22 @@ export default function CertificateModal({ level, score, onClose }: Props) {
       const pageH = 210;
       pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
       pdf.save(`EnglishNerd_Certificate_${name.replace(/\s+/g, "_")}.pdf`);
+
+      // Save to account (silent — never blocks the download)
+      try {
+        const res = await fetch("/api/certificates/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            level,
+            scorePercent: score.percent,
+            scoreCorrect: score.correct,
+            scoreTotal: score.total,
+            holderName: name.trim(),
+          }),
+        });
+        if (res.ok) onSaved?.();
+      } catch { /* silent */ }
     } catch (e) {
       console.error(e);
     } finally {
