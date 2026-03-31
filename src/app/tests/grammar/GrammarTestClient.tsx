@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import CertificateModal from "./CertificateModal";
+import { useProgress } from "@/lib/useProgress";
 
 type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 type Topic =
@@ -167,6 +168,12 @@ export default function GrammarTestClient() {
     const percent = Math.round((correct / total) * 100);
     return { correct, answered, total, percent };
   }, [answers, questions, total]);
+
+  const { save } = useProgress();
+  useEffect(() => {
+    if (submitted) save(undefined, score.percent, score.total);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted]);
 
   const suggestedLevel: Level = useMemo(() => {
     const p = score.percent;

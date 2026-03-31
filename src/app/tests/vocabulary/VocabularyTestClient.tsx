@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 
 type Band = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -200,6 +201,12 @@ export default function VocabularyTestClient() {
     () => Object.values(selected).filter(Boolean).length,
     [selected]
   );
+
+  const { save } = useProgress();
+  useEffect(() => {
+    if (finished) save(undefined, Math.round((selectedCount / totalWords) * 100), totalWords);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
 
   const stepSelectedCount = useMemo(
     () => step.words.filter((w) => selected[w.id]).length,

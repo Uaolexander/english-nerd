@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 
 type Tense =
   | "Present Simple"
@@ -131,6 +132,12 @@ export default function TensesTestClient() {
     }
     return { correct, total, percent: Math.round((correct / total) * 100) };
   }, [answers, questions, total]);
+
+  const { save } = useProgress();
+  useEffect(() => {
+    if (submitted) save(undefined, score.percent, score.total);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted]);
 
   const tenseStats = useMemo(() => {
     return (Object.keys(TENSE_META) as Tense[]).map((tense) => {

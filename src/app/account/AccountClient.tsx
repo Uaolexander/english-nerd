@@ -107,7 +107,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [tab, setTab] = useState<Tab>("profile");
+  const [tab, setTab] = useState<Tab>("progress");
 
   // Profile
   const [name, setName] = useState(fullName);

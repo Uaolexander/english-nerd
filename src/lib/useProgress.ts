@@ -13,7 +13,7 @@ import { useCallback } from "react";
  */
 export function useProgress() {
   const save = useCallback(
-    async (exerciseNo: number, score: number, questionsTotal: number) => {
+    async (exerciseNo: number | undefined, score: number, questionsTotal: number) => {
       if (typeof window === "undefined") return;
 
       const parts = window.location.pathname.split("/").filter(Boolean);
