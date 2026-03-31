@@ -106,13 +106,11 @@ function scoreBg(score: number) {
 export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<Tab>("profile");
 
   // Profile
   const [name, setName] = useState(fullName);
-  const [editingName, setEditingName] = useState(false);
   const [avatar, setAvatar] = useState(avatarUrl);
   const [avatarPreview, setAvatarPreview] = useState(avatarUrl);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -156,21 +154,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     setProfileSaving(false);
   }
 
-  async function handleInlineNameSave() {
-    if (!name.trim()) { setEditingName(false); return; }
-    setProfileSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
-    if (!error) router.refresh();
-    setProfileSaving(false);
-    setEditingName(false);
-  }
-
-  function startEditingName() {
-    setEditingName(true);
-    setTimeout(() => nameInputRef.current?.select(), 0);
-  }
-
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault(); setSecurityMsg(null);
     if (newPassword !== confirmPassword) { setSecurityMsg({ type: "err", text: "Passwords do not match." }); return; }
@@ -207,12 +190,13 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           <span className="text-slate-600">Account</span>
         </div>
 
-        {/* ── Profile header ──────────────────────────────────────────── */}
-        <div className="flex items-center gap-5">
+        {/* ── Profile header card ─────────────────────────────────────── */}
+        <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] px-6 py-5 sm:px-7">
+          <div className="flex items-center gap-4 sm:gap-5">
 
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            <div className="h-16 w-16 overflow-hidden rounded-2xl ring-2 ring-white shadow-md sm:h-20 sm:w-20">
+            {/* Avatar */}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <div className="shrink-0 h-16 w-16 sm:h-[72px] sm:w-[72px] overflow-hidden rounded-2xl ring-2 ring-slate-100 shadow-sm">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
               ) : (
@@ -221,71 +205,35 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={avatarUploading}
-              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#F6F6F7] bg-slate-800 shadow transition hover:bg-slate-600 disabled:opacity-50"
-              aria-label="Change photo"
-            >
-              {avatarUploading
-                ? <svg className="h-2.5 w-2.5 animate-spin text-white" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              }
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-          </div>
 
-          {/* Name / email / meta */}
-          <div className="flex-1 min-w-0">
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleInlineNameSave(); if (e.key === "Escape") { setName(fullName); setEditingName(false); } }}
-                  onBlur={handleInlineNameSave}
-                  disabled={profileSaving}
-                  className="w-full max-w-[220px] rounded-xl border border-[#F5DA20] bg-white px-3 py-1.5 text-lg font-black text-slate-900 outline-none ring-2 ring-[#F5DA20]/25 shadow-sm"
-                  placeholder="Your name"
-                />
-                {profileSaving && <svg className="h-4 w-4 animate-spin text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>}
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-black text-slate-900 leading-none sm:text-2xl truncate">
+                {name.trim() || <span className="text-slate-400 font-semibold">No name yet</span>}
+              </h1>
+              <p className="mt-1 text-sm text-slate-400 truncate">{email}</p>
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+                </span>
+                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Free</span>
+                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-400">Since {memberSince(createdAt)}</span>
+                {isOAuth && <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">Google</span>}
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={startEditingName}
-                className="group flex items-center gap-2 text-left"
-                title="Click to edit name"
-              >
-                <h1 className="text-2xl font-black text-slate-900 leading-none group-hover:text-slate-700 transition">{name.trim() || "Add your name"}</h1>
-                <svg className="h-3.5 w-3.5 shrink-0 text-slate-300 group-hover:text-slate-500 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-            )}
-            <p className="mt-1 text-sm text-slate-500 truncate">{email}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
-              </span>
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Free</span>
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-slate-400">Since {memberSince(createdAt)}</span>
-              {isOAuth && <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">Google</span>}
             </div>
-          </div>
 
-          {/* Sign out */}
-          <button
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-sm transition hover:border-slate-300 hover:text-slate-700 disabled:opacity-40"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            {loggingOut ? "…" : "Sign out"}
-          </button>
+            {/* Sign out */}
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-100 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              {loggingOut ? "…" : "Sign out"}
+            </button>
+          </div>
         </div>
 
         {/* ── Tabs ──────────────────────────────────────────────────── */}

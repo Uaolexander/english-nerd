@@ -491,7 +491,10 @@ export default function Header() {
           {/* RIGHT: desktop search + CTA */}
           <div className="hidden min-[1100px]:flex items-center gap-3">
             <HeaderSearch />
-            <AuthButton className="inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90" />
+            <AuthButton
+              variant="avatar"
+              className="inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
+            />
           </div>
 
           {/* Mobile right: search + hamburger */}
