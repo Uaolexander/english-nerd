@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { searchContent } from "@/content";
@@ -249,6 +249,11 @@ export default function Header() {
     setExpandedSection(null);
     setMobileSearchOpen(false);
   }
+
+  useEffect(() => {
+    closeAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   function isActive(section: string) {
     if (section === "Grammar") return pathname.startsWith("/grammar");
