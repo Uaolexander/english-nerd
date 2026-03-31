@@ -60,7 +60,9 @@ export function useProgress() {
           body: JSON.stringify({ category, level, slug, exerciseNo, score, questionsTotal }),
         });
         if (!res.ok) return { ok: false, saved: false, isBest: false };
-        return await res.json() as SaveResult;
+        const result = await res.json() as SaveResult;
+        window.dispatchEvent(new CustomEvent("progress-saved", { detail: result }));
+        return result;
       } catch {
         // Silent — never break lesson flow
         return { ok: false, saved: false, isBest: false };

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CookieBanner from "@/components/CookieBanner";
 import SessionGuard from "@/components/SessionGuard";
+import ProgressToast from "@/components/ProgressToast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({
         <BackToTop />
         <CookieBanner />
         <SessionGuard />
+        <ProgressToast />
       </body>
     </html>
   );
