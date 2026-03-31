@@ -224,10 +224,24 @@ const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level" | "badge" | "reason"
   ],
 };
 
-function getFocusLevel(stats: ProgressStats): string {
+const LEVELS = ["a1", "a2", "b1", "b2", "c1"] as const;
+type Level = typeof LEVELS[number];
+
+const NEXT_LEVEL: Record<string, Level> = { a1: "a2", a2: "b1", b1: "b2", b2: "c1", c1: "c1" };
+
+/** Map a test score (0–100) to an approximate CEFR level */
+function scoreToLevel(score: number): Level {
+  if (score >= 90) return "c1";
+  if (score >= 75) return "b2";
+  if (score >= 60) return "b1";
+  if (score >= 40) return "a2";
+  return "a1";
+}
+
+/** Grammar focus level: first incomplete level based on exercise progress */
+function grammarFocusLevel(stats: ProgressStats): Level {
   if (stats.totalCompleted === 0) return "a1";
-  const levels = ["a1", "a2", "b1", "b2", "c1"] as const;
-  for (const lvl of levels) {
+  for (const lvl of LEVELS) {
     if ((stats.byLevel[lvl]?.completed ?? 0) < LEVEL_TOTALS[lvl]) return lvl;
   }
   return "c1";
@@ -235,63 +249,78 @@ function getFocusLevel(stats: ProgressStats): string {
 
 function getRecommendations(stats: ProgressStats): TopicRec[] {
   const recs: TopicRec[] = [];
-  const focusLevel = getFocusLevel(stats);
   const recentSlugs = new Set(stats.recentActivity.map((a) => a.slug));
   const { grammar: grammarScore, tenses: tensesScore, vocabulary: vocabScore } = stats.testResults;
 
-  // ── 1. TENSES rec: if tenses test done (especially low score) ──────────
+  // ── 1. TENSES rec ────────────────────────────────────────────────────────
+  // Level = based on tenses test score; if low → practise that level,
+  // if high (≥70%) → challenge next level up
   if (tensesScore !== undefined) {
-    const tense = TENSES_BY_LEVEL[focusLevel] ?? TENSES_BY_LEVEL.a1;
+    const baseLevel = scoreToLevel(tensesScore);
+    const targetLevel = tensesScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
+    const tense = TENSES_BY_LEVEL[targetLevel] ?? TENSES_BY_LEVEL.a2;
     recs.push({
       slug: tense.slug,
       title: tense.title,
       img: tense.img,
       href: tense.href,
-      level: focusLevel.toUpperCase(),
-      badge: `bg-violet-500`,
+      level: targetLevel.toUpperCase(),
+      badge: "bg-violet-500",
       reason: tensesScore < 70
-        ? `Your tenses test score: ${tensesScore}% — let's practise!`
-        : `Keep up your tenses streak (${tensesScore}%)`,
+        ? `Tenses test: ${tensesScore}% — let's strengthen this level`
+        : `Tenses test: ${tensesScore}% — ready for the next step!`,
     });
   }
 
-  // ── 2. VOCABULARY rec: if vocab test done ─────────────────────────────
+  // ── 2. VOCABULARY rec ────────────────────────────────────────────────────
+  // Level = based on vocab test score; if high → go deeper at same or next level
   if (vocabScore !== undefined) {
-    const vocab = VOCAB_BY_LEVEL[focusLevel] ?? VOCAB_BY_LEVEL.a1;
+    const baseLevel = scoreToLevel(vocabScore);
+    const targetLevel = vocabScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
+    const vocab = VOCAB_BY_LEVEL[targetLevel] ?? VOCAB_BY_LEVEL.a2;
     recs.push({
-      slug: `vocabulary-${focusLevel}`,
+      slug: `vocabulary-${targetLevel}`,
       title: vocab.title,
-      img: `/topics/vocabulary-${focusLevel}.jpg`,
+      img: `/topics/vocabulary-${targetLevel}.jpg`,
       href: vocab.href,
-      level: focusLevel.toUpperCase(),
-      badge: `bg-emerald-500`,
+      level: targetLevel.toUpperCase(),
+      badge: "bg-emerald-500",
       reason: vocabScore < 70
-        ? `Vocabulary test: ${vocabScore}% — build your word bank!`
-        : `Great vocab result (${vocabScore}%) — go deeper`,
+        ? `Vocabulary test: ${vocabScore}% — build your word bank here`
+        : `Vocabulary test: ${vocabScore}% — explore this level next`,
     });
   }
 
-  // ── 3. GRAMMAR recs: fill remaining slots (up to 3 total) ─────────────
-  // If grammar test done and score is low, note it on the first grammar rec
-  const grammarNote = grammarScore !== undefined && grammarScore < 70
-    ? `Grammar test: ${grammarScore}% — focus here`
-    : grammarScore !== undefined
-    ? `Based on your grammar test (${grammarScore}%)`
-    : undefined;
+  // ── 3. GRAMMAR recs: fill remaining slots (up to 3 total) ────────────────
+  // If grammar test taken → use its score to pick level; else use exercise progress
+  let grammarLevel: Level;
+  let grammarReason: string | undefined;
 
-  const topics = GRAMMAR_TOPICS[focusLevel] ?? [];
+  if (grammarScore !== undefined) {
+    const baseLevel = scoreToLevel(grammarScore);
+    grammarLevel = grammarScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
+    grammarReason = grammarScore < 70
+      ? `Grammar test: ${grammarScore}% — focus on this level`
+      : `Grammar test: ${grammarScore}% — challenge yourself here`;
+  } else {
+    grammarLevel = grammarFocusLevel(stats);
+    grammarReason = undefined;
+  }
+
+  const topics = GRAMMAR_TOPICS[grammarLevel] ?? [];
   const pool = topics.filter((t) => !recentSlugs.has(t.slug));
   const source = pool.length > 0 ? pool : topics;
+  let isFirstGrammar = true;
 
   for (const t of source) {
     if (recs.length >= 3) break;
-    const isFirst = recs.length === (tensesScore !== undefined ? 1 : 0) + (vocabScore !== undefined ? 1 : 0);
     recs.push({
       ...t,
-      level: focusLevel.toUpperCase(),
-      badge: LEVEL_COLORS[focusLevel]?.badge ?? "bg-slate-500",
-      reason: isFirst && grammarNote ? grammarNote : undefined,
+      level: grammarLevel.toUpperCase(),
+      badge: LEVEL_COLORS[grammarLevel]?.badge ?? "bg-slate-500",
+      reason: isFirstGrammar ? grammarReason : undefined,
     });
+    isFirstGrammar = false;
   }
 
   return recs.slice(0, 3);
@@ -821,23 +850,24 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   href={rec.href}
                   className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:shadow-md hover:-translate-y-0.5"
                 >
-                  <div className="relative h-24 w-full overflow-hidden bg-slate-100">
+                  <div className="relative h-36 w-full overflow-hidden bg-slate-100">
                     <img
                       src={rec.img}
                       alt={rec.title}
                       className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
-                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow ${rec.badge}`}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>
                       {rec.level}
                     </span>
                   </div>
-                  <div className="px-3.5 py-3">
-                    <p className="text-xs font-bold leading-snug text-slate-800 group-hover:text-slate-900 transition">
+                  <div className="px-4 py-3.5">
+                    <p className="text-sm font-bold leading-snug text-slate-800 group-hover:text-slate-900 transition">
                       {rec.title}
                     </p>
                     {rec.reason && (
-                      <p className="mt-1 text-[10px] leading-snug text-amber-600 font-semibold">
+                      <p className="mt-1.5 text-[11px] leading-snug text-amber-600 font-semibold">
                         {rec.reason}
                       </p>
                     )}
