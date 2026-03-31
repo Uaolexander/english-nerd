@@ -389,9 +389,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   async function handleResetProgress() {
     setResetting(true);
     await fetch("/api/progress/reset", { method: "POST" });
-    setResetting(false);
-    setResetConfirm(false);
-    router.refresh();
+    window.location.reload();
   }
 
   const userInitials = initials(name, email);
