@@ -20,6 +20,7 @@ export type ProgressStats = {
     completed_at: string;
   }>;
   byLevel: Record<string, { completed: number; avgScore: number }>;
+  testResults: { grammar?: number; tenses?: number; vocabulary?: number };
 };
 
 type Props = {
@@ -89,11 +90,31 @@ const LEVEL_COLORS: Record<string, { bar: string; text: string; bg: string; badg
   c1: { bar: "bg-rose-500",    text: "text-rose-700",    bg: "bg-rose-50",    badge: "bg-rose-500"    },
 };
 
-// ── Grammar topic catalog (for recommendations) ────────────────────────────
+// ── Catalogs for recommendations ──────────────────────────────────────────
 
-type TopicRec = { slug: string; title: string; img: string; href: string; level: string };
+type TopicRec = {
+  slug: string; title: string; img: string; href: string;
+  level: string; badge: string; reason?: string;
+};
 
-const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level">[]> = {
+// Level → best-fit tense recommendation
+const TENSES_BY_LEVEL: Record<string, { slug: string; title: string; img: string; href: string }> = {
+  a1: { slug: "present-simple",    title: "Present Simple",    img: "/topics/tenses/present-simple.jpg",    href: "/tenses/present-simple" },
+  a2: { slug: "past-simple",       title: "Past Simple",       img: "/topics/tenses/past-simple.jpg",       href: "/tenses/past-simple" },
+  b1: { slug: "present-perfect",   title: "Present Perfect",   img: "/topics/tenses/present-perfect.jpg",   href: "/tenses/present-perfect" },
+  b2: { slug: "past-perfect",      title: "Past Perfect",      img: "/topics/tenses/past-perfect.jpg",      href: "/tenses/past-perfect" },
+  c1: { slug: "future-perfect",    title: "Future Perfect",    img: "/topics/tenses/future-perfect.jpg",    href: "/tenses/future-perfect" },
+};
+
+const VOCAB_BY_LEVEL: Record<string, { href: string; title: string }> = {
+  a1: { href: "/vocabulary/a1", title: "A1 Vocabulary" },
+  a2: { href: "/vocabulary/a2", title: "A2 Vocabulary" },
+  b1: { href: "/vocabulary/b1", title: "B1 Vocabulary" },
+  b2: { href: "/vocabulary/b2", title: "B2 Vocabulary" },
+  c1: { href: "/vocabulary/c1", title: "C1 Vocabulary" },
+};
+
+const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level" | "badge" | "reason">[]> = {
   a1: [
     { slug: "to-be-am-is-are",              title: "To Be: am / is / are",        img: "/topics/a1/to-be-am-is-are.jpg",                href: "/grammar/a1/to-be-am-is-are" },
     { slug: "present-simple-i-you-we-they", title: "Present Simple I/You/We",     img: "/topics/a1/present-simple-i-you-we-they.jpg",   href: "/grammar/a1/present-simple-i-you-we-they" },
@@ -203,24 +224,77 @@ const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level">[]> = {
   ],
 };
 
-function getRecommendations(stats: ProgressStats): TopicRec[] {
-  const recentSlugs = new Set(stats.recentActivity.map((a) => a.slug));
+function getFocusLevel(stats: ProgressStats): string {
+  if (stats.totalCompleted === 0) return "a1";
   const levels = ["a1", "a2", "b1", "b2", "c1"] as const;
+  for (const lvl of levels) {
+    if ((stats.byLevel[lvl]?.completed ?? 0) < LEVEL_TOTALS[lvl]) return lvl;
+  }
+  return "c1";
+}
 
-  // Find focus level: first with incomplete exercises
-  let focusLevel: string = "a1";
-  if (stats.totalCompleted > 0) {
-    for (const lvl of levels) {
-      const done = stats.byLevel[lvl]?.completed ?? 0;
-      if (done < LEVEL_TOTALS[lvl]) { focusLevel = lvl; break; }
-    }
+function getRecommendations(stats: ProgressStats): TopicRec[] {
+  const recs: TopicRec[] = [];
+  const focusLevel = getFocusLevel(stats);
+  const recentSlugs = new Set(stats.recentActivity.map((a) => a.slug));
+  const { grammar: grammarScore, tenses: tensesScore, vocabulary: vocabScore } = stats.testResults;
+
+  // ── 1. TENSES rec: if tenses test done (especially low score) ──────────
+  if (tensesScore !== undefined) {
+    const tense = TENSES_BY_LEVEL[focusLevel] ?? TENSES_BY_LEVEL.a1;
+    recs.push({
+      slug: tense.slug,
+      title: tense.title,
+      img: tense.img,
+      href: tense.href,
+      level: focusLevel.toUpperCase(),
+      badge: `bg-violet-500`,
+      reason: tensesScore < 70
+        ? `Your tenses test score: ${tensesScore}% — let's practise!`
+        : `Keep up your tenses streak (${tensesScore}%)`,
+    });
   }
 
+  // ── 2. VOCABULARY rec: if vocab test done ─────────────────────────────
+  if (vocabScore !== undefined) {
+    const vocab = VOCAB_BY_LEVEL[focusLevel] ?? VOCAB_BY_LEVEL.a1;
+    recs.push({
+      slug: `vocabulary-${focusLevel}`,
+      title: vocab.title,
+      img: `/topics/vocabulary-${focusLevel}.jpg`,
+      href: vocab.href,
+      level: focusLevel.toUpperCase(),
+      badge: `bg-emerald-500`,
+      reason: vocabScore < 70
+        ? `Vocabulary test: ${vocabScore}% — build your word bank!`
+        : `Great vocab result (${vocabScore}%) — go deeper`,
+    });
+  }
+
+  // ── 3. GRAMMAR recs: fill remaining slots (up to 3 total) ─────────────
+  // If grammar test done and score is low, note it on the first grammar rec
+  const grammarNote = grammarScore !== undefined && grammarScore < 70
+    ? `Grammar test: ${grammarScore}% — focus here`
+    : grammarScore !== undefined
+    ? `Based on your grammar test (${grammarScore}%)`
+    : undefined;
+
   const topics = GRAMMAR_TOPICS[focusLevel] ?? [];
-  const notDone = topics.filter((t) => !recentSlugs.has(t.slug));
-  // Fallback: if all recently done, just take first 2 from the level
-  const pool = notDone.length >= 2 ? notDone : topics;
-  return pool.slice(0, 2).map((t) => ({ ...t, level: focusLevel }));
+  const pool = topics.filter((t) => !recentSlugs.has(t.slug));
+  const source = pool.length > 0 ? pool : topics;
+
+  for (const t of source) {
+    if (recs.length >= 3) break;
+    const isFirst = recs.length === (tensesScore !== undefined ? 1 : 0) + (vocabScore !== undefined ? 1 : 0);
+    recs.push({
+      ...t,
+      level: focusLevel.toUpperCase(),
+      badge: LEVEL_COLORS[focusLevel]?.badge ?? "bg-slate-500",
+      reason: isFirst && grammarNote ? grammarNote : undefined,
+    });
+  }
+
+  return recs.slice(0, 3);
 }
 
 function scoreColor(score: number) {
@@ -261,6 +335,10 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   // Logout
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Reset progress
+  const [resetConfirm, setResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -308,6 +386,14 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     router.refresh();
   }
 
+  async function handleResetProgress() {
+    setResetting(true);
+    await fetch("/api/progress/reset", { method: "POST" });
+    setResetting(false);
+    setResetConfirm(false);
+    router.refresh();
+  }
+
   const userInitials = initials(name, email);
   const isOAuth = provider !== "email";
 
@@ -316,6 +402,40 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const recs = getRecommendations(stats);
 
   return (
+    <>
+    {/* ── Reset confirmation modal ─────────────────────────────────────── */}
+    {resetConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setResetConfirm(false)} />
+        <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+            <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h2 className="text-lg font-black text-slate-900">Reset all progress?</h2>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            This will permanently delete all your completed exercises, scores, and statistics. <span className="font-semibold text-slate-700">This action cannot be undone.</span>
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              onClick={() => setResetConfirm(false)}
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleResetProgress}
+              disabled={resetting}
+              className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:opacity-50"
+            >
+              {resetting ? "Resetting…" : "Yes, reset"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <main className="min-h-screen bg-[#F6F6F7]">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
@@ -581,6 +701,19 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                     </div>
                   </div>
                 )}
+
+                {/* ── Reset progress ── */}
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => setResetConfirm(true)}
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.51"/>
+                    </svg>
+                    Reset all progress
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -684,34 +817,35 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           <aside className="hidden xl:block">
             <div className="sticky top-24 space-y-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
-              {recs.map((rec) => {
-                const colors = LEVEL_COLORS[rec.level] ?? LEVEL_COLORS.a1;
-                return (
-                  <a
-                    key={rec.slug}
-                    href={rec.href}
-                    className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:shadow-md hover:-translate-y-0.5"
-                  >
-                    <div className="relative h-28 w-full overflow-hidden bg-slate-100">
-                      <img
-                        src={rec.img}
-                        alt={rec.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
-                      <span className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow ${colors.badge}`}>
-                        {rec.level.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="px-3.5 py-3">
-                      <p className="text-xs font-bold leading-snug text-slate-800 group-hover:text-slate-900 transition">
-                        {rec.title}
+              {recs.map((rec) => (
+                <a
+                  key={rec.slug}
+                  href={rec.href}
+                  className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:shadow-md hover:-translate-y-0.5"
+                >
+                  <div className="relative h-24 w-full overflow-hidden bg-slate-100">
+                    <img
+                      src={rec.img}
+                      alt={rec.title}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white shadow ${rec.badge}`}>
+                      {rec.level}
+                    </span>
+                  </div>
+                  <div className="px-3.5 py-3">
+                    <p className="text-xs font-bold leading-snug text-slate-800 group-hover:text-slate-900 transition">
+                      {rec.title}
+                    </p>
+                    {rec.reason && (
+                      <p className="mt-1 text-[10px] leading-snug text-amber-600 font-semibold">
+                        {rec.reason}
                       </p>
-                      <p className="mt-1 text-[10px] text-slate-400">Grammar · 4 exercises</p>
-                    </div>
-                  </a>
-                );
-              })}
+                    )}
+                  </div>
+                </a>
+              ))}
               <a
                 href="/grammar"
                 className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
@@ -727,5 +861,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         </div>
       </div>
     </main>
+    </>
   );
 }

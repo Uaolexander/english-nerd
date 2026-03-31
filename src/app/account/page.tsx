@@ -63,12 +63,22 @@ export default async function AccountPage() {
     };
   }
 
+  // Most recent score per test type (progress is ordered DESC so first = most recent)
+  const testResults: ProgressStats["testResults"] = {};
+  for (const r of progress) {
+    if (r.category === "test") {
+      const key = r.slug as "grammar" | "tenses" | "vocabulary";
+      if (!(key in testResults)) testResults[key] = r.score;
+    }
+  }
+
   const stats: ProgressStats = {
     totalCompleted,
     avgScore,
     topicsMastered,
     recentActivity,
     byLevel,
+    testResults,
   };
 
   return (
