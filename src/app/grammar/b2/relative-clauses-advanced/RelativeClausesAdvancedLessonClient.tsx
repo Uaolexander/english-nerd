@@ -1,0 +1,307 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
+type InputQ = { id: string; prompt: string; correct: string; explanation: string };
+type ExerciseSet =
+  | { type: "mcq"; title: string; instructions: string; questions: MCQ[] }
+  | { type: "input"; title: string; instructions: string; questions: InputQ[] };
+
+function normalize(s: string) { return s.trim().toLowerCase(); }
+
+export default function RelativeClausesAdvancedLessonClient() {
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
+  const [checked, setChecked] = useState(false);
+  const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
+  const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+
+  const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
+    1: {
+      type: "mcq",
+      title: "Exercise 1 (Easy) — who / whom / which / whose / where",
+      instructions: "Choose the correct relative pronoun. Remember: whom = object form (formal); whose = possession; where = place.",
+      questions: [
+        { id: "e1q1", prompt: "The woman ___ I spoke to was very helpful.", options: ["who", "whom", "whose"], correctIndex: 1, explanation: "whom = object of the verb (I spoke to her → to whom). Formal English." },
+        { id: "e1q2", prompt: "The company ___ offices are in Berlin was bought by a US firm.", options: ["which", "whose", "where"], correctIndex: 1, explanation: "whose = possessive (the company's offices)." },
+        { id: "e1q3", prompt: "This is the hotel ___ we stayed last summer.", options: ["which", "that", "where"], correctIndex: 2, explanation: "where = place (we stayed in the hotel → where we stayed)." },
+        { id: "e1q4", prompt: "The report ___ was published yesterday has caused controversy.", options: ["who", "which", "whom"], correctIndex: 1, explanation: "which = subject of the relative clause (the report was published)." },
+        { id: "e1q5", prompt: "She's the only person ___ opinion I really trust.", options: ["who", "whom", "whose"], correctIndex: 2, explanation: "whose = possessive (her opinion → whose opinion)." },
+        { id: "e1q6", prompt: "The scientist ___ won the prize gave an inspiring speech.", options: ["whom", "whose", "who"], correctIndex: 2, explanation: "who = subject of the verb (the scientist won)." },
+        { id: "e1q7", prompt: "The city ___ I was born has changed dramatically.", options: ["where", "which", "whose"], correctIndex: 0, explanation: "where = place of birth." },
+        { id: "e1q8", prompt: "The candidate ___ application was rejected appealed the decision.", options: ["who", "whose", "whom"], correctIndex: 1, explanation: "whose = possessive (the candidate's application)." },
+        { id: "e1q9", prompt: "The book ___ she recommended was out of stock.", options: ["who", "whom", "which"], correctIndex: 2, explanation: "which = object of the verb (she recommended the book)." },
+        { id: "e1q10", prompt: "He's someone ___ I've always looked up to.", options: ["which", "whom", "whose"], correctIndex: 1, explanation: "whom = object of phrasal verb (I've looked up to him → whom I've looked up to)." },
+      ],
+    },
+    2: {
+      type: "mcq",
+      title: "Exercise 2 (Medium) — Defining vs non-defining relative clauses",
+      instructions: "Choose defining (no commas — identifies the noun) or non-defining (with commas — adds extra info). Select the correctly punctuated sentence.",
+      questions: [
+        { id: "e2q1", prompt: "Which sentence is correct? (There is only one Eiffel Tower — the clause adds extra info.)", options: ["The Eiffel Tower which is in Paris was built in 1889.", "The Eiffel Tower, which is in Paris, was built in 1889."], correctIndex: 1, explanation: "Non-defining clause: The Eiffel Tower is unique — commas are required." },
+        { id: "e2q2", prompt: "Which sentence is correct? (Many students exist — the clause identifies which ones.)", options: ["Students who study regularly tend to do better.", "Students, who study regularly, tend to do better."], correctIndex: 0, explanation: "Defining clause: identifies which students — no commas." },
+        { id: "e2q3", prompt: "In a non-defining relative clause, can you use 'that'?", options: ["Yes, always", "No, never", "Only in informal speech"], correctIndex: 1, explanation: "Non-defining clauses NEVER use 'that' — only who/which/whose/where/when." },
+        { id: "e2q4", prompt: "Which is the correct non-defining version? (My sister is a doctor — extra info about her.)", options: ["My sister who is a doctor lives in London.", "My sister, who is a doctor, lives in London."], correctIndex: 1, explanation: "Non-defining: adds extra info about my sister (I have one sister). Commas required." },
+        { id: "e2q5", prompt: "In a defining clause, can you omit the relative pronoun if it is the object?", options: ["No, never", "Yes, always", "Yes — when it is the object of the verb"], correctIndex: 2, explanation: "Contact clauses: 'The book (that) I read was great.' Object pronouns can be omitted in defining clauses." },
+        { id: "e2q6", prompt: "The sentence 'This is the reason why I left' — can 'why' be replaced?", options: ["No", "Yes — with 'that' or omit it entirely", "Yes — with 'which'"], correctIndex: 1, explanation: "The reason why / the reason that / the reason I left — all correct in defining clauses." },
+        { id: "e2q7", prompt: "Which relative pronoun links to the whole previous clause? e.g. 'He passed the exam, ___ surprised everyone.'", options: ["that", "which", "who"], correctIndex: 1, explanation: "'which' in a non-defining clause can refer to the entire previous clause." },
+        { id: "e2q8", prompt: "Choose the correct defining clause: (Many artists exist — the clause identifies which ones.)", options: ["Artists, who became famous after death, are often underrated.", "Artists who became famous after death are often underrated."], correctIndex: 1, explanation: "Defining: no commas — identifies a specific group of artists." },
+        { id: "e2q9", prompt: "Sentence: 'The day ___ we first met was rainy.' Best choice?", options: ["which", "when", "that"], correctIndex: 1, explanation: "when = time reference in a relative clause (the day when = on which day)." },
+        { id: "e2q10", prompt: "'She lied to me, ___ I found unacceptable.' Best relative pronoun?", options: ["that", "who", "which"], correctIndex: 2, explanation: "which = refers to the whole clause 'she lied to me'. Non-defining." },
+      ],
+    },
+    3: {
+      type: "mcq",
+      title: "Exercise 3 (Harder) — Prepositions + whom/which and reduced relative clauses",
+      instructions: "Choose the correct formal structure. Focus on preposition placement and reduced (participle) relative clauses.",
+      questions: [
+        { id: "e3q1", prompt: "The manager ___ I reported the problem had already left. (formal)", options: ["who I reported the problem to", "to whom I reported the problem", "whom I reported the problem"], correctIndex: 1, explanation: "Formal: preposition before whom. Informal: who … to." },
+        { id: "e3q2", prompt: "The conference ___ she presented her research was in Vienna.", options: ["at which", "in which", "on which"], correctIndex: 0, explanation: "at a conference = at which (preposition must match)." },
+        { id: "e3q3", prompt: "'The man sitting in the corner is my boss.' The reduced clause replaces:", options: ["who sits", "who is sitting", "who sat"], correctIndex: 1, explanation: "sitting = reduced present relative clause (= who is sitting — current action)." },
+        { id: "e3q4", prompt: "'The letter written by the CEO caused a scandal.' The reduced clause means:", options: ["that was written", "that wrote", "that had been writing"], correctIndex: 0, explanation: "Past participle (written) = reduced passive relative (= that was written)." },
+        { id: "e3q5", prompt: "The law ___ this case falls has not been updated for 20 years.", options: ["under which", "which under", "in which"], correctIndex: 0, explanation: "'under this law' → under which (formal fronted preposition)." },
+        { id: "e3q6", prompt: "'Anyone ___ wants to join should register by Friday.'", options: ["whom", "whose", "who"], correctIndex: 2, explanation: "who = subject of the defining relative clause." },
+        { id: "e3q7", prompt: "Reduce: 'The students who had finished the exam left early.'", options: ["The students finishing the exam left early.", "The students having finished the exam left early.", "The students finished the exam left early."], correctIndex: 1, explanation: "having + pp = reduced perfect relative clause (completed before leaving)." },
+        { id: "e3q8", prompt: "The company ___ I worked for twenty years has just gone bankrupt.", options: ["that", "for which", "which for"], correctIndex: 1, explanation: "'I worked for the company' → for which (formal) or that/which + for (informal)." },
+        { id: "e3q9", prompt: "'Most of ___ applicants were rejected.' Best quantifying relative structure?", options: ["which the", "whom the", "the"], correctIndex: 0, explanation: "most of which = quantifying relative clause referring to things (applicants = countable things in formal)." },
+        { id: "e3q10", prompt: "He gave a long speech, most of ___ was irrelevant.", options: ["that", "which", "whom"], correctIndex: 1, explanation: "most of which = quantifying non-defining relative referring to the speech." },
+      ],
+    },
+    4: {
+      type: "input",
+      title: "Exercise 4 (Hardest) — Rewrite using a relative clause",
+      instructions: "Combine the two sentences using an appropriate relative clause. Write the complete combined sentence (lowercase, no full stop needed).",
+      questions: [
+        { id: "e4q1", prompt: "I met a man. His wife is a famous architect.", correct: "i met a man whose wife is a famous architect", explanation: "whose = possessive relative pronoun." },
+        { id: "e4q2", prompt: "The report has been published. It caused a lot of controversy.", correct: "the report, which caused a lot of controversy, has been published", explanation: "Non-defining: commas + which (the report is specific/unique in context)." },
+        { id: "e4q3", prompt: "She works for a company. The company was founded in 1902.", correct: "she works for a company that was founded in 1902", explanation: "Defining relative clause: that/which was founded." },
+        { id: "e4q4", prompt: "I spoke to a professor. I had read all of her books. (formal, object)", correct: "i spoke to a professor all of whose books i had read", explanation: "all of whose = quantifying relative with whose (formal)." },
+        { id: "e4q5", prompt: "We visited the village. My grandfather was born there.", correct: "we visited the village where my grandfather was born", explanation: "where = place in a relative clause." },
+        { id: "e4q6", prompt: "The woman is a doctor. She is standing over there. (reduce the clause)", correct: "the woman standing over there is a doctor", explanation: "Reduced present participle clause: standing = who is standing." },
+        { id: "e4q7", prompt: "The documents were signed by the CEO. They are now public. (formal, preposition)", correct: "the documents signed by the ceo are now public", explanation: "Reduced past participle: signed by = that were signed by." },
+        { id: "e4q8", prompt: "He recommended a book. I found the book fascinating.", correct: "he recommended a book which i found fascinating", explanation: "Object relative clause: which (that) I found. Pronoun can be omitted too." },
+        { id: "e4q9", prompt: "She told me something. I found it hard to believe. (use which)", correct: "she told me something which i found hard to believe", explanation: "which refers to the thing she told me (object of found)." },
+        { id: "e4q10", prompt: "There were fifty candidates. Only five of them were shortlisted. (use of whom)", correct: "there were fifty candidates, only five of whom were shortlisted", explanation: "Quantifying non-defining clause: only five of whom = of the fifty candidates." },
+      ],
+    },
+  }), []);
+
+  const current = sets[exNo];
+
+  const score = useMemo(() => {
+    if (!checked) return null;
+    let correct = 0;
+    const total = current.questions.length;
+    if (current.type === "mcq") {
+      for (const q of current.questions) { if (mcqAnswers[q.id] === q.correctIndex) correct++; }
+    } else {
+      for (const q of current.questions) {
+        const a = normalize(inputAnswers[q.id] ?? "");
+        if (a && a === normalize(q.correct)) correct++;
+      }
+    }
+    return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
+  }, [checked, current, mcqAnswers, inputAnswers]);
+
+  function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
+
+  return (
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/grammar/b2">Grammar B2</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Relative Clauses: Advanced</span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Relative Clauses:{" "}
+          <span className="whitespace-nowrap rounded-xl bg-[#F5DA20] px-3 py-0.5">Advanced</span>
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-black text-orange-700 border border-orange-200">B2</span>
+      </div>
+
+      <p className="mt-3 max-w-3xl text-slate-700">
+        At B2 level, relative clauses involve <b>formal preposition + whom/which</b> (<i>the person to whom I spoke</i>), <b>non-defining clauses</b> with commas, <b>quantifying relatives</b> (<i>most of which</i>), and <b>reduced clauses</b> using participles (<i>the man sitting there</i>).
+      </p>
+
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+        <aside className="hidden lg:block">
+          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
+            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
+            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+          </div>
+        </aside>
+
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
+              Exercises:
+              {([1, 2, 3, 4] as const).map((n) => (
+                <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-6 md:p-8">
+            {tab === "exercises" ? (
+              <>
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-2xl font-black text-slate-900">{current.title}</h2>
+                  <p className="text-slate-700">{current.instructions}</p>
+                  <div className="mt-2 flex sm:hidden items-center gap-2 text-sm text-slate-600">
+                    <span>Exercises:</span>
+                    {([1, 2, 3, 4] as const).map((n) => (
+                      <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-8 space-y-5">
+                  {current.type === "mcq" ? current.questions.map((q, idx) => {
+                    const chosen = mcqAnswers[q.id] ?? null;
+                    const isCorrect = checked && chosen === q.correctIndex;
+                    const isWrong = checked && chosen !== null && chosen !== q.correctIndex;
+                    const noAnswer = checked && chosen === null;
+                    return (
+                      <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/5 text-sm font-black text-slate-700">{idx + 1}</div>
+                          <div className="flex-1">
+                            <div className="font-bold text-slate-900">{q.prompt}</div>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                              {q.options.map((opt, oi) => (
+                                <label key={oi} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 transition ${chosen === oi ? "border-[#F5DA20] bg-[#F5DA20]/20" : "border-black/10 bg-white hover:bg-black/5"} ${checked ? "cursor-default" : ""}`}>
+                                  <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => setMcqAnswers((p) => ({ ...p, [q.id]: oi }))} />
+                                  <span className="text-slate-900">{opt}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {checked && (
+                              <div className="mt-3 text-sm">
+                                {isCorrect && <div className="text-emerald-700 font-semibold">✅ Correct</div>}
+                                {isWrong && <div className="text-red-700 font-semibold">❌ Wrong</div>}
+                                {noAnswer && <div className="text-amber-700 font-semibold">⚠ No answer</div>}
+                                <div className="mt-2 text-slate-700"><b className="text-slate-900">Correct:</b> {q.options[q.correctIndex]} — {q.explanation}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }) : current.questions.map((q, idx) => {
+                    const val = inputAnswers[q.id] ?? "";
+                    const answered = normalize(val) !== "";
+                    const isCorrect = checked && answered && normalize(val) === normalize(q.correct);
+                    const wrong = checked && answered && !isCorrect;
+                    const noAnswer = checked && !answered;
+                    return (
+                      <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/5 text-sm font-black text-slate-700">{idx + 1}</div>
+                          <div className="flex-1">
+                            <div className="font-bold text-slate-900">{q.prompt}</div>
+                            <div className="mt-3">
+                              <input value={val} disabled={checked} onChange={(e) => setInputAnswers((p) => ({ ...p, [q.id]: e.target.value }))} placeholder="Type here…" className="w-full max-w-lg rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
+                            </div>
+                            {checked && (
+                              <div className="mt-3 text-sm">
+                                {isCorrect && <div className="text-emerald-700 font-semibold">✅ Correct</div>}
+                                {wrong && <div className="text-red-700 font-semibold">❌ Wrong</div>}
+                                {noAnswer && <div className="text-amber-700 font-semibold">⚠ No answer</div>}
+                                <div className="mt-2 text-slate-700"><b className="text-slate-900">Correct:</b> {q.correct} — {q.explanation}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-8 space-y-4">
+                  <div className="flex flex-wrap gap-3 items-center">
+                    {!checked ? (
+                      <button onClick={() => { setChecked(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
+                    ) : (
+                      <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
+                    )}
+                    {checked && exNo < 4 && (
+                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
+                    )}
+                  </div>
+                  {score && (
+                    <div className={`rounded-2xl border p-4 ${score.percent >= 80 ? "border-emerald-200 bg-emerald-50" : score.percent >= 50 ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50"}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className={`text-3xl font-black ${score.percent >= 80 ? "text-emerald-700" : score.percent >= 50 ? "text-amber-700" : "text-red-700"}`}>{score.percent}%</div>
+                          <div className="mt-0.5 text-sm text-slate-600">{score.correct} out of {score.total} correct</div>
+                        </div>
+                        <div className="text-3xl">{score.percent >= 80 ? "🎉" : score.percent >= 50 ? "💪" : "📖"}</div>
+                      </div>
+                      <div className="mt-3 h-2 w-full rounded-full bg-black/10 overflow-hidden">
+                        <div className={`h-2 rounded-full transition-all duration-500 ${score.percent >= 80 ? "bg-emerald-500" : score.percent >= 50 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${score.percent}%` }} />
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">{score.percent >= 80 ? "Excellent! You can move to the next exercise." : score.percent >= 50 ? "Good effort! Try once more to improve your score." : "Keep practising — review the Explanation tab and try again."}</div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : <Explanation />}
+          </div>
+        </section>
+
+        <aside className="hidden lg:block">
+          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
+            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
+            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+          </div>
+        </aside>
+      </div>
+
+      <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
+        <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>
+        <a href="/grammar/b2/participle-clauses" className="flex items-center gap-2 rounded-2xl bg-[#F5DA20] px-5 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Next: Participle Clauses →</a>
+      </div>
+    </div>
+  );
+}
+
+function Explanation() {
+  return (
+    <div className="prose max-w-none prose-slate">
+      <h2>Relative Clauses: Advanced (B2)</h2>
+      <div className="not-prose mt-4 space-y-3">
+        {[
+          { label: "who / that", note: "Subject of the clause (people)", ex: "The man who called was my uncle." },
+          { label: "whom", note: "Object form (formal — people)", ex: "The person to whom I spoke was very helpful." },
+          { label: "whose", note: "Possessive (people & things)", ex: "A company whose profits fell by 30%." },
+          { label: "which", note: "Things and clauses (also non-defining)", ex: "The report, which was published yesterday, caused a stir." },
+          { label: "where / when / why", note: "Place / time / reason", ex: "The year when it happened. The reason why she left." },
+          { label: "Preposition + which/whom", note: "Formal structure", ex: "The committee on which she sits. The colleague with whom I work." },
+          { label: "Quantifying relatives", note: "most/some/none/all + of which/whom", ex: "There were 20 candidates, none of whom had experience." },
+          { label: "Reduced relative clauses", note: "-ing (active) / -ed (passive) / having + pp (perfect)", ex: "The woman sitting there. The letter written by him. Having finished, she left." },
+        ].map(({ label, note, ex }) => (
+          <div key={label} className="rounded-2xl border border-black/10 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="font-black text-orange-700 text-sm">{label}</span>
+              <span className="text-xs text-slate-500">— {note}</span>
+            </div>
+            <div className="italic text-slate-700 text-sm">{ex}</div>
+          </div>
+        ))}
+      </div>
+      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
+        <div className="text-sm text-slate-800 space-y-1">
+          <div><span className="font-black">Defining vs Non-defining:</span> Defining = no commas, identifies the noun. Non-defining = commas, adds extra info.</div>
+          <div>Non-defining clauses <span className="font-black">never</span> use <i>that</i>.</div>
+        </div>
+      </div>
+    </div>
+  );
+}

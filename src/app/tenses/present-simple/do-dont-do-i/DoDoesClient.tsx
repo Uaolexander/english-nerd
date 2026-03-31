@@ -1,0 +1,691 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+/* ─── Types ─────────────────────────────────────────────────────────────── */
+
+type MCQ = {
+  id: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
+type ExSet = {
+  no: 1 | 2 | 3 | 4;
+  title: string;
+  instructions: string;
+  questions: MCQ[];
+};
+
+/* ─── Question data ─────────────────────────────────────────────────────── */
+
+const SETS: Record<1 | 2 | 3 | 4, ExSet> = {
+  1: {
+    no: 1,
+    title: "Exercise 1 — Questions: choose Do or Does",
+    instructions:
+      "To form a yes/no question in Present Simple, use Do with I / you / we / they and Does with he / she / it (and singular nouns). The main verb always stays in its base form.",
+    questions: [
+      { id: "1-1",  prompt: "___ she like jazz?",                      options: ["Do", "Does", "Is", "Are"],  correctIndex: 1, explanation: "She → Does: Does she like jazz?" },
+      { id: "1-2",  prompt: "___ they live near here?",                options: ["Does", "Do", "Is", "Are"],  correctIndex: 1, explanation: "They → Do: Do they live near here?" },
+      { id: "1-3",  prompt: "___ he play football?",                   options: ["Do", "Does", "Is", "Are"],  correctIndex: 1, explanation: "He → Does: Does he play football?" },
+      { id: "1-4",  prompt: "___ you speak French?",                   options: ["Does", "Do", "Is", "Are"],  correctIndex: 1, explanation: "You → Do: Do you speak French?" },
+      { id: "1-5",  prompt: "___ your parents work in the city?",      options: ["Does", "Is", "Do", "Are"],  correctIndex: 2, explanation: "Your parents (= they) → Do: Do your parents work in the city?" },
+      { id: "1-6",  prompt: "___ it rain a lot here?",                 options: ["Do", "Does", "Is", "Are"],  correctIndex: 1, explanation: "It → Does: Does it rain a lot here?" },
+      { id: "1-7",  prompt: "___ we need to bring anything?",          options: ["Does", "Is", "Are", "Do"],  correctIndex: 3, explanation: "We → Do: Do we need to bring anything?" },
+      { id: "1-8",  prompt: "___ the train leave at 8?",               options: ["Do", "Are", "Does", "Is"],  correctIndex: 2, explanation: "The train (= it) → Does: Does the train leave at 8?" },
+      { id: "1-9",  prompt: "___ I need a ticket?",                    options: ["Does", "Is", "Are", "Do"],  correctIndex: 3, explanation: "I → Do: Do I need a ticket?" },
+      { id: "1-10", prompt: "___ she know the answer?",                options: ["Do", "Does", "Is", "Are"],  correctIndex: 1, explanation: "She → Does: Does she know the answer?" },
+    ],
+  },
+  2: {
+    no: 2,
+    title: "Exercise 2 — Negatives: choose don't or doesn't",
+    instructions:
+      "To make a negative in Present Simple, use don't (do not) with I / you / we / they, and doesn't (does not) with he / she / it. The main verb always stays in its base form after don't / doesn't.",
+    questions: [
+      { id: "2-1",  prompt: "She ___ like spicy food.",               options: ["don't", "doesn't", "isn't", "aren't"], correctIndex: 1, explanation: "She → doesn't: She doesn't like spicy food." },
+      { id: "2-2",  prompt: "I ___ eat breakfast every morning.",     options: ["doesn't", "isn't", "don't", "aren't"], correctIndex: 2, explanation: "I → don't: I don't eat breakfast every morning." },
+      { id: "2-3",  prompt: "They ___ live near here.",               options: ["doesn't", "don't", "aren't", "isn't"], correctIndex: 1, explanation: "They → don't: They don't live near here." },
+      { id: "2-4",  prompt: "He ___ watch TV much.",                  options: ["don't", "doesn't", "isn't", "aren't"], correctIndex: 1, explanation: "He → doesn't: He doesn't watch TV much." },
+      { id: "2-5",  prompt: "We ___ have a car.",                     options: ["doesn't", "isn't", "aren't", "don't"], correctIndex: 3, explanation: "We → don't: We don't have a car." },
+      { id: "2-6",  prompt: "My dog ___ eat vegetables.",             options: ["don't", "doesn't", "isn't", "aren't"], correctIndex: 1, explanation: "My dog (= it) → doesn't: My dog doesn't eat vegetables." },
+      { id: "2-7",  prompt: "You ___ need to worry.",                 options: ["doesn't", "isn't", "aren't", "don't"], correctIndex: 3, explanation: "You → don't: You don't need to worry." },
+      { id: "2-8",  prompt: "It ___ snow here in summer.",            options: ["don't", "isn't", "aren't", "doesn't"], correctIndex: 3, explanation: "It → doesn't: It doesn't snow here in summer." },
+      { id: "2-9",  prompt: "She ___ know the answer.",               options: ["doesn't", "don't", "isn't", "aren't"], correctIndex: 0, explanation: "She → doesn't: She doesn't know the answer." },
+      { id: "2-10", prompt: "My parents ___ speak English.",          options: ["doesn't", "don't", "isn't", "aren't"], correctIndex: 1, explanation: "My parents (= they) → don't: My parents don't speak English." },
+    ],
+  },
+  3: {
+    no: 3,
+    title: "Exercise 3 — Short answers + base form after do / does",
+    instructions:
+      "Short answers use do / does / don't / doesn't — never repeat the main verb. After doesn't or does, the main verb always stays in its base form: she doesn't drink (NOT drinks), does he play (NOT plays).",
+    questions: [
+      { id: "3-1", prompt: '"Do you study English?" — "Yes, ___."',         options: ["I do", "I does", "I am", "I study"],       correctIndex: 0, explanation: "Short positive answer with Do: Yes, I do." },
+      { id: "3-2", prompt: '"Does she like jazz?" — "No, ___."',            options: ["she don't", "she isn't", "she doesn't", "she no"], correctIndex: 2, explanation: "Short negative answer with Does: No, she doesn't." },
+      { id: "3-3", prompt: '"Do they live here?" — "No, ___."',             options: ["they doesn't", "they aren't", "they don't", "they no"], correctIndex: 2, explanation: "Short negative answer with Do: No, they don't." },
+      { id: "3-4", prompt: '"Does he work here?" — "Yes, ___."',            options: ["he do", "he does", "he is", "he works"],    correctIndex: 1, explanation: "Short positive answer with Does: Yes, he does." },
+      { id: "3-5", prompt: "She doesn't ___ coffee.",                       options: ["drink", "drinks", "drinking", "drank"],     correctIndex: 0, explanation: "After doesn't, the verb stays in base form: drink." },
+      { id: "3-6", prompt: "Does he ___ the guitar?",                       options: ["play", "plays", "playing", "played"],       correctIndex: 0, explanation: "After Does, the verb stays in base form: play." },
+      { id: "3-7", prompt: "They don't ___ on weekends.",                   options: ["work", "works", "working", "worked"],       correctIndex: 0, explanation: "After don't, the verb stays in base form: work." },
+      { id: "3-8", prompt: "Does she ___ French?",                          options: ["speak", "speaks", "speaking", "spoke"],     correctIndex: 0, explanation: "After Does, the verb stays in base form: speak." },
+      { id: "3-9", prompt: "Do they ___ near here?",                        options: ["live", "lives", "living", "lived"],          correctIndex: 0, explanation: "After Do, the verb stays in base form: live." },
+      { id: "3-10", prompt: "He doesn't ___ early.",                        options: ["wake", "wakes", "waking", "woke"],           correctIndex: 0, explanation: "After doesn't, the verb stays in base form: wake." },
+    ],
+  },
+  4: {
+    no: 4,
+    title: "Exercise 4 — Mixed: questions, negatives, short answers",
+    instructions:
+      "This exercise mixes all three patterns. For each item, decide whether you need Do/Does for a question, don't/doesn't for a negative, a short answer, or a base form verb. Remember: do/does is NOT used with the verb to be.",
+    questions: [
+      { id: "4-1",  prompt: "___ your sister work in the city?",             options: ["Do", "Is", "Does", "Are"],                correctIndex: 2, explanation: "Your sister (= she) → Does: Does your sister work in the city?" },
+      { id: "4-2",  prompt: "I ___ understand this grammar rule.",           options: ["doesn't", "isn't", "don't", "no"],         correctIndex: 2, explanation: "I → don't: I don't understand this grammar rule." },
+      { id: "4-3",  prompt: '"Does Tom play chess?" — "Yes, ___."',          options: ["he do", "he is", "he plays", "he does"],   correctIndex: 3, explanation: "Short positive answer with Does: Yes, he does." },
+      { id: "4-4",  prompt: "My cat ___ like loud noises.",                  options: ["don't", "isn't", "aren't", "doesn't"],     correctIndex: 3, explanation: "My cat (= it) → doesn't: My cat doesn't like loud noises." },
+      { id: "4-5",  prompt: "___ you and your family eat together every day?", options: ["Does", "Is", "Are", "Do"],               correctIndex: 3, explanation: "You and your family (= we/they) → Do: Do you and your family eat together every day?" },
+      { id: "4-6",  prompt: '"Is she tired?" — which is CORRECT?',           options: ["Do she tired?", "Does she tired?", "Is she tired?", "Does she is tired?"], correctIndex: 2, explanation: "With the verb to be, use is/are/am — NOT do/does." },
+      { id: "4-7",  prompt: "He ___ go to the gym regularly.",               options: ["don't", "doesn't", "isn't", "aren't"],     correctIndex: 1, explanation: "He → doesn't: He doesn't go to the gym regularly." },
+      { id: "4-8",  prompt: "___ it take long to get there?",                options: ["Do", "Is", "Are", "Does"],                 correctIndex: 3, explanation: "It → Does: Does it take long to get there?" },
+      { id: "4-9",  prompt: '"Do they speak Spanish?" — "No, ___."',         options: ["they doesn't", "they aren't", "they don't", "they no"], correctIndex: 2, explanation: "Short negative answer with Do: No, they don't." },
+      { id: "4-10", prompt: "We ___ usually stay up late.",                  options: ["doesn't", "isn't", "aren't", "don't"],     correctIndex: 3, explanation: "We → don't: We don't usually stay up late." },
+    ],
+  },
+};
+
+const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
+  1: "Questions",
+  2: "Negatives",
+  3: "Short Ans.",
+  4: "Mixed",
+};
+
+/* ─── Helper components ─────────────────────────────────────────────────── */
+
+function Formula({ parts }: { parts: Array<{ text: string; color?: string; dim?: boolean }> }) {
+  const colors: Record<string, string> = {
+    sky:    "bg-sky-100 text-sky-800 border-sky-200",
+    yellow: "bg-[#FFF3A3] text-amber-800 border-amber-300",
+    red:    "bg-red-100 text-red-800 border-red-200",
+    violet: "bg-violet-100 text-violet-800 border-violet-200",
+    slate:  "bg-slate-100 text-slate-600 border-slate-200",
+    green:  "bg-emerald-100 text-emerald-800 border-emerald-200",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {parts.map((p, i) =>
+        p.dim ? (
+          <span key={i} className="text-slate-400 font-bold text-sm">+</span>
+        ) : (
+          <span key={i} className={`rounded-lg px-2.5 py-1 text-xs font-black border ${p.color ? colors[p.color] : colors.slate}`}>
+            {p.text}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Ex({ en }: { en: string }) {
+  return (
+    <div className="rounded-xl bg-white border border-black/8 px-3 py-2.5">
+      <div className="font-semibold text-slate-900 text-sm">{en}</div>
+    </div>
+  );
+}
+
+/* ─── Main component ─────────────────────────────────────────────────────── */
+
+export default function DoDoesClient() {
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
+  const [checked, setChecked] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, number | null>>({});
+
+  const current = SETS[exNo];
+
+  const score = useMemo(() => {
+    if (!checked) return null;
+    let correct = 0;
+    for (const q of current.questions) {
+      if (answers[q.id] === q.correctIndex) correct++;
+    }
+    const total = current.questions.length;
+    return { correct, total, percent: Math.round((correct / total) * 100) };
+  }, [checked, current, answers]);
+
+  function reset() {
+    setChecked(false);
+    setAnswers({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function switchSet(n: 1 | 2 | 3 | 4) {
+    setExNo(n);
+    setChecked(false);
+    setAnswers({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function checkAnswers() {
+    setChecked(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  return (
+    <div className="min-h-screen bg-white text-slate-900">
+      <div className="mx-auto max-w-7xl px-6 py-10">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-slate-500 flex-wrap">
+          <a className="hover:text-slate-900 transition" href="/">Home</a>
+          <span className="text-slate-300">/</span>
+          <a className="hover:text-slate-900 transition" href="/tenses">Tenses</a>
+          <span className="text-slate-300">/</span>
+          <a className="hover:text-slate-900 transition" href="/tenses/present-simple">Present Simple</a>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-700 font-medium">do / does</span>
+        </div>
+
+        {/* Title */}
+        <div className="mt-4 flex flex-wrap items-start gap-3">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+            Present Simple{" "}
+            <span className="whitespace-nowrap rounded-xl bg-[#F5DA20] px-3 py-0.5">do / does</span>
+          </h1>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-700 border border-sky-200">Easy</span>
+            <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700 border border-emerald-200">A1</span>
+          </div>
+        </div>
+
+        <p className="mt-3 max-w-3xl text-slate-700">
+          Practice <b>do</b>, <b>does</b>, <b>don&apos;t</b> and <b>doesn&apos;t</b> in Present Simple with 40 multiple choice questions across four sets: questions, negatives, short answers, and a mixed review.
+        </p>
+
+        {/* Three-column grid */}
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+
+          {/* Left ad */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
+              <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
+              <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
+                300 × 600
+              </div>
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+            {/* Tab bar */}
+            <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+              <button
+                onClick={() => { setTab("exercises"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}
+              >
+                Exercises
+              </button>
+              <button
+                onClick={() => { setTab("explanation"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}
+              >
+                Explanation
+              </button>
+              <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
+                <span className="text-slate-400 text-xs">Set:</span>
+                {([1, 2, 3, 4] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => switchSet(n)}
+                    title={SET_LABELS[n]}
+                    className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8">
+              {tab === "exercises" ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <h2 className="text-xl font-black text-slate-900">{current.title}</h2>
+                    <p className="text-slate-600 text-sm leading-relaxed">{current.instructions}</p>
+
+                    {/* Mobile set switcher */}
+                    <div className="mt-3 flex sm:hidden items-center gap-2 text-sm text-slate-600">
+                      <span className="text-slate-400 text-xs">Set:</span>
+                      {([1, 2, 3, 4] as const).map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => switchSet(n)}
+                          className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Questions */}
+                  <div className="mt-8 space-y-5">
+                    {current.questions.map((q, idx) => {
+                      const chosen = answers[q.id] ?? null;
+                      const isCorrect = checked && chosen === q.correctIndex;
+                      const isWrong = checked && chosen !== null && chosen !== q.correctIndex;
+                      const noAnswer = checked && chosen === null;
+
+                      return (
+                        <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/5 text-sm font-black text-slate-700">
+                              {idx + 1}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-bold text-slate-900">{q.prompt}</div>
+                              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                {q.options.map((opt, oi) => (
+                                  <label
+                                    key={oi}
+                                    className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 transition ${
+                                      chosen === oi
+                                        ? "border-[#F5DA20] bg-[#F5DA20]/20"
+                                        : "border-black/10 bg-white hover:bg-black/5"
+                                    } ${checked ? "cursor-default" : ""}`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={q.id}
+                                      disabled={checked}
+                                      checked={chosen === oi}
+                                      onChange={() =>
+                                        setAnswers((p) => ({ ...p, [q.id]: oi }))
+                                      }
+                                      className="accent-[#F5DA20]"
+                                    />
+                                    <span className="text-sm text-slate-900">{opt}</span>
+                                  </label>
+                                ))}
+                              </div>
+                              {checked && (
+                                <div className="mt-3 text-sm">
+                                  {isCorrect && (
+                                    <div className="text-emerald-700 font-semibold">✅ Correct</div>
+                                  )}
+                                  {isWrong && (
+                                    <div className="text-red-700 font-semibold">❌ Wrong</div>
+                                  )}
+                                  {noAnswer && (
+                                    <div className="text-amber-700 font-semibold">⚠ No answer</div>
+                                  )}
+                                  <div className="mt-1.5 text-slate-600">
+                                    <b className="text-slate-900">Correct answer:</b>{" "}
+                                    {q.options[q.correctIndex]} —{" "}
+                                    {q.explanation}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mt-8 space-y-4">
+                    <div className="flex flex-wrap gap-3 items-center">
+                      {!checked ? (
+                        <button
+                          onClick={checkAnswers}
+                          className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
+                        >
+                          Check Answers
+                        </button>
+                      ) : (
+                        <button
+                          onClick={reset}
+                          className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition"
+                        >
+                          Try Again
+                        </button>
+                      )}
+                      {checked && exNo < 4 && (
+                        <button
+                          onClick={() => switchSet((exNo + 1) as 1 | 2 | 3 | 4)}
+                          className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition"
+                        >
+                          Next Exercise →
+                        </button>
+                      )}
+                    </div>
+
+                    {score && (
+                      <div
+                        className={`rounded-2xl border p-4 ${
+                          score.percent >= 80
+                            ? "border-emerald-200 bg-emerald-50"
+                            : score.percent >= 50
+                            ? "border-amber-200 bg-amber-50"
+                            : "border-red-200 bg-red-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div
+                              className={`text-3xl font-black ${
+                                score.percent >= 80
+                                  ? "text-emerald-700"
+                                  : score.percent >= 50
+                                  ? "text-amber-700"
+                                  : "text-red-700"
+                              }`}
+                            >
+                              {score.percent}%
+                            </div>
+                            <div className="mt-0.5 text-sm text-slate-600">
+                              {score.correct} out of {score.total} correct
+                            </div>
+                          </div>
+                          <div className="text-3xl">
+                            {score.percent >= 80 ? "🎉" : score.percent >= 50 ? "💪" : "📖"}
+                          </div>
+                        </div>
+                        <div className="mt-3 h-2 w-full rounded-full bg-black/10 overflow-hidden">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                              score.percent >= 80
+                                ? "bg-emerald-500"
+                                : score.percent >= 50
+                                ? "bg-amber-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{ width: `${score.percent}%` }}
+                          />
+                        </div>
+                        <div className="mt-2 text-xs text-slate-500">
+                          {score.percent >= 80
+                            ? "Excellent! Move on to the next exercise."
+                            : score.percent >= 50
+                            ? "Good effort! Review the wrong answers and try once more."
+                            : "Keep practising — check the Explanation tab and try again."}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <Explanation />
+              )}
+            </div>
+          </section>
+
+          {/* Right ad */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
+              <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
+              <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
+                300 × 600
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* Mobile ad */}
+        <div className="mt-8 lg:hidden rounded-2xl border border-black/10 bg-white/60 p-4">
+          <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
+          <div className="mt-3 h-[90px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
+            320 × 90
+          </div>
+        </div>
+
+        {/* Bottom nav */}
+        <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
+          <a
+            href="/tenses/present-simple/to-be"
+            className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition"
+          >
+            ← am / is / are
+          </a>
+          <a
+            href="/tenses/present-simple/ps-vs-pc"
+            className="flex items-center gap-2 rounded-2xl bg-[#F5DA20] px-5 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
+          >
+            Next: Simple vs Continuous →
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Explanation tab ─────────────────────────────────────────────────────── */
+
+function Explanation() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">do / does / don&apos;t / doesn&apos;t — Key Rules</h2>
+        <p className="text-slate-500 text-sm">Three patterns — questions, negatives, and short answers. Learn the formula, then practise.</p>
+      </div>
+
+      {/* 3 gradient cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Question card */}
+        <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">❓</span>
+            <span className="text-sm font-black text-sky-700 uppercase tracking-widest">Question</span>
+          </div>
+          <Formula parts={[
+            { text: "Do / Does", color: "violet" }, { dim: true, text: "+" },
+            { text: "subject", color: "sky" }, { dim: true, text: "+" },
+            { text: "verb (base)", color: "yellow" }, { dim: true, text: "+" },
+            { text: "?", color: "slate" },
+          ]} />
+          <div className="mt-3 space-y-2">
+            <Ex en="Do you work here?" />
+            <Ex en="Does she like coffee?" />
+            <Ex en="Do they play football?" />
+          </div>
+        </div>
+
+        {/* Negative card */}
+        <div className="rounded-2xl border-2 border-red-200 bg-gradient-to-b from-red-50 to-white p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">❌</span>
+            <span className="text-sm font-black text-red-600 uppercase tracking-widest">Negative</span>
+          </div>
+          <Formula parts={[
+            { text: "Subject", color: "sky" }, { dim: true, text: "+" },
+            { text: "don't / doesn't", color: "red" }, { dim: true, text: "+" },
+            { text: "verb (base)", color: "yellow" }, { dim: true, text: "+" },
+            { text: ".", color: "slate" },
+          ]} />
+          <div className="mt-3 space-y-2">
+            <Ex en="I don't eat meat." />
+            <Ex en="She doesn't work here." />
+            <Ex en="They don't have a car." />
+          </div>
+        </div>
+
+        {/* Short answers card */}
+        <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">💬</span>
+            <span className="text-sm font-black text-emerald-700 uppercase tracking-widest">Short Answers</span>
+          </div>
+          <Formula parts={[
+            { text: "Yes / No", color: "slate" }, { dim: true, text: "+" },
+            { text: "subject", color: "sky" }, { dim: true, text: "+" },
+            { text: "do/does/don't/doesn't", color: "green" },
+          ]} />
+          <div className="mt-3 space-y-2">
+            <Ex en="Yes, I do. / No, I don't." />
+            <Ex en="Yes, she does. / No, she doesn't." />
+            <Ex en="Yes, they do. / No, they don't." />
+          </div>
+        </div>
+      </div>
+
+      {/* Full conjugation table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F5DA20] text-sm font-black">!</span>
+          <h3 className="font-black text-slate-900">Do / Does — full table</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left font-black text-slate-500 pb-2 pr-4">Subject</th>
+                <th className="text-left font-black text-sky-600 pb-2 pr-4">❓ Question</th>
+                <th className="text-left font-black text-red-500 pb-2">❌ Negative</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {[
+                { subj: "I",          q: "Do I work?",       neg: "I don't work.",       highlight: false },
+                { subj: "You",        q: "Do you work?",     neg: "You don't work.",     highlight: false },
+                { subj: "We",         q: "Do we work?",      neg: "We don't work.",      highlight: false },
+                { subj: "They",       q: "Do they work?",    neg: "They don't work.",    highlight: false },
+                { subj: "He / She",   q: "Does he work?",    neg: "He doesn't work.",    highlight: true  },
+                { subj: "It",         q: "Does it work?",    neg: "It doesn't work.",    highlight: true  },
+              ].map(({ subj, q, neg, highlight }) => (
+                <tr key={subj} className={highlight ? "bg-amber-50" : ""}>
+                  <td className={`py-2 pr-4 font-black ${highlight ? "text-amber-700" : "text-slate-700"}`}>{subj}</td>
+                  <td className={`py-2 pr-4 font-mono text-sm ${highlight ? "text-sky-700 font-black" : "text-slate-600"}`}>{q}</td>
+                  <td className={`py-2 font-mono text-sm ${highlight ? "text-red-600 font-black" : "text-slate-600"}`}>{neg}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          <b>⚠ He / She / It rows are highlighted</b> — these use <b>Does / doesn&apos;t</b> instead of Do / don&apos;t.
+        </div>
+      </div>
+
+      {/* Amber warning — base form */}
+      <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">⚠</span>
+          <h3 className="font-black text-amber-800">After doesn&apos;t / does — verb ALWAYS stays in BASE FORM!</h3>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+            <div className="text-xs font-black text-emerald-700 uppercase tracking-wide mb-1">Correct ✅</div>
+            <div className="font-mono text-sm text-slate-800">She doesn&apos;t <b>work</b>.</div>
+            <div className="font-mono text-sm text-slate-800">Does he <b>go</b> to school?</div>
+            <div className="font-mono text-sm text-slate-800">They don&apos;t <b>play</b>.</div>
+          </div>
+          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+            <div className="text-xs font-black text-red-600 uppercase tracking-wide mb-1">Wrong ❌</div>
+            <div className="font-mono text-sm text-slate-500 line-through opacity-60">She doesn&apos;t works.</div>
+            <div className="font-mono text-sm text-slate-500 line-through opacity-60">Does he goes to school?</div>
+            <div className="font-mono text-sm text-slate-500 line-through opacity-60">They don&apos;t plays.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Short answers table */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-100 text-sm">💬</span>
+          <h3 className="font-black text-slate-900">Short answers</h3>
+        </div>
+        <p className="text-sm text-slate-600 mb-3">Never repeat the main verb — use do / does / don&apos;t / doesn&apos;t only:</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/10">
+                <th className="text-left font-black text-slate-500 pb-2 pr-4">Question</th>
+                <th className="text-left font-black text-emerald-600 pb-2 pr-4">Yes answer</th>
+                <th className="text-left font-black text-red-500 pb-2">No answer</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {[
+                { q: "Do you work?",       yes: "Yes, I do.",        no: "No, I don't." },
+                { q: "Do they live here?", yes: "Yes, they do.",     no: "No, they don't." },
+                { q: "Does she like jazz?",yes: "Yes, she does.",    no: "No, she doesn't." },
+                { q: "Does he play?",      yes: "Yes, he does.",     no: "No, he doesn't." },
+                { q: "Does it work?",      yes: "Yes, it does.",     no: "No, it doesn't." },
+              ].map(({ q, yes, no }) => (
+                <tr key={q}>
+                  <td className="py-2 pr-4 font-mono text-slate-700">{q}</td>
+                  <td className="py-2 pr-4 font-semibold text-emerald-700">{yes}</td>
+                  <td className="py-2 font-semibold text-red-600">{no}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Key rule: do/does NOT used with to be */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 text-sm">📌</span>
+          <h3 className="font-black text-slate-900">Key rule: do / does is NOT used with the verb to be</h3>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">The verb <b>to be</b> (am / is / are) forms its own questions and negatives — it never uses do / does.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <div className="text-xs font-black text-emerald-700 uppercase tracking-wide mb-2">Correct ✅</div>
+            <div className="space-y-2">
+              <Ex en="Is she tired?" />
+              <Ex en="He isn't at home." />
+              <Ex en="Are they ready?" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-black text-red-600 uppercase tracking-wide mb-2">Wrong ❌</div>
+            <div className="space-y-2">
+              <div className="rounded-xl bg-white border border-black/8 px-3 py-2.5 opacity-50">
+                <div className="font-semibold text-slate-900 text-sm line-through">Does she is tired?</div>
+              </div>
+              <div className="rounded-xl bg-white border border-black/8 px-3 py-2.5 opacity-50">
+                <div className="font-semibold text-slate-900 text-sm line-through">He doesn&apos;t is at home.</div>
+              </div>
+              <div className="rounded-xl bg-white border border-black/8 px-3 py-2.5 opacity-50">
+                <div className="font-semibold text-slate-900 text-sm line-through">Do they are ready?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Time expressions */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-yellow-100 text-sm">🕐</span>
+          <h3 className="font-black text-slate-900">Common time expressions with Present Simple</h3>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">These words and phrases often appear in sentences using do / does / don&apos;t / doesn&apos;t:</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            "always", "usually", "often", "sometimes", "rarely", "never",
+            "every day", "every week", "every morning", "on Mondays",
+            "at the weekend", "in the morning", "once a week", "twice a month",
+          ].map((expr) => (
+            <span key={expr} className="rounded-lg px-3 py-1.5 text-xs font-black border bg-sky-50 text-sky-800 border-sky-200">
+              {expr}
+            </span>
+          ))}
+        </div>
+        <div className="mt-4 space-y-2">
+          <Ex en="Do you always eat breakfast?" />
+          <Ex en="She usually doesn't work on Sundays." />
+          <Ex en="Does he ever play tennis?" />
+        </div>
+      </div>
+    </div>
+  );
+}
