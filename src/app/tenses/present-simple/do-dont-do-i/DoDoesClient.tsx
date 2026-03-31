@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -146,6 +147,15 @@ export default function DoDoesClient() {
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
 
   const current = SETS[exNo];
+
+  const { save } = useProgress();
+
+  useEffect(() => {
+    if (checked && score) {
+      save(exNo, score.percent, score.total);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
 
   const score = useMemo(() => {
     if (!checked) return null;

@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 
 type MCQ = {
   id: string;
@@ -330,6 +331,15 @@ export default function ArticlesLessonClient() {
   const page3Ref = useRef<HTMLDivElement>(null);
 
   const current = sets[exNo];
+
+  const { save } = useProgress();
+
+  useEffect(() => {
+    if (checked && score) {
+      save(exNo, score.percent, score.total);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
 
   const score = useMemo(() => {
     if (!checked) return null;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -182,6 +183,15 @@ export default function SpotTheMistakeClient() {
     reset();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  const { save } = useProgress();
+
+  useEffect(() => {
+    if (checked && score) {
+      save(exNo, score.percent, score.total);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
 
   const score = useMemo(() => {
     if (!allChecked) return null;

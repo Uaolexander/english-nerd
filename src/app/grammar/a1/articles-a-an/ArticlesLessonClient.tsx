@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useProgress } from "@/lib/useProgress";
 import LessonBottomNav from "@/components/LessonBottomNav";
 
 type MCQ = {
@@ -336,6 +337,15 @@ export default function ArticlesLessonClient() {
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
   const current = sets[exNo];
+
+  const { save } = useProgress();
+
+  useEffect(() => {
+    if (checked && score) {
+      save(exNo, score.percent, score.total);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
 
   const score = useMemo(() => {
     if (!checked) return null;
