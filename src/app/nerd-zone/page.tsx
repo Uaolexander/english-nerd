@@ -265,7 +265,7 @@ export default function NerdZonePage() {
         </div>
 
         {/* ── Section cards — mobile: carousel | desktop: grid ─────── */}
-        <div className="mt-6 flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-5">
+        <div className="mt-6 flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-4">
           {SECTIONS.map((s) => (
             <div key={s.slug} className="snap-start">
               <SectionCard s={s} />
