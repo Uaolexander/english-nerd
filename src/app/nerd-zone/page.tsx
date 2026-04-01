@@ -139,6 +139,8 @@ const SECTIONS = [
 function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
   return (
     <article className="group relative w-[180px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40 sm:w-full sm:shrink">
+      <a href={`/nerd-zone/${s.slug}`} className="absolute inset-0 z-10" aria-label={s.title} />
+
       {/* Image */}
       <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-white/10 bg-black/30">
         <ImageWithFallback
@@ -155,23 +157,18 @@ function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
       </div>
 
       {/* Content */}
-      <div className="p-3">
+      <div className="flex flex-1 flex-col p-3">
         <h3 className="text-base font-black leading-snug text-white sm:text-lg">{s.title}</h3>
         <p className="mt-1.5 text-xs leading-relaxed text-white/55 line-clamp-2 sm:text-[13px]">
           {s.description}
         </p>
 
-        <div className="mt-4">
-          <a href={`/nerd-zone/${s.slug}`} className="absolute inset-0 z-10" aria-label={s.title} />
-          <p className="relative z-20 mb-2.5 text-[11px] font-medium text-white/35">
-            {s.count}
-          </p>
-          <button
-            className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
-            type="button"
-          >
-            Explore
-          </button>
+        {/* Footer */}
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-[11px] font-medium text-white/35">{s.count}</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition group-hover:border-[#F5DA20]/40 group-hover:bg-[#F5DA20]/10 group-hover:text-[#F5DA20]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
         </div>
       </div>
     </article>
