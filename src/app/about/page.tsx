@@ -31,7 +31,7 @@ export default function AboutPage() {
           <div className="shrink-0">
             <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-3xl border-2 border-[#F5DA20]/25 shadow-2xl shadow-black/40">
               <ImageWithFallback
-                src="/oleksandr.jpg"
+                src="/oleksandr.JPG"
                 alt="Oleksandr Vdovychenko"
                 className="h-full w-full object-cover"
               />
