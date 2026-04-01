@@ -2,27 +2,25 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Returns whether the given user currently has Pro access.
- * Source of truth: the most recent row in public.subscriptions.
- * Falls back to false if no subscription record exists.
+ * Checks for ANY row where is_pro = true — safe against multiple
+ * webhook events creating multiple rows for the same subscription.
  */
 export async function getIsPro(
   supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data: sub, error } = await supabase
+  const { data, error } = await supabase
     .from("subscriptions")
-    .select("is_pro, status, user_id, customer_email, created_at")
+    .select("id")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .eq("is_pro", true)
     .limit(1)
     .maybeSingle();
 
-  console.log("[getIsPro] userId:", userId);
-  console.log("[getIsPro] query error:", error);
-  console.log("[getIsPro] latest subscription row:", sub);
+  if (error) {
+    console.error("[getIsPro] query error:", error);
+    return false;
+  }
 
-  const isPro = sub?.is_pro === true;
-  console.log("[getIsPro] isPro:", isPro);
-
-  return isPro;
+  return data !== null;
 }
