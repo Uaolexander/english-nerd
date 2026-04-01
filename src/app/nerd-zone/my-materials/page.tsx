@@ -70,7 +70,7 @@ export default function MyMaterialsPage() {
         <div className="absolute top-1/2 -right-40 h-[400px] w-[400px] rounded-full bg-violet-500/4 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12">
 
         {/* Breadcrumb */}
         <nav className="text-sm text-white/50">
