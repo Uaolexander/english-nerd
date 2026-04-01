@@ -83,7 +83,10 @@ export default async function AccountPage() {
   };
 
   // Pro status — source of truth is subscriptions table
+  console.log("[account/page] user.id:", user.id);
+  console.log("[account/page] user.email:", user.email);
   const isPro = await getIsPro(supabase, user.id);
+  console.log("[account/page] isPro result:", isPro);
 
   // Fetch certificates
   const { data: certRows } = await supabase
