@@ -17,8 +17,7 @@ export default function TurnstileWidget({ onToken, widgetRef }: TurnstileWidgetP
       onSuccess={onToken}
       onExpire={() => onToken("")}
       options={{
-        size: "invisible",
-        execution: "render",
+        appearance: "interaction-only",
       }}
     />
   );
