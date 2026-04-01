@@ -89,10 +89,9 @@ export default function LoginClient() {
       return;
     }
 
-    // Token not ready yet — trigger the widget and wait for onSuccess
+    // Token not ready yet — wait for Turnstile onSuccess, then doLogin fires automatically
     setLoading(true);
     pendingLoginRef.current = true;
-    widgetRef.current?.execute();
   }
 
   return (

@@ -20,7 +20,6 @@ export default function TurnstileWidget({ onToken, onError, widgetRef }: Turnsti
       onError={onError}
       options={{
         appearance: "interaction-only",
-        execution: "execute",
       }}
     />
   );
