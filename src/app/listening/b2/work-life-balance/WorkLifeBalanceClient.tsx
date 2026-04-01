@@ -100,69 +100,71 @@ export default function WorkLifeBalanceClient() {
     percent >= 60 ? "ok" : "low";
 
   return (
-    <main className="relative min-h-screen bg-[#0E0F13] text-white">
+    <main className="min-h-screen bg-[#FAFAFA]">
 
-      {/* Background glows */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[#F5DA20]/12 blur-[150px]" />
-        <div className="absolute top-1/2 -left-40 h-[400px] w-[400px] rounded-full bg-[#F5DA20]/6 blur-[160px]" />
-        <div className="absolute inset-x-0 bottom-0 h-[300px] bg-gradient-to-t from-[#0B0B0D] to-transparent" />
+      {/* Hero band */}
+      <div className="bg-white border-b border-slate-100">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1.5 text-xs text-slate-400">
+            {[["Home", "/"], ["Listening", "/listening"], ["B2", "/listening/b2"]].map(([label, href]) => (
+              <span key={href} className="flex items-center gap-1.5">
+                <a href={href} className="hover:text-slate-700 transition">{label}</a>
+                <svg className="h-3 w-3 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              </span>
+            ))}
+            <span className="text-slate-700 font-medium">Work-Life Balance</span>
+          </nav>
+
+          {/* Title row */}
+          <div className="mt-5">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="rounded-full bg-orange-400 px-3 py-0.5 text-[11px] font-black text-black">B2</span>
+              <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Dialogue</span>
+              <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">~4 min</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.05]">
+              Work-Life{" "}
+              <span className="relative inline-block">
+                Balance
+                <span aria-hidden className="absolute -bottom-1 left-0 h-[5px] w-full rounded-full bg-[#F5DA20]/70" />
+              </span>
+            </h1>
+            <p className="mt-3 max-w-xl text-[15px] text-slate-500 leading-relaxed">
+              Daniel talks about burnout, toxic work culture, and how changing jobs gave him his life back.
+              Watch the video, then test your comprehension.
+            </p>
+          </div>
+
+          {/* How-to steps */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            {[
+              { n: "1", label: "Watch the video", sub: "once, without pausing" },
+              { n: "2", label: "Answer 10 questions", sub: "True or False" },
+              { n: "3", label: "Check your answers", sub: "then read the transcript" },
+            ].map(({ n, label, sub }) => (
+              <div key={n} className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] text-xs font-black text-black shadow-sm">{n}</div>
+                <div>
+                  <div className="text-sm font-bold text-slate-800">{label}</div>
+                  <div className="text-xs text-slate-400">{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-10">
-
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-white/40">
-          {[["Home", "/"], ["Listening", "/listening"], ["B2", "/listening/b2"]].map(([label, href]) => (
-            <span key={href} className="flex items-center gap-1.5">
-              <a href={href} className="hover:text-white transition">{label}</a>
-              <svg className="h-3 w-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
-            </span>
-          ))}
-          <span className="text-white/70 font-medium">Work-Life Balance</span>
-        </nav>
-
-        {/* Hero */}
-        <div className="mt-7">
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="rounded-full bg-orange-400 px-3 py-0.5 text-[11px] font-black text-black">B2</span>
-            <span className="rounded-full border border-white/15 px-3 py-0.5 text-[11px] font-semibold text-white/40">Dialogue</span>
-            <span className="rounded-full border border-white/15 px-3 py-0.5 text-[11px] font-semibold text-white/40">~4 min</span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
-            Work-Life <span className="text-[#F5DA20]">Balance</span>
-          </h1>
-          <p className="mt-3 max-w-xl text-[15px] text-white/45 leading-relaxed">
-            Daniel talks about burnout, toxic work culture, and how changing jobs gave him his life back.
-            Watch the video, then test your comprehension.
-          </p>
-        </div>
-
-        {/* How-to steps */}
-        <div className="mt-7 flex flex-wrap gap-3">
-          {[
-            { n: "1", label: "Watch the video", sub: "once, without pausing" },
-            { n: "2", label: "Answer 10 questions", sub: "True or False" },
-            { n: "3", label: "Check your answers", sub: "then read the transcript" },
-          ].map(({ n, label, sub }) => (
-            <div key={n} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] text-xs font-black text-black">{n}</div>
-              <div>
-                <div className="text-sm font-bold text-white/85">{label}</div>
-                <div className="text-xs text-white/30">{sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 3-col grid */}
-        <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      {/* Body */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+        <div className="grid gap-8 lg:grid-cols-[240px_1fr_240px]">
 
           {/* Left ad */}
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/20">Advertisement</p>
-              <div className="flex h-[600px] items-center justify-center rounded-2xl border border-white/8 bg-white/3 text-xs text-white/15">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
+              <div className="flex h-[600px] items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xs text-slate-300">
                 300 × 600
               </div>
             </div>
@@ -172,7 +174,7 @@ export default function WorkLifeBalanceClient() {
           <div className="min-w-0 space-y-5">
 
             {/* Video */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)]">
               <div className="relative aspect-video bg-black">
                 <iframe
                   src="https://www.youtube.com/embed/VONZpE3eghQ"
@@ -184,70 +186,71 @@ export default function WorkLifeBalanceClient() {
               </div>
             </div>
 
-            {/* Scroll anchor — sits above score panel */}
+            {/* Scroll anchor */}
             <div ref={questionsTopRef} />
 
             {/* Score panel */}
             {checked && percent !== null && (
               <div className={`flex items-center gap-5 rounded-2xl border px-6 py-5 ${
-                grade === "great" ? "border-emerald-500/30 bg-emerald-500/10" :
-                grade === "ok"   ? "border-amber-400/30 bg-amber-400/10" :
-                                   "border-red-500/30 bg-red-500/10"
+                grade === "great" ? "border-emerald-200 bg-emerald-50" :
+                grade === "ok"   ? "border-amber-200 bg-amber-50" :
+                                   "border-red-200 bg-red-50"
               }`}>
-                <div className={`text-5xl font-black tabular-nums ${
-                  grade === "great" ? "text-emerald-400" :
-                  grade === "ok"   ? "text-amber-400" :
-                                     "text-red-400"
+                <div className={`text-5xl font-black tabular-nums leading-none ${
+                  grade === "great" ? "text-emerald-600" :
+                  grade === "ok"   ? "text-amber-600" :
+                                     "text-red-600"
                 }`}>
                   {percent}<span className="text-2xl">%</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-white/70">
+                  <div className="text-sm font-semibold text-slate-700">
                     {correctCount} out of {QUESTIONS.length} correct
                   </div>
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                  <div className="mt-2.5 h-2 w-full rounded-full bg-black/8 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        grade === "great" ? "bg-emerald-400" :
+                        grade === "great" ? "bg-emerald-500" :
                         grade === "ok"   ? "bg-amber-400" :
-                                           "bg-red-400"
+                                           "bg-red-500"
                       }`}
                       style={{ width: `${percent}%` }}
                     />
                   </div>
-                  <p className="mt-2 text-xs text-white/35">
+                  <p className="mt-2 text-xs text-slate-500">
                     {grade === "great" ? "Excellent comprehension — you're ready for the next level." :
                      grade === "ok"   ? "Good effort. Watch once more and try again." :
                                         "Review the transcript carefully, then try again."}
                   </p>
                 </div>
+                <div className="text-4xl">{grade === "great" ? "🎉" : grade === "ok" ? "💪" : "📖"}</div>
               </div>
             )}
 
             {/* Questions card */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#16171C]">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
 
               {/* Card header */}
-              <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4">
                 <div>
-                  <h2 className="text-[15px] font-black text-white">True / False Questions</h2>
-                  <p className="text-xs text-white/30 mt-0.5">Choose the correct answer for each statement.</p>
+                  <h2 className="text-[15px] font-black text-slate-900">True / False Questions</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">Choose the correct answer for each statement.</p>
                 </div>
                 {!checked ? (
                   <div className="flex items-center gap-2.5">
-                    <div className="h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
                         style={{ width: `${(answeredCount / QUESTIONS.length) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs font-bold text-white/30 tabular-nums">{answeredCount}/{QUESTIONS.length}</span>
+                    <span className="text-xs font-bold text-slate-400 tabular-nums">{answeredCount}/{QUESTIONS.length}</span>
                   </div>
                 ) : (
-                  <span className={`rounded-full px-3 py-1 text-xs font-black ${
-                    grade === "great" ? "bg-emerald-500/20 text-emerald-400" :
-                    grade === "ok"   ? "bg-amber-400/20 text-amber-400" :
-                                       "bg-red-500/20 text-red-400"
+                  <span className={`rounded-full px-3 py-1 text-xs font-black border ${
+                    grade === "great" ? "border-emerald-200 bg-emerald-50 text-emerald-700" :
+                    grade === "ok"   ? "border-amber-200 bg-amber-50 text-amber-700" :
+                                       "border-red-200 bg-red-50 text-red-700"
                   }`}>
                     {correctCount}/{QUESTIONS.length}
                   </span>
@@ -255,7 +258,7 @@ export default function WorkLifeBalanceClient() {
               </div>
 
               {/* Questions */}
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-slate-50">
                 {QUESTIONS.map((q, idx) => {
                   const chosen = answers[q.id];
                   const isCorrect = checked && chosen === q.answer;
@@ -265,26 +268,27 @@ export default function WorkLifeBalanceClient() {
                     <div
                       key={q.id}
                       className={`px-6 py-5 transition-colors duration-200 ${
-                        isCorrect ? "bg-emerald-500/8" :
-                        isWrong   ? "bg-red-500/8" :
-                        ""
+                        isCorrect ? "bg-emerald-50/60" :
+                        isWrong   ? "bg-red-50/60" : ""
                       }`}
                     >
                       <div className="flex gap-4">
                         {/* Number bubble */}
-                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black transition-all ${
+                        <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-all ${
                           isCorrect          ? "bg-emerald-500 text-white" :
                           isWrong            ? "bg-red-500 text-white" :
                           chosen != null     ? "bg-[#F5DA20] text-black" :
-                                              "bg-white/8 text-white/30"
+                                              "bg-slate-100 text-slate-400"
                         }`}>
                           {checked
-                            ? isCorrect ? "✓" : "✗"
+                            ? isCorrect
+                              ? <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                              : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
                             : String(idx + 1).padStart(2, "0")}
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-[15px] text-white/85 leading-snug font-medium">{q.text}</p>
+                          <p className="text-[15px] text-slate-800 leading-snug font-medium">{q.text}</p>
 
                           {/* T / F buttons */}
                           <div className="mt-3.5 grid grid-cols-2 gap-2">
@@ -300,12 +304,12 @@ export default function WorkLifeBalanceClient() {
                                   onClick={() => pick(q.id, val)}
                                   disabled={checked}
                                   className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all duration-150
-                                    ${ok     ? "bg-emerald-500 text-white shadow-lg shadow-emerald-900/30" :
-                                      bad    ? "bg-red-500 text-white shadow-lg shadow-red-900/30" :
-                                      reveal ? "border border-emerald-500/40 bg-emerald-500/15 text-emerald-400" :
-                                      sel    ? "bg-[#F5DA20] text-black shadow-lg shadow-yellow-900/20" :
-                                      checked ? "border border-white/8 bg-white/4 text-white/20" :
-                                      "border border-white/12 bg-white/5 text-white/60 hover:border-[#F5DA20]/50 hover:bg-[#F5DA20]/10 hover:text-[#F5DA20] active:scale-[0.97]"
+                                    ${ok     ? "bg-emerald-500 text-white shadow-sm" :
+                                      bad    ? "bg-red-500 text-white shadow-sm" :
+                                      reveal ? "border-2 border-emerald-300 bg-emerald-50 text-emerald-700" :
+                                      sel    ? "bg-[#F5DA20] text-black shadow-sm" :
+                                      checked ? "border border-slate-100 bg-slate-50 text-slate-300" :
+                                      "border border-slate-200 bg-white text-slate-700 hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-900 active:scale-[0.97]"
                                     }`}
                                 >
                                   {val
@@ -318,7 +322,7 @@ export default function WorkLifeBalanceClient() {
                           </div>
 
                           {checked && (
-                            <p className={`mt-2 text-xs font-medium ${isCorrect ? "text-emerald-400" : "text-red-400"}`}>
+                            <p className={`mt-2 text-xs font-semibold ${isCorrect ? "text-emerald-600" : "text-red-600"}`}>
                               {isCorrect
                                 ? "Correct!"
                                 : `Incorrect — the answer is ${q.answer ? "True" : "False"}.`}
@@ -332,18 +336,18 @@ export default function WorkLifeBalanceClient() {
               </div>
 
               {/* Card footer */}
-              <div className="flex items-center gap-3 border-t border-white/8 bg-white/3 px-6 py-4">
+              <div className="flex items-center gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4">
                 {!checked ? (
                   <>
                     <button
                       onClick={check}
                       disabled={!allAnswered}
-                      className="rounded-xl bg-[#F5DA20] px-6 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="rounded-xl bg-[#F5DA20] px-6 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed"
                     >
                       Check Answers
                     </button>
                     {!allAnswered && (
-                      <span className="text-xs text-white/25">
+                      <span className="text-xs text-slate-400">
                         {QUESTIONS.length - answeredCount} question{QUESTIONS.length - answeredCount !== 1 ? "s" : ""} remaining
                       </span>
                     )}
@@ -351,7 +355,7 @@ export default function WorkLifeBalanceClient() {
                 ) : (
                   <button
                     onClick={reset}
-                    className="rounded-xl border border-white/12 bg-white/5 px-5 py-2.5 text-sm font-bold text-white/60 hover:bg-white/10 hover:text-white transition"
+                    className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition"
                   >
                     Try Again
                   </button>
@@ -360,7 +364,7 @@ export default function WorkLifeBalanceClient() {
             </div>
 
             {/* Transcript accordion */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#16171C]">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
               <button
                 ref={transcriptRef}
                 onClick={() => {
@@ -370,32 +374,32 @@ export default function WorkLifeBalanceClient() {
                     setTimeout(() => scrollToRef(transcriptRef, 80), 50);
                   }
                 }}
-                className="flex w-full items-center justify-between px-6 py-4 text-left transition hover:bg-white/4"
+                className="flex w-full items-center justify-between px-6 py-4 text-left transition hover:bg-slate-50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/50">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-400">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                   </div>
                   <div>
-                    <div className="text-sm font-black text-white">Full Transcript</div>
-                    <div className="text-xs text-white/30">Read the dialogue to check your understanding</div>
+                    <div className="text-sm font-black text-slate-900">Full Transcript</div>
+                    <div className="text-xs text-slate-400">Read the dialogue to check your understanding</div>
                   </div>
                 </div>
-                <svg className={`h-4 w-4 text-white/25 transition-transform duration-300 ${transcriptOpen ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className={`h-4 w-4 text-slate-300 transition-transform duration-300 ${transcriptOpen ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
 
               {transcriptOpen && (
-                <div className="border-t border-white/8 px-6 py-4 space-y-0">
+                <div className="border-t border-slate-100 px-6 py-2">
                   {TRANSCRIPT.map((line, i) => (
-                    <div key={i} className={`flex gap-5 py-3.5 ${i < TRANSCRIPT.length - 1 ? "border-b border-white/5" : ""}`}>
+                    <div key={i} className={`flex gap-5 py-4 ${i < TRANSCRIPT.length - 1 ? "border-b border-slate-50" : ""}`}>
                       <span className={`w-16 shrink-0 text-right pt-0.5 text-[11px] font-black uppercase tracking-wider ${
-                        line.speaker === "D" ? "text-[#F5DA20]" : "text-white/20"
+                        line.speaker === "D" ? "text-orange-500" : "text-slate-300"
                       }`}>
                         {line.speaker === "D" ? "Daniel" : "Int."}
                       </span>
-                      <p className="flex-1 text-sm text-white/65 leading-relaxed">{line.text}</p>
+                      <p className="flex-1 text-sm text-slate-700 leading-relaxed">{line.text}</p>
                     </div>
                   ))}
                 </div>
@@ -403,10 +407,10 @@ export default function WorkLifeBalanceClient() {
             </div>
 
             {/* Bottom nav */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/8">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
               <a
                 href="/listening/b2"
-                className="flex items-center gap-2 rounded-xl border border-white/12 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/50 hover:bg-white/10 hover:text-white transition"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition shadow-sm"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
                 All B2 Listening
@@ -419,36 +423,36 @@ export default function WorkLifeBalanceClient() {
             <div className="sticky top-24 space-y-5">
 
               {/* Vocabulary */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#16171C]">
-                <div className="border-b border-white/8 px-4 py-3">
-                  <p className="text-xs font-black text-white uppercase tracking-wide">Key Vocabulary</p>
-                  <p className="text-[11px] text-white/25 mt-0.5">Words from the dialogue</p>
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+                <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+                  <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Words from the dialogue</p>
                 </div>
                 <div className="px-4 py-3 space-y-4">
                   {VOCAB.map(({ word, pos, def }) => (
                     <div key={word}>
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-black text-[#F5DA20]">{word}</span>
-                        <span className="text-[10px] text-white/20 font-semibold italic">{pos}</span>
+                        <span className="text-sm font-black text-[#b8a200]">{word}</span>
+                        <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
                       </div>
-                      <p className="mt-0.5 text-[12px] text-white/40 leading-snug">{def}</p>
+                      <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Tip */}
-              <div className="rounded-2xl border border-[#F5DA20]/20 bg-[#F5DA20]/6 px-4 py-4">
-                <p className="text-xs font-black text-[#F5DA20] uppercase tracking-wide mb-2">B2 Tip</p>
-                <p className="text-xs text-white/40 leading-relaxed">
-                  At B2 level, focus on <span className="font-semibold text-white/65">implied meaning</span>. Speakers often suggest something without saying it directly — pay attention to hesitations and tone.
+              {/* B2 Tip */}
+              <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
+                <p className="text-xs font-black text-orange-600 uppercase tracking-wide mb-2">B2 Tip</p>
+                <p className="text-xs text-orange-900/60 leading-relaxed">
+                  At B2 level, focus on <span className="font-semibold text-orange-900/80">implied meaning</span>. Speakers often suggest something without saying it directly — pay attention to hesitations and tone.
                 </p>
               </div>
 
               {/* Ad */}
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/20">Advertisement</p>
-                <div className="flex h-[250px] items-center justify-center rounded-2xl border border-white/8 bg-white/3 text-xs text-white/15">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
+                <div className="flex h-[250px] items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xs text-slate-300">
                   300 × 250
                 </div>
               </div>
