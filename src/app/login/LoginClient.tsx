@@ -20,33 +20,15 @@ export default function LoginClient() {
 
   const [captchaToken, setCaptchaToken] = useState("");
   const widgetRef = useRef<TurnstileInstance | null>(null);
+  const pendingLoginRef = useRef(false);
 
-  async function handleGoogle() {
-    setError(null);
-    setGoogleLoading(true);
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    if (!captchaToken) {
-      setError("Please complete the security check.");
-      return;
-    }
-
+  async function doLogin(token: string) {
     setLoading(true);
 
-    // Verify CAPTCHA server-side first
     const captchaRes = await fetch("/api/auth/verify-captcha", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: captchaToken }),
+      body: JSON.stringify({ token }),
     });
     const captchaData = await captchaRes.json() as { ok: boolean; error?: string };
 
@@ -67,10 +49,42 @@ export default function LoginClient() {
       setLoading(false);
       return;
     }
-    // Register session — invalidates any other active sessions for this account
     await fetch("/api/session/create", { method: "POST" });
     router.push(next);
     router.refresh();
+  }
+
+  function handleToken(token: string) {
+    setCaptchaToken(token);
+    if (pendingLoginRef.current && token) {
+      pendingLoginRef.current = false;
+      doLogin(token);
+    }
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    setGoogleLoading(true);
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (captchaToken) {
+      await doLogin(captchaToken);
+      return;
+    }
+
+    // Token not ready yet — trigger the widget and wait for onSuccess
+    setLoading(true);
+    pendingLoginRef.current = true;
+    widgetRef.current?.execute();
   }
 
   return (
@@ -251,8 +265,7 @@ export default function LoginClient() {
             </a>
           </p>
 
-          {/* Invisible Turnstile — no UI, auto-executes on page load */}
-          <TurnstileWidget onToken={setCaptchaToken} widgetRef={widgetRef} />
+          <TurnstileWidget onToken={handleToken} widgetRef={widgetRef} />
         </div>
       </div>
     </div>
