@@ -72,31 +72,31 @@ function levelColors(level: string): { badge: string; glow: string } {
 
 const SECTIONS = [
   {
-    slug: "irregular-verbs",
-    icon: "🔁",
-    label: "Verbs",
-    title: "Irregular Verbs",
-    description: "The 44 most essential verb forms. Know these and you'll handle almost any text.",
-    count: "44 verbs",
-    badgeColor: "bg-sky-400",
+    slug: "my-materials",
+    icon: "📦",
+    label: "Materials",
+    title: "My Materials",
+    description: "PDFs, books and exclusive study resources curated by Oleksandr.",
+    count: "Resources",
+    badgeColor: "bg-[#F5DA20]",
   },
   {
-    slug: "phrasal-verbs",
-    icon: "🔗",
-    label: "Phrases",
-    title: "Phrasal Verbs",
-    description: "High-frequency verb + particle combinations explained with real examples.",
-    count: "12 combos",
-    badgeColor: "bg-violet-400",
+    slug: "useful-sites",
+    icon: "🌐",
+    label: "Tools",
+    title: "Useful Websites",
+    description: "The best tools serious English learners actually use.",
+    count: "6 resources",
+    badgeColor: "bg-cyan-400",
   },
   {
-    slug: "live-phrases",
-    icon: "💬",
-    label: "Speaking",
-    title: "Live Phrases",
-    description: "Expressions native speakers use every single day — sound natural instantly.",
-    count: "8 phrases",
-    badgeColor: "bg-emerald-400",
+    slug: "recommendations",
+    icon: "⭐",
+    label: "Picks",
+    title: "Recommendations",
+    description: "Books, podcasts, YouTube channels and films that move the needle.",
+    count: "6 picks",
+    badgeColor: "bg-amber-400",
   },
   {
     slug: "slang",
@@ -108,58 +108,66 @@ const SECTIONS = [
     badgeColor: "bg-orange-400",
   },
   {
-    slug: "useful-sites",
-    icon: "🌐",
-    label: "Tools",
-    title: "Useful Websites",
-    description: "The best tools serious English learners actually use — curated and explained.",
-    count: "6 resources",
-    badgeColor: "bg-cyan-400",
+    slug: "live-phrases",
+    icon: "💬",
+    label: "Speaking",
+    title: "Live Phrases",
+    description: "Expressions native speakers use every single day.",
+    count: "8 phrases",
+    badgeColor: "bg-emerald-400",
   },
   {
-    slug: "recommendations",
-    icon: "⭐",
-    label: "Picks",
-    title: "Recommendations",
-    description: "Books, podcasts, YouTube channels and films that actually move the needle.",
-    count: "6 picks",
-    badgeColor: "bg-[#F5DA20]",
+    slug: "phrasal-verbs",
+    icon: "🔗",
+    label: "Phrases",
+    title: "Phrasal Verbs",
+    description: "High-frequency verb + particle combinations with real examples.",
+    count: "12 combos",
+    badgeColor: "bg-violet-400",
+  },
+  {
+    slug: "irregular-verbs",
+    icon: "🔁",
+    label: "Verbs",
+    title: "Irregular Verbs",
+    description: "The 44 most essential verb forms — handle almost any text.",
+    count: "44 verbs",
+    badgeColor: "bg-sky-400",
   },
 ];
 
 function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
   return (
-    <article className="group relative w-[200px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40 sm:w-full sm:shrink">
+    <article className="group relative w-[180px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40 sm:w-full sm:shrink">
       {/* Image */}
-      <div className="relative aspect-square w-full overflow-hidden border-b border-white/10 bg-black/30">
+      <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-white/10 bg-black/30">
         <ImageWithFallback
           src={`/topics/nerd-zone/${s.slug}.jpg`}
           alt={s.title}
           className="h-full w-full object-cover"
         />
-        {/* Fallback icon shown via opacity when no image */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-5xl opacity-20 select-none transition group-hover:opacity-30">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-4xl opacity-20 select-none transition group-hover:opacity-30">
           {s.icon}
         </div>
-        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black shadow-lg sm:top-3 sm:right-3 sm:px-3 sm:py-1 sm:text-xs ${s.badgeColor}`}>
+        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black shadow-lg ${s.badgeColor}`}>
           {s.label}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-5">
-        <h3 className="text-sm font-black leading-snug text-white sm:text-xl">{s.title}</h3>
-        <p className="mt-1 text-[11px] leading-relaxed text-white/65 sm:mt-2 sm:text-sm">
+      <div className="p-3">
+        <h3 className="text-sm font-black leading-snug text-white">{s.title}</h3>
+        <p className="mt-1 text-[11px] leading-relaxed text-white/55 line-clamp-2">
           {s.description}
         </p>
 
-        <div className="mt-3 sm:mt-4">
+        <div className="mt-3">
           <a href={`/nerd-zone/${s.slug}`} className="absolute inset-0 z-10" aria-label={s.title} />
-          <p className="relative z-20 mb-3 text-[10px] font-medium text-white/45 sm:text-[11px]">
+          <p className="relative z-20 mb-2 text-[10px] font-medium text-white/35">
             {s.count}
           </p>
           <button
-            className="relative z-20 inline-flex items-center justify-center rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
+            className="relative z-20 inline-flex items-center justify-center rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-bold text-black hover:opacity-90"
             type="button"
           >
             Explore
@@ -185,7 +193,7 @@ export default function NerdZonePage() {
         <div className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-amber-500/3 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12">
 
         {/* Breadcrumb */}
         <div className="text-sm text-white/50">
@@ -257,7 +265,7 @@ export default function NerdZonePage() {
         </div>
 
         {/* ── Section cards — mobile: carousel | desktop: grid ─────── */}
-        <div className="mt-6 flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-3">
+        <div className="mt-6 flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-5">
           {SECTIONS.map((s) => (
             <div key={s.slug} className="snap-start">
               <SectionCard s={s} />
