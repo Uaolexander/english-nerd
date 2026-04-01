@@ -179,7 +179,7 @@ function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
 
 export default function NerdZonePage() {
   const word = getWordOfDay();
-  const { badge, glow } = levelColors(word.level);
+  const { badge } = levelColors(word.level);
 
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
@@ -199,57 +199,58 @@ export default function NerdZonePage() {
           <span className="text-white/75">Nerd Zone</span>
         </div>
 
-        {/* Hero */}
-        <div className="mt-6">
-          <h1 className="text-4xl font-black tracking-tight md:text-6xl">
-            Nerd{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10 text-[#F5DA20]">Zone</span>
-              <span aria-hidden className="pointer-events-none absolute -bottom-1 left-0 h-1 w-full rounded-full bg-[#F5DA20]/30" />
-            </span>
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-white/65">
-            Everything a real English nerd needs — in one place. Pick a section and go deep.
-          </p>
-        </div>
+        {/* Hero + Word of the Day */}
+        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
 
-        {/* ── Word of the Day ─────────────────────────────────────── */}
-        <div className="mt-10 overflow-hidden rounded-2xl border border-[#F5DA20]/25 bg-gradient-to-br from-[#F5DA20]/8 via-[#F5DA20]/4 to-transparent">
-          {/* Header */}
-          <div className="flex items-center gap-2.5 border-b border-[#F5DA20]/12 px-5 py-3">
-            <span className="text-sm">✨</span>
-            <span className="text-[11px] font-black uppercase tracking-widest text-[#F5DA20]/80">Word of the day</span>
-            <span className="ml-auto text-[10px] font-medium text-white/40">Changes every day</span>
+          {/* Left: title + description */}
+          <div className="flex-1">
+            <h1 className="text-4xl font-black tracking-tight md:text-6xl">
+              Nerd{" "}
+              <span className="relative inline-block">
+                <span className="relative z-10 text-[#F5DA20]">Zone</span>
+                <span aria-hidden className="pointer-events-none absolute -bottom-1 left-0 h-1 w-full rounded-full bg-[#F5DA20]/30" />
+              </span>
+            </h1>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-white/65">
+              Everything a real English nerd needs — in one place. Pick a section and go deep.
+            </p>
           </div>
 
-          {/* Body */}
-          <div className="flex flex-col gap-5 px-5 py-6 sm:flex-row sm:items-center sm:gap-8">
-            {/* Word block */}
-            <div className="shrink-0">
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-black text-white sm:text-4xl">{word.word}</span>
-                <span className="font-mono text-sm text-white/55">{word.phonetic}</span>
+          {/* Right: Word of the Day card */}
+          <div className="relative w-full overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] p-5 lg:w-72 lg:shrink-0 xl:w-80">
+            {/* Subtle glow */}
+            <div aria-hidden className="pointer-events-none absolute -top-6 -right-6 h-28 w-28 rounded-full bg-[#F5DA20]/8 blur-2xl" />
+
+            {/* Label */}
+            <div className="relative mb-4 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F5DA20]/20 bg-[#F5DA20]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#F5DA20]">
+                <span className="h-1 w-1 rounded-full bg-[#F5DA20] animate-pulse" />
+                Word of the day
+              </span>
+            </div>
+
+            {/* Word */}
+            <div className="relative">
+              <div className="flex items-baseline gap-2.5 flex-wrap">
+                <span className="text-2xl font-black text-white">{word.word}</span>
+                <span className="font-mono text-xs text-white/45">{word.phonetic}</span>
               </div>
               <div className="mt-2 flex items-center gap-2">
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${badge}`}>
-                  {word.level}
-                </span>
-                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold text-white/70 ${glow}`}>
-                  {word.partOfSpeech}
-                </span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${badge}`}>{word.level}</span>
+                <span className="text-[11px] italic text-white/40">{word.partOfSpeech}</span>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="hidden h-14 w-px bg-[#F5DA20]/15 sm:block shrink-0" />
-            <div className="h-px bg-[#F5DA20]/12 sm:hidden" />
+            <div className="relative my-4 h-px bg-white/8" />
 
             {/* Meaning + example */}
-            <div className="min-w-0 flex-1 space-y-2">
-              <p className="text-base font-semibold leading-snug text-white">{word.meaning}</p>
-              <p className="text-sm italic leading-relaxed text-white/60">&ldquo;{word.example}&rdquo;</p>
+            <div className="relative space-y-1.5">
+              <p className="text-sm font-semibold leading-snug text-white/90">{word.meaning}</p>
+              <p className="text-xs italic leading-relaxed text-white/40">&ldquo;{word.example}&rdquo;</p>
             </div>
           </div>
+
         </div>
 
         {/* ── Section heading ────────────────────────────────────────── */}
