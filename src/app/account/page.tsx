@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 import AccountClient from "./AccountClient";
 import type { ProgressStats, CertificateRecord } from "./AccountClient";
 
@@ -81,6 +82,9 @@ export default async function AccountPage() {
     testResults,
   };
 
+  // Pro status — source of truth is subscriptions table
+  const isPro = await getIsPro(supabase, user.id);
+
   // Fetch certificates
   const { data: certRows } = await supabase
     .from("certificates")
@@ -107,6 +111,7 @@ export default async function AccountPage() {
       provider={user.app_metadata?.provider ?? "email"}
       stats={stats}
       certificates={certificates}
+      isPro={isPro}
     />
   );
 }
