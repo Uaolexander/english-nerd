@@ -81,7 +81,9 @@ const HANDLED_EVENTS = new Set([
 
 // ─── Pro logic ────────────────────────────────────────────────────────────────
 
-const PRO_STATUSES = new Set(["active", "trialing", "past_due"]);
+// "paid" = one-time or initial payment confirmed by LS
+// "on_trial" = LS trial status (alternative to "trialing")
+const PRO_STATUSES = new Set(["active", "trialing", "on_trial", "paid", "past_due"]);
 
 function deriveIsPro(
   eventName: string,
