@@ -5,6 +5,26 @@ import { createServiceClient } from "@/lib/supabase/service";
 // Required: Node.js runtime for crypto and Supabase admin API
 export const runtime = "nodejs";
 
+// Validate env vars at module load — fail fast with a clear message
+const REQUIRED_ENV = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "LEMON_SQUEEZY_WEBHOOK_SECRET",
+] as const;
+
+for (const key of REQUIRED_ENV) {
+  const val = process.env[key];
+  if (!val) {
+    throw new Error(`[webhook] Missing env var: ${key}`);
+  }
+  // Guard against accidental non-ASCII characters (e.g. Cyrillic copy-paste)
+  if (!/^[\x20-\x7E]+$/.test(val)) {
+    throw new Error(
+      `[webhook] Env var ${key} contains non-ASCII characters. Re-paste it from the source.`
+    );
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface LemonAttributes {
