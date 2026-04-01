@@ -43,7 +43,7 @@ export default function LoginClient() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
+      setError("Неправильний email або пароль.");
       setCaptchaToken("");
       widgetRef.current?.reset();
       setLoading(false);
