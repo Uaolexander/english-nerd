@@ -283,7 +283,7 @@ function MeetTheTeacher() {
             <div className="shrink-0">
               <div className="h-24 w-24 overflow-hidden rounded-2xl border border-[#F5DA20]/20 shadow-xl shadow-black/40 sm:h-28 sm:w-28">
                 <ImageWithFallback
-                  src="/oleksandr.jpg"
+                  src="/oleksandr.JPG"
                   alt="Oleksandr Vdovychenko"
                   className="h-full w-full object-cover"
                 />
