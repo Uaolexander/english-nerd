@@ -62,6 +62,14 @@ export default function LoginClient() {
     }
   }
 
+  function handleCaptchaError() {
+    if (pendingLoginRef.current) {
+      pendingLoginRef.current = false;
+      setError("Security check failed. Please try again.");
+      setLoading(false);
+    }
+  }
+
   async function handleGoogle() {
     setError(null);
     setGoogleLoading(true);
@@ -265,7 +273,7 @@ export default function LoginClient() {
             </a>
           </p>
 
-          <TurnstileWidget onToken={handleToken} widgetRef={widgetRef} />
+          <TurnstileWidget onToken={handleToken} onError={handleCaptchaError} widgetRef={widgetRef} />
         </div>
       </div>
     </div>

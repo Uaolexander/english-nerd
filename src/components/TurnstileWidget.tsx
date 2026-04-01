@@ -4,10 +4,11 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 interface TurnstileWidgetProps {
   onToken: (token: string) => void;
+  onError?: () => void;
   widgetRef?: React.MutableRefObject<TurnstileInstance | null>;
 }
 
-export default function TurnstileWidget({ onToken, widgetRef }: TurnstileWidgetProps) {
+export default function TurnstileWidget({ onToken, onError, widgetRef }: TurnstileWidgetProps) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
   return (
@@ -16,6 +17,7 @@ export default function TurnstileWidget({ onToken, widgetRef }: TurnstileWidgetP
       siteKey={siteKey}
       onSuccess={onToken}
       onExpire={() => onToken("")}
+      onError={onError}
       options={{
         appearance: "interaction-only",
         execution: "execute",
