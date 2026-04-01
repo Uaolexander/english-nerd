@@ -130,8 +130,8 @@ export default function GrammarB2Page() {
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glow */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-orange-500/20 blur-[140px]" />
-        <div className="absolute top-1/3 -left-40 h-[400px] w-[400px] rounded-full bg-orange-500/10 blur-[160px]" />
+        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#F5DA20]/15 blur-[140px]" />
+        <div className="absolute top-1/3 -left-40 h-[400px] w-[400px] rounded-full bg-[#F5DA20]/8 blur-[160px]" />
         <div className="absolute inset-x-0 bottom-0 h-[300px] bg-gradient-to-t from-[#0B0B0D] to-transparent" />
       </div>
 
@@ -148,7 +148,7 @@ export default function GrammarB2Page() {
           </div>
 
           <h1 className="mt-4 text-3xl md:text-5xl font-black tracking-tight">
-            B2 Grammar Lessons <span className="text-orange-400">&</span> Exercises
+            B2 Grammar Lessons <span className="text-[#F5DA20]">&</span> Exercises
           </h1>
           <p className="mt-3 max-w-2xl text-white/70">
             Upper-Intermediate level — advanced tenses, conditionals, causative, inversion, participle clauses and more.
@@ -222,7 +222,7 @@ export default function GrammarB2Page() {
                           aria-label={t.title}
                         />
                         <button
-                          className="relative z-20 inline-flex items-center justify-center rounded-xl bg-orange-400 px-4 py-2 text-sm font-bold text-black hover:opacity-90"
+                          className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
                           type="button"
                         >
                           Start

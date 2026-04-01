@@ -50,3 +50,13 @@ body {
 .fade-in-up {
   animation: fade-in-up 0.5s ease both;
 }
+
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-150%) skewX(-20deg); }
+  15%  { transform: translateX(250%) skewX(-20deg); }
+  16%  { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(-150%) skewX(-20deg); }
+}
+.shimmer-auto {
+  animation: shimmer-sweep 4s ease-in-out infinite;
+}

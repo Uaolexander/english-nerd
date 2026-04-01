@@ -36,7 +36,7 @@ export default function AuthButton({
   // Loading placeholder
   if (user === undefined) {
     if (variant === "avatar") {
-      return <span className="h-9 w-9 rounded-full bg-white/10 animate-pulse" />;
+      return <span className="h-11 w-11 rounded-full bg-white/10 animate-pulse" />;
     }
     return <span className={className} style={{ opacity: 0, pointerEvents: "none" }}>Log in</span>;
   }
@@ -50,13 +50,13 @@ export default function AuthButton({
       return (
         <Link
           href="/account"
-          className="group relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-white/20 transition hover:ring-[#F5DA20]/60 overflow-hidden"
+          className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-2 ring-white/20 transition hover:ring-[#F5DA20]/60 overflow-hidden"
           title="My Account"
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt={name || "Avatar"} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-500 text-[11px] font-black text-white">
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-500 text-xs font-black text-white">
               {initials}
             </div>
           )}

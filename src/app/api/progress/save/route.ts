@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json() as {
-    category: "grammar" | "tenses" | "test" | "vocabulary";
+    category: "grammar" | "tenses" | "test" | "vocabulary" | "reading" | "listening";
     level?: string;
     slug: string;
     exerciseNo?: number;

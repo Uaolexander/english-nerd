@@ -55,14 +55,27 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">4. Free Service</h2>
+            <h2 className="text-lg font-black text-white mb-3">4. User Accounts</h2>
+            <p>You may create a free account on English Nerd to save your progress. By creating an account, you agree to:</p>
+            <ul className="mt-3 space-y-2 list-disc list-inside">
+              <li>Provide a valid email address and keep your login credentials secure</li>
+              <li>Not share your account with others or create accounts on behalf of third parties</li>
+              <li>Not create multiple accounts to circumvent any restrictions</li>
+            </ul>
+            <p className="mt-3">
+              You may delete your account at any time from your account settings. Deletion permanently removes all your data from our systems. We reserve the right to suspend or terminate accounts that violate these Terms.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-black text-white mb-3">5. Free Service</h2>
             <p>
               English Nerd is provided free of charge. We reserve the right to modify, suspend, or discontinue any part of the service at any time without notice. We are not liable for any loss or inconvenience caused by such changes.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">5. Accuracy of Content</h2>
+            <h2 className="text-lg font-black text-white mb-3">6. Accuracy of Content</h2>
             <p>
               We strive to provide accurate and up-to-date grammar content. However, English Nerd does not guarantee that all content is error-free. If you spot an error, please report it to us at{" "}
               <a href="mailto:hello@englishnerd.cc" className="text-[#F5DA20] hover:underline">hello@englishnerd.cc</a>.
@@ -70,42 +83,42 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">6. Third-Party Advertising</h2>
+            <h2 className="text-lg font-black text-white mb-3">7. Third-Party Advertising</h2>
             <p>
               English Nerd displays advertisements provided by Google AdSense. We are not responsible for the content of these advertisements or the practices of advertisers. By using the site, you acknowledge that advertisements may be displayed.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">7. Disclaimer of Warranties</h2>
+            <h2 className="text-lg font-black text-white mb-3">8. Disclaimer of Warranties</h2>
             <p>
               English Nerd is provided &quot;as is&quot; without any warranty of any kind, express or implied. We do not guarantee that the site will be uninterrupted, error-free, or free from viruses or other harmful components. Your use of the site is at your own risk.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">8. Limitation of Liability</h2>
+            <h2 className="text-lg font-black text-white mb-3">9. Limitation of Liability</h2>
             <p>
               To the fullest extent permitted by law, English Nerd shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the site, including but not limited to loss of data or learning outcomes.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">9. External Links</h2>
+            <h2 className="text-lg font-black text-white mb-3">10. External Links</h2>
             <p>
               The site may contain links to third-party websites. These links are provided for convenience only. We have no control over the content of those sites and accept no responsibility for them.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">10. Changes to Terms</h2>
+            <h2 className="text-lg font-black text-white mb-3">11. Changes to Terms</h2>
             <p>
               We may update these Terms of Service at any time. Changes will be reflected on this page with an updated date. Continued use of the site after changes constitutes your acceptance of the updated terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-black text-white mb-3">11. Contact</h2>
+            <h2 className="text-lg font-black text-white mb-3">12. Contact</h2>
             <p>For any questions regarding these Terms of Service:</p>
             <div className="mt-3 rounded-xl border border-white/8 bg-white/[0.03] p-4 text-sm">
               <div className="font-black text-white">English Nerd</div>

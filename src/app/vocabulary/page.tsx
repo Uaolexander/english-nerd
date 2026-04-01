@@ -38,7 +38,7 @@ const LEVELS: Level[] = [
     label: "Intermediate",
     description: "Work, health, the environment, opinion phrases and common idioms.",
     topics: 22,
-    color: "bg-sky-400",
+    color: "bg-violet-400",
     textColor: "text-black",
   },
   {
@@ -54,7 +54,7 @@ const LEVELS: Level[] = [
     label: "Advanced",
     description: "Nuanced vocabulary, advanced collocations, abstract concepts and register.",
     topics: 18,
-    color: "bg-violet-400",
+    color: "bg-sky-400",
     textColor: "text-black",
   },
 ];
@@ -145,9 +145,9 @@ export default function VocabularyPage() {
           {[
             { label: "A1", sub: "Beginner",      color: "bg-[#F5DA20]/15",    dot: "bg-[#F5DA20]" },
             { label: "A2", sub: "Elementary",     color: "bg-emerald-400/10",  dot: "bg-emerald-400" },
-            { label: "B1", sub: "Intermediate",   color: "bg-sky-400/10",      dot: "bg-sky-400" },
+            { label: "B1", sub: "Intermediate",   color: "bg-violet-400/10",   dot: "bg-violet-400" },
             { label: "B2", sub: "Upper-Int",      color: "bg-orange-400/10",   dot: "bg-orange-400" },
-            { label: "C1", sub: "Advanced",       color: "bg-violet-400/10",   dot: "bg-violet-400" },
+            { label: "C1", sub: "Advanced",       color: "bg-sky-400/10",      dot: "bg-sky-400" },
           ].map(({ label, sub, color, dot }, i) => (
             <div
               key={label}

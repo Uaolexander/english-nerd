@@ -35,7 +35,7 @@ const LEVELS: Level[] = [
     label: "Intermediate",
     description: "News articles, blog posts, travel guides and informal essays.",
     topics: 18,
-    color: "bg-sky-400",
+    color: "bg-violet-400",
   },
   {
     lvl: "B2",
@@ -49,7 +49,7 @@ const LEVELS: Level[] = [
     label: "Advanced",
     description: "Academic papers, complex essays, literature extracts and critical analysis.",
     topics: 14,
-    color: "bg-violet-400",
+    color: "bg-sky-400",
   },
 ];
 
@@ -139,9 +139,9 @@ export default function ReadingPage() {
           {[
             { label: "A1", sub: "Beginner",     color: "bg-[#F5DA20]/15",   dot: "bg-[#F5DA20]" },
             { label: "A2", sub: "Elementary",    color: "bg-emerald-400/10", dot: "bg-emerald-400" },
-            { label: "B1", sub: "Intermediate",  color: "bg-sky-400/10",     dot: "bg-sky-400" },
+            { label: "B1", sub: "Intermediate",  color: "bg-violet-400/10",  dot: "bg-violet-400" },
             { label: "B2", sub: "Upper-Int",     color: "bg-orange-400/10",  dot: "bg-orange-400" },
-            { label: "C1", sub: "Advanced",      color: "bg-violet-400/10",  dot: "bg-violet-400" },
+            { label: "C1", sub: "Advanced",      color: "bg-sky-400/10",     dot: "bg-sky-400" },
           ].map(({ label, sub, color, dot }, i) => (
             <div
               key={label}

@@ -359,7 +359,7 @@ const CERT_LEVEL_COLORS: Record<string, string> = {
   C1: "bg-rose-100 text-rose-800",
 };
 
-function CertificateRow({ cert }: { cert: CertificateRecord }) {
+function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete: () => void }) {
   const [downloading, setDownloading] = useState(false);
 
   async function reDownload() {
@@ -452,6 +452,16 @@ function CertificateRow({ cert }: { cert: CertificateRecord }) {
         )}
         {downloading ? "…" : "PDF"}
       </button>
+      {/* Delete */}
+      <button
+        onClick={onDelete}
+        title="Delete certificate"
+        className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+      >
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
   );
 }
@@ -486,6 +496,31 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   // Reset progress
   const [resetConfirm, setResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
+
+  // Delete account
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Certificates
+  const [certList, setCertList] = useState(certificates);
+  const [deleteCertId, setDeleteCertId] = useState<string | null>(null);
+  const [deletingCert, setDeletingCert] = useState(false);
+
+  async function handleDeleteCert() {
+    if (!deleteCertId) return;
+    setDeletingCert(true);
+    try {
+      await fetch("/api/certificates/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deleteCertId }),
+      });
+      setCertList((prev) => prev.filter((c) => c.id !== deleteCertId));
+    } finally {
+      setDeletingCert(false);
+      setDeleteCertId(null);
+    }
+  }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -539,6 +574,20 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     window.location.reload();
   }
 
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    const res = await fetch("/api/account/delete", { method: "DELETE" });
+    if (res.ok) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/");
+      router.refresh();
+    } else {
+      setDeleting(false);
+      setDeleteConfirm(false);
+    }
+  }
+
   const userInitials = initials(name, email);
   const isOAuth = provider !== "email";
 
@@ -548,6 +597,39 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   return (
     <>
+    {/* ── Delete certificate confirmation modal ────────────────────────── */}
+    {deleteCertId && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteCertId(null)} />
+        <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+            <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+            </svg>
+          </div>
+          <h2 className="text-lg font-black text-slate-900">Delete this certificate?</h2>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            The certificate will be permanently removed from your account. You can always generate a new one by retaking the test.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              onClick={() => setDeleteCertId(null)}
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteCert}
+              disabled={deletingCert}
+              className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:opacity-50"
+            >
+              {deletingCert ? "Deleting…" : "Yes, delete"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* ── Reset confirmation modal ─────────────────────────────────────── */}
     {resetConfirm && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -575,6 +657,40 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:opacity-50"
             >
               {resetting ? "Resetting…" : "Yes, reset"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ── Delete account confirmation modal ──────────────────────────── */}
+    {deleteConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(false)} />
+        <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+            <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </div>
+          <h2 className="text-lg font-black text-slate-900">Delete your account?</h2>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            This will permanently delete your account, all progress, scores, and certificates.{" "}
+            <span className="font-semibold text-slate-700">This action cannot be undone.</span>
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              onClick={() => setDeleteConfirm(false)}
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:opacity-50"
+            >
+              {deleting ? "Deleting…" : "Yes, delete"}
             </button>
           </div>
         </div>
@@ -848,12 +964,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 )}
 
                 {/* ── Certificates ── */}
-                {certificates.length > 0 && (
+                {certList.length > 0 && (
                   <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-5">
                     <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">My Certificates</p>
                     <div className="space-y-3">
-                      {certificates.map((cert) => (
-                        <CertificateRow key={cert.id} cert={cert} />
+                      {certList.map((cert) => (
+                        <CertificateRow key={cert.id} cert={cert} onDelete={() => setDeleteCertId(cert.id)} />
                       ))}
                     </div>
                   </div>
@@ -963,6 +1079,24 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                 </svg>
                 {loggingOut ? "Signing out…" : "Sign out of all devices"}
+              </button>
+            </div>
+
+            {/* Danger zone */}
+            <div className="rounded-3xl border border-red-200 bg-red-50/50 shadow-sm p-6 sm:p-7">
+              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-red-400">Danger zone</p>
+              <p className="mt-3 text-sm font-bold text-slate-900">Delete account</p>
+              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                Permanently delete your account and all associated data — progress, scores, and certificates. This cannot be undone.
+              </p>
+              <button
+                onClick={() => setDeleteConfirm(true)}
+                className="mt-4 flex items-center gap-2 rounded-xl border border-red-300 bg-white px-4 py-2.5 text-xs font-bold text-red-600 transition hover:bg-red-50 hover:border-red-400"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+                Delete my account
               </button>
             </div>
 

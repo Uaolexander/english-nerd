@@ -4,7 +4,7 @@
 create table if not exists public.user_progress (
   id              uuid        primary key default gen_random_uuid(),
   user_id         uuid        not null references auth.users(id) on delete cascade,
-  category        text        not null check (category in ('grammar', 'tenses', 'test', 'vocabulary')),
+  category        text        not null check (category in ('grammar', 'tenses', 'test', 'vocabulary', 'reading', 'listening')),
   level           text,       -- 'a1' | 'a2' | 'b1' | 'b2' | 'c1' | null
   slug            text        not null, -- e.g. 'past-continuous'
   exercise_no     integer,    -- 1-4 for lesson exercises, null = full test

@@ -11,9 +11,9 @@ import AuthButton from "@/components/AuthButton";
 const grammarLevels = [
   { lvl: "A1", label: "Beginner",           color: "bg-[#F5DA20]",   textColor: "text-black", lessons: 21 },
   { lvl: "A2", label: "Elementary",          color: "bg-emerald-400", textColor: "text-black", lessons: 21 },
-  { lvl: "B1", label: "Intermediate",        color: "bg-sky-400",     textColor: "text-black", lessons: 22 },
+  { lvl: "B1", label: "Intermediate",        color: "bg-violet-400",  textColor: "text-white", lessons: 22 },
   { lvl: "B2", label: "Upper-Intermediate",  color: "bg-orange-400",  textColor: "text-black", lessons: 19 },
-  { lvl: "C1", label: "Advanced",            color: "bg-violet-400",  textColor: "text-black", lessons: 18 },
+  { lvl: "C1", label: "Advanced",            color: "bg-sky-400",     textColor: "text-black", lessons: 18 },
 ];
 
 const tensesList = [
@@ -29,7 +29,7 @@ const tensesList = [
   { slug: "be-going-to",                 title: "Be going to",                 level: "A2", color: "bg-emerald-400", textColor: "text-black" },
   { slug: "future-continuous",           title: "Future Continuous",           level: "B2", color: "bg-orange-400",  textColor: "text-black" },
   { slug: "future-perfect",              title: "Future Perfect",              level: "B2", color: "bg-orange-400",  textColor: "text-black" },
-  { slug: "future-perfect-continuous",   title: "Future Perfect Continuous",   level: "C1", color: "bg-cyan-400",    textColor: "text-black" },
+  { slug: "future-perfect-continuous",   title: "Future Perfect Continuous",   level: "C1", color: "bg-sky-400",     textColor: "text-black" },
 ];
 
 // ─── MobileSearch helpers ─────────────────────────────────────────────────────
@@ -262,6 +262,7 @@ export default function Header() {
     if (section === "Vocabulary") return pathname.startsWith("/vocabulary");
     if (section === "Listening") return pathname.startsWith("/listening");
     if (section === "Reading") return pathname.startsWith("/reading");
+    if (section === "NerdZone") return pathname.startsWith("/nerd-zone");
     return false;
   }
 
@@ -486,9 +487,9 @@ export default function Header() {
               </DropdownShell>
             </div>
             {/* Nerd Zone */}
-            <Link href="/nerd-zone" className="group transition">
-              <span className="text-white/70 group-hover:text-[#F5DA20] transition">Nerd</span>{" "}
-              <span className="text-white/70 group-hover:text-white transition">Zone</span>
+            <Link href="/nerd-zone" className={`relative pb-0.5 transition ${isActive("NerdZone") ? "after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-[#F5DA20]" : ""} group`}>
+              <span className="text-[#F5DA20] transition">Nerd</span>{" "}
+              <span className="text-white transition">Zone</span>
             </Link>
 
           </nav>
@@ -614,9 +615,9 @@ export default function Header() {
           ))}
 
           <Link href="/nerd-zone" onClick={closeAll}
-            className="group flex items-center rounded-xl px-4 py-3 text-[15px] font-semibold hover:bg-white/10">
-            <span className="text-white/80 group-hover:text-[#F5DA20] transition">Nerd</span>
-            <span className="text-white/80 group-hover:text-white transition">&nbsp;Zone</span>
+            className={`group flex items-center rounded-xl px-4 py-3 text-[15px] font-semibold hover:bg-white/10 ${isActive("NerdZone") ? "bg-white/5" : ""}`}>
+            <span className="text-[#F5DA20] transition">Nerd</span>
+            <span className="text-white transition">&nbsp;Zone</span>
           </Link>
 
           <MobileAccordion label="Tests" isOpen={expandedSection === "Tests"} onToggle={() => toggleSection("Tests")}>

@@ -602,8 +602,8 @@ export default function GrammarTestClient() {
                         className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-6 py-2.5 text-sm font-black text-[#0F0F12] shadow-[0_0_0_2px_#F5DA20] transition-all duration-300 hover:shadow-[0_0_0_3px_#F5DA20,0_4px_20px_rgba(245,218,32,0.35)] hover:scale-[1.03] active:scale-[0.98]"
                         style={{ background: "linear-gradient(135deg, #F5DA20 0%, #FFE55C 50%, #F5DA20 100%)", backgroundSize: "200% 100%" }}
                       >
-                        {/* shimmer sweep */}
-                        <span className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/30 transition-transform duration-700 group-hover:translate-x-[200%]" />
+                        {/* shimmer sweep — auto */}
+                        <span className="shimmer-auto pointer-events-none absolute inset-0 w-1/3 skew-x-[-20deg] bg-white/40" />
                         {/* pulse ring */}
                         <span className="absolute inset-0 rounded-2xl ring-2 ring-[#F5DA20]/60 animate-ping opacity-40" />
                         <svg className="relative h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

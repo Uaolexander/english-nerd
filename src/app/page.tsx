@@ -1,5 +1,6 @@
 import FadeIn from "@/components/FadeIn";
 import LetterboxSection from "@/components/LetterboxSection";
+import ImageWithFallback from "@/components/ImageWithFallback";
 
 const websiteSchema = {
   "@context": "https://schema.org",
@@ -33,6 +34,7 @@ export default function Home() {
       <Hero />
       <Skills />
       <PlacementTest />
+      <MeetTheTeacher />
       <LetterboxSection />
     </main>
   );
@@ -260,6 +262,41 @@ function PlacementTest() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white/80 transition hover:bg-white/10"
               >
                 📚 Vocabulary test
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Meet the teacher ──────────────────────────────────────────────────── */
+
+function MeetTheTeacher() {
+  return (
+    <section className="px-6 pb-24">
+      <div className="mx-auto max-w-5xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/8 bg-white/[0.03] px-8 py-10 sm:px-12">
+          <div className="pointer-events-none absolute -top-20 right-0 h-64 w-64 rounded-full bg-[#F5DA20]/6 blur-[80px]" />
+          <div className="relative flex flex-col items-center gap-8 sm:flex-row sm:items-center">
+            <div className="shrink-0">
+              <div className="h-24 w-24 overflow-hidden rounded-2xl border border-[#F5DA20]/20 shadow-xl shadow-black/40 sm:h-28 sm:w-28">
+                <ImageWithFallback
+                  src="/oleksandr.jpg"
+                  alt="Oleksandr Vdovychenko"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-1">Behind the site</p>
+              <h2 className="text-xl font-black text-white sm:text-2xl">Oleksandr Vdovychenko</h2>
+              <p className="mt-2 text-sm text-white/50 leading-relaxed max-w-lg">
+                English teacher with 8+ years of experience, polyglot, and a genuine language nerd. Lived across seven countries, speaks five languages, and built this site to make English learning cleaner and more accessible.
+              </p>
+              <a href="/about" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#F5DA20] hover:opacity-80 transition">
+                Read more →
               </a>
             </div>
           </div>

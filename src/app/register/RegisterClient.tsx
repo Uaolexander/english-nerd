@@ -13,6 +13,7 @@ export default function RegisterClient() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [agreed, setAgreed] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const widgetRef = useRef<TurnstileInstance | null>(null);
 
@@ -22,6 +23,11 @@ export default function RegisterClient() {
 
     if (password !== confirm) {
       setError("Passwords do not match.");
+      return;
+    }
+
+    if (!agreed) {
+      setError("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
 
@@ -155,6 +161,25 @@ export default function RegisterClient() {
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-[#F5DA20] focus:ring-1 focus:ring-[#F5DA20] transition"
               />
             </div>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#F5DA20] cursor-pointer"
+              />
+              <span className="text-xs text-white/40 leading-relaxed">
+                I agree to the{" "}
+                <a href="/terms" target="_blank" className="text-[#F5DA20] hover:underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="/privacy-policy" target="_blank" className="text-[#F5DA20] hover:underline">
+                  Privacy Policy
+                </a>
+              </span>
+            </label>
 
             {error && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
