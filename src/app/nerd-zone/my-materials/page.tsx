@@ -101,33 +101,22 @@ export default function MyMaterialsPage() {
 
         {/* Material rows */}
         <div className="mt-10 space-y-4">
-          {MATERIALS.map((m, i) => (
+          {MATERIALS.map((m) => (
             <a
               key={m.title}
               href={`/api/materials/download?slug=${m.slug}`}
-              className="group flex items-center gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-2xl hover:shadow-black/50"
+              className="group flex items-stretch gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-2xl hover:shadow-black/50"
             >
-              {/* Left — cover image */}
+              {/* Left — A4 cover image */}
               <div
-                className="relative h-[120px] w-[120px] shrink-0 overflow-hidden sm:h-[140px] sm:w-[160px]"
-                style={{ background: `linear-gradient(135deg, ${m.accent}22 0%, ${m.accent}08 100%)` }}
+                className="relative w-[90px] shrink-0 overflow-hidden sm:w-[110px]"
+                style={{ background: `linear-gradient(135deg, ${m.accent}22 0%, ${m.accent}08 100%)`, aspectRatio: "210/297" }}
               >
                 <ImageWithFallback
                   src={`/topics/nerd-zone/materials/${m.slug}.jpg`}
                   alt={m.title}
                   className="h-full w-full object-cover"
                 />
-                {/* Fallback content when no image */}
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-100">
-                  <span className="text-4xl sm:text-5xl select-none">{m.emoji}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-black text-black ${m.accentClass}`}>
-                    {m.label}
-                  </span>
-                </div>
-                {/* Number */}
-                <span className="absolute top-2 left-2 text-[11px] font-black text-white/40 tabular-nums drop-shadow">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
                 {/* Right border accent */}
                 <div className="absolute right-0 top-0 h-full w-[3px]" style={{ background: m.accent, opacity: 0.6 }} />
               </div>
