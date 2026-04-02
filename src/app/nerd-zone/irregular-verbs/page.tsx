@@ -151,25 +151,41 @@ export default async function IrregularVerbsPage() {
             </div>
           </div>
 
-          {/* Right: cover image */}
+          {/* Right: cover image — clickable download card */}
           <div className="shrink-0 self-start">
-            <div className="relative w-[190px]">
-              {/* Shadow card behind */}
-              <div className="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-2xl bg-[#F5DA20]/30" />
-              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/topics/nerd-zone/irregular-verbs-50.jpg"
-                  alt="Irregular Verbs PDF cover"
-                  style={{ aspectRatio: "210/297" }}
-                  className="w-full object-cover"
-                />
+            <a
+              href={isLoggedIn
+                ? "/api/materials/download?slug=irregular-verbs-50"
+                : "/login?next=/nerd-zone/irregular-verbs"}
+              className="group relative block w-[190px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg transition-shadow hover:shadow-2xl"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/topics/nerd-zone/irregular-verbs-50.jpg"
+                alt="Irregular Verbs PDF cover"
+                style={{ aspectRatio: "210/297" }}
+                className="w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+
+              {/* PDF badge */}
+              <div className="absolute top-2.5 left-2.5 rounded-full bg-[#F5DA20] px-2 py-0.5 text-[10px] font-black text-black shadow">
+                PDF
               </div>
-              <div className="mt-2.5 flex items-center justify-center gap-1.5">
-                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500">PDF</span>
-                <span className="text-[10px] text-slate-400">A4 · Printable</span>
+
+              {/* Hover overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F5DA20] shadow-lg">
+                  {isLoggedIn ? (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
+                  ) : (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  )}
+                </div>
+                <span className="text-xs font-black text-white">
+                  {isLoggedIn ? "Download PDF" : "Log in to download"}
+                </span>
               </div>
-            </div>
+            </a>
           </div>
 
         </div>
