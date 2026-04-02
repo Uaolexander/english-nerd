@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import DownloadWorksheet from "./DownloadWorksheet";
 
 export const metadata: Metadata = {
   title: "Phrasal Verbs A1 — Nerd Zone — English Nerd",
@@ -64,17 +65,23 @@ export default async function PhrasalVerbsPage() {
           </p>
         </div>
 
-        {/* Level tabs — expandable in future */}
-        <div className="mt-8 flex items-center gap-2">
-          <button className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-black text-white shadow-sm">
-            A1
-          </button>
-          <button className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>
-            A2 <span className="ml-1 text-[10px] font-normal opacity-60">soon</span>
-          </button>
-          <button className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>
-            B1 <span className="ml-1 text-[10px] font-normal opacity-60">soon</span>
-          </button>
+        {/* Level tabs + download button */}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <button className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-black text-white shadow-sm">
+              A1
+            </button>
+            <button className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>
+              A2 <span className="ml-1 text-[10px] font-normal opacity-60">soon</span>
+            </button>
+            <button className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>
+              B1 <span className="ml-1 text-[10px] font-normal opacity-60">soon</span>
+            </button>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <DownloadWorksheet isLoggedIn={isLoggedIn} />
+            <span className="text-[11px] text-slate-400">10 exercises + answer key · PDF</span>
+          </div>
         </div>
 
         {/* Table */}
@@ -123,50 +130,6 @@ export default async function PhrasalVerbsPage() {
           {/* Table footer */}
           <div className="border-t border-slate-100 bg-slate-50 px-5 py-3">
             <span className="text-xs text-slate-400">12 phrasal verbs · A1 level · everyday English</span>
-          </div>
-        </div>
-
-        {/* Worksheet download */}
-        <div className="mt-8 flex flex-col gap-5 overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-slate-50 p-6 sm:flex-row sm:items-center sm:gap-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="rounded-full bg-violet-500 px-2.5 py-0.5 text-[10px] font-black text-white">FREE WORKSHEET</span>
-              <span className="text-[10px] text-slate-400 font-medium">For registered users</span>
-            </div>
-            <h2 className="text-lg font-black text-slate-900">
-              Phrasal Verbs A1 — Fill in the Blanks
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              A printable PDF worksheet with 10 exercises + a full answer key. Use it in class or for self-study.
-            </p>
-          </div>
-
-          <div className="shrink-0 flex flex-col gap-2">
-            {isLoggedIn ? (
-              <a
-                href="/nerd-zone/phrasal-verbs/worksheet"
-                className="inline-flex items-center gap-2.5 rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-md hover:opacity-90 transition"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
-                Open Worksheet
-              </a>
-            ) : (
-              <>
-                <a
-                  href="/login?next=/nerd-zone/phrasal-verbs/worksheet"
-                  className="inline-flex items-center gap-2.5 rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-md hover:opacity-90 transition"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  Log in to download
-                </a>
-                <a
-                  href="/register"
-                  className="text-center text-xs text-slate-500 hover:text-slate-700 transition underline underline-offset-2"
-                >
-                  No account? Register free
-                </a>
-              </>
-            )}
           </div>
         </div>
 
