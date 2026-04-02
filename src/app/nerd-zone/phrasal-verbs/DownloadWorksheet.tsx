@@ -30,15 +30,15 @@ function Header({ tag }: { tag: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#F5DA20", padding: "14px 32px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        {/* EN logo */}
-        <div style={{ width: 28, height: 28, backgroundColor: "#000", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ ...C, fontSize: 10, fontWeight: 900, color: "#F5DA20", lineHeight: 1, display: "block" }}>EN</span>
+        {/* EN logo — lineHeight = height is the only reliable centering in html2canvas */}
+        <div style={{ width: 28, height: 28, backgroundColor: "#000", borderRadius: 8, overflow: "hidden" }}>
+          <span style={{ ...C, display: "block", width: 28, height: 28, lineHeight: "28px", textAlign: "center", fontSize: 10, fontWeight: 900, color: "#F5DA20" }}>EN</span>
         </div>
-        <span style={{ ...C, fontSize: 13, fontWeight: 900, color: "#000", lineHeight: 1 }}>EnglishNerd.cc</span>
+        <span style={{ ...C, fontSize: 13, fontWeight: 900, color: "#000", lineHeight: "20px" }}>EnglishNerd.cc</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ ...C, display: "inline-flex", alignItems: "center", fontSize: 10, fontWeight: 900, backgroundColor: "#000", color: "#F5DA20", padding: "5px 12px", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1 }}>A1 Level</span>
-        <span style={{ ...C, display: "inline-flex", alignItems: "center", fontSize: 10, fontWeight: 900, border: "2px solid #000", color: "#000", padding: "5px 12px", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1 }}>{tag}</span>
+        <span style={{ ...C, display: "inline-block", height: 24, lineHeight: "24px", paddingLeft: 12, paddingRight: 12, fontSize: 10, fontWeight: 900, backgroundColor: "#000", color: "#F5DA20", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.08em" }}>A1 Level</span>
+        <span style={{ ...C, display: "inline-block", height: 24, lineHeight: "22px", paddingLeft: 12, paddingRight: 12, fontSize: 10, fontWeight: 900, border: "2px solid #000", color: "#000", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tag}</span>
       </div>
     </div>
   );
@@ -155,7 +155,7 @@ export default function DownloadWorksheet({ isLoggedIn }: { isLoggedIn: boolean 
           <ol style={{ listStyle: "none", margin: 0, padding: 0, flex: 1 }}>
             {EXERCISES.map(({ before, after }, i) => (
               <li key={i} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
-                <span style={{ ...C, flexShrink: 0, width: 22, height: 22, borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#475569", lineHeight: 1, marginTop: 1 }}>
+                <span style={{ ...C, flexShrink: 0, display: "inline-block", width: 22, height: 22, lineHeight: "22px", textAlign: "center", borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.07)", fontSize: 11, fontWeight: 900, color: "#475569", marginTop: 1 }}>
                   {i + 1}
                 </span>
                 <span style={{ fontSize: 14, color: "#1e293b", fontFamily: "system-ui", lineHeight: 1.6 }}>
@@ -189,8 +189,8 @@ export default function DownloadWorksheet({ isLoggedIn }: { isLoggedIn: boolean 
         <div style={{ flex: 1, padding: "28px 32px", overflowY: "hidden" }}>
           {/* Title */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 16, lineHeight: 1, display: "block" }}>✓</span>
+            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#dcfce7", overflow: "hidden" }}>
+              <span style={{ display: "block", width: 36, height: 36, lineHeight: "36px", textAlign: "center", fontSize: 18 }}>✓</span>
             </div>
             <div>
               <h1 style={{ fontSize: 28, fontWeight: 900, color: "#0f172a", fontFamily: "system-ui", margin: 0 }}>Answer Key</h1>
@@ -203,7 +203,7 @@ export default function DownloadWorksheet({ isLoggedIn }: { isLoggedIn: boolean 
           <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {EXERCISES.map(({ before, answer, after }, i) => (
               <li key={i} style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "flex-start", backgroundColor: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0", padding: "10px 14px" }}>
-                <span style={{ ...C, flexShrink: 0, width: 22, height: 22, borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#475569", lineHeight: 1, marginTop: 1 }}>
+                <span style={{ ...C, flexShrink: 0, display: "inline-block", width: 22, height: 22, lineHeight: "22px", textAlign: "center", borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.07)", fontSize: 11, fontWeight: 900, color: "#475569", marginTop: 1 }}>
                   {i + 1}
                 </span>
                 <span style={{ fontSize: 14, color: "#1e293b", fontFamily: "system-ui", lineHeight: 1.6 }}>
