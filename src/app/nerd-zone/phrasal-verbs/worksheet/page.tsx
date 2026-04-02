@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PrintButton from "./PrintButton";
+import AutoPrint from "./AutoPrint";
 
 export const metadata = {
   title: "Phrasal Verbs A1 Worksheet — English Nerd",
@@ -42,6 +43,8 @@ export default async function WorksheetPage() {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
+
+      <AutoPrint />
 
       {/* Screen wrapper */}
       <div className="min-h-screen bg-slate-100 py-10 print:bg-white print:py-0">
@@ -87,15 +90,15 @@ export default async function WorksheetPage() {
             </div>
 
             {/* Word bank */}
-            <div className="mb-6 overflow-hidden rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50">
-              <div className="border-b border-violet-200 bg-violet-100 px-5 py-2.5">
-                <p className="text-[11px] font-black uppercase tracking-widest text-violet-700">Word Bank — use each verb once</p>
+            <div className="mb-6 overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50">
+              <div className="border-b border-slate-200 bg-slate-100 px-5 py-2.5">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-600">Word Bank — use each verb once</p>
               </div>
               <div className="flex flex-wrap gap-2 px-5 py-4">
                 {WORD_BANK.map((v) => (
                   <span
                     key={v}
-                    className="rounded-xl border border-violet-200 bg-white px-3 py-1.5 text-sm font-bold text-violet-800 shadow-sm"
+                    className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm"
                   >
                     {v}
                   </span>
@@ -112,7 +115,7 @@ export default async function WorksheetPage() {
             <ol className="space-y-5">
               {EXERCISES.map(({ before, after }, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#F5DA20] text-[11px] font-black text-black">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black/8 text-[11px] font-black text-slate-600">
                     {i + 1}
                   </span>
                   <p className="flex-1 text-[15px] leading-relaxed text-slate-800">
@@ -178,7 +181,7 @@ export default async function WorksheetPage() {
             <ol className="space-y-4">
               {EXERCISES.map(({ before, answer, after }, i) => (
                 <li key={i} className="flex gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-black text-emerald-700">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black/8 text-[11px] font-black text-slate-600">
                     {i + 1}
                   </span>
                   <p className="flex-1 text-[15px] leading-relaxed text-slate-800">
