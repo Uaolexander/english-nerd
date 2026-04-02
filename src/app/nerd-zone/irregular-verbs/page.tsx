@@ -9,56 +9,56 @@ export const metadata: Metadata = {
 };
 
 const VERBS: [string, string, string][] = [
-  ["be",         "was / were",     "been"],
-  ["begin",      "began",          "begun"],
-  ["break",      "broke",          "broken"],
-  ["bring",      "brought",        "brought"],
-  ["build",      "built",          "built"],
-  ["buy",        "bought",         "bought"],
-  ["catch",      "caught",         "caught"],
-  ["choose",     "chose",          "chosen"],
-  ["come",       "came",           "come"],
-  ["do",         "did",            "done"],
-  ["drink",      "drank",          "drunk"],
-  ["eat",        "ate",            "eaten"],
-  ["fall",       "fell",           "fallen"],
-  ["feel",       "felt",           "felt"],
-  ["find",       "found",          "found"],
-  ["fly",        "flew",           "flown"],
-  ["forget",     "forgot",         "forgotten"],
-  ["get",        "got",            "gotten"],
-  ["give",       "gave",           "given"],
-  ["go",         "went",           "gone"],
-  ["have",       "had",            "had"],
-  ["hear",       "heard",          "heard"],
-  ["keep",       "kept",           "kept"],
-  ["know",       "knew",           "known"],
+  ["be",         "was / were",       "been"],
+  ["begin",      "began",            "begun"],
+  ["break",      "broke",            "broken"],
+  ["bring",      "brought",          "brought"],
+  ["build",      "built",            "built"],
+  ["buy",        "bought",           "bought"],
+  ["catch",      "caught",           "caught"],
+  ["choose",     "chose",            "chosen"],
+  ["come",       "came",             "come"],
+  ["do",         "did",              "done"],
+  ["drink",      "drank",            "drunk"],
+  ["eat",        "ate",              "eaten"],
+  ["fall",       "fell",             "fallen"],
+  ["feel",       "felt",             "felt"],
+  ["find",       "found",            "found"],
+  ["fly",        "flew",             "flown"],
+  ["forget",     "forgot",           "forgotten"],
+  ["get",        "got",              "gotten"],
+  ["give",       "gave",             "given"],
+  ["go",         "went",             "gone"],
+  ["have",       "had",              "had"],
+  ["hear",       "heard",            "heard"],
+  ["keep",       "kept",             "kept"],
+  ["know",       "knew",             "known"],
   ["learn",      "learned / learnt", "learned / learnt"],
-  ["leave",      "left",           "left"],
-  ["lose",       "lost",           "lost"],
-  ["make",       "made",           "made"],
-  ["meet",       "met",            "met"],
-  ["pay",        "paid",           "paid"],
-  ["put",        "put",            "put"],
-  ["read",       "read",           "read"],
-  ["run",        "ran",            "run"],
-  ["say",        "said",           "said"],
-  ["see",        "saw",            "seen"],
-  ["sell",       "sold",           "sold"],
-  ["send",       "sent",           "sent"],
-  ["sit",        "sat",            "sat"],
-  ["sleep",      "slept",          "slept"],
-  ["speak",      "spoke",          "spoken"],
-  ["spend",      "spent",          "spent"],
-  ["stand",      "stood",          "stood"],
-  ["take",       "took",           "taken"],
-  ["teach",      "taught",         "taught"],
-  ["tell",       "told",           "told"],
-  ["think",      "thought",        "thought"],
-  ["understand", "understood",     "understood"],
-  ["wear",       "wore",           "worn"],
-  ["win",        "won",            "won"],
-  ["write",      "wrote",          "written"],
+  ["leave",      "left",             "left"],
+  ["lose",       "lost",             "lost"],
+  ["make",       "made",             "made"],
+  ["meet",       "met",              "met"],
+  ["pay",        "paid",             "paid"],
+  ["put",        "put",              "put"],
+  ["read",       "read",             "read"],
+  ["run",        "ran",              "run"],
+  ["say",        "said",             "said"],
+  ["see",        "saw",              "seen"],
+  ["sell",       "sold",             "sold"],
+  ["send",       "sent",             "sent"],
+  ["sit",        "sat",              "sat"],
+  ["sleep",      "slept",            "slept"],
+  ["speak",      "spoke",            "spoken"],
+  ["spend",      "spent",            "spent"],
+  ["stand",      "stood",            "stood"],
+  ["take",       "took",             "taken"],
+  ["teach",      "taught",           "taught"],
+  ["tell",       "told",             "told"],
+  ["think",      "thought",          "thought"],
+  ["understand", "understood",       "understood"],
+  ["wear",       "wore",             "worn"],
+  ["win",        "won",              "won"],
+  ["write",      "wrote",            "written"],
 ];
 
 export default async function IrregularVerbsPage() {
@@ -81,10 +81,10 @@ export default async function IrregularVerbsPage() {
           <span className="text-slate-700 font-medium">Irregular Verbs</span>
         </nav>
 
-        {/* Hero */}
-        <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-14">
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        <div className="mt-6 flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-14">
 
-          {/* Left: text + download */}
+          {/* Left */}
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="rounded-full bg-sky-100 px-3 py-0.5 text-[11px] font-black text-sky-700">Grammar</span>
@@ -104,22 +104,23 @@ export default async function IrregularVerbsPage() {
               The 50 most essential verb forms in English. Master these and you&apos;ll understand almost any sentence you read or hear.
             </p>
 
-            {/* Stats row */}
-            <div className="mt-5 flex flex-wrap gap-3">
-              {[
-                { icon: "🔁", value: "50", label: "verbs" },
-                { icon: "📋", value: "3", label: "forms each" },
-                { icon: "⭐", value: "A2–C1", label: "levels" },
-              ].map(({ icon, value, label }) => (
-                <div key={label} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-                  <span className="text-base">{icon}</span>
-                  <span className="text-sm font-black text-slate-900">{value}</span>
-                  <span className="text-xs text-slate-400">{label}</span>
-                </div>
-              ))}
+            {/* Stats — color-coded for each column */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <div className="flex items-center gap-2.5 rounded-xl bg-white border border-slate-200 px-4 py-2.5 shadow-sm">
+                <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+                <span className="text-sm font-black text-slate-900">Base form</span>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                <span className="text-sm font-black text-emerald-800">Past Simple</span>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-xl bg-sky-50 border border-sky-200 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                <span className="text-sm font-black text-sky-800">Past Participle</span>
+              </div>
             </div>
 
-            {/* Download button */}
+            {/* Download */}
             <div className="mt-6">
               {isLoggedIn ? (
                 <a
@@ -151,60 +152,115 @@ export default async function IrregularVerbsPage() {
           </div>
 
           {/* Right: cover image */}
-          <div className="w-full max-w-[220px] shrink-0 self-start lg:mt-2">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/topics/nerd-zone/irregular-verbs-50.jpg"
-                alt="Irregular Verbs PDF cover"
-                style={{ aspectRatio: "210/297" }}
-                className="w-full object-cover"
-                onError={undefined}
-              />
+          <div className="shrink-0 self-start">
+            <div className="relative w-[190px]">
+              {/* Shadow card behind */}
+              <div className="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-2xl bg-[#F5DA20]/30" />
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/topics/nerd-zone/irregular-verbs-50.jpg"
+                  alt="Irregular Verbs PDF cover"
+                  style={{ aspectRatio: "210/297" }}
+                  className="w-full object-cover"
+                />
+              </div>
+              <div className="mt-2.5 flex items-center justify-center gap-1.5">
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500">PDF</span>
+                <span className="text-[10px] text-slate-400">A4 · Printable</span>
+              </div>
             </div>
-            <p className="mt-2 text-center text-[11px] text-slate-400">A4 · Printable PDF</p>
           </div>
 
         </div>
 
-        {/* Table */}
+        {/* ── Table ─────────────────────────────────────────────────────── */}
         <div className="mt-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {/* Table header */}
-          <div className="grid grid-cols-[2rem_1fr_1fr_1fr] border-b border-slate-100 bg-slate-50 px-5 py-3.5 gap-3">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">#</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Base form</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Past Simple</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-sky-600">Past Participle</span>
+
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 grid grid-cols-[2.5rem_1fr_1fr_1fr] gap-0 border-b-2 border-slate-200 bg-white">
+            <div className="px-4 py-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">#</span>
+            </div>
+            <div className="flex items-center gap-2 border-l border-slate-100 px-4 py-4">
+              <span className="h-2 w-2 rounded-full bg-slate-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Base form</span>
+            </div>
+            <div className="flex items-center gap-2 border-l border-emerald-100 bg-emerald-50/60 px-4 py-4">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Past Simple</span>
+            </div>
+            <div className="flex items-center gap-2 border-l border-sky-100 bg-sky-50/60 px-4 py-4">
+              <span className="h-2 w-2 rounded-full bg-sky-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-sky-700">Past Participle</span>
+            </div>
           </div>
 
-          <div className="divide-y divide-slate-50">
+          {/* Rows */}
+          <div>
             {VERBS.map(([base, past, participle], i) => (
               <div
                 key={base}
-                className={`grid grid-cols-[2rem_1fr_1fr_1fr] items-center gap-3 px-5 py-3 transition hover:bg-amber-50/60 ${
-                  i % 2 === 1 ? "bg-slate-50/50" : ""
+                className={`group grid grid-cols-[2.5rem_1fr_1fr_1fr] gap-0 border-b border-slate-50 transition-colors hover:bg-[#F5DA20]/8 last:border-0 ${
+                  i % 2 === 1 ? "bg-slate-50/40" : "bg-white"
                 }`}
               >
-                <span className="text-[11px] font-bold text-slate-300">{i + 1}</span>
-                <span className="text-sm font-black text-slate-900">{base}</span>
-                <span className="text-sm font-semibold text-emerald-700">{past}</span>
-                <span className="text-sm font-semibold text-sky-700">{participle}</span>
+                {/* Number */}
+                <div className="flex items-center px-4 py-3.5">
+                  <span className="text-[11px] font-bold text-slate-300 group-hover:text-slate-400">{i + 1}</span>
+                </div>
+
+                {/* Base form */}
+                <div className="flex items-center border-l border-slate-50 px-4 py-3.5 group-hover:border-[#F5DA20]/20">
+                  <span className="text-sm font-black text-slate-900">{base}</span>
+                </div>
+
+                {/* Past Simple */}
+                <div className="flex items-center border-l border-emerald-50 bg-emerald-50/30 px-4 py-3.5 group-hover:bg-emerald-50/60">
+                  <span className="inline-flex rounded-lg bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800">
+                    {past}
+                  </span>
+                </div>
+
+                {/* Past Participle */}
+                <div className="flex items-center border-l border-sky-50 bg-sky-50/30 px-4 py-3.5 group-hover:bg-sky-50/60">
+                  <span className="inline-flex rounded-lg bg-sky-100 px-2.5 py-1 text-sm font-semibold text-sky-800">
+                    {participle}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
+
+          {/* Table footer */}
+          <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-between">
+            <span className="text-xs text-slate-400">50 irregular verbs · sorted alphabetically</span>
+            {isLoggedIn && (
+              <a
+                href="/api/materials/download?slug=irregular-verbs-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-black text-black hover:opacity-90 transition"
+              >
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
+                Download PDF
+              </a>
+            )}
+          </div>
         </div>
 
-        {/* Tip */}
-        <div className="mt-6 rounded-2xl border border-amber-100 bg-amber-50 px-5 py-4">
-          <p className="text-sm font-semibold text-amber-900">
-            💡 Tip:{" "}
-            <span className="font-normal text-amber-800">
-              Don&apos;t try to memorise all 50 at once. Start with the top 20 (be, go, have, do, make, say, get, come, know, take, give, find, think, see, tell, become, leave, feel, put, bring) — these cover 80% of everyday English.
-            </span>
-          </p>
+        {/* ── Tip ─────────────────────────────────────────────────────── */}
+        <div className="mt-5 flex gap-4 rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-base">
+            💡
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-900">Study tip</p>
+            <p className="mt-0.5 text-sm text-amber-800 leading-relaxed">
+              Don&apos;t try to memorise all 50 at once. Start with the top 20 — <em>be, go, have, do, make, say, get, come, know, take, give, find, think, see, tell, become, leave, feel, put, bring</em> — they cover 80% of everyday English.
+            </p>
+          </div>
         </div>
 
-        {/* Bottom nav */}
+        {/* ── Bottom nav ───────────────────────────────────────────────── */}
         <div className="mt-10 border-t border-slate-100 pt-6 flex items-center justify-between">
           <a
             href="/nerd-zone"
@@ -214,13 +270,13 @@ export default async function IrregularVerbsPage() {
             Back to Nerd Zone
           </a>
 
-          {isLoggedIn && (
+          {!isLoggedIn && (
             <a
-              href="/api/materials/download?slug=irregular-verbs-50"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#F5DA20] bg-[#F5DA20]/10 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-[#F5DA20]/20 transition"
+              href="/login?next=/nerd-zone/irregular-verbs"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-4 py-2.5 text-sm font-bold text-black hover:opacity-90 transition shadow-sm"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
-              Download PDF
+              Log in to download PDF
             </a>
           )}
         </div>
