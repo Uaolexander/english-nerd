@@ -74,7 +74,7 @@ export default async function PhrasalVerbsC1Page() {
         <div className="mt-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="rounded-full bg-violet-100 px-3 py-0.5 text-[11px] font-black text-violet-700">Phrasal Verbs</span>
-            <span className="rounded-full bg-red-500 px-3 py-0.5 text-[11px] font-black text-white">C1</span>
+            <span className="rounded-full bg-sky-500 px-3 py-0.5 text-[11px] font-black text-white">C1</span>
             <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Advanced</span>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.05] md:text-6xl">
@@ -93,7 +93,7 @@ export default async function PhrasalVerbsC1Page() {
           <div className="flex items-center gap-2">
             {LEVELS.map(({ label, href, active }) => (
               active ? (
-                <span key={label} className="rounded-xl bg-red-500 px-5 py-2 text-sm font-black text-white shadow-sm">{label}</span>
+                <span key={label} className="rounded-xl bg-sky-500 px-5 py-2 text-sm font-black text-white shadow-sm">{label}</span>
               ) : (
                 <a key={label} href={href} className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-500 hover:border-slate-300 hover:text-slate-700 transition">{label}</a>
               )
