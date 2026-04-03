@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 type Word = { word: string; pos: string; meaning: string; example: string };
-type Level = "A1" | "B1" | "B2" | "C1";
+type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 
 const DownloadPDFButton = dynamic(() => import("./DownloadPDFButton"), { ssr: false });
 

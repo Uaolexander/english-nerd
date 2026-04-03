@@ -4,10 +4,10 @@ import { useState } from "react";
 import jsPDF from "jspdf";
 
 type Word = { word: string; pos: string; meaning: string; example: string };
-type Level = "A1" | "B1" | "B2" | "C1";
+type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 
 const H_RGB: Record<Level, [number, number, number]> = {
-  A1: [245, 218, 32], B1: [124, 58, 237], B2: [234, 88, 12], C1: [2, 132, 199],
+  A1: [245, 218, 32], A2: [52, 211, 153], B1: [124, 58, 237], B2: [234, 88, 12], C1: [2, 132, 199],
 };
 const D_RGB: Record<Level, [number, number, number]> = {
   A1: [150, 118, 5], B1: [76, 29, 149], B2: [154, 52, 18], C1: [7, 89, 133],

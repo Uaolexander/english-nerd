@@ -470,7 +470,7 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
               onClick={startGame}
               className="shrink-0 rounded-xl bg-[#F5DA20] px-5 py-2 text-sm font-black text-black transition hover:scale-105 hover:shadow-[0_0_20px_rgba(245,218,32,0.35)] active:scale-95"
             >
-              Play →
+              Play
             </button>
           </div>
         </div>

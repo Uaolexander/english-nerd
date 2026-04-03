@@ -1,4 +1,6 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata = {
   title: "Nerd Zone — English Nerd",
@@ -224,7 +226,11 @@ function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function NerdZonePage() {
+export default async function NerdZonePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   const word = getWordOfDay();
   const { badge } = levelColors(word.level);
 
@@ -338,64 +344,86 @@ export default function NerdZonePage() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-white/8">
-            {/* Blurred certificate preview */}
-            <div className="blur-[3px] saturate-50 pointer-events-none select-none">
-              <div className="bg-white p-8 sm:p-12">
-                <div className="max-w-xl mx-auto border-[3px] border-[#F5DA20] rounded-2xl p-8 relative">
-                  <div className="absolute top-3 left-3 h-4 w-4 border-t-2 border-l-2 border-[#F5DA20]/60 rounded-tl" />
-                  <div className="absolute top-3 right-3 h-4 w-4 border-t-2 border-r-2 border-[#F5DA20]/60 rounded-tr" />
-                  <div className="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[#F5DA20]/60 rounded-bl" />
-                  <div className="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[#F5DA20]/60 rounded-br" />
-                  <div className="text-center">
-                    <div className="inline-flex items-center gap-2 mb-4">
-                      <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
-                        <span className="text-[10px] font-black text-[#F5DA20]">EN</span>
+          {isPro ? (
+            /* PRO: clear CTA to take the test */
+            <div className="relative overflow-hidden rounded-2xl border border-[#F5DA20]/20 bg-[#F5DA20]/5 p-8 sm:p-10">
+              <div aria-hidden className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#F5DA20]/10 blur-3xl" />
+              <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#F5DA20] shadow-lg">
+                    <svg className="h-8 w-8 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-white">You&apos;re PRO — earn your certificate!</p>
+                    <p className="mt-1 text-sm text-white/55 max-w-sm">Take the Placement Test to find your level. We&apos;ll generate a shareable PDF certificate you can download and keep.</p>
+                  </div>
+                </div>
+                <a
+                  href="/tests"
+                  className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black shadow-md transition hover:bg-[#e8cf00] hover:shadow-[0_4px_20px_rgba(245,218,32,0.4)]"
+                >
+                  Take the Placement Test
+                </a>
+              </div>
+            </div>
+          ) : (
+            /* Non-PRO: blurred preview + lock overlay */
+            <div className="relative overflow-hidden rounded-2xl border border-white/8">
+              <div className="blur-[3px] saturate-50 pointer-events-none select-none">
+                <div className="bg-white p-8 sm:p-12">
+                  <div className="max-w-xl mx-auto border-[3px] border-[#F5DA20] rounded-2xl p-8 relative">
+                    <div className="absolute top-3 left-3 h-4 w-4 border-t-2 border-l-2 border-[#F5DA20]/60 rounded-tl" />
+                    <div className="absolute top-3 right-3 h-4 w-4 border-t-2 border-r-2 border-[#F5DA20]/60 rounded-tr" />
+                    <div className="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[#F5DA20]/60 rounded-bl" />
+                    <div className="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[#F5DA20]/60 rounded-br" />
+                    <div className="text-center">
+                      <div className="inline-flex items-center gap-2 mb-4">
+                        <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
+                          <span className="text-[10px] font-black text-[#F5DA20]">EN</span>
+                        </div>
+                        <span className="text-sm font-black text-slate-900">EnglishNerd.cc</span>
                       </div>
-                      <span className="text-sm font-black text-slate-900">EnglishNerd.cc</span>
-                    </div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">This certifies that</p>
-                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
-                    <div className="h-7 w-48 mx-auto rounded-lg bg-slate-100 mb-4" />
-                    <p className="text-xs text-slate-400 mb-1">has successfully demonstrated</p>
-                    <div className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-1.5 my-2">
-                      <span className="text-sm font-black text-white">B2 Level English</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2 mb-4">with a score of 87% · April 2026</p>
-                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-[#F5DA20] flex items-center justify-center">
-                        <svg className="h-3 w-3 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">This certifies that</p>
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
+                      <div className="h-7 w-48 mx-auto rounded-lg bg-slate-100 mb-4" />
+                      <p className="text-xs text-slate-400 mb-1">has successfully demonstrated</p>
+                      <div className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-1.5 my-2">
+                        <span className="text-sm font-black text-white">B2 Level English</span>
                       </div>
-                      <span className="text-xs font-bold text-slate-500">Verified by English Nerd</span>
+                      <p className="text-xs text-slate-400 mt-2 mb-4">with a score of 87% · April 2026</p>
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-[#F5DA20] flex items-center justify-center">
+                          <svg className="h-3 w-3 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <span className="text-xs font-bold text-slate-500">Verified by English Nerd</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Pro overlay */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0E0F13]/80 backdrop-blur-[1px]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F5DA20] shadow-xl">
-                <svg className="h-7 w-7 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              </div>
-              <div className="text-center px-4">
-                <p className="text-lg font-black text-white">Earn your certificate</p>
-                <p className="mt-1 text-sm text-white/55 max-w-xs">Complete the Placement Test and get a shareable PDF certificate to prove your English level. Pro members only.</p>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
-                <a
-                  href="/pro"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black shadow-md transition hover:bg-[#e8cf00] hover:shadow-[0_4px_20px_rgba(245,218,32,0.4)]"
-                >
-                  Get Pro — Unlock certificate
-                </a>
-                <a href="/tests" className="text-sm font-semibold text-white/40 hover:text-white/70 transition">
-                  Take the test first →
-                </a>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0E0F13]/80 backdrop-blur-[1px]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F5DA20] shadow-xl">
+                  <svg className="h-7 w-7 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                </div>
+                <div className="text-center px-4">
+                  <p className="text-lg font-black text-white">Earn your certificate</p>
+                  <p className="mt-1 text-sm text-white/55 max-w-xs">Complete the Placement Test and get a shareable PDF certificate to prove your English level. Pro members only.</p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
+                  <a
+                    href="/pro"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black shadow-md transition hover:bg-[#e8cf00] hover:shadow-[0_4px_20px_rgba(245,218,32,0.4)]"
+                  >
+                    Get Pro — Unlock certificate
+                  </a>
+                  <a href="/tests" className="text-sm font-semibold text-white/40 hover:text-white/70 transition">
+                    Take the test first →
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
       </div>
