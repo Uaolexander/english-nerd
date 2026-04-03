@@ -43,6 +43,27 @@ body {
   animation: shimmer 1.6s infinite linear;
 }
 
+@keyframes pro-shine {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(300%) skewX(-15deg); }
+}
+.pro-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: pro-shine 2.4s ease-in-out infinite;
+}
+
+@keyframes pro-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,218,32,0.55); }
+  50%       { box-shadow: 0 0 0 5px rgba(245,218,32,0); }
+}
+.pro-avatar-ring {
+  animation: pro-pulse-ring 2s ease-in-out infinite;
+}
+
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }

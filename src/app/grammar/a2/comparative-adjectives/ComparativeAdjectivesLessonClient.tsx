@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "old → comparative", options: ["more old", "oldest", "older", "oldier"], answer: 2 },
+  { q: "beautiful → comparative", options: ["beautifuler", "more beautiful", "beautifuller", "beautiest"], answer: 1 },
+  { q: "big → comparative", options: ["biger", "bigest", "more big", "bigger"], answer: 3 },
+  { q: "happy → comparative", options: ["happyer", "more happy", "happiest", "happier"], answer: 3 },
+  { q: "good → comparative", options: ["gooder", "more good", "better", "best"], answer: 2 },
+  { q: "bad → comparative", options: ["badder", "more bad", "worst", "worse"], answer: 3 },
+  { q: "thin → comparative", options: ["thiner", "more thin", "thinnest", "thinner"], answer: 3 },
+  { q: "far → comparative", options: ["farer", "farther", "more far", "farest"], answer: 1 },
+  { q: "hot → comparative", options: ["hoter", "more hot", "hottest", "hotter"], answer: 3 },
+  { q: "easy → comparative", options: ["more easy", "easyier", "easiest", "easier"], answer: 3 },
+  { q: "interesting → comparative", options: ["interestinger", "most interesting", "more interesting", "interestingier"], answer: 2 },
+  { q: "tall → comparative", options: ["more tall", "tallest", "tallier", "taller"], answer: 3 },
+  { q: "safe → comparative", options: ["safier", "more safe", "safest", "safer"], answer: 3 },
+  { q: "busy → comparative", options: ["busyer", "more busy", "busiest", "busier"], answer: 3 },
+  { q: "comfortable → comparative", options: ["comfortabler", "most comfortable", "more comfortable", "comfortablier"], answer: 2 },
+  { q: "She is ___ than her sister. (tall)", options: ["more tall", "tallest", "tallier", "taller"], answer: 3 },
+  { q: "little → comparative", options: ["littler", "least", "more little", "less"], answer: 3 },
+  { q: "much → comparative", options: ["mucher", "most", "more", "morer"], answer: 2 },
+  { q: "noisy → comparative", options: ["more noisy", "noisiest", "noisier", "noisyer"], answer: 2 },
+  { q: "famous → comparative", options: ["famouser", "famousier", "famousest", "more famous"], answer: 3 },
+];
+
 export default function ComparativeAdjectivesLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -118,6 +150,77 @@ export default function ComparativeAdjectivesLessonClient() {
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Comparative Adjectives",
+        subtitle: "-er / more — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Short adjectives: add -er. Long adjectives: more + adj. Always use 'than' after the comparative.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct comparative form.", questions: [
+            "old → ___ (older / more old / most old)",
+            "beautiful → ___ (more beautiful / beautifuler / beautifuller)",
+            "big → ___ (bigger / more big / bigest)",
+            "happy → ___ (happier / more happy / happyer)",
+            "expensive → ___ (more expensive / expensiver / expensiveer)",
+            "good → ___ (better / more good / gooder)",
+            "bad → ___ (worse / badder / more bad)",
+            "interesting → ___ (more interesting / interestinger / most interesting)",
+            "thin → ___ (thinner / more thin / thiner)",
+            "far → ___ (further / farer / more far)",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the comparative form. Do not include 'than'.", questions: [
+            "tall → ___",
+            "modern → ___",
+            "hot → ___",
+            "difficult → ___",
+            "young → ___",
+            "lazy → ___",
+            "comfortable → ___",
+            "safe → ___",
+            "busy → ___",
+            "famous → ___",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the correct comparative to complete the sentence.", questions: [
+            "My new car is ___ than my old one. (faster / more fast / most fast)",
+            "This book is ___ than the film. (more interesting / interestinger / most interesting)",
+            "She speaks English ___ than her sister. (more good / gooder / better)",
+            "Today is even ___ than yesterday. (hotter / more hot / hottest)",
+            "The second exam was ___ the first. (easier than / more easy than / easiest than)",
+            "His second novel was ___ his first. (badder than / more bad than / worse than)",
+            "This flat is ___ the one we saw yesterday. (more expensive than / expensiver than / most expensive than)",
+            "Cities are getting ___ every year. (noisier / more noisy / noisiest)",
+            "He's ___ he looks. (older than / more old than / oldest than)",
+            "This design is ___ the original. (more creative than / creativer than / most creative than)",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write comparative + than (e.g. heavier than, more patient than).", questions: [
+            "This bag is ___ (heavy) the one I had before.",
+            "She is ___ (patient) her brother.",
+            "The new phone is ___ (expensive) the old model.",
+            "He runs ___ (fast) anyone else in the team.",
+            "My results were ___ (bad) I expected.",
+            "Today's weather is ___ (warm) yesterday.",
+            "This exercise is ___ (difficult) the previous one.",
+            "She looks ___ (happy) she did last year.",
+            "The traffic today is ___ (bad) usual.",
+            "This hotel is ___ (comfortable) the last one we stayed in.",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — comparative forms", answers: ["older","more beautiful","bigger","happier","more expensive","better","worse","more interesting","thinner","further"] },
+          { exercise: 2, subtitle: "Medium — write comparative", answers: ["taller","more modern","hotter","more difficult","younger","lazier","more comfortable","safer","busier","more famous"] },
+          { exercise: 3, subtitle: "Hard — complete the sentence", answers: ["faster","more interesting","better","hotter","easier than","worse than","more expensive than","noisier","older than","more creative than"] },
+          { exercise: 4, subtitle: "Harder — comparative + than", answers: ["heavier than","more patient than","more expensive than","faster than","worse than","warmer than","more difficult than","happier than","worse than","more comfortable than"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -140,18 +243,23 @@ export default function ComparativeAdjectivesLessonClient() {
         Use comparative adjectives to compare two people or things. Short adjectives add <b>-er + than</b>. Long adjectives use <b>more + adjective + than</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-comparative-adjectives" subject="Comparative Adjectives" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +382,32 @@ export default function ComparativeAdjectivesLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

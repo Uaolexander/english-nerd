@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Past Simple Exercises — Practice English Grammar | English Nerd",
@@ -202,7 +203,7 @@ export default function PastSimplePage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="Regular and irregular verbs, did/didn't, and comparison with Past Continuous" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/past-simple" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/past-simple" />
         </div>
       </div>
     </main>

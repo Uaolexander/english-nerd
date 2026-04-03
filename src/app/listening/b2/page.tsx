@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata: Metadata = {
   title: "B2 Listening Practice — English Nerd",
@@ -31,7 +33,11 @@ const EXERCISES: Exercise[] = [
   },
 ];
 
-export default function ListeningB2Page() {
+export default async function ListeningB2Page() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glow */}
@@ -99,20 +105,93 @@ export default function ListeningB2Page() {
           </div>
 
           {/* Layout */}
-          <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
+          {!isPro ? (
+            <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
 
-            {/* Left ad */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs font-semibold text-white/30">ADVERTISEMENT</p>
-                <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-white/8 bg-black/30 text-sm text-white/20">
-                  300 × 600
+              {/* Left ad */}
+              <aside className="hidden lg:block">
+                <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold text-white/30">ADVERTISEMENT</p>
+                  <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-white/8 bg-black/30 text-sm text-white/20">
+                    300 × 600
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
 
-            {/* Exercise cards */}
-            <section>
+              {/* Exercise cards */}
+              <section>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {EXERCISES.map((ex) => (
+                    <article
+                      key={ex.slug}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative aspect-video w-full overflow-hidden bg-black/40">
+                        <ImageWithFallback
+                          src={ex.image}
+                          alt={ex.title}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                        {/* Play overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition duration-300 group-hover:opacity-100">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F5DA20] shadow-lg">
+                            <svg className="h-6 w-6 translate-x-0.5 text-black" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Badges */}
+                        <div className="absolute left-3 top-3 flex items-center gap-2">
+                          <span className="rounded-full bg-orange-400 px-2.5 py-0.5 text-[10px] font-black text-black">B2</span>
+                          <span className="rounded-full border border-white/20 bg-black/50 px-2.5 py-0.5 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
+                            {ex.tag}
+                          </span>
+                        </div>
+                        {ex.isNew && (
+                          <span className="absolute right-3 top-3 rounded-full bg-emerald-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-black">
+                            New
+                          </span>
+                        )}
+                        {/* Duration */}
+                        <span className="absolute bottom-2.5 right-3 rounded-lg bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/70 backdrop-blur-sm">
+                          {ex.duration}
+                        </span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <h2 className="text-lg font-black text-white leading-snug">{ex.title}</h2>
+                        <p className="mt-2 text-sm text-white/45 leading-relaxed">{ex.description}</p>
+                        <div className="mt-4 flex items-center gap-3">
+                          <a
+                            href={`/listening/b2/${ex.slug}`}
+                            className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            Start Exercise
+                          </a>
+                          <span className="text-xs text-white/30">10 questions</span>
+                        </div>
+                      </div>
+
+                      {/* Full card link */}
+                      <a href={`/listening/b2/${ex.slug}`} className="absolute inset-0" aria-label={ex.title} />
+                    </article>
+                  ))}
+
+                  {/* Coming soon placeholder */}
+                  <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-2xl">🎙️</div>
+                    <p className="text-sm font-bold text-white/30">More exercises coming soon</p>
+                    <p className="text-xs text-white/20">New dialogues and talks added regularly</p>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          ) : (
+            <section className="mt-10">
               <div className="grid gap-6 sm:grid-cols-2">
                 {EXERCISES.map((ex) => (
                   <article
@@ -181,8 +260,7 @@ export default function ListeningB2Page() {
                 </div>
               </div>
             </section>
-
-          </div>
+          )}
         </div>
       </div>
     </main>

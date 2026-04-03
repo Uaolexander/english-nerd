@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I enjoy ___ in the park.", options: ["walk", "to walk", "walking", "walked"], answer: 2 },
+  { q: "She hates ___ up early.", options: ["get", "to get", "getting", "got"], answer: 2 },
+  { q: "They finished ___ the project.", options: ["complete", "to complete", "completing", "completed"], answer: 2 },
+  { q: "He avoided ___ the topic.", options: ["mention", "to mention", "mentioning", "mentioned"], answer: 2 },
+  { q: "Do you mind ___ the window?", options: ["open", "to open", "opening", "opened"], answer: 2 },
+  { q: "She kept ___ despite the noise.", options: ["study", "to study", "studying", "studied"], answer: 2 },
+  { q: "I miss ___ my family.", options: ["see", "to see", "seeing", "saw"], answer: 2 },
+  { q: "He stopped ___.", options: ["smoke", "to smoke", "smoking", "smoked"], answer: 2 },
+  { q: "She suggested ___ a walk.", options: ["take", "to take", "taking", "took"], answer: 2 },
+  { q: "I look forward to ___ you.", options: ["see", "to see", "seeing", "seen"], answer: 2 },
+  { q: "___ is great for your health.", options: ["Swim", "Swimming", "To swim", "Swam"], answer: 1 },
+  { q: "She is good at ___.", options: ["dance", "dancing", "to dance", "danced"], answer: 1 },
+  { q: "Thank you for ___!", options: ["help", "to help", "helping", "helped"], answer: 2 },
+  { q: "swim → ___", options: ["swiming", "swimimg", "swimming", "swimiming"], answer: 2 },
+  { q: "make → ___", options: ["makeing", "makking", "making", "makin"], answer: 2 },
+  { q: "run → ___", options: ["runing", "running", "runeing", "runinge"], answer: 1 },
+  { q: "lie → ___", options: ["lieing", "lying", "liying", "lie-ing"], answer: 1 },
+  { q: "I'm thinking about ___ a new car.", options: ["buy", "to buy", "buying", "bought"], answer: 2 },
+  { q: "Instead of ___, why not call?", options: ["write", "writing", "to write", "wrote"], answer: 1 },
+  { q: "He is interested in ___ abroad.", options: ["work", "to work", "working", "worked"], answer: 2 },
+];
+
 export default function VerbIngLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,119 @@ export default function VerbIngLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Verb + -ing",
+        subtitle: "enjoy, finish, avoid, mind… + spelling rules — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "These verbs take -ing: enjoy, finish, avoid, mind, miss, keep, suggest, stop. Also use -ing after prepositions and as a sentence subject.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct -ing form after each verb.",
+            questions: [
+              "I enjoy ___ in the park on Sundays. (walk / to walk / walking)",
+              "She hates ___ up early. (get / to get / getting)",
+              "They finished ___ the project. (complete / to complete / completing)",
+              "He avoided ___ the difficult subject. (mention / to mention / mentioning)",
+              "Do you mind ___ the window? (open / to open / opening)",
+              "She kept ___ despite all the noise. (study / to study / studying)",
+              "I miss ___ my family. (see / to see / seeing)",
+              "He stopped ___. (smoke / to smoke / smoking)",
+              "She suggested ___ a walk. (take / to take / taking)",
+              "I look forward to ___ you again. (see / to see / seeing)",
+            ],
+            hint: "walking / getting / completing / mentioning / opening / studying / seeing / smoking / taking / seeing",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the correct -ing form of the verb in brackets.",
+            questions: [
+              "She enjoys (swim) ___ in the sea.",
+              "He finished (write) ___ the report.",
+              "I don't mind (wait) ___ a few minutes.",
+              "She avoided (make) ___ eye contact.",
+              "They kept (argue) ___ about nothing.",
+              "He misses (live) ___ near the city.",
+              "I can't help (laugh) ___ at his jokes.",
+              "She stopped (run) ___ and caught her breath.",
+              "Do you enjoy (cook) ___ Italian food?",
+              "I look forward to (hear) ___ from you.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the correct form. Think about prepositions and gerund subjects.",
+            questions: [
+              "___ is great for your health. (Swim / Swimming / To swim)",
+              "___ a foreign language takes time. (Learn / To learn / Learning)",
+              "She is good at ___. (dance / dancing / to dance)",
+              "He is interested in ___ abroad. (work / to work / working)",
+              "What about ___ for a walk? (go / to go / going)",
+              "Thank you for ___! (help / to help / helping)",
+              "Instead of ___, why don't you call? (write / writing / to write)",
+              "I'm thinking about ___ a new car. (buy / to buy / buying)",
+              "___ is my favourite hobby. (Cook / To cook / Cooking)",
+              "He's not very good at ___ decisions. (make / making / to make)",
+            ],
+            hint: "Swimming / Learning / dancing / working / going / helping / writing / buying / Cooking / making",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write the -ing form of the verb in brackets. Watch the spelling!",
+            questions: [
+              "She is (sit) ___ by the window.",
+              "I am (run) ___ late — wait for me!",
+              "He stopped (make) ___ excuses.",
+              "They kept (swim) ___ for an hour.",
+              "She's (lie) ___ on the sofa.",
+              "I'm (plan) ___ a surprise party.",
+              "He began (write) ___ the email.",
+              "Are you (travel) ___ alone?",
+              "She started (forget) ___ things.",
+              "I avoid (get) ___ up before 7.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the -ing form",
+            answers: ["walking", "getting", "completing", "mentioning", "opening", "studying", "seeing", "smoking", "taking", "seeing"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write the -ing form",
+            answers: ["swimming", "writing", "waiting", "making", "arguing", "living", "laughing", "running", "cooking", "hearing"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — prepositions and gerund subjects",
+            answers: ["Swimming", "Learning", "dancing", "working", "going", "helping", "writing", "buying", "Cooking", "making"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — spelling rules",
+            answers: ["sitting", "running", "making", "swimming", "lying", "planning", "writing", "travelling", "forgetting", "getting"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +285,22 @@ export default function VerbIngLessonClient() {
         Some verbs are always followed by the <b>-ing form</b>: <i>enjoy, finish, avoid, mind, miss, keep, suggest, stop</i>. The -ing form is also used after <b>prepositions</b> and as the <b>subject</b> of a sentence.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-verb-ing" subject="Verb + -ing" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,13 +423,38 @@ export default function VerbIngLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-verb-ing" subject="Verb + -ing" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All A2 topics</a>

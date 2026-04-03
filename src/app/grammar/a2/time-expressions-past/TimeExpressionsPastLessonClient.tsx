@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She was born ___ 1990.", options: ["on", "in", "at", "by"], answer: 1 },
+  { q: "I saw him ___ Monday.", options: ["in", "at", "on", "by"], answer: 2 },
+  { q: "He called me ___ midnight.", options: ["on", "in", "at", "by"], answer: 2 },
+  { q: "They left ___ Christmas Eve.", options: ["in", "at", "on", "by"], answer: 2 },
+  { q: "I went there two weeks ___.", options: ["since", "before", "ago", "for"], answer: 2 },
+  { q: "She worked there ___ three years.", options: ["since", "ago", "at", "for"], answer: 3 },
+  { q: "He moved here ___ 2015.", options: ["on", "at", "in", "by"], answer: 2 },
+  { q: "I haven't seen her ___ school.", options: ["for", "ago", "since", "in"], answer: 2 },
+  { q: "They met ___ a party.", options: ["on", "at", "in", "by"], answer: 1 },
+  { q: "She called him ___ the afternoon.", options: ["at", "on", "in", "by"], answer: 2 },
+  { q: "I went to Paris ___ year.", options: ["ago", "last", "in", "since"], answer: 1 },
+  { q: "He left ___ night — I haven't heard since.", options: ["in", "last", "ago", "on"], answer: 1 },
+  { q: "We went camping ___ summer.", options: ["on", "at", "in", "last"], answer: 3 },
+  { q: "She arrived ___ the evening.", options: ["at", "on", "in", "by"], answer: 2 },
+  { q: "I met him ___ a conference.", options: ["on", "at", "in", "by"], answer: 1 },
+  { q: "He was popular ___ the 1990s.", options: ["on", "at", "in", "by"], answer: 2 },
+  { q: "She graduated ___ June.", options: ["on", "at", "in", "by"], answer: 2 },
+  { q: "They got married ___ the weekend.", options: ["in", "on", "at", "by"], answer: 2 },
+  { q: "I saw the film ___ last night.", options: ["in", "on", "—", "at"], answer: 2 },
+  { q: "She was born ___ 14 March.", options: ["in", "at", "on", "by"], answer: 2 },
+];
+
 export default function TimeExpressionsPastLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,119 @@ export default function TimeExpressionsPastLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Time Expressions: Past",
+        subtitle: "in / on / at / ago / for / since — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "in + year/month/season/decade. on + day/date. at + time/event. No preposition with: yesterday, last, ago.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct time expression.",
+            questions: [
+              "I went to Paris ___ year. (last / ago / in)",
+              "She called me ___ minutes ago. (last / few / a few)",
+              "He was born ___ 1995. (at / on / in)",
+              "They left ___. (yesterday / last yesterday / the yesterday)",
+              "I saw her ___ Monday. (in / at / on)",
+              "We went camping ___ summer. (on / last / in the)",
+              "He moved here three years ___. (before / ago / since)",
+              "She finished school ___ June. (on / in / at)",
+              "I met him ___ a conference in 2019. (in / at / on)",
+              "They got married ___ the weekend. (in / on / at)",
+            ],
+            hint: "last / a few / in / yesterday / on / last / ago / in / at / at",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the correct preposition: in, on, or at.",
+            questions: [
+              "She was born ___ 14 March 1990.",
+              "He started the job ___ 2018.",
+              "They met ___ university.",
+              "I got home ___ midnight.",
+              "He called me ___ Tuesday morning.",
+              "She graduated ___ the summer of 2020.",
+              "They lived there ___ the 1980s.",
+              "I saw the accident ___ the corner.",
+              "She arrived ___ Christmas Eve.",
+              "He called ___ the evening.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the correct time expression.",
+            questions: [
+              "I haven't seen her ___ we were at school. (ago / since / for)",
+              "She lived in London ___ three years. (since / ago / for)",
+              "He left ___ an hour. (ago / for / since)",
+              "They moved here ___ 2015. (ago / for / in)",
+              "I saw the film ___ last night. (in / on / —)",
+              "She called him ___ the afternoon. (on / in / at)",
+              "They got married ___ Christmas Day. (in / at / on)",
+              "I studied French ___ five years at school. (since / ago / for)",
+              "He was very popular ___ the 1990s. (on / at / in)",
+              "She fell asleep ___ the middle of the film. (on / at / in)",
+            ],
+            hint: "since / for / ago / in / — / in / on / for / in / in",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write: yesterday, last, ago, in, on, at, for, or since.",
+            questions: [
+              "I saw him two weeks ___.",
+              "___ morning I had a really important meeting.",
+              "She worked there ___ ten years before retiring.",
+              "He left ___ night — I haven't heard from him since.",
+              "They've been friends ___ they were children.",
+              "She was born ___ a cold winter night in 1988.",
+              "I used to live there ___ the early 2000s.",
+              "He arrived exactly ___ midnight.",
+              "She got the job ___ Monday and started on Wednesday.",
+              "They moved to the new office ___ January.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the time expression",
+            answers: ["last", "a few", "in", "yesterday", "on", "last", "ago", "in", "at", "at"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write in, on, or at",
+            answers: ["on", "in", "at", "at", "on", "in", "in", "at", "on", "in"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — choose the expression",
+            answers: ["since", "for", "ago", "in", "—", "in", "on", "for", "in", "in"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — write the expression",
+            answers: ["ago", "Yesterday", "for", "last", "since", "on", "in", "at", "on", "in"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +285,22 @@ export default function TimeExpressionsPastLessonClient() {
         Past simple time expressions tell us <b>when</b> something happened: <b>yesterday, last week, two years ago, in 2020, on Monday, at midnight</b>. Choosing the right preposition — <b>in, on,</b> or <b>at</b> — is one of the most common challenges for English learners.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-time-expressions-past" subject="Time Expressions: Past" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,13 +423,38 @@ export default function TimeExpressionsPastLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-time-expressions-past" subject="Time Expressions: Past" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All A2 topics</a>

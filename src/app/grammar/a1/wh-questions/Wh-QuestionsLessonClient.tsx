@@ -3,6 +3,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,6 +33,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "___ is your name?", options: ["What","Where","When","Who"], answer: 0 },
+  { q: "___ do you live?", options: ["Why","Where","How","When"], answer: 1 },
+  { q: "___ is your best friend?", options: ["What","Where","Who","When"], answer: 2 },
+  { q: "___ do you go to school? (by bus)", options: ["Why","When","Where","How"], answer: 3 },
+  { q: "___ are you happy today?", options: ["Where","Who","Why","How"], answer: 2 },
+  { q: "___ old are you?", options: ["What","When","Why","How"], answer: 3 },
+  { q: "___ does the lesson start?", options: ["Where","When","Who","How"], answer: 1 },
+  { q: "___ is your bag? (I can't see it.)", options: ["What","Why","Where","Who"], answer: 2 },
+  { q: "___ do you spell your name?", options: ["When","Who","Why","How"], answer: 3 },
+  { q: "___ is that man? (He is my teacher.)", options: ["Where","When","Who","Why"], answer: 2 },
+  { q: "___ is your favorite color?", options: ["Where","When","What","Who"], answer: 2 },
+  { q: "___ do you wake up in the morning?", options: ["When","Why","Who","How"], answer: 0 },
+  { q: "___ is your English teacher?", options: ["What","Where","When","Who"], answer: 3 },
+  { q: "___ are you tired?", options: ["Where","How","Why","Who"], answer: 2 },
+  { q: "___ do you come to school? (by bike)", options: ["Where","When","How","Why"], answer: 2 },
+  { q: "___ is the supermarket? (on Main Street)", options: ["When","Where","Why","How"], answer: 1 },
+  { q: "___ is your birthday?", options: ["Why","How","Who","When"], answer: 3 },
+  { q: "___ do you want for lunch?", options: ["When","What","Where","Who"], answer: 1 },
+  { q: "___ do you like English? (Because it's fun)", options: ["Where","When","Why","Who"], answer: 2 },
+  { q: "___ do you do on weekends?", options: ["Where","Who","When","What"], answer: 3 },
+];
 
 export default function WhQuestionsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -332,6 +362,9 @@ export default function WhQuestionsLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -370,6 +403,119 @@ export default function WhQuestionsLessonClient() {
     const percent = total ? Math.round((correct / total) * 100) : 0;
     return { correct, total, percent };
   }, [checked, current, mcqAnswers, inputAnswers]);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Wh-Questions",
+        subtitle: "What / Where / When / Why / Who / How — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Wh-word + do/does/is/are + subject + verb? Use: What (things), Where (place), When (time), Who (person), Why (reason), How (manner).",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct wh-word.",
+            questions: [
+              "___ is your name?",
+              "___ do you live?",
+              "___ is your best friend?",
+              "___ do you go to school? (by bus, by car…)",
+              "___ are you happy today?",
+              "___ old are you?",
+              "___ does the movie start?",
+              "___ is your bag? (I can't see it.)",
+              "___ do you spell your name?",
+              "___ is that man? (He is my teacher.)",
+            ],
+            hint: "what / where / who / how / why / when",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the correct wh-word.",
+            questions: [
+              "___ is your favorite color?",
+              "___ do you wake up in the morning?",
+              "___ is your English teacher?",
+              "___ do you go to the gym? (on Mondays)",
+              "___ are you tired?",
+              "___ do you come to school? (by bike)",
+              "___ is the supermarket? (on Main Street)",
+              "___ is your birthday?",
+              "___ do you want for lunch?",
+              "___ is your brother? (He is at home.)",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the best wh-word in context.",
+            questions: [
+              "___ do you like English? (Because it's fun.)",
+              "___ do you usually eat breakfast? (At 7 o'clock.)",
+              "___ is your favorite singer?",
+              "___ do you get to work? (I take the bus.)",
+              "___ do you play football? (In the park.)",
+              "___ is your favorite food?",
+              "___ is your bag? (It's under the table.)",
+              "___ do you study English? (To travel.)",
+              "___ do you do on weekends?",
+              "___ do you go to bed? (At 10pm.)",
+            ],
+            hint: "what / where / when / who / why / how",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write only the correct wh-word.",
+            questions: [
+              "___ do you have English class? (time)",
+              "___ is your best friend? (person)",
+              "___ do you go to school? (place)",
+              "___ are you sad? (reason)",
+              "___ do you come to school? (by train)",
+              "___ is your favorite animal? (thing)",
+              "___ is your sister? (at home)",
+              "___ do you go to bed? (10pm)",
+              "___ is that woman? (my teacher)",
+              "___ do you like pizza? (Because it's tasty)",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the correct wh-word",
+            answers: ["What", "Where", "Who", "How", "Why", "How", "When", "Where", "How", "Who"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — type the wh-word",
+            answers: ["What", "When", "Who", "When", "Why", "How", "Where", "When", "What", "Where"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — wh-word in context",
+            answers: ["Why", "When", "Who", "How", "Where", "What", "Where", "Why", "What", "When"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — complete the question",
+            answers: ["When", "Who", "Where", "Why", "How", "What", "Where", "When", "Who", "Why"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -410,17 +556,18 @@ export default function WhQuestionsLessonClient() {
         We use <b>wh-questions</b> to ask for information: about things, people, places, time, reasons, and ways. Practice with 4 graded exercises and get confident with what, where, when, why, who, and how.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-wh-questions" subject="Wh-Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -442,6 +589,8 @@ export default function WhQuestionsLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -663,16 +812,42 @@ export default function WhQuestionsLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
+
+      {/* SpeedRound below grid for non-PRO users */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a1-wh-questions" subject="Wh-Questions" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

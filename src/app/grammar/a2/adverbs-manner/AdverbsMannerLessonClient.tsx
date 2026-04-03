@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "slow → adverb", options: ["slow", "slowly", "slowy", "slowly"], answer: 1 },
+  { q: "careful → adverb", options: ["careful", "carfully", "carefully", "carefuly"], answer: 2 },
+  { q: "happy → adverb", options: ["happily", "happyly", "happily", "happly"], answer: 0 },
+  { q: "good → adverb", options: ["goodly", "good", "goody", "well"], answer: 3 },
+  { q: "fast → adverb", options: ["fastly", "fasty", "fast", "fasted"], answer: 2 },
+  { q: "hard → adverb (= with effort)", options: ["hardly", "hard", "hardily", "harded"], answer: 1 },
+  { q: "beautiful → adverb", options: ["beautiful", "beautifuly", "beautifully", "beautfully"], answer: 2 },
+  { q: "She speaks English very ___. (good)", options: ["good", "goodly", "betterly", "well"], answer: 3 },
+  { q: "He runs very ___. (fast)", options: ["fastly", "faster", "fast", "fasted"], answer: 2 },
+  { q: "quiet → adverb", options: ["quietful", "quieter", "quieting", "quietly"], answer: 3 },
+  { q: "angry → adverb", options: ["angrily", "angryly", "angerly", "angry"], answer: 0 },
+  { q: "She is a ___ driver. (adjective or adverb?)", options: ["carefully", "careful", "carely", "caredom"], answer: 1 },
+  { q: "He drives very ___. (adjective or adverb?)", options: ["careful", "carefull", "carefully", "care"], answer: 2 },
+  { q: "automatic → adverb", options: ["automaticly", "automaticaly", "automatically", "automaticful"], answer: 2 },
+  { q: "easy → adverb", options: ["easly", "easyly", "easily", "easy"], answer: 2 },
+  { q: "loud → adverb", options: ["loudly", "loudy", "louden", "loudful"], answer: 0 },
+  { q: "correct → adverb", options: ["correctful", "corectly", "correctly", "corrected"], answer: 2 },
+  { q: "warm → adverb", options: ["warmful", "warmly", "warmy", "warmily"], answer: 1 },
+  { q: "polite → adverb", options: ["politly", "politely", "politely", "politeish"], answer: 1 },
+  { q: "'Hardly' means ___", options: ["very much", "with effort", "almost not", "quickly"], answer: 2 },
+];
+
 export default function AdverbsMannerLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -118,6 +150,77 @@ export default function AdverbsMannerLessonClient() {
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Adverbs of Manner",
+        subtitle: "How actions are done — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Most adjectives → add -ly. Exceptions: good → well, fast → fast, hard → hard.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct adverb of manner.", questions: [
+            "She speaks French very ___ (fluent / fluently).",
+            "He drives very ___ (careful / carefully).",
+            "The children played ___ in the garden (happy / happily).",
+            "She sings ___ (beautiful / beautifully).",
+            "He runs very ___ (fastly / fast).",
+            "They worked very ___ all week (hardly / hard).",
+            "She answered the question ___ (correct / correctly).",
+            "He spoke ___ and everyone heard him (loud / loudly).",
+            "She plays tennis very ___ (good / well).",
+            "The dog barked ___ at the stranger (angry / angrily).",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the adverb form of the adjective in brackets.", questions: [
+            "She walks very (slow) ___.",
+            "He answered (polite) ___.",
+            "She sings (beautiful) ___.",
+            "He drives (careful) ___.",
+            "They won the game (easy) ___.",
+            "She smiled (warm) ___.",
+            "He plays the guitar (good) ___.",
+            "They worked very (hard) ___.",
+            "I spoke (quiet) ___ so as not to wake anyone.",
+            "She ran (fast) ___ and won the race.",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose adjective or adverb — think about what is being described.", questions: [
+            "He is a ___ driver. (careful / carefully)",
+            "He drives very ___. (careful / carefully)",
+            "She has very ___ handwriting. (neat / neatly)",
+            "She writes very ___. (neat / neatly)",
+            "Her English is very ___. (good / well)",
+            "She speaks English very ___. (good / well)",
+            "It was a ___ film. (terrible / terribly)",
+            "The team played ___. (terrible / terribly)",
+            "He is a ___ worker — never stops. (hard / hardly)",
+            "He works very ___. (hardly / hard)",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write the correct form — adjective or adverb.", questions: [
+            "She has a ___ voice. (beautiful)",
+            "She sings ___. (beautiful)",
+            "He gave a ___ answer. (brave)",
+            "She acted very ___. (brave)",
+            "Her pronunciation is very ___. (good)",
+            "She pronounces words very ___. (good)",
+            "He finished the test ___. (quick)",
+            "The music is very ___. (loud)",
+            "She spoke ___ and clearly. (quiet)",
+            "He is a ___ learner. (quick)",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose adverb form", answers: ["fluently","carefully","happily","beautifully","fast","hard","correctly","loudly","well","angrily"] },
+          { exercise: 2, subtitle: "Medium — write adverb", answers: ["slowly","politely","beautifully","carefully","easily","warmly","well","hard","quietly","fast"] },
+          { exercise: 3, subtitle: "Hard — adj or adverb", answers: ["careful","carefully","neat","neatly","good","well","terrible","terribly","hard","hard"] },
+          { exercise: 4, subtitle: "Harder — correct form", answers: ["beautiful","beautifully","brave","bravely","good","well","quickly","loud","quietly","quick"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -140,18 +243,23 @@ export default function AdverbsMannerLessonClient() {
         Adverbs of manner describe <b>how</b> an action is done: <i>She speaks <b>fluently</b>. He drives <b>carefully</b>.</i> Most are formed by adding <b>-ly</b> to an adjective. Some are irregular: <b>good → well</b>, <b>fast → fast</b>, <b>hard → hard</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-adverbs-manner" subject="Adverbs of Manner" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +382,32 @@ export default function AdverbsMannerLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

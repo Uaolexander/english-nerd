@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,7 +33,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "The cat is ___ the chair.", options: ["in","on","under","behind"], answer: 1 },
+  { q: "The bag is ___ the desk.", options: ["on","in","under","next to"], answer: 2 },
+  { q: "The milk is ___ the fridge.", options: ["on","under","in","behind"], answer: 2 },
+  { q: "The picture is ___ the wall.", options: ["in","under","behind","on"], answer: 3 },
+  { q: "He is hiding ___ the door.", options: ["on","in","behind","under"], answer: 2 },
+  { q: "The lamp is ___ the sofa and the chair.", options: ["behind","on","under","between"], answer: 3 },
+  { q: "The bank is ___ the café.", options: ["under","next to","on","in"], answer: 1 },
+  { q: "The dog is sleeping ___ the bed.", options: ["on","in","next to","under"], answer: 3 },
+  { q: "The keys are ___ the table.", options: ["in","behind","on","under"], answer: 2 },
+  { q: "She is standing ___ the students.", options: ["under","between","on","in front of"], answer: 3 },
+  { q: "The café is ___ the park.", options: ["on","under","near","behind"], answer: 2 },
+  { q: "The car is ___ the garage.", options: ["on","behind","under","in"], answer: 3 },
+  { q: "The school is ___ the library and the park.", options: ["in front of","behind","between","next to"], answer: 2 },
+  { q: "The poster is ___ the door.", options: ["under","in","on","behind"], answer: 3 },
+  { q: "The children are playing ___ the table.", options: ["on","in","behind","under"], answer: 3 },
+  { q: "The supermarket is ___ the station.", options: ["under","on","in","opposite"], answer: 3 },
+  { q: "My house is ___ the school.", options: ["on","in","next to","under"], answer: 2 },
+  { q: "There is a cat ___ the box.", options: ["on","behind","under","in"], answer: 3 },
+  { q: "The bookshop is ___ the café.", options: ["in","under","opposite","on"], answer: 2 },
+  { q: "The shoes are ___ the bed.", options: ["on","in","behind","under"], answer: 3 },
+];
+
 export default function PrepositionsOfPlaceLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -378,6 +410,96 @@ export default function PrepositionsOfPlaceLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Prepositions of Place",
+        subtitle: "in / on / under / next to / behind / between — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Use IN (inside), ON (surface), UNDER (below), NEXT TO (beside), BEHIND (at the back), BETWEEN (in the middle of two things).",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose the correct preposition of place.",
+            questions: [
+              "The cat is sleeping ___ the chair.",
+              "Your school bag is ___ the desk.",
+              "The books are ___ the shelf.",
+              "The lamp is ___ the sofa and the armchair.",
+              "There is some milk ___ the fridge.",
+              "The bus stop is ___ the bank.",
+              "The picture is hanging ___ the wall.",
+              "My brother is hiding ___ the door.",
+              "The teacher is standing ___ the students.",
+              "The dog is sleeping ___ the bed.",
+            ],
+            hint: "in/on/under…",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Easy",
+            instruction: "Choose the correct preposition of place.",
+            questions: [
+              "Put the plates ___ the table for dinner.",
+              "The car keys are ___ my bag somewhere.",
+              "There is a big tree ___ the house.",
+              "The supermarket is ___ the bank and the library.",
+              "The cat is hiding ___ the sofa.",
+              "My coat is hanging ___ the door.",
+              "The post office is ___ the café.",
+              "The remote control is ___ the cushions.",
+              "There is a small garden ___ the building.",
+              "My glasses are ___ this pile of papers.",
+            ],
+            hint: "in/on/under…",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Medium",
+            instruction: "Choose the correct preposition of place.",
+            questions: [
+              "The school is ___ the park and the library.",
+              "There is a poster ___ the door.",
+              "The bookshop is ___ the café on the main street.",
+              "There is a mouse ___ the cupboard.",
+              "My house is ___ the school — just two minutes away.",
+              "The children are playing ___ the big tree.",
+              "There is a beautiful painting ___ the fireplace.",
+              "Put the vegetables ___ the fridge when you get home.",
+              "The bank is ___ the supermarket on King Street.",
+              "The cat is sitting ___ the two children.",
+            ],
+            hint: "in/on/under…",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Hard",
+            instruction: "Write the correct preposition of place.",
+            questions: [
+              "The café is ___ the park — just opposite the gate.",
+              "There are some books ___ the shelf above the desk.",
+              "She put her phone ___ the table and went to sleep.",
+              "The dog is sleeping ___ the bed in the corner.",
+              "The cinema is ___ the hotel and the restaurant.",
+              "There is a small pond ___ the garden.",
+              "He found his keys ___ the sofa cushions.",
+              "The old church is ___ the main square.",
+              "Put the cups ___ the top shelf in the kitchen.",
+              "She is standing ___ the door, waiting for us.",
+            ],
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose preposition", answers: ["on","under","on","between","in","next to","on","behind","in front of","under"] },
+          { exercise: 2, subtitle: "Easy — choose preposition", answers: ["on","in","behind","between","under","on","next to","between","behind","under"] },
+          { exercise: 3, subtitle: "Medium — choose preposition", answers: ["between","on","opposite","in","next to","under","above","in","next to","between"] },
+          { exercise: 4, subtitle: "Hard — write preposition", answers: ["opposite","on","on","under","between","in","under","in","on","in front of"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -402,17 +524,18 @@ export default function PrepositionsOfPlaceLessonClient() {
         Learn how to use <b>in, on, under, next to, behind, between, in front of, near</b> and other common prepositions of place. These words help us say where people and things are in a clear, simple way.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left col + center content + right col */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-prepositions-place" subject="Prepositions of Place" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -434,6 +557,8 @@ export default function PrepositionsOfPlaceLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -655,15 +780,32 @@ export default function PrepositionsOfPlaceLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

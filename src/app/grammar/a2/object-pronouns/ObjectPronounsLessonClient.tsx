@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,12 +18,37 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I love my sister. I call ___ every day.", options: ["him", "her", "them", "it"], answer: 1 },
+  { q: "Where is Tom? I can't find ___.", options: ["her", "them", "it", "him"], answer: 3 },
+  { q: "I lost my keys. I can't find ___.", options: ["him", "her", "it", "them"], answer: 3 },
+  { q: "Can you help ___? I don't understand.", options: ["I", "my", "me", "mine"], answer: 2 },
+  { q: "This film is boring. I don't like ___.", options: ["him", "her", "them", "it"], answer: 3 },
+  { q: "She looked at ___ and smiled. (we)", options: ["our", "we", "us", "ours"], answer: 2 },
+  { q: "I → object pronoun:", options: ["my", "mine", "I", "me"], answer: 3 },
+  { q: "he → object pronoun:", options: ["his", "him", "he", "her"], answer: 1 },
+  { q: "she → object pronoun:", options: ["hers", "his", "her", "she"], answer: 2 },
+  { q: "we → object pronoun:", options: ["our", "ours", "we", "us"], answer: 3 },
+  { q: "they → object pronoun:", options: ["their", "theirs", "them", "they"], answer: 2 },
+  { q: "Between you and ___, I think he's wrong. (I)", options: ["I", "my", "mine", "me"], answer: 3 },
+  { q: "She gave ___ a message. (he)", options: ["he", "his", "him", "her"], answer: 2 },
+  { q: "Can you see ___? (they)", options: ["they", "their", "theirs", "them"], answer: 3 },
+  { q: "I talked to ___ this morning. (she)", options: ["she", "hers", "her", "his"], answer: 2 },
+  { q: "My parents are visiting. I'm excited to see ___.", options: ["him", "her", "it", "them"], answer: 3 },
+  { q: "Jake and I are waiting. Can you call ___?", options: ["him", "them", "us", "her"], answer: 2 },
+  { q: "She's angry at ___. (I)", options: ["I", "my", "mine", "me"], answer: 3 },
+  { q: "This bag is heavy. Can you carry ___ for me?", options: ["him", "her", "them", "it"], answer: 3 },
+  { q: "He is my best friend. I trust ___ completely.", options: ["her", "them", "him", "it"], answer: 2 },
+];
+
 export default function ObjectPronounsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -115,6 +147,55 @@ export default function ObjectPronounsLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Object Pronouns",
+        subtitle: "me / him / her / us / them — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "After a verb or preposition use object pronouns: me, you, him, her, it, us, them. Never I, he, she, we, they.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct object pronoun.", questions: [
+            "I love my sister. I call ___ every day.", "Where is Tom? I can't find ___.", "I lost my keys. I can't find ___.",
+            "Do you know Anna and Peter? I met ___ yesterday.", "Can you help ___? I don't understand this exercise.",
+            "She is talking to ___ right now. (you)", "This film is boring. I don't like ___.",
+            "She looked at ___ and smiled. (we)", "He is my best friend. I trust ___ completely.",
+            "The children are hungry. Please feed ___.",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the correct object pronoun for the subject given.", questions: [
+            "Subject: I → object pronoun: ____", "Subject: he → object pronoun: ____", "Subject: she → object pronoun: ____",
+            "Subject: we → object pronoun: ____", "Subject: they → object pronoun: ____", "Subject: it → object pronoun: ____",
+            "Subject: you → object pronoun: ____", "She sent ___ a message. (he)", "Can you see ___? (they)",
+            "I talked to ___ this morning. (she)",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the correct object pronoun. Pay attention to context.", questions: [
+            "My mum made a cake. She baked ___ for my birthday.", "I really like Sarah. I'm going to invite ___ to the party.",
+            "This is a great book. I recommend ___.", "Could you give ___ a hand? We can't move this sofa alone.",
+            "Jake and I are waiting. Can you call ___ when you arrive?", "She's angry at ___. I don't know why. (I)",
+            "I haven't seen the new film yet. Have you seen ___?", "My parents are visiting. I'm excited to see ___.",
+            "Between you and ___, I think he's wrong. (I)", "This bag is too heavy. Can you carry ___ for me?",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write the correct object pronoun for the word in brackets.", questions: [
+            "She showed ___ the photos. (I)", "He wrote ___ a long letter. (she)", "They invited ___ to dinner. (we)",
+            "I'll text ___ later. (he)", "Can you help ___ with this? (they)", "She gave ___ the wrong address. (I)",
+            "I told ___ the truth. (she)", "This is for ___. Happy birthday! (you)", "The dog followed ___ home. (we)",
+            "Did you see ___? He was right here. (he)",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose object pronoun", answers: ["her", "him", "them", "them", "me", "you", "it", "us", "him", "them"] },
+          { exercise: 2, subtitle: "Medium — write the pronoun", answers: ["me", "him", "her", "us", "them", "it", "you", "him", "them", "her"] },
+          { exercise: 3, subtitle: "Hard — pronoun in context", answers: ["it", "her", "it", "us", "us", "me", "it", "them", "me", "it"] },
+          { exercise: 4, subtitle: "Harder — write from brackets", answers: ["me", "her", "us", "him", "them", "me", "her", "you", "us", "him"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +221,23 @@ export default function ObjectPronounsLessonClient() {
         Object pronouns replace nouns that receive the action of a verb or follow a preposition. They are: <b>me, you, him, her, it, us, them</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-object-pronouns" subject="Object Pronouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +360,32 @@ export default function ObjectPronounsLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

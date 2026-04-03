@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "My name is Alex. ___ am a teacher.", options: ["He","She","I","They"], answer: 2 },
+  { q: "Maria is from Spain. ___ is my friend.", options: ["He","She","It","We"], answer: 1 },
+  { q: "Tom works here. ___ is very kind.", options: ["She","He","It","They"], answer: 1 },
+  { q: "The dog is big. ___ is brown.", options: ["He","She","It","We"], answer: 2 },
+  { q: "My parents are at home. ___ are watching TV.", options: ["He","She","It","They"], answer: 3 },
+  { q: "Anna and I are students. ___ study every day.", options: ["He","She","We","It"], answer: 2 },
+  { q: "Are ___ from London? (talking to a friend)", options: ["he","she","you","we"], answer: 2 },
+  { q: "___ is cold today. (the weather)", options: ["He","She","It","They"], answer: 2 },
+  { q: "The children are in the garden. ___ are playing.", options: ["He","It","She","They"], answer: 3 },
+  { q: "David and Kate are here. ___ are happy.", options: ["He","She","It","They"], answer: 3 },
+  { q: "My sister is a doctor. ___ works at a hospital.", options: ["He","She","They","We"], answer: 1 },
+  { q: "___ are all ready to go! (me + friends)", options: ["I","He","We","They"], answer: 2 },
+  { q: "The phone is ringing. ___ is on the table.", options: ["He","She","It","They"], answer: 2 },
+  { q: "My brother is tall. ___ plays basketball.", options: ["She","He","It","They"], answer: 1 },
+  { q: "Look at the flowers! ___ are beautiful.", options: ["He","She","It","They"], answer: 3 },
+  { q: "___ am very tired today.", options: ["He","She","I","We"], answer: 2 },
+  { q: "Do ___ speak English? (to two people)", options: ["he","she","it","you"], answer: 3 },
+  { q: "The book is on the shelf. ___ is interesting.", options: ["He","She","It","We"], answer: 2 },
+  { q: "___ is my teacher. (a woman)", options: ["He","She","It","They"], answer: 1 },
+  { q: "Mike is here. ___ is waiting for you.", options: ["She","It","He","We"], answer: 2 },
+];
 
 export default function SubjectPronounsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -327,6 +357,9 @@ export default function SubjectPronounsLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -365,6 +398,119 @@ export default function SubjectPronounsLessonClient() {
     const percent = total ? Math.round((correct / total) * 100) : 0;
     return { correct, total, percent };
   }, [checked, current, mcqAnswers, inputAnswers]);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Subject Pronouns",
+        subtitle: "I · you · he · she · it · we · they — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "I · you · he · she · it · we · they — use he/she for people, it for things/animals, they for plural.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct subject pronoun: I, you, he, she, it, we, or they.",
+            questions: [
+              "Anna is my sister. ___ is very kind and friendly.",
+              "My brother and I live in Warsaw. ___ study English every week.",
+              "This phone is new. ___ is very expensive.",
+              "Tom is my teacher. ___ speaks very clearly in class.",
+              "My parents work in a hospital. ___ come home late.",
+              "I am Oleksandr and ___ am from Ukraine.",
+              "Kate and Emma are in my class. ___ sit next to me.",
+              "You and your brother are very busy today. ___ have a lot to do.",
+              "My cat is under the table. ___ is sleeping now.",
+              "Sara and I go to the same school. ___ walk there every morning.",
+            ],
+            hint: "She / We / It / He / They / I / They / You / It / We",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the correct subject pronoun.",
+            questions: [
+              "My name is Julia. ___ am eleven years old.",
+              "Mr Brown is our new English teacher. ___ is very nice.",
+              "This bag is very heavy. ___ is full of books.",
+              "My friends are in the park. ___ are playing football.",
+              "Lisa is my best friend. ___ always helps me.",
+              "My brother and I love computer games. ___ play together every weekend.",
+              "Paul is at home today because ___ is sick.",
+              "Your dog is very cute. ___ has big brown eyes.",
+              "You and I are in the same group. ___ have the same homework.",
+              "Anna and Tom are my neighbours. ___ live next door.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the pronoun that replaces the underlined word(s).",
+            questions: [
+              "_My mother_ works in a school library.",
+              "_The children_ are very quiet today.",
+              "_This computer_ is old, but it still works well.",
+              "_My dad and I_ usually cook dinner together.",
+              "_Emma_ is very good at maths.",
+              "_The books_ are on the teacher's desk.",
+              "_Your little sister_ is in the garden.",
+              "_The milk_ is in the fridge.",
+              "_You and your friends_ are very lucky.",
+              "_My uncle_ lives in London.",
+            ],
+            hint: "She / They / It / We / She / They / She / It / You / He",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write the correct subject pronoun.",
+            questions: [
+              "Ben is my cousin. ___ is fourteen years old.",
+              "My sister and I share one bedroom. ___ keep it very tidy.",
+              "That table is very old, but ___ is still beautiful.",
+              "Mia is in the kitchen because ___ wants some tea.",
+              "My parents are at work, so ___ are not at home now.",
+              "Hello, I'm Peter and ___ live in Poznań.",
+              "My dog is very smart. ___ understands many words.",
+              "You and Kate are late again. ___ need to hurry up.",
+              "My classmates are in the classroom and ___ are ready for the lesson.",
+              "My grandmother is very active. ___ goes for a walk every morning.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the correct subject pronoun",
+            answers: ["She", "We", "It", "He", "They", "I", "They", "You", "It", "We"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — type the subject pronoun",
+            answers: ["I", "He", "It", "They", "She", "We", "he", "It", "We", "They"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — replace the underlined noun",
+            answers: ["She", "They", "It", "We", "She", "They", "She", "It", "You", "He"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — complete the sentences",
+            answers: ["He", "We", "it", "she", "they", "I", "It", "You", "they", "She"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -405,17 +551,18 @@ export default function SubjectPronounsLessonClient() {
         Use subject pronouns to talk about people and things without repeating the noun every time. Learn how to use I, you, he, she, it, we, and they.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-subject-pronouns" subject="Subject Pronouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -437,6 +584,8 @@ export default function SubjectPronounsLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -658,16 +807,42 @@ export default function SubjectPronounsLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+        {/* Right column */}
+        {isPro ? (
+          <aside className="sticky top-24 flex flex-col gap-3">
+            <div className="text-xs font-black uppercase tracking-widest text-slate-400">Recommended next</div>
+            {[
+              { title: "Verb 'to be'", href: "/grammar/a1/to-be-am-is-are", img: "/topics/a1/to-be-am-is-are.jpg", level: "A1", badge: "bg-emerald-500", reason: "Use pronouns with am/is/are" },
+              { title: "Possessive Adjectives", href: "/grammar/a1/possessive-adjectives", img: "/topics/a1/possessive-adjectives.jpg", level: "A1", badge: "bg-emerald-500" },
+              { title: "Present Simple", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
+            ].map((l) => (
+              <a key={l.href} href={l.href} className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 transition hover:border-[#F5DA20] hover:shadow-sm">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                  <img src={l.img} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <span className={`absolute bottom-1 right-1 rounded-md px-1.5 py-0.5 text-[9px] font-black text-white ${l.badge}`}>{l.level}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-sm font-black text-slate-900 group-hover:text-black">{l.title}</div>
+                  {l.reason && <div className="mt-0.5 text-xs text-slate-400">{l.reason}</div>}
+                </div>
+              </a>
+            ))}
+          </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
           </div>
-        </aside>
+        )}
       </div>
+
+      {/* SpeedRound below grid for non-PRO users */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a1-subject-pronouns" subject="Subject Pronouns" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

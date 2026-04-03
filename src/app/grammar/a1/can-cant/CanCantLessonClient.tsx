@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "My little brother is only two, so he ___ read yet.", options: ["can","can't","could","couldn't"], answer: 1 },
+  { q: "I ___ swim very well because I go to the pool every week.", options: ["can't","could","can","cannot"], answer: 2 },
+  { q: "Emma ___ speak English and Polish at home.", options: ["can't","can","could not","never"], answer: 1 },
+  { q: "It is very dark and I ___ see the board clearly.", options: ["can","can't","could","always"], answer: 1 },
+  { q: "___ you help me with this heavy bag, please?", options: ["Can't","Could not","Can","Cant"], answer: 2 },
+  { q: "Can your brother play the guitar? — Yes, he ___.", options: ["can't","could","can","cannot"], answer: 2 },
+  { q: "Can we open the window? — No, you ___. It is too cold.", options: ["can","can't","could","might"], answer: 1 },
+  { q: "My grandmother ___ drive, so my dad takes her shopping.", options: ["can","could","can't","always"], answer: 2 },
+  { q: "We ___ be late — the lesson starts in five minutes.", options: ["can","can't","could","should"], answer: 1 },
+  { q: "Tom ___ ride a bike, so he walks to school every day.", options: ["can","can't","could","might"], answer: 1 },
+  { q: "You ___ sit here if you want to be closer to the teacher.", options: ["can't","cannot","can","could not"], answer: 2 },
+  { q: "___ I sit next to you during the lesson?", options: ["Can't","Cannot","Could not","Can"], answer: 3 },
+  { q: "Can I borrow your ruler? — Yes, you ___.", options: ["can't","cannot","can","could not"], answer: 2 },
+  { q: "My baby cousin ___ talk yet, but she understands many words.", options: ["can","could","can't","might"], answer: 2 },
+  { q: "I ___ find my keys, so I am still at home.", options: ["can","could","can't","might"], answer: 2 },
+  { q: "We ___ meet after class if you are free.", options: ["can't","can","cannot","could not"], answer: 1 },
+  { q: "Can this computer open large files? — No, it ___.", options: ["can","could","can't","might"], answer: 2 },
+  { q: "I ___ draw animals quite well, especially cats and birds.", options: ["can't","cannot","can","could not"], answer: 2 },
+  { q: "We ___ play outside now because it is getting dark.", options: ["can","could","can't","might"], answer: 2 },
+  { q: "___ your little sister count to twenty now?", options: ["Can't","Cannot","Could not","Can"], answer: 3 },
+];
 
 export default function CanCantLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -327,6 +357,9 @@ export default function CanCantLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -381,6 +414,97 @@ export default function CanCantLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Can / Can't",
+        subtitle: "Ability, Permission & Possibility — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "can / can't + base verb (no -s, no -ed). Questions: Can + subject + base verb?",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose can or can't to complete the sentence.",
+            questions: [
+              "My little brother is only two, so he ___ read long books yet.",
+              "I ___ swim very well because I go to the pool every week.",
+              "We ___ play football in the park after school today.",
+              "My grandmother ___ drive a car, so my dad takes her shopping.",
+              "You ___ sit here if you want to be closer to the teacher.",
+              "It is very dark in this room, and I ___ see the board clearly.",
+              "Emma ___ speak English and Polish at home.",
+              "We ___ be late today because the lesson starts in five minutes.",
+              "My cat ___ open the door, but it often tries.",
+              "I ___ help you with your homework after dinner.",
+            ],
+            hint: "can / can't",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Medium",
+            instruction: "Write can or can't in the blank.",
+            questions: [
+              "My sister ___ cook simple meals, but she is still learning.",
+              "I ___ hear you very well because the music is too loud.",
+              "You ___ use my pencil if yours is at home.",
+              "Tom ___ ride a bike, so he walks to school every day.",
+              "We ___ meet after class if you are free this afternoon.",
+              "My baby cousin ___ talk yet, but she understands many words.",
+              "I ___ answer that question because I know the rule.",
+              "We ___ go outside now because it is raining very hard.",
+              "Your dog ___ run very fast in the garden.",
+              "I ___ find my keys, so I am still at home.",
+            ],
+            hint: "can / can't",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Hard",
+            instruction: "Choose Can or Can't / can or can't to complete the question or answer.",
+            questions: [
+              "___ you help me with this heavy bag, please?",
+              "Can your brother play the guitar? — Yes, he ___.",
+              "Can we open the window? — No, you ___. It is too cold.",
+              "___ your teacher speak Spanish, or only English?",
+              "Can your friends come tonight? — No, they ___ because they are busy.",
+              "___ I sit next to you during the lesson?",
+              "Can this computer open large files? — No, it ___.",
+              "___ your little sister count to twenty now?",
+              "Can I borrow your ruler? — Yes, you ___.",
+              "___ they finish the project today, or do they need more time?",
+            ],
+            hint: "Can / can't",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Harder",
+            instruction: "Write can or can't in the blank.",
+            questions: [
+              "My father ___ fix many things at home because he is very practical.",
+              "I ___ carry this box alone because it is too heavy for me.",
+              "You ___ come with us after school if your parents say yes.",
+              "Our baby ___ walk yet, but she can stand for a short time.",
+              "We ___ speak quietly here because the baby is asleep.",
+              "My grandparents ___ visit us this weekend because they are travelling.",
+              "I ___ draw animals quite well, especially cats and birds.",
+              "We ___ play outside now because it is getting dark.",
+              "My classmates ___ understand this topic now — the teacher explained it.",
+              "I ___ open the door because my hands are full of shopping bags.",
+            ],
+            hint: "can / can't",
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — can or can't", answers: ["can't","can","can","can't","can","can't","can","can't","can't","can"] },
+          { exercise: 2, subtitle: "Medium — write can or can't", answers: ["can","can't","can","can't","can","can't","can","can't","can","can't"] },
+          { exercise: 3, subtitle: "Hard — questions & short answers", answers: ["Can","can","can't","Can","can't","Can","can't","Can","can","Can"] },
+          { exercise: 4, subtitle: "Harder — complete the sentence", answers: ["can","can't","can","can't","can","can't","can","can't","can","can't"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -405,17 +529,18 @@ export default function CanCantLessonClient() {
         Use <b>can</b> to talk about ability, permission, and possibility. Use <b>can't</b> when something is not possible or someone is not able to do it.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left sidebar + center content + right sidebar */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-can-cant" subject="Can / Can't" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -437,6 +562,8 @@ export default function CanCantLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -658,15 +785,32 @@ export default function CanCantLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

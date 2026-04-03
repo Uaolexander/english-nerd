@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Present Continuous Exercises — Practice English Grammar | English Nerd",
@@ -215,13 +216,7 @@ export default function PresentContinuousPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup
-            label="Related Topics"
-            sublabel="-ing rules, stative verbs, and comparisons with Present Simple"
-            dotColor="bg-[#F5DA20]"
-            exercises={RELATED}
-            basePath="/tenses/present-continuous"
-          />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/present-continuous" />
         </div>
 
       </div>

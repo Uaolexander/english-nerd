@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She ___ visited Paris twice.", options: ["have", "has", "did", "was"], answer: 1 },
+  { q: "I ___ seen that film before.", options: ["has", "have", "am", "did"], answer: 1 },
+  { q: "They ___ finished their homework.", options: ["has", "have", "are", "did"], answer: 1 },
+  { q: "He ___ never tried sushi.", options: ["have", "has", "did", "was"], answer: 1 },
+  { q: "We ___ lived here for ten years.", options: ["has", "have", "are", "did"], answer: 1 },
+  { q: "I ___ just arrived. (present perfect)", options: ["has arrived", "have arrived", "arrived", "arrive"], answer: 1 },
+  { q: "She ___ already eaten.", options: ["have", "has", "did", "was"], answer: 1 },
+  { q: "He ___ lost his keys.", options: ["have", "has", "did", "was"], answer: 1 },
+  { q: "Present perfect negative: she ___", options: ["hasn't gone", "haven't gone", "didn't gone", "not gone"], answer: 0 },
+  { q: "Have you ever ___ to Japan?", options: ["go", "went", "gone", "going"], answer: 2 },
+  { q: "I ___ her three times this week.", options: ["saw", "have seen", "see", "seen"], answer: 1 },
+  { q: "She ___ the report yet.", options: ["didn't finish", "hasn't finished", "doesn't finish", "not finish"], answer: 1 },
+  { q: "We first ___ in 2010. (specific time)", options: ["have met", "met", "were meeting", "meet"], answer: 1 },
+  { q: "I ___ just ___ the news!", options: ["did / hear", "have / heard", "was / hearing", "did / heard"], answer: 1 },
+  { q: "She ___ working here since January.", options: ["was", "has been", "is", "have been"], answer: 1 },
+  { q: "He ___ when he was five. (specific time)", options: ["has started", "started", "starts", "have started"], answer: 1 },
+  { q: "Signal word for present perfect: ___", options: ["yesterday", "last year", "just", "ago"], answer: 2 },
+  { q: "Signal word for past simple: ___", options: ["ever", "already", "yet", "last night"], answer: 3 },
+  { q: "You ___ never been to Australia.", options: ["has", "have", "did", "are"], answer: 1 },
+  { q: "She ___ worked there since 2018.", options: ["have", "has", "did", "was"], answer: 1 },
+];
+
 export default function PresentPerfectIntroLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,118 @@ export default function PresentPerfectIntroLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Present Perfect",
+        subtitle: "have / has + past participle — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "have/has + past participle. Use for experiences (ever/never), recent results (just/already/yet), and situations from past to now (since/for).",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose have or has.",
+            questions: [
+              "She ___ visited Paris twice.",
+              "I ___ seen that film before.",
+              "They ___ finished their homework.",
+              "He ___ never tried sushi.",
+              "We ___ lived here for ten years.",
+              "She ___ already eaten.",
+              "I ___ just arrived home.",
+              "He ___ lost his keys.",
+              "You ___ never been to Japan.",
+              "She ___ worked there since 2018.",
+            ],
+            hint: "have / has",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the present perfect form (have/has + past participle).",
+            questions: [
+              "She (visit) ___ three countries this year.",
+              "I (never/eat) ___ Indian food.",
+              "He (lose) ___ his phone.",
+              "We (just/arrive) ___.",
+              "She (already/finish) ___ the report.",
+              "They (live) ___ here since 2015.",
+              "I (see) ___ that film twice.",
+              "He (not/call) ___ me yet.",
+              "She (work) ___ there for five years.",
+              "You (ever/be) ___ to Australia?",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Harder",
+            instruction: "Choose present perfect or past simple.",
+            questions: [
+              "She ___ in London for 3 years. (she still lives there)",
+              "I ___ this morning at 7am.",
+              "___ you ever ___ to Japan?",
+              "He ___ his passport last week.",
+              "I ___ her three times this week.",
+              "She ___ the report yet.",
+              "We first ___ in 2010.",
+              "I ___ just ___ the news!",
+              "She ___ working here since January.",
+              "He ___ when he was five years old.",
+            ],
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Hardest",
+            instruction: "Write the correct form: present perfect or past simple.",
+            questions: [
+              "She (live) ___ in Paris for two years. She's still there.",
+              "I (see) ___ that film last Friday.",
+              "He (never/try) ___ Thai food in his life.",
+              "They (arrive) ___ an hour ago.",
+              "I (just/finish) ___ my homework.",
+              "She (start) ___ this job in 2019.",
+              "(you/ever/eat) ___ sushi?",
+              "He (not/call) ___ me yet today.",
+              "I (meet) ___ her at a conference in 2022.",
+              "She (work) ___ here since she left university.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — have or has",
+            answers: ["has", "have", "have", "has", "have", "has", "have", "has", "have", "has"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — present perfect form",
+            answers: ["has visited", "have never eaten", "has lost", "have just arrived", "has already finished", "have lived", "have seen", "hasn't called", "has worked", "have you ever been"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Harder — present perfect vs past simple",
+            answers: ["has lived", "woke up", "Have / been", "lost", "have seen", "hasn't finished", "met", "have / heard", "has been", "started"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Hardest — correct tense",
+            answers: ["has lived", "saw", "has never tried", "arrived", "have just finished", "started", "have you ever eaten", "hasn't called", "met", "has worked"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +284,20 @@ export default function PresentPerfectIntroLessonClient() {
         The Present Perfect uses <b>have/has + past participle</b>: <i>I <b>have seen</b> that film. She <b>has lived</b> here for years.</i> It connects the past to the present. Exercise 3 focuses on the critical difference between Present Perfect and Past Simple.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-present-perfect-intro" subject="Present Perfect" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +420,29 @@ export default function PresentPerfectIntroLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

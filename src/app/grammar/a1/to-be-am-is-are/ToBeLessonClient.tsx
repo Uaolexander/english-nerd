@@ -1,8 +1,41 @@
 
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I ___ a student.",                       options: ["am","is","are","be"],       answer: 0 },
+  { q: "She ___ from Spain.",                    options: ["am","is","are","be"],       answer: 1 },
+  { q: "They ___ happy today.",                  options: ["am","is","are","be"],       answer: 2 },
+  { q: "He ___ my brother.",                     options: ["am","is","are","be"],       answer: 1 },
+  { q: "We ___ tired after the trip.",           options: ["am","is","are","be"],       answer: 2 },
+  { q: "You ___ very tall!",                     options: ["am","is","are","be"],       answer: 2 },
+  { q: "It ___ a beautiful day.",                options: ["am","is","are","be"],       answer: 1 },
+  { q: "My name ___ Alex.",                      options: ["am","is","are","be"],       answer: 1 },
+  { q: "The children ___ in the garden.",        options: ["am","is","are","be"],       answer: 2 },
+  { q: "I ___ not hungry.",                      options: ["is","are","am","be"],       answer: 2 },
+  { q: "The dog ___ very friendly.",             options: ["am","are","be","is"],       answer: 3 },
+  { q: "She ___ not at home.",                   options: ["am","are","is","be"],       answer: 2 },
+  { q: "Tom and Anna ___ best friends.",         options: ["am","is","be","are"],       answer: 3 },
+  { q: "___ you ready?",                         options: ["Am","Is","Are","Be"],       answer: 2 },
+  { q: "___ he a doctor?",                       options: ["Am","Are","Be","Is"],       answer: 3 },
+  { q: "___ they at school?",                    options: ["Am","Is","Be","Are"],       answer: 3 },
+  { q: "Where ___ my keys?",                     options: ["am","is","be","are"],       answer: 3 },
+  { q: "How old ___ you?",                       options: ["am","is","be","are"],       answer: 3 },
+  { q: "What ___ your name?",                    options: ["am","are","be","is"],       answer: 3 },
+  { q: "The book ___ on the table.",             options: ["am","are","be","is"],       answer: 3 },
+  { q: "Paris ___ the capital of France.",       options: ["am","are","be","is"],       answer: 3 },
+  { q: "We ___ from Ukraine.",                   options: ["am","is","be","are"],       answer: 3 },
+  { q: "I ___ 25 years old.",                    options: ["is","are","be","am"],       answer: 3 },
+  { q: "The sky ___ blue.",                      options: ["am","are","be","is"],       answer: 3 },
+  { q: "These shoes ___ too small.",             options: ["am","is","be","are"],       answer: 3 },
+];
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
 
 type MCQ = {
   id: string;
@@ -326,13 +359,11 @@ export default function ArticlesLessonClient() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
   const [pdfLoading, setPdfLoading] = useState(false);
-  const page1Ref = useRef<HTMLDivElement>(null);
-  const page2Ref = useRef<HTMLDivElement>(null);
-  const page3Ref = useRef<HTMLDivElement>(null);
 
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
 
   useEffect(() => {
     if (checked && score) {
@@ -373,23 +404,354 @@ export default function ArticlesLessonClient() {
   }
 
   async function downloadPDF() {
-    if (!page1Ref.current || !page2Ref.current || !page3Ref.current) return;
     setPdfLoading(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const W = 210, H = 297;
-      const refs = [page1Ref, page2Ref, page3Ref];
-      for (let i = 0; i < refs.length; i++) {
-        const canvas = await html2canvas(refs[i].current!, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-        const img = canvas.toDataURL("image/png");
-        if (i > 0) pdf.addPage();
-        pdf.addImage(img, "PNG", 0, 0, W, H);
+
+      const W = 210, H = 297, ml = 15, mr = 15, cw = 180;
+      const Y = "#F5DA20", BK = "#111111", GR = "#999999", LG = "#F2F2F2", MG = "#CCCCCC";
+
+      // ── shared helpers ──────────────────────────────────────────────
+      function pageHeader(pageNum: number, sub: string) {
+        pdf.setFillColor(Y);
+        pdf.rect(0, 0, W, 2.5, "F");
+        pdf.setFillColor("#FAFAFA");
+        pdf.rect(0, 2.5, W, 13, "F");
+        pdf.setDrawColor("#EBEBEB");
+        pdf.setLineWidth(0.25);
+        pdf.line(0, 15.5, W, 15.5);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.setTextColor(BK);
+        pdf.text("English Nerd", ml, 10.5);
+        pdf.setFillColor(MG);
+        pdf.circle(ml + 27, 9.5, 0.7, "F");
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(GR);
+        pdf.text(sub, ml + 30, 10.5);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(GR);
+        pdf.text(`${pageNum} / 3`, W - mr, 10.5, { align: "right" });
       }
+
+      function numCircle(x: number, y: number, n: number) {
+        pdf.setFillColor(BK);
+        pdf.circle(x + 3.5, y + 3.5, 3.5, "F");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.setTextColor("#FFFFFF");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(String(n), x + 3.5, y + 3.5, { align: "center", baseline: "middle" } as any);
+      }
+
+      function pill(x: number, y: number, text: string, bg: string, fg: string) {
+        const w = 20, h = 5.5;
+        pdf.setFillColor(bg);
+        pdf.roundedRect(x, y, w, h, 1.2, 1.2, "F");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7);
+        pdf.setTextColor(fg);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(text, x + w / 2, y + h / 2, { align: "center", baseline: "middle" } as any);
+      }
+
+      function exHeader(y: number, n: number, title: string, lvl: string, lvlBg: string, lvlFg: string, instr: string) {
+        numCircle(ml, y, n);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.setTextColor(BK);
+        pdf.text(title, ml + 10, y + 5);
+        const tw = pdf.getTextWidth(title);
+        pill(ml + 10 + tw + 3, y + 0.5, lvl.toUpperCase(), lvlBg, lvlFg);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(GR);
+        pdf.text(instr, ml + 10 + tw + 26, y + 4.5);
+      }
+
+      function exItems(yStart: number, items: string[], showOpts: boolean): number {
+        const qH = 9.5, colW = cw / 2;
+        const rows = Math.ceil(items.length / 2);
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < 2; col++) {
+            const i = row * 2 + col;
+            if (i >= items.length) continue;
+            const qx = ml + col * colW;
+            const qy = yStart + row * qH;
+            pdf.setDrawColor(LG);
+            pdf.setLineWidth(0.2);
+            pdf.line(qx + (col === 1 ? 2 : 0), qy + qH, qx + colW - (col === 0 ? 2 : 0), qy + qH);
+            if (col === 1) pdf.line(ml + colW, qy, ml + colW, qy + qH);
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(8);
+            pdf.setTextColor(MG);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            pdf.text(`${i + 1}.`, qx + (col === 1 ? 4 : 0), qy + qH / 2, { baseline: "middle" } as any);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(10);
+            pdf.setTextColor("#222222");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            pdf.text(items[i], qx + (col === 1 ? 10 : 6), qy + qH / 2, { baseline: "middle" } as any);
+            if (showOpts) {
+              pdf.setFont("helvetica", "normal");
+              pdf.setFontSize(7.5);
+              pdf.setTextColor(MG);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              pdf.text("am / is / are", qx + colW - (col === 1 ? 4 : 6), qy + qH / 2, { align: "right", baseline: "middle" } as any);
+            }
+          }
+        }
+        return yStart + rows * qH;
+      }
+
+      // ── PAGE 1 ──────────────────────────────────────────────────────
+      pageHeader(1, "Grammar Worksheet");
+
+      // A1 badge
+      pdf.setFillColor(BK);
+      pdf.roundedRect(W - mr - 22, 5, 22, 6, 1.5, 1.5, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(Y);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pdf.text("A1  LEVEL", W - mr - 11, 8, { align: "center", baseline: "middle" } as any);
+
+      let y = 19;
+
+      // Title block
+      pdf.setFillColor(Y);
+      pdf.rect(ml, y, 2, 22, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(26);
+      pdf.setTextColor(BK);
+      pdf.text('Verb "to be"', ml + 5, y + 11);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(GR);
+      pdf.text("am \u00B7 is \u00B7 are  —  4 graded exercises + answer key", ml + 5, y + 18);
+      y += 27;
+
+      // Grammar reference label
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(MG);
+      pdf.text("GRAMMAR REFERENCE", ml, y);
+      y += 5;
+
+      // Grammar table
+      const tCols = [36, 54, 50, 40];
+      const tHdrs = ["Subject", "Affirmative (+)", "Negative (\u2212)", "Question (?)"];
+      const tData = [
+        ["I", "I am a student.  (I'm)", "I am not tired.", "Am I late?"],
+        ["He / She / It", "She is my friend.  (she's)", "It isn't cold.", "Is he here?"],
+        ["You / We / They", "They are at home.  (they're)", "We aren't ready.", "Are you late?"],
+      ];
+      const tRowH = 9;
+
+      let tx = ml;
+      tHdrs.forEach((h, ci) => {
+        pdf.setFillColor(BK);
+        pdf.rect(tx, y, tCols[ci], tRowH, "F");
+        pdf.setDrawColor("#2A2A2A");
+        pdf.setLineWidth(0.2);
+        pdf.rect(tx, y, tCols[ci], tRowH, "S");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.setTextColor(Y);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(h, tx + 3, y + tRowH / 2, { baseline: "middle" } as any);
+        tx += tCols[ci];
+      });
+      y += tRowH;
+
+      tData.forEach((row) => {
+        tx = ml;
+        row.forEach((cell, ci) => {
+          pdf.setFillColor(ci === 0 ? "#FAFAFA" : "#FFFFFF");
+          pdf.rect(tx, y, tCols[ci], tRowH, "F");
+          pdf.setDrawColor(LG);
+          pdf.setLineWidth(0.2);
+          pdf.rect(tx, y, tCols[ci], tRowH, "S");
+          pdf.setFont("helvetica", ci === 0 ? "bold" : "normal");
+          pdf.setFontSize(10);
+          pdf.setTextColor(ci === 0 ? BK : "#444444");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(cell, tx + 3, y + tRowH / 2, { baseline: "middle" } as any);
+          tx += tCols[ci];
+        });
+        y += tRowH;
+      });
+      y += 4;
+
+      // Key rule
+      pdf.setFillColor(Y);
+      pdf.rect(ml, y, 2, 12, "F");
+      pdf.setFillColor("#FFFDE7");
+      pdf.rect(ml + 2, y, cw - 2, 12, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(BK);
+      pdf.text("Key rule:", ml + 5, y + 4.5);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9.5);
+      pdf.setTextColor("#555555");
+      pdf.text("I \u2192 am   \u00B7   He / She / It \u2192 is   \u00B7   You / We / They \u2192 are", ml + 5, y + 9);
+      y += 16;
+
+      // Exercise 1
+      exHeader(y, 1, "Exercise 1", "Easy", Y, BK, "Choose am / is / are.");
+      y += 10;
+      y = exItems(y, [
+        "I _____ a student.", "She _____ from Poland.", "They _____ at home.", "My name _____ Alex.",
+        "You _____ my friend.", "We _____ happy today.", "It _____ cold outside.", "I _____ 10 years old.",
+        "You _____ late.", "He _____ a teacher.",
+      ], true);
+      y += 7;
+
+      // Exercise 2
+      exHeader(y, 2, "Exercise 2", "Medium", "#DCFCE7", "#166534", "Fill in: am / is / are.");
+      y += 10;
+      y = exItems(y, [
+        "I _____ from the USA.", "She _____ my sister.", "They _____ students.", "We _____ in a caf\u00E9.",
+        "It _____ my phone.", "You _____ very kind.", "My parents _____ at work.", "The weather _____ nice.",
+        "I _____ tired.", "You _____ ready.",
+      ], false);
+
+      // Footer p1
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H - 7);
+      pdf.text("1 / 3", W - mr, H - 7, { align: "right" });
+
+      // ── PAGE 2 ──────────────────────────────────────────────────────
+      pdf.addPage();
+      pageHeader(2, 'Verb "to be" — am / is / are');
+      y = 20;
+
+      exHeader(y, 3, "Exercise 3", "Hard", BK, Y, "Write: am not / isn't / aren't.");
+      y += 10;
+      y = exItems(y, [
+        "I _____ a doctor.", "He _____ at home.", "They _____ late.", "She _____ happy today.",
+        "We _____ in the office.", "It _____ my bag.", "You _____ wrong.", "I _____ hungry.",
+        "My name _____ John.", "They _____ here.",
+      ], false);
+      y += 8;
+
+      exHeader(y, 4, "Exercise 4", "Harder", "#222222", Y, "Write the question form.");
+      y += 10;
+      y = exItems(y, [
+        "_____ late? (I)", "_____ your teacher? (she)", "_____ at school? (they)", "_____ okay? (you)",
+        "_____ from Spain? (he)", "_____ friends? (we)", "_____ your phone? (it)", "_____ ready? (they)",
+        "_____ tired? (I)", "_____ in the right place? (we)",
+      ], false);
+      y += 10;
+
+      // Quick reminder
+      pdf.setFillColor(Y);
+      pdf.rect(ml, y, 2, 18, "F");
+      pdf.setFillColor("#FFFDE7");
+      pdf.rect(ml + 2, y, cw - 2, 18, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(GR);
+      pdf.text("QUICK REMINDER", ml + 5, y + 4.5);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor("#333333");
+      pdf.text("I \u2192 am   \u00B7   He / She / It \u2192 is   \u00B7   You / We / They \u2192 are", ml + 5, y + 10);
+      pdf.setFontSize(9);
+      pdf.setTextColor("#666666");
+      pdf.text("Negatives: am not / isn't / aren't   \u00B7   Questions: invert subject + verb.", ml + 5, y + 15.5);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H - 7);
+      pdf.text("2 / 3", W - mr, H - 7, { align: "right" });
+
+      // ── PAGE 3: Answer Key ──────────────────────────────────────────
+      pdf.addPage();
+      pageHeader(3, 'Verb "to be" — Answer Key');
+      y = 20;
+
+      pdf.setFillColor(Y);
+      pdf.rect(ml, y, 2, 20, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(24);
+      pdf.setTextColor(BK);
+      pdf.text("Answer Key", ml + 5, y + 10);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(GR);
+      pdf.text("Check your answers below", ml + 5, y + 17);
+      y += 26;
+
+      const sections = [
+        { lbl: "Exercise 1", sub: "Easy — circle am / is / are", ans: ["am","is","are","is","are","are","is","am","are","is"] },
+        { lbl: "Exercise 2", sub: "Medium — fill in am / is / are", ans: ["am","is","are","are","is","are","are","is","am","are"] },
+        { lbl: "Exercise 3", sub: "Hard — negatives", ans: ["am not","isn't","aren't","isn't","aren't","isn't","aren't","am not","isn't","aren't"] },
+        { lbl: "Exercise 4", sub: "Harder — questions", ans: ["Am I","Is she","Are they","Are you","Is he","Are we","Is it","Are they","Am I","Are we"] },
+      ];
+
+      sections.forEach(({ lbl, sub, ans }, si) => {
+        numCircle(ml, y, si + 1);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.setTextColor(BK);
+        pdf.text(lbl, ml + 10, y + 5);
+        const lblW = pdf.getTextWidth(lbl);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(GR);
+        pdf.text(sub, ml + 10 + lblW + 4, y + 4.5);
+        pdf.setDrawColor(LG);
+        pdf.setLineWidth(0.3);
+        pdf.line(ml, y + 9, W - mr, y + 9);
+        y += 13;
+
+        // Answer chips: 5 per row × 2 rows
+        const chipW = 26, chipH = 7.5, chipStep = 36;
+        ans.forEach((a, ai) => {
+          const col = ai % 5;
+          const row = Math.floor(ai / 5);
+          const cx = ml + col * chipStep;
+          const cy = y + row * 14;
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(8);
+          pdf.setTextColor(MG);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(`${ai + 1}.`, cx, cy + chipH / 2, { baseline: "middle" } as any);
+          pdf.setFillColor(Y);
+          pdf.roundedRect(cx + 6, cy, chipW, chipH, 1.5, 1.5, "F");
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9);
+          pdf.setTextColor(BK);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(a, cx + 6 + chipW / 2, cy + chipH / 2, { align: "center", baseline: "middle" } as any);
+        });
+        y += 2 * 14 + 8;
+      });
+
+      // Footer p3
+      pdf.setDrawColor(LG);
+      pdf.setLineWidth(0.3);
+      pdf.line(ml, H - 12, W - mr, H - 12);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc — Free English Grammar", ml, H - 7);
+      pdf.text('Verb "to be" \u00B7 A1 \u00B7 Free to print & share', W - mr, H - 7, { align: "right" });
+
       pdf.save("EnglishNerd_Verb-to-be_A1.pdf");
-    } catch (e) { console.error(e); }
-    finally { setPdfLoading(false); }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPdfLoading(false);
+    }
   }
 
   function switchExercise(n: 1 | 2 | 3 | 4) {
@@ -424,17 +786,23 @@ export default function ArticlesLessonClient() {
         Use <b>am / is / are</b> to talk about who you are, what something is, and how people feel. Practice with 4 graded exercises.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left + center + right */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound
+              gameId="grammar-a1-to-be"
+              subject="am / is / are"
+              questions={SPEED_QUESTIONS}
+              variant="sidebar"
+            />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -457,31 +825,14 @@ export default function ArticlesLessonClient() {
               Explanation
             </button>
 
-            <button
-              onClick={downloadPDF}
-              disabled={pdfLoading}
-              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition text-slate-700 hover:bg-black/5 disabled:opacity-50"
-            >
-              {pdfLoading ? (
-                <>
-                  <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                  Generating…
-                </>
-              ) : (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  PDF
-                </>
-              )}
-            </button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
-            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
-              Exercises:
+            <div className="ml-auto hidden sm:flex items-center gap-1.5">
               {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
                   onClick={() => switchExercise(n as 1 | 2 | 3 | 4)}
-                  className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${
+                  className={`h-8 w-8 rounded-lg border border-black/10 text-sm font-bold transition ${
                     exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"
                   }`}
                 >
@@ -695,22 +1046,100 @@ export default function ArticlesLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+        {/* Right column */}
+        {isPro ? (
+          <aside className="sticky top-24 flex flex-col gap-3">
+            <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+
+            {[
+              {
+                title: "Articles: a / an",
+                href: "/grammar/a1/articles-a-an",
+                img: "/topics/a1/articles-a-an.jpg",
+                level: "A1",
+                badge: "bg-emerald-500",
+                reason: "Great next step after to be",
+              },
+              {
+                title: "Present Simple",
+                href: "/grammar/a1/present-simple-i-you-we-they",
+                img: "/topics/a1/present-simple-i-you-we-they.jpg",
+                level: "A1",
+                badge: "bg-emerald-500",
+                reason: "Build on what you've learned",
+              },
+              {
+                title: "Can / Can't",
+                href: "/grammar/a1/can-cant",
+                img: "/topics/a1/can-cant.jpg",
+                level: "A1",
+                badge: "bg-emerald-500",
+              },
+            ].map((rec) => (
+              <a
+                key={rec.href}
+                href={rec.href}
+                className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={rec.img}
+                    alt={rec.title}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                  <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>
+                    {rec.level}
+                  </span>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">
+                    {rec.title}
+                  </p>
+                  {rec.reason && (
+                    <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">
+                      {rec.reason}
+                    </p>
+                  )}
+                </div>
+              </a>
+            ))}
+
+            <a
+              href="/grammar/a1"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+            >
+              All A1 topics
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+          </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
           </div>
-        </aside>
+        )}
       </div>
 
-      {/* ─── Hidden PDF pages ─── */}
-      <div style={{ position: "absolute", left: "-9999px", top: "-9999px", pointerEvents: "none" }}>
+      {/* Speed Round — only for non-Pro, aligned to center column */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound
+            gameId="grammar-a1-to-be"
+            subject='Verb "to be": am / is / are'
+            questions={SPEED_QUESTIONS}
+          />
+          <div className="hidden lg:block" />
+        </div>
+      )}
+
+      <div style={{ display: "none" }}>
 
         {/* ── PAGE 1 ── */}
-        <div ref={page1Ref} style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box" }}>
+        <div style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box" }}>
           {/* Top accent stripe */}
           <div style={{ height: "5px", background: "#F5DA20" }} />
           {/* Header */}
@@ -802,7 +1231,7 @@ export default function ArticlesLessonClient() {
         </div>
 
         {/* ── PAGE 2 ── */}
-        <div ref={page2Ref} style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box", position: "relative" }}>
+        <div style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box", position: "relative" }}>
           <div style={{ height: "5px", background: "#F5DA20" }} />
           <div style={{ padding: "16px 44px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #ebebeb" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -853,7 +1282,7 @@ export default function ArticlesLessonClient() {
         </div>
 
         {/* ── PAGE 3: Answer Key ── */}
-        <div ref={page3Ref} style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box", position: "relative" }}>
+        <div style={{ width: "794px", height: "1123px", background: "#ffffff", overflow: "hidden", fontFamily: "'Helvetica Neue', Arial, sans-serif", color: "#111", boxSizing: "border-box", position: "relative" }}>
           <div style={{ height: "5px", background: "#F5DA20" }} />
           <div style={{ padding: "16px 44px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #ebebeb" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

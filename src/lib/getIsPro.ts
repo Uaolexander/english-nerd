@@ -2,14 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Returns whether the given user currently has Pro access.
- * Checks for ANY row where is_pro = true — safe against multiple
- * webhook events creating multiple rows for the same subscription.
+ * Checks paid subscriptions (is_pro = true) OR an active promo redemption
+ * (expires_at > now()).
  */
 export async function getIsPro(
   supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data, error } = await supabase
+  // 1. Paid subscription
+  const { data: sub } = await supabase
     .from("subscriptions")
     .select("id")
     .eq("user_id", userId)
@@ -17,10 +18,16 @@ export async function getIsPro(
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    console.error("[getIsPro] query error:", error);
-    return false;
-  }
+  if (sub) return true;
 
-  return data !== null;
+  // 2. Active promo redemption
+  const { data: promo } = await supabase
+    .from("promo_redemptions")
+    .select("id")
+    .eq("user_id", userId)
+    .gt("expires_at", new Date().toISOString())
+    .limit(1)
+    .maybeSingle();
+
+  return promo !== null;
 }

@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I saw ___ cat (first mention)", options: ["the", "an", "a", "—"], answer: 2 },
+  { q: "___ cat was black (second mention)", options: ["A", "An", "—", "The"], answer: 3 },
+  { q: "She is ___ engineer", options: ["a", "the", "—", "an"], answer: 3 },
+  { q: "She is ___ honest person", options: ["a", "an", "the", "—"], answer: 1 },
+  { q: "___ dogs are loyal (general)", options: ["The", "A", "—", "An"], answer: 2 },
+  { q: "We visited ___ Eiffel Tower", options: ["a", "an", "—", "the"], answer: 3 },
+  { q: "She plays ___ violin", options: ["a", "an", "—", "the"], answer: 3 },
+  { q: "I don't eat ___ meat (general)", options: ["a", "the", "an", "—"], answer: 3 },
+  { q: "They live in ___ France", options: ["a", "the", "an", "—"], answer: 3 },
+  { q: "I need ___ umbrella", options: ["a", "the", "—", "an"], answer: 3 },
+  { q: "Can you pass ___ salt, please?", options: ["a", "an", "—", "the"], answer: 3 },
+  { q: "___ Amazon is the longest river", options: ["A", "An", "The", "—"], answer: 2 },
+  { q: "___ love is important (abstract)", options: ["The", "A", "An", "—"], answer: 3 },
+  { q: "She is ___ best student (superlative)", options: ["a", "an", "—", "the"], answer: 3 },
+  { q: "He went to ___ school (institution)", options: ["a", "the", "an", "—"], answer: 3 },
+  { q: "Do you play ___ chess?", options: ["a", "the", "an", "—"], answer: 3 },
+  { q: "They live in ___ United Kingdom", options: ["a", "an", "—", "the"], answer: 3 },
+  { q: "___ sun rises in the east", options: ["A", "An", "—", "The"], answer: 3 },
+  { q: "___ happiness cannot be bought", options: ["The", "A", "An", "—"], answer: 3 },
+  { q: "She plays ___ piano every evening", options: ["a", "an", "—", "the"], answer: 3 },
+];
+
 export default function ArticlesTheLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -118,6 +150,77 @@ export default function ArticlesTheLessonClient() {
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Articles: a / an / the",
+        subtitle: "Definite, indefinite & zero article — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "a/an = first mention or indefinite. the = specific or unique. No article = general or abstract.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose a, an, the or — (no article).", hint: "a / an / the / —", questions: [
+            "I saw ___ cat in the garden.",
+            "___ cat was black and white.",
+            "She is ___ engineer.",
+            "She is ___ honest person.",
+            "___ dogs are loyal animals.",
+            "We visited ___ Eiffel Tower.",
+            "She plays ___ violin beautifully.",
+            "I don't eat ___ meat.",
+            "They live in ___ France.",
+            "I need ___ umbrella — it's raining.",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Choose a, an, the or — in context.", hint: "a / an / the / —", questions: [
+            "Can you pass ___ salt, please?",
+            "She works as ___ nurse at the local hospital.",
+            "___ Amazon is the longest river in South America.",
+            "___ love is the most important thing in life.",
+            "She is ___ best student in the class.",
+            "He went to ___ school by bus.",
+            "I'll have ___ sandwich and ___ orange juice.",
+            "Do you play ___ chess?",
+            "They live in ___ United Kingdom.",
+            "I saw ___ amazing film last night. ___ film was about space.",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Write the correct article: a, an, the — or a dash for no article.", questions: [
+            "He wants to be ___ architect.",
+            "___ Pacific Ocean is the largest ocean on Earth.",
+            "I read ___ interesting article this morning.",
+            "___ water boils at 100 degrees Celsius.",
+            "She bought ___ new dress for the wedding.",
+            "We watched ___ sunset from the rooftop.",
+            "___ Mount Fuji is in Japan.",
+            "He is ___ only person I trust.",
+            "___ happiness cannot be bought.",
+            "She plays ___ piano every evening.",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write a, an, the or — for each blank.", questions: [
+            "I'd like ___ coffee with ___ milk, please.",
+            "She studies at ___ Oxford University.",
+            "___ sun rises in the east.",
+            "He is ___ tallest boy in the class.",
+            "There's ___ spider in the bath!",
+            "We go to ___ church on Sundays.",
+            "That was ___ worst meal I've ever had.",
+            "___ life is short — enjoy it!",
+            "Can you turn off ___ TV?",
+            "She gave me ___ advice that changed my life.",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — basic articles", answers: ["a","the","an","an","—","the","the","—","—","an"] },
+          { exercise: 2, subtitle: "Medium — articles in context", answers: ["the","a","the","—","the","—","a / an","—","the","an / The"] },
+          { exercise: 3, subtitle: "Hard — write the article", answers: ["an","the","an","—","a","the","—","the","—","the"] },
+          { exercise: 4, subtitle: "Harder — longer context", answers: ["a / —","—","the","the","a","—","the","—","the","—"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -140,18 +243,23 @@ export default function ArticlesTheLessonClient() {
         Articles tell us whether a noun is <b>specific or general, known or unknown</b>. English has three articles — <b>a, an, the</b> — and a <b>zero article</b> (no article) for general and abstract meanings.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-articles-the" subject="Articles: a / an / the" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +382,32 @@ export default function ArticlesTheLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

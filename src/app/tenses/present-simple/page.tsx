@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Present Simple Exercises — English Nerd",
@@ -238,13 +239,7 @@ export default function PresentSimplePage() {
               728 × 90
             </div>
           </div>
-          <CardGroup
-            label="Related Topics"
-            sublabel="Key grammar points and comparisons"
-            dotColor="bg-sky-400"
-            exercises={RELATED}
-            basePath="/tenses/present-simple"
-          />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/present-simple" />
         </div>
 
       </div>

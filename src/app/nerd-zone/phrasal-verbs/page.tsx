@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 import DownloadWorksheet from "./DownloadWorksheet";
 
 export const metadata: Metadata = {
@@ -55,7 +56,7 @@ const LEVELS = [
 export default async function PhrasalVerbsA1Page() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const isLoggedIn = !!user;
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
@@ -101,7 +102,7 @@ export default async function PhrasalVerbsA1Page() {
             ))}
           </div>
           <div className="flex flex-col items-end gap-1">
-            <DownloadWorksheet isLoggedIn={isLoggedIn} level="A1" wordBank={WORD_BANK} exercises={EXERCISES} loginRedirect="/nerd-zone/phrasal-verbs" filename="PhrasalVerbs_A1_Worksheet_EnglishNerd.pdf" />
+            <DownloadWorksheet isPro={isPro} level="A1" wordBank={WORD_BANK} exercises={EXERCISES} filename="PhrasalVerbs_A1_Worksheet_EnglishNerd.pdf" />
             <span className="text-[11px] text-slate-400">10 exercises + answer key · PDF</span>
           </div>
         </div>

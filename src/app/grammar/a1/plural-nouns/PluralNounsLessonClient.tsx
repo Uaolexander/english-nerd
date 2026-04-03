@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "one book → two ___", options: ["book","books","bookes","bookies"], answer: 1 },
+  { q: "one bus → two ___", options: ["bus","buss","buses","busis"], answer: 2 },
+  { q: "one child → two ___", options: ["childs","childen","children","childes"], answer: 2 },
+  { q: "one city → two ___", options: ["citys","cities","cityes","citeis"], answer: 1 },
+  { q: "one man → two ___", options: ["mans","manes","men","mans"], answer: 2 },
+  { q: "one tooth → two ___", options: ["tooths","teethes","toothes","teeth"], answer: 3 },
+  { q: "one potato → two ___", options: ["potatos","potato","potatoes","potatois"], answer: 2 },
+  { q: "one leaf → two ___", options: ["leafs","leaves","leafes","leafis"], answer: 1 },
+  { q: "one woman → two ___", options: ["womans","wemen","women","womens"], answer: 2 },
+  { q: "one box → two ___", options: ["box","boxs","boxis","boxes"], answer: 3 },
+  { q: "one mouse → two ___", options: ["mouses","mice","mices","mousis"], answer: 1 },
+  { q: "one foot → two ___", options: ["foots","feets","feet","footes"], answer: 2 },
+  { q: "one baby → two ___", options: ["babys","babies","babyes","babyies"], answer: 1 },
+  { q: "one knife → two ___", options: ["knifes","knifis","knives","knivis"], answer: 2 },
+  { q: "one sheep → two ___", options: ["sheeps","sheeps","sheepes","sheep"], answer: 3 },
+  { q: "one church → two ___", options: ["churchs","church","churches","churchies"], answer: 2 },
+  { q: "one person → two ___", options: ["persons","peoples","people","persones"], answer: 2 },
+  { q: "one dish → two ___", options: ["dishs","dishes","dishis","dishse"], answer: 1 },
+  { q: "one fish → two ___", options: ["fishes","fishs","fish","fishis"], answer: 2 },
+  { q: "one ox → two ___", options: ["oxs","oxes","oxen","oxis"], answer: 2 },
+];
 
 export default function PluralNounsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -331,6 +361,9 @@ export default function PluralNounsLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -369,6 +402,119 @@ export default function PluralNounsLessonClient() {
     const percent = total ? Math.round((correct / total) * 100) : 0;
     return { correct, total, percent };
   }, [checked, current, mcqAnswers, inputAnswers]);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Plural Nouns",
+        subtitle: "Regular & Irregular Plurals — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Most nouns: add -s. Nouns ending in -s/-x/-ch/-sh/-o: add -es. Nouns ending in consonant+y: -ies. Irregular: man→men, child→children, tooth→teeth.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct plural form.",
+            questions: [
+              "one book → two ____",
+              "one cat → three ____",
+              "one bus → two ____",
+              "one box → five ____",
+              "one watch → two ____",
+              "one dish → four ____",
+              "one baby → two ____",
+              "one city → many ____",
+              "one day → two ____",
+              "one toy → three ____",
+            ],
+            hint: "books / cats / buses / boxes / watches / dishes / babies / cities / days / toys",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the plural form.",
+            questions: [
+              "one girl → two ____",
+              "one class → three ____",
+              "one tomato → two ____",
+              "one photo → two ____",
+              "one knife → two ____",
+              "one leaf → many ____",
+              "one party → two ____",
+              "one key → two ____",
+              "one woman → two ____",
+              "one child → three ____",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the correct plural form.",
+            questions: [
+              "one man → two ____",
+              "one person → two ____",
+              "one foot → two ____",
+              "one tooth → two ____",
+              "one mouse → two ____",
+              "one sheep → two ____",
+              "one fish → two ____",
+              "one baby → three ____",
+              "one leaf → two ____",
+              "one hero → two ____",
+            ],
+            hint: "men / people / feet / teeth / mice / sheep / fish / babies / leaves / heroes",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write the correct plural noun.",
+            questions: [
+              "There are three ____ in the room. (chair)",
+              "Two ____ are playing outside. (child)",
+              "I have two ____ . (box)",
+              "My parents have three ____ . (baby)",
+              "These ____ are very good. (dish)",
+              "Two ____ are on the table. (knife)",
+              "There are many ____ in the city. (bus)",
+              "My ___ are tired. (foot)",
+              "Two ____ are reading. (woman)",
+              "I can see five ____ . (sheep)",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the plural form",
+            answers: ["books", "cats", "buses", "boxes", "watches", "dishes", "babies", "cities", "days", "toys"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — type the plural",
+            answers: ["girls", "classes", "tomatoes", "photos", "knives", "leaves", "parties", "keys", "women", "children"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — irregular plurals",
+            answers: ["men", "people", "feet", "teeth", "mice", "sheep", "fish", "babies", "leaves", "heroes"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — complete the sentences",
+            answers: ["chairs", "children", "boxes", "babies", "dishes", "knives", "buses", "feet", "women", "sheep"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -409,17 +555,18 @@ export default function PluralNounsLessonClient() {
         Learn how to make nouns plural: <b>-s</b>, <b>-es</b>, <b>-ies</b>, <b>-ves</b>, and common irregular plurals.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-plural-nouns" subject="Plural Nouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -441,6 +588,8 @@ export default function PluralNounsLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -662,16 +811,42 @@ export default function PluralNounsLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+        {/* Right column */}
+        {isPro ? (
+          <aside className="sticky top-24 flex flex-col gap-3">
+            <div className="text-xs font-black uppercase tracking-widest text-slate-400">Recommended next</div>
+            {[
+              { title: "Subject Pronouns", href: "/grammar/a1/subject-pronouns", img: "/topics/a1/subject-pronouns.jpg", level: "A1", badge: "bg-emerald-500", reason: "Essential before plurals" },
+              { title: "Articles: a / an", href: "/grammar/a1/articles-a-an", img: "/topics/a1/articles-a-an.jpg", level: "A1", badge: "bg-emerald-500" },
+              { title: "This / That / These / Those", href: "/grammar/a1/this-that-these-those", img: "/topics/a1/this-that-these-those.jpg", level: "A1", badge: "bg-emerald-500" },
+            ].map((l) => (
+              <a key={l.href} href={l.href} className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 transition hover:border-[#F5DA20] hover:shadow-sm">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                  <img src={l.img} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <span className={`absolute bottom-1 right-1 rounded-md px-1.5 py-0.5 text-[9px] font-black text-white ${l.badge}`}>{l.level}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-sm font-black text-slate-900 group-hover:text-black">{l.title}</div>
+                  {l.reason && <div className="mt-0.5 text-xs text-slate-400">{l.reason}</div>}
+                </div>
+              </a>
+            ))}
+          </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
           </div>
-        </aside>
+        )}
       </div>
+
+      {/* SpeedRound below grid for non-PRO users */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a1-plural-nouns" subject="Plural Nouns" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

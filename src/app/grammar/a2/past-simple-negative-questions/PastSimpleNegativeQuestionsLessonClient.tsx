@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import PDFButton from "@/components/PDFButton";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase().replace(/['']/g, "'");
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She ___ go to the party. (negative)", options: ["didn't went", "didn't go", "doesn't go", "don't go"], answer: 1 },
+  { q: "___ you see the film? (question)", options: ["Do", "Does", "Did", "Was"], answer: 2 },
+  { q: "They ___ enjoy the meal. (negative)", options: ["don't", "didn't enjoyed", "didn't enjoy", "doesn't"], answer: 2 },
+  { q: "___ he call you? (question)", options: ["Does", "Did", "Was", "Do"], answer: 1 },
+  { q: "Short answer: Yes, I ___ (to 'Did you see it?')", options: ["do", "did", "was", "seen"], answer: 1 },
+  { q: "I ___ finish on time. (negative)", options: ["didn't finished", "didn't finish", "don't finish", "doesn't finish"], answer: 1 },
+  { q: "Where ___ you go? (past question)", options: ["do", "does", "were", "did"], answer: 3 },
+  { q: "He ___ know the answer. (negative)", options: ["didn't knew", "doesn't know", "didn't know", "don't knew"], answer: 2 },
+  { q: "Short answer: No, she ___.", options: ["don't", "didn't", "wasn't", "doesn't"], answer: 1 },
+  { q: "What ___ she say? (past question)", options: ["does", "did", "was", "do"], answer: 1 },
+  { q: "We ___ sleep well. (negative)", options: ["didn't slept", "didn't sleep", "don't sleep", "doesn't sleep"], answer: 1 },
+  { q: "___ they arrive on time? (question)", options: ["Do", "Does", "Have", "Did"], answer: 3 },
+  { q: "Why ___ she come? (negative question)", options: ["doesn't", "wasn't", "didn't", "don't"], answer: 2 },
+  { q: "How much ___ you pay? (past)", options: ["do", "does", "did", "have"], answer: 2 },
+  { q: "I ___ expect to see you! (negative)", options: ["didn't expected", "didn't expect", "don't expected", "doesn't expect"], answer: 1 },
+  { q: "Who ___ you talk to? (past)", options: ["do", "does", "have", "did"], answer: 3 },
+  { q: "___ she work here before? (question)", options: ["Does", "Was", "Have", "Did"], answer: 3 },
+  { q: "He ___ realise how late it was. (negative)", options: ["didn't realised", "didn't realize", "didn't realizing", "doesn't realise"], answer: 1 },
+  { q: "A: Did they call? B: Yes, they ___.", options: ["called", "do", "did", "have"], answer: 2 },
+  { q: "___ the lesson start at 9? (past question)", options: ["Do", "Does", "Was", "Did"], answer: 3 },
+];
 
 export default function PastSimpleNegativeQuestionsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -334,6 +364,93 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
 
   const current = sets[exNo];
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    const config: LessonPDFConfig = {
+      title: "Past Simple: Negatives & Questions",
+      subtitle: "didn't / Did — 4 exercises + answer key",
+      level: "A2",
+      keyRule: "didn't + base form (NOT past form!) | Did + subject + base form?",
+      exercises: [
+        {
+          number: 1, title: "Exercise 1", difficulty: "Easy",
+          instruction: "Choose the correct negative or question form.",
+          questions: [
+            "She ___ go to school yesterday. (negative)",
+            "___ you see that film last night? (question)",
+            "They ___ enjoy the party. (negative)",
+            "___ he call you this morning? (question)",
+            "I ___ finish my homework last night. (negative)",
+            "___ they arrive on time? (question)",
+            "He ___ know the answer. (negative)",
+            "___ she work here before? (question)",
+            "We ___ sleep well last night. (negative)",
+            "Yes, I ___. (short answer to 'Did you enjoy it?')",
+          ],
+        },
+        {
+          number: 2, title: "Exercise 2", difficulty: "Medium",
+          instruction: "Write the negative or question form in the blank.",
+          questions: [
+            "She went to the gym. → She ___ to the gym. (negative)",
+            "They watched TV. → ___ they watch TV? (question)",
+            "He bought a new car. → He ___ a new car. (negative)",
+            "You finished the report. → ___ you finish the report? (question)",
+            "I called you twice. → I ___ you twice. (negative)",
+            "We met them at the airport. → We ___ them there. (negative)",
+            "She studied for the exam. → ___ she study? (question)",
+            "He told you the truth. → He ___ you the truth. (negative)",
+            "They left early. → ___ they leave early? (question)",
+            "I understood everything. → I ___ everything. (negative)",
+          ],
+        },
+        {
+          number: 3, title: "Exercise 3", difficulty: "Hard",
+          instruction: "Choose the best answer to complete each sentence.",
+          questions: [
+            "A: Did you enjoy the concert? B: No, I ___.",
+            "Where ___ you go last weekend?",
+            "She ___ tell anyone about the surprise party.",
+            "What ___ he say when you told him?",
+            "A: Did they call back? B: Yes, they ___.",
+            "Why ___ she come to the meeting?",
+            "He ___ realise how late it was.",
+            "How much ___ you pay for that jacket?",
+            "I ___ expect to see you here!",
+            "Who ___ you speak to at the office?",
+          ],
+        },
+        {
+          number: 4, title: "Exercise 4", difficulty: "Harder",
+          instruction: "Write the full missing part (negative or question auxiliary + verb).",
+          questions: [
+            "I went to bed early. → I ___ to bed late. (negative)",
+            "They won the match. → ___ they win? (write auxiliary only)",
+            "She knew the answer. → She ___ the answer. (negative)",
+            "He took the bus. → He ___ the bus. (negative)",
+            "We had a great time. → ___ you have a great time? (auxiliary)",
+            "You sent the email. → You ___ the email. (negative)",
+            "She found her keys. → She ___ her keys. (negative)",
+            "They spoke to the manager. → ___ they speak? (auxiliary)",
+            "He made a reservation. → He ___ a reservation. (negative)",
+            "I told her the truth. → I ___ her the truth. (negative)",
+          ],
+        },
+      ],
+      answerKey: [
+        { exercise: 1, subtitle: "Easy — choose form", answers: ["didn't go", "Did", "didn't enjoy", "Did", "didn't finish", "Did", "didn't know", "Did", "didn't sleep", "did"] },
+        { exercise: 2, subtitle: "Medium — write form", answers: ["didn't go", "Did", "didn't buy", "Did", "didn't call", "didn't meet", "Did", "didn't tell", "Did", "didn't understand"] },
+        { exercise: 3, subtitle: "Hard — choose best answer", answers: ["didn't", "did", "didn't tell", "did", "did", "didn't", "didn't realize", "did", "didn't expect", "did"] },
+        { exercise: 4, subtitle: "Harder — write full form", answers: ["didn't go", "Did", "didn't know", "didn't take", "Did", "didn't send", "didn't find", "Did", "didn't make", "didn't tell"] },
+      ],
+    };
+    await generateLessonPDF(config);
+    setPdfLoading(false);
+  }
+
   const { save } = useProgress();
 
   useEffect(() => {
@@ -407,17 +524,16 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
       </p>
 
       {/* Layout */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr_280px]">
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
-            </div>
+        {/* Left sidebar */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-past-simple-negative-questions" subject="Past Simple Negatives & Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -440,7 +556,9 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
               Explanation
             </button>
 
-            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-500">
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
+            <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
                 <button
@@ -651,15 +769,30 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
+        {/* Right sidebar */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       {/* Bottom navigation */}

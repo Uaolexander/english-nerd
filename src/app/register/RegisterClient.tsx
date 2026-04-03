@@ -14,6 +14,7 @@ export default function RegisterClient() {
   const [loading, setLoading] = useState(false);
 
   const [agreed, setAgreed] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const widgetRef = useRef<TurnstileInstance | null>(null);
 
@@ -60,6 +61,7 @@ export default function RegisterClient() {
       password,
       options: {
         emailRedirectTo: `${location.origin}/auth/callback`,
+        data: { marketing_consent: marketingConsent },
       },
     });
 
@@ -115,7 +117,7 @@ export default function RegisterClient() {
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-white/10 bg-[#121216] p-8">
           <h1 className="text-2xl font-black text-white">Create account</h1>
-          <p className="mt-1 text-sm text-white/40">Free forever. No credit card needed.</p>
+          <p className="mt-1 text-sm text-white/40">Start free. Upgrade to Pro anytime.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
@@ -178,6 +180,19 @@ export default function RegisterClient() {
                 <a href="/privacy-policy" target="_blank" className="text-[#F5DA20] hover:underline">
                   Privacy Policy
                 </a>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#F5DA20] cursor-pointer"
+              />
+              <span className="text-xs text-white/40 leading-relaxed">
+                Send me helpful tips, new content and occasional offers from English Nerd.
+                You can unsubscribe at any time.
               </span>
             </label>
 

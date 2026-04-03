@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 import DownloadWorksheet from "../DownloadWorksheet";
 
 export const metadata: Metadata = {
@@ -55,7 +56,7 @@ const LEVELS = [
 export default async function LivePhrasesC1Page() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const isLoggedIn = !!user;
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
@@ -100,7 +101,7 @@ export default async function LivePhrasesC1Page() {
             ))}
           </div>
           <div className="flex flex-col items-end gap-1">
-            <DownloadWorksheet isLoggedIn={isLoggedIn} level="C1" title="Live Phrases" wordBank={WORD_BANK} exercises={EXERCISES} loginRedirect="/nerd-zone/live-phrases/c1" filename="LivePhrases_C1_Worksheet_EnglishNerd.pdf" />
+            <DownloadWorksheet isPro={isPro} level="C1" title="Live Phrases" wordBank={WORD_BANK} exercises={EXERCISES} filename="LivePhrases_C1_Worksheet_EnglishNerd.pdf" />
             <span className="text-[11px] text-slate-400">10 exercises + answer key · PDF</span>
           </div>
         </div>

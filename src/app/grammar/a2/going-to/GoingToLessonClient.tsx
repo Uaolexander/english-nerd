@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,10 +33,35 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She ___ study medicine. (plan)", options: ["is going to", "are going to", "am going to", "going to"], answer: 0 },
+  { q: "We ___ move to a bigger flat.", options: ["is going to", "am going to", "are going to", "going"], answer: 2 },
+  { q: "I ___ call you when I get home.", options: ["is going to", "are going to", "am going to", "goes to"], answer: 2 },
+  { q: "He ___ start his new job Monday.", options: ["are going to", "is going to", "am going to", "going to"], answer: 1 },
+  { q: "They ___ have a baby!", options: ["is going to", "am going to", "going to", "are going to"], answer: 3 },
+  { q: "Look! It ___ rain.", options: ["are going to", "am going to", "is going to", "going"], answer: 2 },
+  { q: "I ___ not eat meat anymore.", options: ["is not going to", "are not going to", "am not going to", "not going to"], answer: 2 },
+  { q: "Are you going to stay? — Yes, ___ .", options: ["I am", "I do", "I will", "I going"], answer: 0 },
+  { q: "She ___ not come — she has an exam.", options: ["am not going to", "are not going to", "is not going to", "not going"], answer: 2 },
+  { q: "We ___ buy tickets online.", options: ["is going to", "am going to", "are going to", "going to"], answer: 2 },
+  { q: "___ she tell him the truth?", options: ["Are she going to", "Is she going to", "Does she going to", "Do she going to"], answer: 1 },
+  { q: "You ___ slip! (visible danger)", options: ["am going to", "is going to", "are going to", "going to"], answer: 2 },
+  { q: "He ___ retire next spring.", options: ["are going to", "am going to", "is going to", "going to"], answer: 2 },
+  { q: "They ___ not renew the lease.", options: ["isn't going to", "am not going to", "aren't going to", "not going to"], answer: 2 },
+  { q: "What ___ they do after graduation?", options: ["is they going to", "do they going to", "are they going to", "does they going to"], answer: 2 },
+  { q: "___ you ___ stay or go out?", options: ["Is you going to", "Do you going to", "Are you going to", "Am you going to"], answer: 2 },
+  { q: "I ___ take the earlier train.", options: ["is going to", "are going to", "am going to", "going to"], answer: 2 },
+  { q: "She ___ run her first marathon.", options: ["am going to", "are going to", "is going to", "going to"], answer: 2 },
+  { q: "He has booked the hotel — he ___ visit Rome.", options: ["will", "are going to", "is going to", "am going to"], answer: 2 },
+  { q: "We ___ not miss this flight!", options: ["is not going to", "am not going to", "are not going to", "not going to"], answer: 2 },
+];
+
 export default function GoingToLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -133,6 +165,55 @@ export default function GoingToLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Going to",
+        subtitle: "Future Plans & Intentions — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Subject + am/is/are + going to + base verb → for plans already decided or evidence-based predictions.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct going to form.", questions: [
+            "She ___ study medicine at university.", "We ___ move to a bigger flat next year.", "I ___ call you as soon as I get home.",
+            "He ___ start his new job on Monday.", "They ___ have a baby!", "She ___ not come — she has an exam.",
+            "Look at those clouds! It ___ rain.", "I ___ not eat meat anymore.", "He ___ learn to drive this summer.",
+            "We ___ buy tickets for the concert online.",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write am/is/are going to + verb.", questions: [
+            "She ___ (study) all night before the exam.", "They ___ (travel) to Japan this summer.", "I ___ (cook) pasta for dinner tonight.",
+            "He ___ (buy) a new phone next week.", "We ___ (watch) the match at Mike's house.", "She ___ (meet) her school friends Saturday.",
+            "They ___ (open) a new café in the city centre.", "I ___ (start) learning Spanish next month.",
+            "He ___ (ask) his boss for a raise.", "We ___ (move) to a new city in the spring.",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the correct option (questions, negatives, context).", questions: [
+            "___ you ___ stay at home or go out tonight?", "Look at him! He ___ fall off that ladder!",
+            "She ___ not renew her contract. She told her boss yesterday.", "What ___ they ___ after they graduate?",
+            "We ___ not miss this flight — we have to be there!", "He has already booked the hotel — he ___ visit Rome.",
+            "___ she ___ tell him the truth?", "I ___ not eat junk food anymore. I decided this morning.",
+            "They ___ retire next year — they've been planning it for ages.", "It's icy outside — you ___ slip!",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write the correct going to form (positive, negative or question).", questions: [
+            "I've decided — I ___ (leave) this job by the end of the year.", "Look at those black clouds — it ___ (rain) any second!",
+            "She ___ (not/eat) meat anymore. She decided last month.", "We ___ (celebrate) with a big dinner on Friday.",
+            "He ___ (retire) next spring — he's been counting the days!", "They ___ (not/renew) their lease — they want to buy.",
+            "I ___ (take) the earlier train — it gets there faster.", "She ___ (run) her first marathon in April.",
+            "We ___ (not/go) to the beach — the weather looks awful.", "He ___ (propose) tonight! He's got the ring!",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose going to form", answers: ["is going to", "are going to", "am going to", "is going to", "are going to", "is not going to", "is going to", "am not going to", "is going to", "are going to"] },
+          { exercise: 2, subtitle: "Medium — write am/is/are going to", answers: ["is going to study", "are going to travel", "am going to cook", "is going to buy", "are going to watch", "is going to meet", "are going to open", "am going to start", "is going to ask", "are going to move"] },
+          { exercise: 3, subtitle: "Hard — questions & negatives", answers: ["Are you going to", "is going to", "is not going to", "are they going to do", "are not going to", "is going to", "Is she going to", "am not going to", "are going to", "are going to"] },
+          { exercise: 4, subtitle: "Harder — mixed forms", answers: ["am going to leave", "is going to rain", "isn't going to eat", "are going to celebrate", "is going to retire", "aren't going to renew", "am going to take", "is going to run", "aren't going to go", "is going to propose"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
@@ -173,19 +254,24 @@ export default function GoingToLessonClient() {
         Use <b>going to</b> to talk about <b>plans and intentions</b> you have already decided, or to make predictions based on <b>what you can see right now</b>. Form: <b>am / is / are + going to + base verb</b>.
       </p>
 
-      {/* Layout */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-going-to" subject="Going to" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -310,12 +396,32 @@ export default function GoingToLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

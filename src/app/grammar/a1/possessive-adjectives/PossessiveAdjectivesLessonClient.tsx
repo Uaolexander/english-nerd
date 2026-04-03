@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I have a dog. ___ dog is brown.", options: ["My","Your","His","Their"], answer: 0 },
+  { q: "She is a student. ___ name is Anna.", options: ["His","Her","Its","My"], answer: 1 },
+  { q: "He is a teacher. ___ class starts at 9.", options: ["Her","His","Our","Their"], answer: 1 },
+  { q: "We have a car. ___ car is new.", options: ["My","His","Our","Their"], answer: 2 },
+  { q: "They live here. ___ house is big.", options: ["His","Her","Our","Their"], answer: 3 },
+  { q: "You are late. Is this ___ bag?", options: ["my","your","his","their"], answer: 1 },
+  { q: "The cat is hungry. ___ bowl is empty.", options: ["His","Her","Its","Our"], answer: 2 },
+  { q: "I love ___ family.", options: ["my","your","his","her"], answer: 0 },
+  { q: "Tom and Lisa have a son. ___ son is 5.", options: ["His","Her","Its","Their"], answer: 3 },
+  { q: "She brushes ___ teeth every morning.", options: ["his","her","its","my"], answer: 1 },
+  { q: "We do ___ homework together.", options: ["my","your","our","their"], answer: 2 },
+  { q: "The school has ___ own library.", options: ["his","her","its","our"], answer: 2 },
+  { q: "Where is ___ phone? (talking to a friend)", options: ["my","your","his","their"], answer: 1 },
+  { q: "He forgot ___ keys again.", options: ["her","his","its","our"], answer: 1 },
+  { q: "The students did ___ best.", options: ["its","our","his","their"], answer: 3 },
+  { q: "I am proud of ___ work.", options: ["my","your","his","its"], answer: 0 },
+  { q: "She loves ___ new apartment.", options: ["his","her","its","our"], answer: 1 },
+  { q: "The dog wagged ___ tail.", options: ["his","her","its","our"], answer: 2 },
+  { q: "We packed ___ bags.", options: ["my","his","our","their"], answer: 2 },
+  { q: "They forgot ___ tickets.", options: ["his","her","our","their"], answer: 3 },
+];
 
 export default function PossessiveAdjectivesLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -328,6 +358,9 @@ export default function PossessiveAdjectivesLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -366,6 +399,119 @@ export default function PossessiveAdjectivesLessonClient() {
     const percent = total ? Math.round((correct / total) * 100) : 0;
     return { correct, total, percent };
   }, [checked, current, mcqAnswers, inputAnswers]);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Possessive Adjectives",
+        subtitle: "my · your · his · her · its · our · their — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "I→my · you→your · he→his · she→her · it→its · we→our · they→their",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct possessive adjective for each sentence.",
+            questions: [
+              "I have a new bike. ___ bike is blue.",
+              "Anna is from Spain. ___ English teacher is very kind.",
+              "Tom has a dog. ___ dog is very friendly.",
+              "We live in a small flat. ___ flat is near the park.",
+              "They have two cats. ___ cats sleep on the sofa.",
+              "You have a nice jacket. ___ jacket looks warm.",
+              "The company has a new office. ___ office is in the city centre.",
+              "I am in the kitchen. ___ coffee is on the table.",
+              "He is with his sister. ___ sister is very funny.",
+              "We are in class now. ___ teacher is talking to us.",
+            ],
+            hint: "My / Her / His / Our / Their / Your / Its / My / His / Our",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Type the correct possessive adjective in each blank.",
+            questions: [
+              "I have a little brother. ____ brother is six years old.",
+              "You are in my class. ____ desk is near the window.",
+              "Lisa has a red bag. ____ bag is on the chair.",
+              "Jack is at home. ____ room is very clean.",
+              "The dog is eating. ____ food is in the bowl.",
+              "We have English today. ____ lesson starts at ten.",
+              "They live next door. ____ house is very big.",
+              "This phone is new. ____ screen is very clear.",
+              "You and I are friends. ____ friendship is important to me.",
+              "We are ready for the trip. ____ bags are by the door.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Harder",
+            instruction: "Choose the correct word for each sentence.",
+            questions: [
+              "Maria is with ___ mother at the market.",
+              "The cat is playing with ___ toy.",
+              "John and I are packing ___ suitcases.",
+              "She is doing ___ homework now.",
+              "The children are playing with ___ friends.",
+              "You left ___ keys on the table.",
+              "The dog is wagging ___ tail.",
+              "My parents love ___ garden.",
+              "We are waiting for ___ bus.",
+              "Tom is looking for ___ book.",
+            ],
+            hint: "her / its / our / her / their / your / its / their / our / his",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Hardest",
+            instruction: "Write the correct possessive adjective in the blank.",
+            questions: [
+              "Anna is reading ____ book in the garden.",
+              "We are cleaning ____ room together.",
+              "The baby is playing with ____ teddy bear.",
+              "I am calling ____ friend now.",
+              "You have ____ lunch in your bag.",
+              "They are washing ____ car.",
+              "Jack is doing ____ homework after school.",
+              "Lisa and Tom are painting ____ house.",
+              "The dog is drinking ____ water.",
+              "We are opening ____ presents now.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the possessive adjective",
+            answers: ["My", "Her", "His", "Our", "Their", "Your", "Its", "My", "His", "Our"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — type the possessive adjective",
+            answers: ["my", "your", "her", "his", "its", "our", "their", "its", "our", "our"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Harder — choose the correct word",
+            answers: ["her", "its", "our", "her", "their", "your", "its", "their", "our", "his"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Hardest — complete the sentences",
+            answers: ["her", "our", "its", "my", "your", "their", "his", "their", "its", "our"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -406,17 +552,18 @@ export default function PossessiveAdjectivesLessonClient() {
         Learn how to use <b>my, your, his, her, its, our, their</b> to show who something belongs to. These words come before a noun and tell us whose thing it is.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-possessive-adjectives" subject="Possessive Adjectives" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -438,6 +585,8 @@ export default function PossessiveAdjectivesLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -659,16 +808,42 @@ export default function PossessiveAdjectivesLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+        {/* Right column */}
+        {isPro ? (
+          <aside className="sticky top-24 flex flex-col gap-3">
+            <div className="text-xs font-black uppercase tracking-widest text-slate-400">Recommended next</div>
+            {[
+              { title: "Subject Pronouns", href: "/grammar/a1/subject-pronouns", img: "/topics/a1/subject-pronouns.jpg", level: "A1", badge: "bg-emerald-500", reason: "Pronouns come first" },
+              { title: "Verb 'to be'", href: "/grammar/a1/to-be-am-is-are", img: "/topics/a1/to-be-am-is-are.jpg", level: "A1", badge: "bg-emerald-500" },
+              { title: "Present Simple", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
+            ].map((l) => (
+              <a key={l.href} href={l.href} className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 transition hover:border-[#F5DA20] hover:shadow-sm">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                  <img src={l.img} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <span className={`absolute bottom-1 right-1 rounded-md px-1.5 py-0.5 text-[9px] font-black text-white ${l.badge}`}>{l.level}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-sm font-black text-slate-900 group-hover:text-black">{l.title}</div>
+                  {l.reason && <div className="mt-0.5 text-xs text-slate-400">{l.reason}</div>}
+                </div>
+              </a>
+            ))}
+          </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
           </div>
-        </aside>
+        )}
       </div>
+
+      {/* SpeedRound below grid for non-PRO users */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a1-possessive-adjectives" subject="Possessive Adjectives" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

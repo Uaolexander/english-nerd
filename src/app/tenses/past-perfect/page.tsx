@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Past Perfect Exercises — Practice English Grammar | English Nerd",
@@ -202,7 +203,7 @@ export default function PastPerfectPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="had + participle, sequence of events, and comparison with Past Simple" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/past-perfect" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/past-perfect" />
         </div>
       </div>
     </main>

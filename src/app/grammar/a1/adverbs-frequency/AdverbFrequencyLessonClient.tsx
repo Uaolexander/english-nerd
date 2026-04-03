@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She ___ goes to bed early — every single night.", options: ["always","never","sometimes","often"], answer: 0 },
+  { q: "I ___ eat broccoli — maybe once a year.", options: ["always","usually","often","hardly ever"], answer: 3 },
+  { q: "We ___ have English on Monday — it is in our timetable.", options: ["always","never","hardly ever","rarely"], answer: 0 },
+  { q: "He ___ watches TV before bed, but not every day.", options: ["never","always","sometimes","hardly ever"], answer: 2 },
+  { q: "My dad is ___ on time. He is never late.", options: ["hardly ever","always","never","sometimes"], answer: 1 },
+  { q: "I ___ drink cola — I prefer water.", options: ["always","usually","often","never"], answer: 3 },
+  { q: "Which is correct? She ___ is late.", options: ["always is","is always","never always","sometimes is"], answer: 1 },
+  { q: "They ___ go to the beach in summer — it is a tradition.", options: ["never","always","hardly ever","rarely"], answer: 1 },
+  { q: "My sister ___ forgets her keys. It happens many times.", options: ["never","hardly ever","often","always"], answer: 2 },
+  { q: "We ___ eat at restaurants because it is expensive.", options: ["always","usually","hardly ever","often"], answer: 2 },
+  { q: "Which is correct?", options: ["I usually get up at 7.","I get usually up at 7.","Usually I get up at 7 always.","I get up usually at 7."], answer: 0 },
+  { q: "He ___ plays football — about three times a week.", options: ["never","hardly ever","often","always"], answer: 2 },
+  { q: "She is ___ happy in the morning. (After 'is')", options: ["usually is","is usually","always before","never after"], answer: 1 },
+  { q: "My grandma ___ uses the internet — she prefers newspapers.", options: ["always","usually","often","hardly ever"], answer: 3 },
+  { q: "We ___ have breakfast before school — every morning.", options: ["always","never","sometimes","rarely"], answer: 0 },
+  { q: "I am tired because I ___ go to bed late on Sundays.", options: ["never","hardly ever","often","always"], answer: 2 },
+  { q: "Which position is correct for adverbs of frequency with main verbs?", options: ["After the verb","Before the verb","At the end","At the beginning only"], answer: 1 },
+  { q: "My mum ___ cooks on Friday — we order pizza instead.", options: ["always","usually","often","never"], answer: 3 },
+  { q: "Our teacher ___ gives a warm-up — it is part of her routine.", options: ["never","hardly ever","usually","rarely"], answer: 2 },
+  { q: "I ___ forget my homework — maybe once a year.", options: ["always","usually","often","hardly ever"], answer: 3 },
+];
 
 export default function AdverbFrequencyLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -386,6 +416,9 @@ export default function AdverbFrequencyLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
@@ -434,6 +467,95 @@ export default function AdverbFrequencyLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Adverbs of Frequency",
+        subtitle: "Always / Usually / Often / Sometimes / Never — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "always → usually → often → sometimes → hardly ever → never (before main verb, after 'be')",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose always or never to complete each sentence.",
+            questions: [
+              "I ___ drink coffee late at night because I want to sleep well.",
+              "She ___ walks to school with her friend every single morning.",
+              "My dad ___ watches TV in the morning — he goes to work early.",
+              "We ___ have English on Tuesday — it is our fixed schedule.",
+              "Tom is not late every day, but he is ___ late for class.",
+              "My little sister ___ eats vegetables, so my mum is very happy.",
+              "I ___ go to bed at 3 a.m. because I am tired by 10 p.m.",
+              "We ___ watch a movie on Friday — it is our family tradition.",
+              "She ___ watches TV after dinner, but sometimes she reads instead.",
+              "I ___ forget my keys because I keep them in the same place.",
+            ],
+            hint: "always / never",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Medium",
+            instruction: "Choose the best adverb from three options.",
+            questions: [
+              "I am tired on Mondays because I ___ go to bed late on Sunday.",
+              "My grandparents ___ use the internet, but prefer newspapers.",
+              "We ___ eat breakfast before school — lessons start very early.",
+              "My sister is sporty, so she ___ goes running after work.",
+              "I ___ drink cola — maybe once or twice a year.",
+              "He is careful, so he ___ checks his homework before class.",
+              "We ___ go to the cinema in winter, but not every weekend.",
+              "My mum ___ cooks on Friday because we usually order pizza.",
+              "I ___ forget names when I meet many new people.",
+              "Our teacher ___ gives us a warm-up — it is part of her routine.",
+            ],
+            hint: "often / usually / never / sometimes / hardly ever",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Hard",
+            instruction: "Put the adverb in the correct position in the sentence.",
+            questions: [
+              "She is late for class. (always)",
+              "I get up at 7 a.m. (usually)",
+              "They are on time. (never)",
+              "He plays football after school. (often)",
+              "My dad is tired in the evening. (sometimes)",
+              "We eat in restaurants. (hardly ever)",
+              "She is happy in the morning. (always)",
+              "I read books before bed. (never)",
+              "My brother is hungry after school. (usually)",
+              "They go to the park on weekends. (sometimes)",
+            ],
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Harder",
+            instruction: "Write the correct adverb: always / usually / often / sometimes / hardly ever / never.",
+            questions: [
+              "I _____ get up at 7 a.m. on school days — every single day.",
+              "We _____ go to the beach in winter because it is too cold.",
+              "My dad _____ cooks dinner on Friday, but not every week.",
+              "She _____ drinks tea in the morning — it is her normal routine.",
+              "I _____ eat burgers — maybe once or twice a year.",
+              "My friends _____ play computer games after school — almost every day.",
+              "He _____ says thank you when someone helps him — without exception.",
+              "We _____ travel by plane because train tickets are much cheaper.",
+              "I _____ forget my homework — maybe once a year.",
+              "Our teacher _____ starts the lesson with a warm-up — it is her routine.",
+            ],
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — always or never", answers: ["never","always","never","always","sometimes","always","never","always","often","never"] },
+          { exercise: 2, subtitle: "Medium — choose the best adverb", answers: ["often","sometimes","always","often","hardly ever","always","often","never","sometimes","usually"] },
+          { exercise: 3, subtitle: "Hard — correct word order", answers: ["She is always late.","I usually get up.","They are never on time.","He often plays.","My dad is sometimes tired.","We hardly ever eat.","She is always happy.","I never read.","My brother is usually hungry.","They sometimes go."] },
+          { exercise: 4, subtitle: "Harder — type the adverb", answers: ["always","never","sometimes","usually","hardly ever","often","always","hardly ever","hardly ever","usually"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -461,17 +583,18 @@ export default function AdverbFrequencyLessonClient() {
         how to put them in the right place in a sentence.
       </p>
 
-      {/* Layout: left ad + content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left sidebar + content + right sidebar */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-adverbs-frequency" subject="Adverbs of Frequency" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -497,6 +620,8 @@ export default function AdverbFrequencyLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -778,15 +903,32 @@ export default function AdverbFrequencyLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

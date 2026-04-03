@@ -7,6 +7,9 @@ import BackToTop from "@/components/BackToTop";
 import CookieBanner from "@/components/CookieBanner";
 import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
+import { ProProvider } from "@/lib/ProContext";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,23 +41,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#0B0B0D] text-white antialiased`}
       >
-        <Header />
-        {children}
-        <Footer />
-        <BackToTop />
-        <CookieBanner />
-        <SessionGuard />
-        <ProgressToast />
+        <ProProvider isPro={isPro}>
+          <Header />
+          {children}
+          <Footer />
+          <BackToTop />
+          <CookieBanner />
+          <SessionGuard />
+          <ProgressToast />
+        </ProProvider>
       </body>
     </html>
   );

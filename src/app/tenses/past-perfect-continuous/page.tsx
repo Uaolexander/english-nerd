@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Past Perfect Continuous Exercises — Practice English Grammar | English Nerd",
@@ -202,7 +203,7 @@ export default function PastPerfectContinuousPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="had been + -ing, for vs since in the past, and comparisons with other past tenses" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/past-perfect-continuous" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/past-perfect-continuous" />
         </div>
       </div>
     </main>

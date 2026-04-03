@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,12 +33,37 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "go → past simple", options: ["goed", "gone", "went", "goes"], answer: 2 },
+  { q: "come → past simple", options: ["comed", "come", "comes", "came"], answer: 3 },
+  { q: "see → past simple", options: ["seed", "seen", "saw", "sawed"], answer: 2 },
+  { q: "get → past simple", options: ["getted", "gotten", "gets", "got"], answer: 3 },
+  { q: "take → past simple", options: ["taked", "taken", "took", "takes"], answer: 2 },
+  { q: "give → past simple", options: ["given", "gived", "gives", "gave"], answer: 3 },
+  { q: "say → past simple", options: ["sayed", "saied", "says", "said"], answer: 3 },
+  { q: "buy → past simple", options: ["buyed", "boughted", "buys", "bought"], answer: 3 },
+  { q: "think → past simple", options: ["thinked", "thunk", "thinks", "thought"], answer: 3 },
+  { q: "leave → past simple", options: ["leaved", "lefted", "leaves", "left"], answer: 3 },
+  { q: "make → past simple", options: ["maked", "makes", "made", "making"], answer: 2 },
+  { q: "find → past simple", options: ["finded", "founded", "found", "finds"], answer: 2 },
+  { q: "tell → past simple", options: ["telled", "told", "tells", "telling"], answer: 1 },
+  { q: "know → past simple", options: ["knowed", "known", "knows", "knew"], answer: 3 },
+  { q: "have → past simple", options: ["haved", "has", "have", "had"], answer: 3 },
+  { q: "eat → past simple", options: ["eated", "eaten", "ate", "eats"], answer: 2 },
+  { q: "drink → past simple", options: ["drinked", "drunk", "drank", "drinks"], answer: 2 },
+  { q: "write → past simple", options: ["writed", "written", "writes", "wrote"], answer: 3 },
+  { q: "run → past simple", options: ["runned", "runs", "run", "ran"], answer: 3 },
+  { q: "feel → past simple", options: ["feeled", "felt", "feels", "fallen"], answer: 1 },
+];
+
 export default function PastSimpleIrregularLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     // ── Exercise 1 ── Choose the correct past simple form
@@ -359,6 +391,51 @@ export default function PastSimpleIrregularLessonClient() {
     return { correct, total, percent: Math.round((correct / total) * 100) };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Past Simple: Irregular",
+        subtitle: "Irregular Verb Forms — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Irregular verbs don't add -ed. Each has its own past form: go→went, have→had, see→saw. Same form for all pronouns.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct past simple form.", questions: [
+            "go → past simple?", "come → past simple?", "see → past simple?", "get → past simple?", "take → past simple?",
+            "give → past simple?", "say → past simple?", "buy → past simple?", "think → past simple?", "leave → past simple?",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the past simple form of each irregular verb.", questions: [
+            "make → ____", "find → ____", "tell → ____", "know → ____", "have → ____",
+            "do → ____", "eat → ____", "drink → ____", "write → ____", "run → ____",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the correct past simple to complete each sentence.", questions: [
+            "Yesterday she ___ (go) to the supermarket.", "We ___ (have) a great time at the party last night.",
+            "He ___ (tell) me the news this morning.", "I ___ (see) that film last week — it was amazing.",
+            "They ___ (come) home very late after the concert.", "She ___ (buy) a new phone on her birthday.",
+            "We ___ (eat) at a nice Italian restaurant last Friday.", "He ___ (think) the exam was easy, but he was wrong.",
+            "I ___ (find) my keys under the sofa this morning.", "They ___ (make) a huge mistake and had to start again.",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write the correct past simple form of the verb in brackets.", questions: [
+            "Last night we ___ (sit) by the fire and talked for hours.", "She ___ (write) him a long letter but never sent it.",
+            "I ___ (read) that book last summer and loved it.", "He ___ (run) five kilometres before breakfast this morning.",
+            "They ___ (meet) for the first time at a conference in Paris.", "I ___ (feel) very tired after the long journey.",
+            "She ___ (leave) her umbrella on the bus again.", "We ___ (drink) too much coffee and couldn't sleep.",
+            "He ___ (get) the job and was absolutely thrilled.", "I ___ (give) her my old laptop when I bought a new one.",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose past simple", answers: ["went", "came", "saw", "got", "took", "gave", "said", "bought", "thought", "left"] },
+          { exercise: 2, subtitle: "Medium — write the form", answers: ["made", "found", "told", "knew", "had", "did", "ate", "drank", "wrote", "ran"] },
+          { exercise: 3, subtitle: "Hard — complete the sentence", answers: ["went", "had", "told", "saw", "came", "bought", "ate", "thought", "found", "made"] },
+          { exercise: 4, subtitle: "Harder — write in context", answers: ["sat", "wrote", "read", "ran", "met", "felt", "left", "drank", "got", "gave"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
@@ -402,18 +479,19 @@ export default function PastSimpleIrregularLessonClient() {
         This lesson covers the most important ones with lots of practice.
       </p>
 
-      {/* Layout */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr_280px]">
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
-            </div>
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-past-simple-irregular" subject="Past Simple Irregular" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -435,6 +513,7 @@ export default function PastSimpleIrregularLessonClient() {
             >
               Explanation
             </button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-500">
               Exercises:
@@ -647,15 +726,32 @@ export default function PastSimpleIrregularLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

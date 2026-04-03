@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "You look tired. You ___ go to bed.", options: ["should", "shouldn't", "must", "can"], answer: 0 },
+  { q: "That film is terrible. You ___ waste your time.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "He eats junk food. He ___ eat more vegetables.", options: ["should", "shouldn't", "mustn't", "can't"], answer: 0 },
+  { q: "She drives too fast. She ___ slow down.", options: ["should", "shouldn't", "mustn't", "can't"], answer: 0 },
+  { q: "You ___ be late for your interview.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "I think you ___ apologise — you were rude.", options: ["should", "shouldn't", "mustn't", "can"], answer: 0 },
+  { q: "He's really ill. He ___ go to work.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "It's the law. You ___ wear a seatbelt. (obligation)", options: ["should", "have to", "shouldn't", "mustn't"], answer: 1 },
+  { q: "You ___ use your phone here. (forbidden)", options: ["shouldn't", "should", "mustn't", "don't have to"], answer: 2 },
+  { q: "Wi-Fi is included. You ___ pay extra.", options: ["shouldn't", "should", "mustn't", "don't have to"], answer: 3 },
+  { q: "You ___ always check your work.", options: ["should", "shouldn't", "mustn't", "can't"], answer: 0 },
+  { q: "We ___ waste water — it's precious.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "Doctors say people ___ sleep 7 hours.", options: ["must", "should", "have to", "can"], answer: 1 },
+  { q: "She ___ be so negative all the time.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "You ___ try this restaurant — it's incredible!", options: ["should", "shouldn't", "mustn't", "can't"], answer: 0 },
+  { q: "Children ___ stay up past midnight.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "I feel I ___ apologise — I was awful.", options: ["should", "must", "have to", "can"], answer: 1 },
+  { q: "In my opinion, you ___ read this book.", options: ["have to", "mustn't", "should", "can't"], answer: 2 },
+  { q: "You ___ judge people before knowing them.", options: ["should", "shouldn't", "must", "can"], answer: 1 },
+  { q: "You ___ bring your passport — it's required.", options: ["should", "have to", "must", "can"], answer: 1 },
+];
+
 export default function ShouldShouldntLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,118 @@ export default function ShouldShouldntLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Should / Shouldn't",
+        subtitle: "Advice and recommendations — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Should + base verb (no 'to'). Same form for ALL subjects. Should = advice/recommendation. Shouldn't = not a good idea.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose should or shouldn't.",
+            questions: [
+              "You look exhausted. You ___ go to bed earlier.",
+              "That film is terrible. You ___ waste your time on it.",
+              "I have a headache. ___ I take an aspirin?",
+              "He eats too much junk food. He ___ eat more vegetables.",
+              "She drives too fast. She ___ slow down.",
+              "The weather is perfect! We ___ go for a walk.",
+              "You ___ be late for your interview.",
+              "I think you ___ apologise — you were quite rude.",
+              "He's really ill. He ___ go to work today.",
+              "You ___ forget to save your work!",
+            ],
+            hint: "should / shouldn't",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write should or shouldn't.",
+            questions: [
+              "You have a headache. You ___ take an aspirin.",
+              "It's very cold outside. You ___ wear a coat.",
+              "He smokes too much. He ___ really stop.",
+              "She ___ eat so much fast food — it's really unhealthy.",
+              "You're learning English. You ___ practise every day.",
+              "The bus ___ be this late again — third time this week!",
+              "I think you ___ tell her the truth.",
+              "Children ___ stay up past midnight on school nights.",
+              "You ___ try this restaurant — the food is incredible!",
+              "We ___ waste water — it's a precious resource.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Harder",
+            instruction: "Choose the most natural modal: should, have to, mustn't, or don't have to.",
+            questions: [
+              "It's the law. You ___ wear a seatbelt.",
+              "In my opinion, you ___ read this book — it's brilliant.",
+              "You ___ use your phone here. It's strictly forbidden.",
+              "I really feel I ___ apologise — I was awful to her.",
+              "If you want to feel healthier, you ___ exercise more.",
+              "He ___ shout at his colleagues like that.",
+              "You ___ pay extra — Wi-Fi is included in the price.",
+              "I think she ___ take the job — it sounds perfect for her.",
+              "You ___ bring your passport — it's required by law.",
+              "Doctors say people ___ sleep at least 7 hours a night.",
+            ],
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Hardest",
+            instruction: "Write should or shouldn't.",
+            questions: [
+              "He eats junk food every day. He ___ eat more vegetables.",
+              "You ___ drink and drive — it's extremely dangerous.",
+              "I'm not sure what to do. What do you think I ___?",
+              "She ___ be so negative all the time — it affects everyone.",
+              "You ___ always check your work before submitting it.",
+              "We ___ throw rubbish on the street — it's bad for the environment.",
+              "In my view, the government ___ invest more in public transport.",
+              "You ___ judge people before you really know them.",
+              "I think you ___ apply for that job — you're perfect for it!",
+              "He ___ be so rude to the customers — it's very unprofessional.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — should or shouldn't",
+            answers: ["should", "shouldn't", "Should", "should", "should", "should", "shouldn't", "should", "shouldn't", "shouldn't"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write should/shouldn't",
+            answers: ["should", "should", "should", "shouldn't", "should", "shouldn't", "should", "shouldn't", "should", "shouldn't"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Harder — choose the right modal",
+            answers: ["have to", "should", "mustn't", "must", "should", "shouldn't", "don't have to", "should", "have to", "should"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Hardest — should or shouldn't",
+            answers: ["should", "shouldn't", "should", "shouldn't", "should", "shouldn't", "should", "shouldn't", "should", "shouldn't"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +284,20 @@ export default function ShouldShouldntLessonClient() {
         Use <b>should</b> to give advice, make recommendations, or express opinions about the right thing to do. Use <b>shouldn&apos;t</b> when something is not a good idea. <b>Should</b> is softer than <b>must</b> or <b>have to</b> — it&apos;s a suggestion, not a rule.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-should-shouldnt" subject="Should / Shouldn't" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +420,29 @@ export default function ShouldShouldntLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

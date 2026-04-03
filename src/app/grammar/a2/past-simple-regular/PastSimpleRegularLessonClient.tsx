@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import PDFButton from "@/components/PDFButton";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "walk → past simple?", options: ["walkd", "walked", "walkes", "walking"], answer: 1 },
+  { q: "play → past simple?", options: ["plaied", "playd", "played", "playied"], answer: 2 },
+  { q: "dance → past simple?", options: ["danceed", "dancied", "dancing", "danced"], answer: 3 },
+  { q: "study → past simple?", options: ["studyed", "studied", "studieed", "studid"], answer: 1 },
+  { q: "stop → past simple?", options: ["stoped", "stopted", "stopping", "stopped"], answer: 3 },
+  { q: "like → past simple?", options: ["likeed", "liking", "liked", "likied"], answer: 2 },
+  { q: "carry → past simple?", options: ["carryed", "caried", "carried", "carrid"], answer: 2 },
+  { q: "plan → past simple?", options: ["planeed", "planed", "planing", "planned"], answer: 3 },
+  { q: "open → past simple?", options: ["openned", "opend", "opened", "openied"], answer: 2 },
+  { q: "enjoy → past simple?", options: ["enjoied", "enjoyd", "enjoyied", "enjoyed"], answer: 3 },
+  { q: "drop → past simple?", options: ["droped", "dropd", "dropped", "droping"], answer: 2 },
+  { q: "try → past simple?", options: ["tryed", "tryied", "tried", "trid"], answer: 2 },
+  { q: "decide → past simple?", options: ["decideed", "decided", "deciding", "decidied"], answer: 1 },
+  { q: "chat → past simple?", options: ["chated", "chatied", "chatd", "chatted"], answer: 3 },
+  { q: "hurry → past simple?", options: ["hurryed", "hurried", "hurrid", "hurryied"], answer: 1 },
+  { q: "miss → past simple?", options: ["mised", "missied", "missing", "missed"], answer: 3 },
+  { q: "smile → past simple?", options: ["smileed", "smilied", "smiled", "smild"], answer: 2 },
+  { q: "clap → past simple?", options: ["claped", "clapied", "claping", "clapped"], answer: 3 },
+  { q: "copy → past simple?", options: ["copyed", "copied", "copyied", "copid"], answer: 1 },
+  { q: "travel → past simple? (British English)", options: ["traveld", "travelied", "traveled", "travelled"], answer: 3 },
+];
 
 export default function PastSimpleRegularLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -333,6 +363,93 @@ export default function PastSimpleRegularLessonClient() {
 
   const current = sets[exNo];
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    const config: LessonPDFConfig = {
+      title: "Past Simple: Regular Verbs",
+      subtitle: "Spelling rules for -ed — 4 exercises + answer key",
+      level: "A2",
+      keyRule: "Most verbs: +ed | ends in -e: +d | consonant+y: y→i+ed | CVC: double consonant+ed",
+      exercises: [
+        {
+          number: 1, title: "Exercise 1", difficulty: "Easy",
+          instruction: "Choose the correctly spelled past simple form.",
+          questions: [
+            "walk → past simple?",
+            "play → past simple?",
+            "dance → past simple?",
+            "study → past simple?",
+            "stop → past simple?",
+            "like → past simple?",
+            "carry → past simple?",
+            "plan → past simple?",
+            "open → past simple?",
+            "enjoy → past simple?",
+          ],
+        },
+        {
+          number: 2, title: "Exercise 2", difficulty: "Medium",
+          instruction: "Write the past simple form of each verb.",
+          questions: [
+            "work → ____",
+            "clean → ____",
+            "hope → ____",
+            "marry → ____",
+            "drop → ____",
+            "travel → ____ (British English)",
+            "try → ____",
+            "decide → ____",
+            "listen → ____",
+            "chat → ____",
+          ],
+        },
+        {
+          number: 3, title: "Exercise 3", difficulty: "Hard",
+          instruction: "Choose the correct past simple form to complete the sentence.",
+          questions: [
+            "Yesterday I ___ (walk) to school because I missed the bus.",
+            "She ___ (study) until midnight for her test.",
+            "They ___ (stop) the car and took some photos.",
+            "We ___ (visit) my grandparents last weekend.",
+            "He ___ (plan) the whole trip himself.",
+            "The children ___ (play) football all afternoon.",
+            "I ___ (decide) to stay home and rest.",
+            "She ___ (carry) all the shopping bags by herself.",
+            "We ___ (enjoy) the concert very much.",
+            "He ___ (open) the window because it was hot.",
+          ],
+        },
+        {
+          number: 4, title: "Exercise 4", difficulty: "Harder",
+          instruction: "Write the correct past simple form of the verb in brackets.",
+          questions: [
+            "Last night I ___ (finish) all my homework.",
+            "She ___ (smile) and said nothing.",
+            "We ___ (chat) for hours at the café.",
+            "He ___ (copy) the notes from the board.",
+            "They ___ (arrive) late to the party.",
+            "I ___ (miss) the last train home.",
+            "She ___ (clap) her hands when she heard the news.",
+            "We ___ (hurry) to catch the bus.",
+            "He ___ (join) the gym six months ago.",
+            "They ___ (empty) the bin before they left.",
+          ],
+        },
+      ],
+      answerKey: [
+        { exercise: 1, subtitle: "Easy — choose spelling", answers: ["walked", "played", "danced", "studied", "stopped", "liked", "carried", "planned", "opened", "enjoyed"] },
+        { exercise: 2, subtitle: "Medium — write form", answers: ["worked", "cleaned", "hoped", "married", "dropped", "travelled", "tried", "decided", "listened", "chatted"] },
+        { exercise: 3, subtitle: "Hard — complete sentence", answers: ["walked", "studied", "stopped", "visited", "planned", "played", "decided", "carried", "enjoyed", "opened"] },
+        { exercise: 4, subtitle: "Harder — write in context", answers: ["finished", "smiled", "chatted", "copied", "arrived", "missed", "clapped", "hurried", "joined", "emptied"] },
+      ],
+    };
+    await generateLessonPDF(config);
+    setPdfLoading(false);
+  }
+
   const { save } = useProgress();
 
   useEffect(() => {
@@ -406,17 +523,16 @@ export default function PastSimpleRegularLessonClient() {
       </p>
 
       {/* Layout */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr_280px]">
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
-            </div>
+        {/* Left sidebar */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-past-simple-regular" subject="Past Simple Regular Verbs" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -439,7 +555,9 @@ export default function PastSimpleRegularLessonClient() {
               Explanation
             </button>
 
-            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-500">
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
+            <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
                 <button
@@ -651,15 +769,30 @@ export default function PastSimpleRegularLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-400">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-300 text-sm">
-              Ad
+        {/* Right sidebar */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       {/* Next / Prev lesson navigation */}

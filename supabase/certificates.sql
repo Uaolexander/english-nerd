@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS public.certificates (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  level        text        NOT NULL CHECK (level IN ('A1','A2','B1','B2','C1')),
+  level        text        NOT NULL CHECK (level IN ('A1','A2','B1','B2','C1','C2')),
   score_percent integer    NOT NULL,
   score_correct integer    NOT NULL,
   score_total  integer     NOT NULL,

@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I ___ a new bike for my birthday.", options: ["has got","have got","has","is got"], answer: 1 },
+  { q: "She ___ long brown hair.", options: ["have got","haves got","has got","is got"], answer: 2 },
+  { q: "They ___ a big house near the park.", options: ["has got","is got","are got","have got"], answer: 3 },
+  { q: "My brother ___ a dog called Max.", options: ["have got","haves got","has got","is got"], answer: 2 },
+  { q: "We ___ any homework today — the teacher is ill.", options: ["has got","haven't got","hasn't got","have got"], answer: 1 },
+  { q: "She ___ any sisters — she is an only child.", options: ["have got","hasn't got","haven't got","is got"], answer: 1 },
+  { q: "___ you got a pen I can borrow?", options: ["Has","Is","Are","Have"], answer: 3 },
+  { q: "___ your mum got a car?", options: ["Have","Is","Are","Has"], answer: 3 },
+  { q: "Have you got a bike? — Yes, I ___.", options: ["has got","haven't","have got","has"], answer: 2 },
+  { q: "Has she got a cat? — No, she ___.", options: ["has got","haven't got","hasn't got","has"], answer: 2 },
+  { q: "My parents ___ a small flat in the city centre.", options: ["has got","is got","are got","have got"], answer: 3 },
+  { q: "This dog ___ very short legs.", options: ["have got","is got","are got","has got"], answer: 3 },
+  { q: "I ___ any money today — I left my wallet at home.", options: ["has got","haven't got","hasn't got","have got"], answer: 1 },
+  { q: "He ___ blue eyes and curly hair.", options: ["have got","is got","are got","has got"], answer: 3 },
+  { q: "Have they got a garden? — Yes, they ___.", options: ["has got","haven't","have got","has"], answer: 2 },
+  { q: "My teacher ___ a very loud voice.", options: ["have got","is got","are got","has got"], answer: 3 },
+  { q: "We ___ got enough chairs for everyone.", options: ["hasn't","haven't","has","is"], answer: 1 },
+  { q: "My aunt ___ curly hair and blue eyes.", options: ["have got","is got","are got","has got"], answer: 3 },
+  { q: "I ___ two younger cousins who live in the city.", options: ["has got","is got","are got","have got"], answer: 3 },
+  { q: "This classroom ___ enough chairs for all the students.", options: ["have got","is got","are got","has got"], answer: 3 },
+];
 
 export default function HaveHasGotLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -327,6 +357,9 @@ export default function HaveHasGotLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
@@ -380,6 +413,97 @@ export default function HaveHasGotLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Have / Has Got",
+        subtitle: "Possession & Description — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "I/You/We/They → have got. He/She/It → has got. Negative: haven't / hasn't got.",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose have got or has got.",
+            questions: [
+              "I ___ a new bike for my birthday.",
+              "She ___ long brown hair.",
+              "They ___ a big house near the park.",
+              "My brother ___ a dog called Max.",
+              "We ___ a very small garden, but we love it.",
+              "My teacher ___ a very loud voice.",
+              "He ___ blue eyes and curly hair.",
+              "You ___ a great idea, I think!",
+              "This dog ___ very short legs.",
+              "My parents ___ a small flat in the city centre.",
+            ],
+            hint: "have got / has got",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Medium",
+            instruction: "Choose haven't got or hasn't got.",
+            questions: [
+              "We ___ any homework today — the teacher is ill.",
+              "She ___ any sisters — she is an only child.",
+              "I ___ any money today — I left my wallet at home.",
+              "My brother ___ a bicycle — he walks everywhere.",
+              "They ___ a car, so they take the bus to work.",
+              "He ___ a pet because his flat doesn't allow animals.",
+              "You ___ enough time — we need to hurry!",
+              "My grandparents ___ a computer at home.",
+              "We ___ got enough chairs for everyone.",
+              "This school ___ a swimming pool.",
+            ],
+            hint: "haven't got / hasn't got",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Hard",
+            instruction: "Write Have or Has to start the question.",
+            questions: [
+              "___ you got a pen I can borrow?",
+              "___ your mum got a car?",
+              "___ they got a garden at their new house?",
+              "___ he got any brothers or sisters?",
+              "___ she got long hair or short hair?",
+              "___ your teacher got a good sense of humour?",
+              "___ the children got enough food for lunch?",
+              "___ your dog got a collar with its name on it?",
+              "___ we got time to finish this before break?",
+              "___ this hotel got a swimming pool?",
+            ],
+            hint: "Have / Has",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Harder",
+            instruction: "Write the correct form: have got / has got / haven't got / hasn't got.",
+            questions: [
+              "My father ___ a very good sense of humour.",
+              "I ___ two younger cousins who live in the city.",
+              "She ___ a lot of books about history on her shelf.",
+              "We ___ any food at home — let's go shopping.",
+              "My cat ___ beautiful green eyes.",
+              "My grandparents ___ a garden with many flowers.",
+              "He ___ a driving licence yet — he is still learning.",
+              "My aunt ___ curly hair and blue eyes.",
+              "This classroom ___ enough chairs for all students.",
+              "I ___ enough time to finish all the exercises today.",
+            ],
+            hint: "have got / has got / haven't got / hasn't got",
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — have got or has got", answers: ["have got","has got","have got","has got","have got","has got","has got","have got","has got","have got"] },
+          { exercise: 2, subtitle: "Medium — haven't got or hasn't got", answers: ["haven't got","hasn't got","haven't got","hasn't got","haven't got","hasn't got","haven't got","haven't got","haven't got","hasn't got"] },
+          { exercise: 3, subtitle: "Hard — Have or Has", answers: ["Have","Has","Have","Has","Has","Has","Have","Has","Have","Has"] },
+          { exercise: 4, subtitle: "Harder — correct form", answers: ["has got","have got","has got","haven't got","has got","have got","hasn't got","has got","has got","haven't got"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -404,15 +528,17 @@ export default function HaveHasGotLessonClient() {
         Practise <b>have got</b> and <b>has got</b> with simple A1 exercises, answers, and a clear explanation. Learn positive, negative, and question forms in one lesson.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-have-has-got" subject="Have / Has Got" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
@@ -432,6 +558,8 @@ export default function HaveHasGotLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -650,14 +778,32 @@ export default function HaveHasGotLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

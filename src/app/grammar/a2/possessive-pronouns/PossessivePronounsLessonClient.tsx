@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import PDFButton from "@/components/PDFButton";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -10,6 +17,29 @@ type ExerciseSet =
   | { type: "input"; title: string; instructions: string; questions: InputQ[] };
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "This bag is Anna's. It's ___.", options: ["her", "hers", "his", "theirs"], answer: 1 },
+  { q: "That car belongs to Tom. It's ___.", options: ["hers", "theirs", "his", "ours"], answer: 2 },
+  { q: "These are my keys. They're ___.", options: ["yours", "mine", "hers", "his"], answer: 1 },
+  { q: "Is this your jacket? Yes, it's ___.", options: ["mine", "his", "ours", "yours"], answer: 3 },
+  { q: "This house belongs to us. It's ___.", options: ["theirs", "hers", "ours", "mine"], answer: 2 },
+  { q: "That dog belongs to them. It's ___.", options: ["ours", "his", "hers", "theirs"], answer: 3 },
+  { q: "My phone is black. ___ is white. (she)", options: ["Her", "His", "Hers", "Theirs"], answer: 2 },
+  { q: "Our flat is small. ___ is huge. (they)", options: ["Ours", "Hers", "His", "Theirs"], answer: 3 },
+  { q: "His answer was wrong. ___ was right. (I)", options: ["My", "Me", "Mine", "Yours"], answer: 2 },
+  { q: "This is ___ book. (I — before a noun)", options: ["mine", "me", "my", "hers"], answer: 2 },
+  { q: "That book is ___. (I — stands alone)", options: ["my", "me", "his", "mine"], answer: 3 },
+  { q: "Is this ___ phone? (you — before a noun)", options: ["yours", "you", "mine", "your"], answer: 3 },
+  { q: "This phone isn't mine — it must be ___. (you)", options: ["your", "you", "mine", "yours"], answer: 3 },
+  { q: "A friend of ___ told me. (she)", options: ["her", "she", "hers", "his"], answer: 2 },
+  { q: "___ results are better. (our — before a noun)", options: ["Ours", "Our", "Theirs", "Their"], answer: 1 },
+  { q: "Their garden is bigger than ___. (we)", options: ["our", "us", "ours", "mine"], answer: 2 },
+  { q: "That decision was ___. (he)", options: ["her", "hers", "him", "his"], answer: 3 },
+  { q: "The red one is mine. Which is ___? (you)", options: ["your", "you", "mine", "yours"], answer: 3 },
+  { q: "She left ___ bag in the car. (she — before a noun)", options: ["hers", "she", "her", "his"], answer: 2 },
+  { q: "That blue car is ___. (she — stands alone)", options: ["her", "she", "his", "hers"], answer: 3 },
+];
 
 export default function PossessivePronounsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -91,6 +121,93 @@ export default function PossessivePronounsLessonClient() {
 
   const current = sets[exNo];
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    const config: LessonPDFConfig = {
+      title: "Possessive Pronouns",
+      subtitle: "mine, yours, his, hers, ours, theirs — 4 exercises + answer key",
+      level: "A2",
+      keyRule: "Possessive adjective (my/your…) + noun | Possessive pronoun (mine/yours…) stands alone",
+      exercises: [
+        {
+          number: 1, title: "Exercise 1", difficulty: "Easy",
+          instruction: "Choose the correct possessive pronoun (mine, yours, his, hers, ours, theirs).",
+          questions: [
+            "This bag is Anna's. It's ___.",
+            "That car belongs to Tom. It's ___.",
+            "These are my keys. They're ___.",
+            "Is this your jacket? Yes, it's ___.",
+            "This house belongs to us. It's ___.",
+            "That dog belongs to them. It's ___.",
+            "My phone is black. ___ is white. (she)",
+            "Our flat is small. ___ is huge. (they)",
+            "His answer was wrong. ___ was right. (I)",
+            "Her score was 80. ___ was 95. (he)",
+          ],
+        },
+        {
+          number: 2, title: "Exercise 2", difficulty: "Medium",
+          instruction: "Write the possessive pronoun for the word in brackets.",
+          questions: [
+            "This pen is mine. That one is ___ . (you)",
+            "Her bag is red. ___ is blue. (I)",
+            "My bike is new. ___ is old. (he)",
+            "His flat is small. ___ is bigger. (she)",
+            "Their idea was good. ___ was better. (we)",
+            "Our team won. ___ lost. (they)",
+            "Your results are great. ___ are even better. (I)",
+            "My coffee is cold. ___ is still hot. (she)",
+            "Their garden is lovely. ___ needs work. (we)",
+            "Her shoes are size 38. ___ are 42. (he)",
+          ],
+        },
+        {
+          number: 3, title: "Exercise 3", difficulty: "Hard",
+          instruction: "Choose the correct word — possessive adjective or possessive pronoun.",
+          questions: [
+            "This is ___ book. (I — the book belongs to me)",
+            "That book is ___. (I — it belongs to me)",
+            "Is this ___ phone? (you)",
+            "This phone isn't mine — it must be ___. (you)",
+            "I forgot ___ umbrella. (I)",
+            "She lost her keys. Can I borrow ___? (you)",
+            "___ results are better than ___. (our / they)",
+            "That decision was ___. (he)",
+            "___ idea or ___? (my / she)",
+            "A friend of ___ told me. (she)",
+          ],
+        },
+        {
+          number: 4, title: "Exercise 4", difficulty: "Harder",
+          instruction: "Write the correct form — possessive adjective (before noun) or pronoun (alone).",
+          questions: [
+            "I love ___ job. It's really interesting. (I)",
+            "This seat is taken — it's ___. (I)",
+            "She left ___ bag in the car. (she)",
+            "That blue car is ___. (she)",
+            "We painted ___ house last summer. (we)",
+            "Their garden is bigger than ___. (we)",
+            "A colleague of ___ recommended this restaurant. (they)",
+            "He forgot ___ keys again. (he)",
+            "The red one is mine. Which one is ___? (you)",
+            "She always borrows ___ things without asking. (I)",
+          ],
+        },
+      ],
+      answerKey: [
+        { exercise: 1, subtitle: "Easy — choose pronoun", answers: ["hers", "his", "mine", "yours", "ours", "theirs", "Hers", "Theirs", "Mine", "His"] },
+        { exercise: 2, subtitle: "Medium — write pronoun", answers: ["yours", "mine", "his", "hers", "ours", "theirs", "mine", "hers", "ours", "his"] },
+        { exercise: 3, subtitle: "Hard — adj or pronoun", answers: ["my", "mine", "your", "yours", "my", "yours", "Our / theirs", "his", "My idea or hers?", "hers"] },
+        { exercise: 4, subtitle: "Harder — correct form", answers: ["my", "mine", "her", "hers", "our", "ours", "theirs", "his", "yours", "my"] },
+      ],
+    };
+    await generateLessonPDF(config);
+    setPdfLoading(false);
+  }
+
   const { save } = useProgress();
 
   useEffect(() => {
@@ -140,19 +257,22 @@ export default function PossessivePronounsLessonClient() {
         Possessive pronouns replace a possessive adjective + noun to avoid repetition. They stand <b>alone</b> — no noun follows: <b>mine, yours, his, hers, ours, theirs</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left sidebar */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-possessive-pronouns" subject="Possessive Pronouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
-            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+            <div className="hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
                 <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
@@ -274,12 +394,30 @@ export default function PossessivePronounsLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right sidebar */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

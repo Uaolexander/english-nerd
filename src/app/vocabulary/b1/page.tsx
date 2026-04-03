@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata: Metadata = {
   title: "B1 Vocabulary Exercises — English Nerd",
@@ -62,7 +64,11 @@ const EXERCISES: Exercise[] = [
   },
 ];
 
-export default function VocabularyB1Page() {
+export default async function VocabularyB1Page() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glow */}
@@ -129,20 +135,102 @@ export default function VocabularyB1Page() {
           </div>
 
           {/* Layout */}
-          <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
+          {!isPro ? (
+            <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
 
-            {/* Left ad */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs font-semibold text-white/30">ADVERTISEMENT</p>
-                <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-white/8 bg-black/30 text-sm text-white/20">
-                  300 × 600
+              {/* Left ad */}
+              <aside className="hidden lg:block">
+                <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold text-white/30">ADVERTISEMENT</p>
+                  <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-white/8 bg-black/30 text-sm text-white/20">
+                    300 × 600
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
 
-            {/* Exercise cards */}
-            <section>
+              {/* Exercise cards */}
+              <section>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+                  {EXERCISES.map((ex) => (
+                    <article
+                      key={ex.slug}
+                      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 ${
+                        ex.comingSoon ? "opacity-60" : "hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"
+                      }`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative aspect-video w-full overflow-hidden bg-black/40">
+                        <ImageWithFallback
+                          src={ex.image}
+                          alt={ex.title}
+                          className={`h-full w-full object-cover transition duration-500 ${ex.comingSoon ? "" : "group-hover:scale-105"}`}
+                        />
+                        {/* Dark overlay for coming soon */}
+                        {ex.comingSoon && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-xs font-bold text-white/60 backdrop-blur-sm">
+                              Coming Soon
+                            </span>
+                          </div>
+                        )}
+                        {/* Badges */}
+                        <div className="absolute left-3 top-3 flex items-center gap-2">
+                          <span className="rounded-full bg-violet-400 px-2.5 py-0.5 text-[10px] font-black text-black">B1</span>
+                          <span className="rounded-full border border-white/20 bg-black/50 px-2.5 py-0.5 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
+                            {ex.tag}
+                          </span>
+                        </div>
+                        {ex.isNew && (
+                          <span className="absolute right-3 top-3 rounded-full bg-emerald-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-black">
+                            New
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <h2 className="text-lg font-black text-white leading-snug">{ex.title}</h2>
+                        <p className="mt-2 text-sm text-white/70 leading-relaxed">{ex.description}</p>
+                        <div className="mt-4 flex items-center gap-3">
+                          {ex.comingSoon ? (
+                            <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-2.5 text-sm font-black text-white/30">
+                              Coming Soon
+                            </span>
+                          ) : (
+                            <a
+                              href={`/vocabulary/b1/${ex.slug}`}
+                              className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm"
+                            >
+                              Start Exercise
+                            </a>
+                          )}
+                          <span className="text-xs text-white/30">{ex.questions} questions</span>
+                        </div>
+                      </div>
+
+                      {/* Full card link */}
+                      {!ex.comingSoon && (
+                        <a href={`/vocabulary/b1/${ex.slug}`} className="absolute inset-0" aria-label={ex.title} />
+                      )}
+                    </article>
+                  ))}
+                </div>
+
+                {/* More coming soon */}
+                <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white/40">
+                    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white/60">More exercises coming soon</p>
+                    <p className="text-xs text-white/30 mt-0.5">New topics are added regularly — check back soon.</p>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          ) : (
+            <section className="mt-10">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
                 {EXERCISES.map((ex) => (
                   <article
@@ -208,9 +296,19 @@ export default function VocabularyB1Page() {
                   </article>
                 ))}
               </div>
-            </section>
 
-          </div>
+              {/* More coming soon */}
+              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white/40">
+                  <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white/60">More exercises coming soon</p>
+                  <p className="text-xs text-white/30 mt-0.5">New topics are added regularly — check back soon.</p>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </main>

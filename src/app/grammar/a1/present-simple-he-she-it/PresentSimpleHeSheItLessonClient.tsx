@@ -3,6 +3,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -27,7 +34,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "He ___ tea every morning.", options: ["drink","drinks","drinking","drank"], answer: 1 },
+  { q: "She ___ English at school.", options: ["study","studying","studied","studies"], answer: 3 },
+  { q: "It ___ in the garden all day.", options: ["sit","sitting","sat","sits"], answer: 3 },
+  { q: "He ___ TV in the evening.", options: ["watch","watches","watching","watched"], answer: 1 },
+  { q: "She ___ to work by bus.", options: ["go","going","goes","gone"], answer: 2 },
+  { q: "It ___ very fast.", options: ["walk","walking","walked","walks"], answer: 3 },
+  { q: "He ___ his homework after school.", options: ["do","does","did","doing"], answer: 1 },
+  { q: "She ___ lunch at noon.", options: ["eat","ate","eating","eats"], answer: 3 },
+  { q: "He ___ a lot of books.", options: ["read","reads","reading","red"], answer: 1 },
+  { q: "She ___ the piano every day.", options: ["plays","play","playing","played"], answer: 0 },
+  { q: "It ___ here every winter.", options: ["snow","snows","snowing","snowed"], answer: 1 },
+  { q: "He ___ to music at night.", options: ["listen","listens","listened","listening"], answer: 1 },
+  { q: "She ___ her dog every morning.", options: ["walks","walk","walking","walked"], answer: 0 },
+  { q: "He ___ football on Sundays.", options: ["play","playing","plays","played"], answer: 2 },
+  { q: "It ___ a lot of electricity.", options: ["use","used","uses","using"], answer: 2 },
+  { q: "She ___ very well in English.", options: ["write","wrote","writes","writing"], answer: 2 },
+  { q: "He ___ the bus to school.", options: ["takes","take","took","taking"], answer: 0 },
+  { q: "She ___ in a big office.", options: ["works","work","worked","working"], answer: 0 },
+  { q: "It ___ a lot of noise.", options: ["makes","make","made","making"], answer: 0 },
+  { q: "He ___ coffee with breakfast.", options: ["has","have","had","having"], answer: 0 },
+];
+
 export default function PresentSimpleHeSheItLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -386,6 +418,95 @@ export default function PresentSimpleHeSheItLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Present Simple",
+        subtitle: "He / She / It — verb endings (-s, -es, -ies) — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "He / she / it: add -S to most verbs (drinks, reads). Add -ES after -s/-sh/-ch/-x/-o (watches, goes). Change -y → -IES (studies, flies).",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose the correct verb form for he / she / it.",
+            questions: [
+              "He ___ tea every morning. (drink)",
+              "She ___ English at school. (study)",
+              "It ___ in the garden all day. (sit)",
+              "He ___ TV in the evening. (watch)",
+              "She ___ to work by bus. (go)",
+              "It ___ very fast. (walk)",
+              "He ___ his homework after school. (do)",
+              "She ___ lunch at noon. (eat)",
+              "He ___ many books. (read)",
+              "She ___ the piano every day. (play)",
+            ],
+            hint: "add -s / -es / -ies",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Easy",
+            instruction: "Choose the correct verb form.",
+            questions: [
+              "It ___ a lot in winter here. (snow)",
+              "He ___ to music at night. (listen)",
+              "She ___ her dog every morning. (walk)",
+              "He ___ football on Sundays. (play)",
+              "It ___ a lot of electricity. (use)",
+              "She ___ very well in English. (write)",
+              "He ___ the bus to school. (take)",
+              "She ___ in a big office. (work)",
+              "It ___ a lot of noise. (make)",
+              "He ___ coffee with breakfast. (have)",
+            ],
+            hint: "add -s / -es / -ies",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Medium",
+            instruction: "Write the correct form of the verb in brackets.",
+            questions: [
+              "She ___ (fly) to Paris every month for work.",
+              "He ___ (wash) his car on Saturday mornings.",
+              "It ___ (finish) at 6 pm every evening.",
+              "She ___ (carry) a heavy bag to the office.",
+              "He ___ (mix) the paint before using it.",
+              "It ___ (catch) insects in the garden.",
+              "She ___ (fix) computers for a living.",
+              "He ___ (push) the cart around the supermarket.",
+              "It ___ (buzz) all night and keeps me awake.",
+              "She ___ (try) a new recipe every weekend.",
+            ],
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Hard",
+            instruction: "Write the correct Present Simple form of the verb.",
+            questions: [
+              "My sister ___ (teach) maths at a local school.",
+              "The cat ___ (sleep) on the sofa all afternoon.",
+              "He ___ (miss) his family when he travels.",
+              "She ___ (reply) to every message very quickly.",
+              "The dog ___ (bark) at strangers every time.",
+              "My brother ___ (wish) he could play the guitar.",
+              "She ___ (pass) the school every day on her walk.",
+              "The plane ___ (land) at 9 am on Thursdays.",
+              "He ___ (enjoy) cooking on weekends with friends.",
+              "The river ___ (flow) through the centre of town.",
+            ],
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose correct form", answers: ["drinks","studies","sits","watches","goes","walks","does","eats","reads","plays"] },
+          { exercise: 2, subtitle: "Easy — choose correct form", answers: ["snows","listens","walks","plays","uses","writes","takes","works","makes","has"] },
+          { exercise: 3, subtitle: "Medium — write the form", answers: ["flies","washes","finishes","carries","mixes","catches","fixes","pushes","buzzes","tries"] },
+          { exercise: 4, subtitle: "Hard — write the form", answers: ["teaches","sleeps","misses","replies","barks","wishes","passes","lands","enjoys","flows"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="relative min-h-screen w-full">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FFF7D9] via-white to-white" />
@@ -413,17 +534,18 @@ export default function PresentSimpleHeSheItLessonClient() {
         Learn how to use the Present Simple for <b>he</b>, <b>she</b>, and <b>it</b>. Practice with 4 easy exercises!
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px] lg:items-start">
-        {/* Left Ad */}
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start lg:h-fit">
-          <div className="rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left col + center content + right col */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-present-simple-he-she-it" subject="Present Simple (he/she/it)" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -445,6 +567,8 @@ export default function PresentSimpleHeSheItLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -666,15 +790,32 @@ export default function PresentSimpleHeSheItLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start lg:h-fit">
-          <div className="rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 import MaterialsClient from "./MaterialsClient";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default async function MyMaterialsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -63,7 +65,7 @@ export default async function MyMaterialsPage() {
       </div>
 
       {/* Cards */}
-      <MaterialsClient isLoggedIn={!!user} />
+      <MaterialsClient isLoggedIn={!!user} isPro={isPro} />
 
       {/* Bottom nav */}
       <div className="mt-10 border-t border-slate-100 pt-6">

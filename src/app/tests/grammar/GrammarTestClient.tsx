@@ -3,6 +3,8 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import CertificateModal from "./CertificateModal";
 import { useProgress } from "@/lib/useProgress";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
 
 type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 type Topic =
@@ -170,6 +172,7 @@ export default function GrammarTestClient() {
   }, [answers, questions, total]);
 
   const { save } = useProgress();
+  const isPro = useIsPro();
   useEffect(() => {
     if (submitted) save(undefined, score.percent, score.total);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,7 +310,7 @@ export default function GrammarTestClient() {
 
         {/* ── LANDING ─────────────────────────────────────── */}
         {!started && (
-          <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <div className={`mt-10 grid gap-6 ${!isPro ? "lg:grid-cols-[1fr_300px]" : ""}`}>
             <section className="rounded-2xl border border-black/10 bg-white/90 backdrop-blur p-8 shadow-sm">
 
               {/* Level pills */}
@@ -376,20 +379,13 @@ export default function GrammarTestClient() {
               </p>
             </section>
 
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/70 backdrop-blur p-4">
-                <div className="text-xs font-semibold text-black/35">ADVERTISEMENT</div>
-                <div className="mt-3 h-[600px] rounded-xl border border-black/8 bg-black/[0.02] flex items-center justify-center text-black/25 text-sm">
-                  300 × 600
-                </div>
-              </div>
-            </aside>
+            <AdUnit variant="sidebar-test" />
           </div>
         )}
 
         {/* ── QUESTION ─────────────────────────────────────── */}
         {started && !submitted && (
-          <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <div className={`mt-10 grid gap-6 ${!isPro ? "lg:grid-cols-[1fr_300px]" : ""}`}>
             <section className="overflow-hidden rounded-2xl border border-black/10 bg-white/90 backdrop-blur shadow-sm">
 
               {/* Question header */}
@@ -530,20 +526,13 @@ export default function GrammarTestClient() {
               </div>
             </section>
 
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/70 backdrop-blur p-4">
-                <div className="text-xs font-semibold text-black/35">ADVERTISEMENT</div>
-                <div className="mt-3 h-[600px] rounded-xl border border-black/8 bg-black/[0.02] flex items-center justify-center text-black/25 text-sm">
-                  300 × 600
-                </div>
-              </div>
-            </aside>
+            <AdUnit variant="sidebar-test" />
           </div>
         )}
 
         {/* ── RESULTS ─────────────────────────────────────── */}
         {submitted && (
-          <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <div className={`mt-10 grid gap-6 ${!isPro ? "lg:grid-cols-[1fr_300px]" : ""}`}>
             <section className="overflow-hidden rounded-2xl border border-black/10 bg-white/90 backdrop-blur shadow-sm">
 
               {/* Score header */}
@@ -597,20 +586,30 @@ export default function GrammarTestClient() {
                       >
                         Go to {suggestedLevel} lessons →
                       </a>
-                      <button
-                        onClick={() => setShowCert(true)}
-                        className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-6 py-2.5 text-sm font-black text-[#0F0F12] shadow-[0_0_0_2px_#F5DA20] transition-all duration-300 hover:shadow-[0_0_0_3px_#F5DA20,0_4px_20px_rgba(245,218,32,0.35)] hover:scale-[1.03] active:scale-[0.98]"
-                        style={{ background: "linear-gradient(135deg, #F5DA20 0%, #FFE55C 50%, #F5DA20 100%)", backgroundSize: "200% 100%" }}
-                      >
-                        {/* shimmer sweep — auto */}
-                        <span className="shimmer-auto pointer-events-none absolute inset-0 w-1/3 skew-x-[-20deg] bg-white/40" />
-                        {/* pulse ring */}
-                        <span className="absolute inset-0 rounded-2xl ring-2 ring-[#F5DA20]/60 animate-ping opacity-40" />
-                        <svg className="relative h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="8" r="4"/><path d="M8 8v4l-3 7h14l-3-7V8"/><path d="M9 21h6"/>
-                        </svg>
-                        <span className="relative">Get Certificate</span>
-                      </button>
+                      {isPro ? (
+                        <button
+                          onClick={() => setShowCert(true)}
+                          className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-6 py-2.5 text-sm font-black text-[#0F0F12] shadow-[0_0_0_2px_#F5DA20] transition-all duration-300 hover:shadow-[0_0_0_3px_#F5DA20,0_4px_20px_rgba(245,218,32,0.35)] hover:scale-[1.03] active:scale-[0.98]"
+                          style={{ background: "linear-gradient(135deg, #F5DA20 0%, #FFE55C 50%, #F5DA20 100%)", backgroundSize: "200% 100%" }}
+                        >
+                          <span className="shimmer-auto pointer-events-none absolute inset-0 w-1/3 skew-x-[-20deg] bg-white/40" />
+                          <span className="absolute inset-0 rounded-2xl ring-2 ring-[#F5DA20]/60 animate-ping opacity-40" />
+                          <svg className="relative h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="8" r="4"/><path d="M8 8v4l-3 7h14l-3-7V8"/><path d="M9 21h6"/>
+                          </svg>
+                          <span className="relative">Get Certificate</span>
+                        </button>
+                      ) : (
+                        <a
+                          href="/pro"
+                          className="inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm font-bold text-black/50 transition hover:border-[#F5DA20] hover:text-black"
+                        >
+                          <svg className="h-4 w-4 text-[#b8a200]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          Get Certificate — Pro only
+                        </a>
+                      )}
                       <button
                         onClick={start}
                         className="inline-flex items-center rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-black/45 hover:bg-black/5 transition"
@@ -742,14 +741,7 @@ export default function GrammarTestClient() {
               </div>
             </section>
 
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/70 backdrop-blur p-4">
-                <div className="text-xs font-semibold text-black/35">ADVERTISEMENT</div>
-                <div className="mt-3 h-[600px] rounded-xl border border-black/8 bg-black/[0.02] flex items-center justify-center text-black/25 text-sm">
-                  300 × 600
-                </div>
-              </div>
-            </aside>
+            <AdUnit variant="sidebar-test" />
           </div>
         )}
 

@@ -1,7 +1,31 @@
+"use client";
+
+import { useIsPro } from "@/lib/ProContext";
+
 export default function Footer() {
+  const isPro = useIsPro();
+
   return (
     <footer className="border-t border-white/8 bg-[#0B0B0D] px-6 py-10">
       <div className="mx-auto max-w-5xl">
+
+        {/* Pro banner — hidden for Pro users */}
+        {!isPro && (
+        <div className="mb-8 flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/4 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <svg className="h-3.5 w-3.5 shrink-0 text-[#F5DA20]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <p className="text-xs text-white/40">No ads · Progress dashboard · Certificates · Priority access</p>
+          </div>
+          <a
+            href="/pro"
+            className="shrink-0 rounded-lg border border-[#F5DA20]/30 px-3.5 py-1.5 text-xs font-black text-[#F5DA20] transition hover:bg-[#F5DA20]/10"
+          >
+            Upgrade to Pro
+          </a>
+        </div>
+        )}
 
         {/* Top: brand + nav columns spread full width */}
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-5">
@@ -12,7 +36,7 @@ export default function Footer() {
               English <span className="text-[#F5DA20]">Nerd</span>
             </a>
             <p className="mt-2 text-sm text-white/35 leading-relaxed">
-              Modern English learning. Free forever.
+              Modern English learning.
             </p>
           </div>
 
@@ -50,6 +74,7 @@ export default function Footer() {
             <a href="/vocabulary" className="text-sm text-white/50 hover:text-white transition">Vocabulary</a>
             <a href="/listening" className="text-sm text-white/50 hover:text-white transition">Listening</a>
             <a href="/reading" className="text-sm text-white/50 hover:text-white transition">Reading</a>
+            <a href="https://www.teacherspayteachers.com/store/english-nerd-ua" target="_blank" rel="noopener noreferrer" className="text-sm text-[#F5DA20]/50 hover:text-[#F5DA20] transition">Shop on TPT →</a>
           </div>
 
         </div>

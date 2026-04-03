@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import AdUnit from "@/components/AdUnit";
 
 type Question = {
   id: number;
@@ -212,14 +213,7 @@ export default function MyFamilyClient() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
 
         {/* Left ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
-            <div className="flex h-[600px] items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xs text-slate-300">
-              300 × 600
-            </div>
-          </div>
-        </aside>
+        <AdUnit variant="sidebar-light" />
 
         {/* Main */}
         <div className="min-w-0 space-y-5">
@@ -466,12 +460,7 @@ export default function MyFamilyClient() {
               </p>
             </div>
 
-            <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
-              <div className="flex h-[250px] items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xs text-slate-300">
-                300 × 250
-              </div>
-            </div>
+            <AdUnit variant="inline-light" />
 
           </div>
         </aside>

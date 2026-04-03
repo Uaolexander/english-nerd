@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I was tired ___ I went to bed early.", options: ["but", "although", "and", "so"], answer: 3 },
+  { q: "She likes coffee ___ she doesn't like tea.", options: ["so", "and", "but", "or"], answer: 2 },
+  { q: "I like swimming ___ cycling. (addition)", options: ["but", "or", "so", "and"], answer: 3 },
+  { q: "She didn't eat ___ she wasn't hungry.", options: ["so", "but", "because", "and"], answer: 2 },
+  { q: "Would you like tea ___ coffee? (choice)", options: ["and", "but", "so", "or"], answer: 3 },
+  { q: "Call me ___ you arrive.", options: ["so", "because", "when", "but"], answer: 2 },
+  { q: "He's rich ___ he's not happy.", options: ["so", "because", "and", "but"], answer: 3 },
+  { q: "___ she studied hard, she didn't pass.", options: ["Because", "So", "Although", "When"], answer: 2 },
+  { q: "I was reading ___ he was watching TV.", options: ["when", "after", "before", "while"], answer: 3 },
+  { q: "She turned off the lights ___ she left.", options: ["while", "when", "after", "before"], answer: 3 },
+  { q: "He failed ___ he didn't practise enough.", options: ["although", "so", "but", "because"], answer: 3 },
+  { q: "She was tired, ___ she took a nap.", options: ["although", "but", "because", "so"], answer: 3 },
+  { q: "___ it was cold, we went for a walk.", options: ["Because", "So", "Although", "When"], answer: 2 },
+  { q: "___ finishing the test, she left. (sequence)", options: ["Before", "While", "After", "So"], answer: 2 },
+  { q: "I listened to music ___ I cooked dinner.", options: ["after", "before", "so", "while"], answer: 3 },
+  { q: "He ate dinner ___ going to bed. (sequence)", options: ["before", "while", "after", "when"], answer: 2 },
+  { q: "___ he was tired, he kept working.", options: ["Because", "So", "While", "Although"], answer: 3 },
+  { q: "She smiled ___ she opened the letter.", options: ["although", "so", "when", "before"], answer: 2 },
+  { q: "I felt better ___ I took the medicine. (sequence)", options: ["before", "while", "so", "after"], answer: 3 },
+  { q: "It rained, ___ we went inside.", options: ["although", "but", "because", "so"], answer: 3 },
+];
+
 export default function ConjunctionsLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -118,6 +150,77 @@ export default function ConjunctionsLessonClient() {
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Conjunctions",
+        subtitle: "Linking ideas — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "and=addition, but=contrast, so=result, because=reason, although=despite, when/while/before/after=time.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose the correct conjunction to join the two ideas.", questions: [
+            "I was tired ___ I went to bed early. (but / so / although)",
+            "She likes coffee ___ she doesn't like tea. (and / or / but)",
+            "He was late ___ he missed the train. (because / so / but)",
+            "I like swimming ___ cycling. (but / and / so)",
+            "She didn't eat ___ she wasn't hungry. (so / because / but)",
+            "Would you like tea ___ coffee? (and / but / or)",
+            "___ I finished work, I went to the gym. (Because / After / So)",
+            "Call me ___ you arrive. (so / when / because)",
+            "He's rich ___ he's not happy. (so / because / but)",
+            "She studied hard ___ she passed the exam. (so / but / although)",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the correct conjunction: and, but, or, so, because, when, after, before, although, while.", questions: [
+            "I woke up early ___ I missed the alarm.",
+            "She was nervous ___ she had her first interview.",
+            "He didn't pass ___ he didn't study enough.",
+            "I love pizza ___ pasta.",
+            "She was late, ___ she missed the beginning.",
+            "___ leaving, remember to lock the door.",
+            "I listened to music ___ I cooked dinner.",
+            "Do you prefer tea ___ coffee?",
+            "___ it was cold, we went for a walk.",
+            "___ finishing the test, she left the room.",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the conjunction that best fits the meaning.", questions: [
+            "___ she studied hard, she didn't pass. (Because / Although / So)",
+            "I was reading ___ he was watching TV. (when / while / after)",
+            "He ate dinner ___ going to bed. (after / before / while)",
+            "She turned off the lights ___ she left. (while / when / before)",
+            "I'll call you ___ I get there. (while / when / although)",
+            "He failed ___ he didn't practise enough. (although / because / so)",
+            "It was expensive, ___ we bought it anyway. (so / but / because)",
+            "She was tired, ___ she took a nap. (although / but / so)",
+            "___ he is young, he is very experienced. (Although / Because / So)",
+            "I listen to podcasts ___ I commute. (before / so / while)",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write the best conjunction: although, while, after, but, because, before, so, when.", questions: [
+            "___ he was tired, he kept working.",
+            "She checked her email ___ having breakfast.",
+            "I felt much better ___ I took the medicine.",
+            "The film was long, ___ it was worth it.",
+            "She didn't sleep well ___ she was anxious.",
+            "He always checks the map ___ leaving the house.",
+            "It started raining, ___ we went inside.",
+            "I noticed she was upset ___ I asked what was wrong.",
+            "She smiled ___ she opened the letter.",
+            "___ it was raining, we decided to stay in.",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — choose conjunction", answers: ["so","but","so","and","because","or","After","when","but","so"] },
+          { exercise: 2, subtitle: "Medium — write conjunction", answers: ["but","when","because","and","so","before","while","or","although","after"] },
+          { exercise: 3, subtitle: "Hard — best conjunction", answers: ["Although","while","after","before","when","because","but","so","Although","while"] },
+          { exercise: 4, subtitle: "Harder — write conjunction", answers: ["although","while","after","but","because","before","so","so","when","because"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -140,18 +243,23 @@ export default function ConjunctionsLessonClient() {
         Conjunctions join clauses or ideas. <b>And, but, or, so</b> are coordinating conjunctions. <b>Because, although, when, while, before, after</b> are subordinating conjunctions that give reasons, contrast, or show time relationships.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-conjunctions" subject="Conjunctions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +382,32 @@ export default function ConjunctionsLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

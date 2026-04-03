@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,12 +18,37 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I ___ wear a uniform. It's compulsory.", options: ["don't have to", "has to", "have to", "doesn't have to"], answer: 2 },
+  { q: "She ___ wake up early — it's a holiday.", options: ["has to", "have to", "don't have to", "doesn't have to"], answer: 3 },
+  { q: "He ___ finish the report by Friday.", options: ["don't have to", "have to", "doesn't have to", "has to"], answer: 3 },
+  { q: "You ___ pay here — it's free!", options: ["have to", "has to", "doesn't have to", "don't have to"], answer: 3 },
+  { q: "We ___ book a table — they take walk-ins.", options: ["have to", "has to", "don't have to", "doesn't have to"], answer: 2 },
+  { q: "Students ___ pass all exams to graduate.", options: ["has to", "doesn't have to", "have to", "don't have to"], answer: 2 },
+  { q: "You ___ smoke here. (forbidden)", options: ["don't have to", "have to", "mustn't", "doesn't have to"], answer: 2 },
+  { q: "I feel I ___ apologise. I was rude.", options: ["have to", "must", "has to", "don't have to"], answer: 1 },
+  { q: "You ___ rush — we have plenty of time.", options: ["must", "have to", "don't have to", "mustn't"], answer: 2 },
+  { q: "You ___ tell anyone — it's a secret!", options: ["don't have to", "have to", "doesn't have to", "mustn't"], answer: 3 },
+  { q: "She ___ speak French — English is enough.", options: ["has to", "have to", "doesn't have to", "mustn't"], answer: 2 },
+  { q: "They ___ complete the training first.", options: ["doesn't have to", "don't have to", "have to", "mustn't"], answer: 2 },
+  { q: "Passengers ___ wear seatbelts during take-off.", options: ["don't have to", "mustn't", "doesn't have to", "have to"], answer: 3 },
+  { q: "I ___ remember to call mum — it's her birthday!", options: ["don't have to", "have to", "must", "mustn't"], answer: 2 },
+  { q: "She ___ get a visa — it's the law.", options: ["doesn't have to", "don't have to", "has to", "mustn't"], answer: 2 },
+  { q: "You ___ use your phone in the exam.", options: ["don't have to", "have to", "doesn't have to", "mustn't"], answer: 3 },
+  { q: "He ___ travel for the job — it's all online.", options: ["has to", "have to", "doesn't have to", "mustn't"], answer: 2 },
+  { q: "I ___ renew my passport — it expires soon.", options: ["don't have to", "doesn't have to", "must", "have to"], answer: 3 },
+  { q: "He ___ bring a gift — but it would be nice.", options: ["has to", "have to", "doesn't have to", "mustn't"], answer: 2 },
+  { q: "She ___ work weekends — her contract is Mon–Fri.", options: ["has to", "have to", "must", "doesn't have to"], answer: 3 },
+];
+
 export default function HaveToLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -115,6 +147,57 @@ export default function HaveToLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Have to",
+        subtitle: "Obligation & No Obligation — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "have to / has to = external obligation. don't/doesn't have to = no obligation (optional). mustn't = prohibition.",
+        exercises: [
+          { number: 1, title: "Exercise 1", difficulty: "Easy", instruction: "Choose have to / has to / don't have to / doesn't have to.", questions: [
+            "I ___ wear a uniform at work. It's compulsory.", "She ___ wake up early tomorrow — it's a holiday.",
+            "He ___ finish this report by Friday. The boss said so.", "You ___ pay for parking here — it's free!",
+            "We ___ book a table — they take walk-ins.", "They ___ complete the online training before starting.",
+            "She ___ speak French for the job — English is enough.", "Students ___ pass all exams to graduate.",
+            "He ___ bring a gift — but it would be a nice gesture.", "I ___ renew my passport — it expires next month.",
+          ]},
+          { number: 2, title: "Exercise 2", difficulty: "Medium", instruction: "Write the correct form of have to (positive or negative).", questions: [
+            "She ___ (obligation) take the medicine twice a day.", "I ___ (no obligation) come in on Saturday.",
+            "He ___ (obligation) wear a tie at the new office.", "They ___ (obligation) leave before midnight.",
+            "You ___ (no obligation) print anything — just use the app.", "She ___ (no obligation) cook — there's a restaurant.",
+            "We ___ (obligation) submit the form by the 30th.", "He ___ (no obligation) explain — I already know.",
+            "I ___ (obligation) call the bank today — it's urgent.", "She ___ (obligation) hand in her assignment tomorrow.",
+          ]},
+          { number: 3, title: "Exercise 3", difficulty: "Hard", instruction: "Choose the correct modal: have to / must / don't have to / mustn't.", questions: [
+            "You ___ smoke in the hospital. It's strictly forbidden.", "You ___ buy a ticket — children under 5 get in free.",
+            "She ___ get a visa to work in this country — it's the law.", "You ___ tell anyone about this — it's a secret!",
+            "I feel I really ___ apologise. I was rude to her.", "Passengers ___ keep seatbelts on during take-off.",
+            "You ___ rush — we have plenty of time.", "I ___ remember to call mum — it's her birthday!",
+            "You ___ use your phone during the exam.", "She ___ be at the meeting — it's optional for her department.",
+          ]},
+          { number: 4, title: "Exercise 4", difficulty: "Harder", instruction: "Write: have to / has to / don't have to / doesn't have to / must / mustn't.", questions: [
+            "You ___ feed the cat — I already did it. (no obligation)", "She ___ see a doctor — her cough is getting worse. (strong personal advice)",
+            "Visitors ___ sign in at reception. (external rule)", "You ___ park here — it's a fire exit. (prohibition)",
+            "He ___ travel for the job — everything is online now. (no obligation)", "I ___ finish this before midnight — the deadline is strict.",
+            "You ___ touch that wire — it could be dangerous! (prohibition)", "She ___ work on weekends — her contract says Mon–Fri.",
+            "We ___ submit the application by Friday. (external deadline)", "I really ___ tidy my room — it's a mess! (internal)",
+          ]},
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — have to / has to / don't / doesn't have to", answers: ["have to", "doesn't have to", "has to", "don't have to", "don't have to", "have to", "doesn't have to", "have to", "doesn't have to", "have to"] },
+          { exercise: 2, subtitle: "Medium — write the form", answers: ["has to", "don't have to", "has to", "have to", "don't have to", "doesn't have to", "have to", "doesn't have to", "have to", "has to"] },
+          { exercise: 3, subtitle: "Hard — have to / must / mustn't", answers: ["mustn't", "don't have to", "has to", "mustn't", "must", "have to", "don't have to", "must", "mustn't", "doesn't have to"] },
+          { exercise: 4, subtitle: "Harder — mixed forms", answers: ["don't have to", "must", "have to", "mustn't", "doesn't have to", "have to", "mustn't", "doesn't have to", "have to", "must"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +223,23 @@ export default function HaveToLessonClient() {
         Use <b>have to / has to</b> for external obligations (rules, laws, requirements). Use <b>don't / doesn't have to</b> when something is <b>not necessary</b> — there is a choice. Exercise 3 also covers <b>must</b> and <b>mustn't</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-have-to" subject="Have to" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +362,32 @@ export default function HaveToLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

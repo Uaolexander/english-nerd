@@ -7,6 +7,53 @@ export const metadata = {
   alternates: { canonical: "/nerd-zone" },
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What is Nerd Zone on English Nerd?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Nerd Zone is a collection of practical English tools: irregular verbs, phrasal verbs, live phrases, slang, useful websites, and film/TV vocabulary sets with interactive exercises.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How can I learn English with films and TV shows?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The Watch & Learn section gives you curated vocabulary lists for real films and TV shows grouped by level (A1–C1). Study key words before watching, then do interactive exercises to test your memory.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What level should I start with for English grammar?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Take the free Placement Test to find your level instantly. English Nerd covers A1 to C1 across grammar, vocabulary, listening and reading.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is included in English Nerd Pro?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Pro unlocks all vocabulary study sets, PDF worksheets for every topic, exercises for all Watch & Learn content, 7 streak freezes per month, and a shareable Certificate of Achievement.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I download the English worksheets as PDF?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes — Pro members can download printable PDF worksheets for Phrasal Verbs, Live Phrases, English Slang, Irregular Verbs, and Watch & Learn vocabulary sets.",
+      },
+    },
+  ],
+};
+
 // ─── Word of the Day ──────────────────────────────────────────────────────────
 
 type Word = {
@@ -183,6 +230,10 @@ export default function NerdZonePage() {
 
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Background glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-[#F5DA20]/5 blur-[160px]" />
@@ -254,12 +305,18 @@ export default function NerdZonePage() {
         </div>
 
         {/* ── Section heading ────────────────────────────────────────── */}
-        <div className="mt-14 flex items-center gap-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-lg" />
-          <div>
-            <h2 className="text-xl font-black text-white">Explore sections</h2>
-            <p className="text-xs text-white/40">Pick a topic and dive in</p>
+        <div className="mt-14 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-lg" />
+            <div>
+              <h2 className="text-xl font-black text-white">Explore sections</h2>
+              <p className="text-xs text-white/40">Pick a topic and dive in</p>
+            </div>
           </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-[11px] font-semibold text-black/40">
+            <span className="h-1.5 w-1.5 rounded-full bg-black/30 animate-pulse" />
+            Updated monthly · new content first for Pro
+          </span>
         </div>
 
         {/* ── Section cards — mobile: carousel | desktop: grid ─────── */}
@@ -269,6 +326,76 @@ export default function NerdZonePage() {
               <SectionCard s={s} />
             </div>
           ))}
+        </div>
+
+        {/* ── Certificate teaser ─────────────────────────────────────── */}
+        <div className="mt-14">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-lg" />
+            <div>
+              <h2 className="text-xl font-black text-white">Certificate of Achievement</h2>
+              <p className="text-xs text-white/40">Prove your English level with a shareable certificate</p>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl border border-white/8">
+            {/* Blurred certificate preview */}
+            <div className="blur-[3px] saturate-50 pointer-events-none select-none">
+              <div className="bg-white p-8 sm:p-12">
+                <div className="max-w-xl mx-auto border-[3px] border-[#F5DA20] rounded-2xl p-8 relative">
+                  <div className="absolute top-3 left-3 h-4 w-4 border-t-2 border-l-2 border-[#F5DA20]/60 rounded-tl" />
+                  <div className="absolute top-3 right-3 h-4 w-4 border-t-2 border-r-2 border-[#F5DA20]/60 rounded-tr" />
+                  <div className="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[#F5DA20]/60 rounded-bl" />
+                  <div className="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[#F5DA20]/60 rounded-br" />
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-2 mb-4">
+                      <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
+                        <span className="text-[10px] font-black text-[#F5DA20]">EN</span>
+                      </div>
+                      <span className="text-sm font-black text-slate-900">EnglishNerd.cc</span>
+                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">This certifies that</p>
+                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
+                    <div className="h-7 w-48 mx-auto rounded-lg bg-slate-100 mb-4" />
+                    <p className="text-xs text-slate-400 mb-1">has successfully demonstrated</p>
+                    <div className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-1.5 my-2">
+                      <span className="text-sm font-black text-white">B2 Level English</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2 mb-4">with a score of 87% · April 2026</p>
+                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4" />
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-[#F5DA20] flex items-center justify-center">
+                        <svg className="h-3 w-3 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">Verified by English Nerd</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pro overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0E0F13]/80 backdrop-blur-[1px]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F5DA20] shadow-xl">
+                <svg className="h-7 w-7 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div className="text-center px-4">
+                <p className="text-lg font-black text-white">Earn your certificate</p>
+                <p className="mt-1 text-sm text-white/55 max-w-xs">Complete the Placement Test and get a shareable PDF certificate to prove your English level. Pro members only.</p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
+                <a
+                  href="/pro"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black shadow-md transition hover:bg-[#e8cf00] hover:shadow-[0_4px_20px_rgba(245,218,32,0.4)]"
+                >
+                  Get Pro — Unlock certificate
+                </a>
+                <a href="/tests" className="text-sm font-semibold text-white/40 hover:text-white/70 transition">
+                  Take the test first →
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

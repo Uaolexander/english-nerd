@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import PDFButton from "@/components/PDFButton";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -10,6 +17,29 @@ type ExerciseSet =
   | { type: "input"; title: string; instructions: string; questions: InputQ[] };
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She walked ___ the room and sat down.", options: ["in", "to", "into", "through"], answer: 2 },
+  { q: "He ran ___ the bridge (from one side to other).", options: ["along", "through", "into", "across"], answer: 3 },
+  { q: "We walked ___ the tunnel (entered one end, exit other).", options: ["across", "through", "along", "into"], answer: 1 },
+  { q: "She went ___ the stairs slowly (upward).", options: ["on", "to", "up", "along"], answer: 2 },
+  { q: "He fell ___ the ladder (downward).", options: ["along", "from", "down", "across"], answer: 2 },
+  { q: "She came ___ of the house quickly.", options: ["away", "from", "out", "through"], answer: 2 },
+  { q: "He walked ___ the river path for an hour (following length).", options: ["across", "through", "into", "along"], answer: 3 },
+  { q: "We drove ___ the city looking for parking.", options: ["across", "through", "around", "into"], answer: 2 },
+  { q: "She ran ___ the finish line (going past it).", options: ["through", "past", "along", "across"], answer: 1 },
+  { q: "The river flows ___ the valley (following its length).", options: ["across", "through", "along", "into"], answer: 2 },
+  { q: "She swam ___ the lake (from one bank to the other).", options: ["along", "through", "into", "across"], answer: 3 },
+  { q: "We walked ___ the forest (in one side, out the other).", options: ["across", "through", "along", "into"], answer: 1 },
+  { q: "She jumped ___ the puddle (above and over).", options: ["through", "into", "over", "across"], answer: 2 },
+  { q: "He climbed ___ the wall (to the top and down).", options: ["along", "through", "over", "across"], answer: 2 },
+  { q: "The children ran ___ the playground (in different directions).", options: ["along", "through", "across", "around"], answer: 3 },
+  { q: "He dived ___ the water (entering a space).", options: ["in", "through", "into", "to"], answer: 2 },
+  { q: "She drove ___ the hospital for her appointment (destination).", options: ["into", "at", "to", "past"], answer: 2 },
+  { q: "He jumped ___ the fence into the garden (obstacle).", options: ["through", "across", "along", "over"], answer: 3 },
+  { q: "They walked ___ the old town, exploring streets.", options: ["along", "through", "around", "across"], answer: 2 },
+  { q: "She went ___ the stairs to the ground floor (downward).", options: ["up", "along", "through", "down"], answer: 3 },
+];
 
 export default function PrepositionsMovementLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -91,6 +121,93 @@ export default function PrepositionsMovementLessonClient() {
 
   const current = sets[exNo];
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    const config: LessonPDFConfig = {
+      title: "Prepositions of Movement",
+      subtitle: "to, into, out of, through, across, along… — 4 exercises + answer key",
+      level: "A2",
+      keyRule: "into (enter) | out of (exit) | through (enclosed) | across (cross) | along (follow length) | past (go by)",
+      exercises: [
+        {
+          number: 1, title: "Exercise 1", difficulty: "Easy",
+          instruction: "Choose the correct preposition to describe the movement.",
+          questions: [
+            "She walked ___ the room and sat down.",
+            "He ran ___ the bridge (from one side to the other).",
+            "The cat jumped ___ the box.",
+            "We walked ___ the tunnel.",
+            "She went ___ the stairs slowly.",
+            "He fell ___ the ladder.",
+            "We drove ___ the park to get to the museum.",
+            "She came ___ of the house quickly.",
+            "He walked ___ the river path for an hour.",
+            "We drove ___ the city looking for a place to park.",
+          ],
+        },
+        {
+          number: 2, title: "Exercise 2", difficulty: "Medium",
+          instruction: "Write the correct preposition: to, into, out of, through, across, along, up, down, past, around.",
+          questions: [
+            "She ran ___ the finish line and won the race.",
+            "He climbed ___ the mountain slowly.",
+            "The children walked ___ the park path.",
+            "She walked ___ the door and left.",
+            "We drove ___ the tunnel in less than a minute.",
+            "He swam ___ the river.",
+            "She went ___ the stairs to get to the ground floor.",
+            "The dog ran ___ the garden chasing its ball.",
+            "He walked ___ the shop and bought a coffee.",
+            "She drove ___ the hospital for her appointment.",
+          ],
+        },
+        {
+          number: 3, title: "Exercise 3", difficulty: "Hard",
+          instruction: "Choose the preposition that best describes the specific movement.",
+          questions: [
+            "The river flows ___ the valley.",
+            "She swam ___ the lake.",
+            "We walked ___ the forest.",
+            "He crawled ___ a hole in the fence.",
+            "She jumped ___ the puddle.",
+            "The bus goes ___ the school on its route.",
+            "He climbed ___ the wall.",
+            "She took the lift ___ to the third floor.",
+            "The children ran ___ the playground.",
+            "He dived ___ the water.",
+          ],
+        },
+        {
+          number: 4, title: "Exercise 4", difficulty: "Harder",
+          instruction: "Write the correct preposition. Think carefully about direction and context.",
+          questions: [
+            "She walked ___ the bridge connecting the two parts of the city.",
+            "He ran ___ the building to get to the other side.",
+            "The cat climbed ___ the tree and couldn't get down.",
+            "She sneaked ___ of the meeting room without anyone noticing.",
+            "They sailed ___ the islands before heading home.",
+            "He jumped ___ the fence into the garden.",
+            "We hiked ___ the mountain path for six hours.",
+            "She drove ___ the tunnel to avoid the traffic.",
+            "He fell ___ the slope and twisted his ankle.",
+            "They walked ___ the old town, exploring the streets.",
+          ],
+        },
+      ],
+      answerKey: [
+        { exercise: 1, subtitle: "Easy — choose preposition", answers: ["into", "across", "into", "through", "up", "down", "past", "out", "along", "around"] },
+        { exercise: 2, subtitle: "Medium — write preposition", answers: ["past", "up", "along", "out of", "through", "across", "down", "around", "into", "to"] },
+        { exercise: 3, subtitle: "Hard — best preposition", answers: ["along", "across", "through", "through", "over", "past", "over", "up", "around", "into"] },
+        { exercise: 4, subtitle: "Harder — careful context", answers: ["across", "around", "up", "out of", "past", "over", "along", "through", "down", "around"] },
+      ],
+    };
+    await generateLessonPDF(config);
+    setPdfLoading(false);
+  }
+
   const { save } = useProgress();
 
   useEffect(() => {
@@ -140,19 +257,22 @@ export default function PrepositionsMovementLessonClient() {
         Prepositions of movement describe <b>how</b> and <b>where</b> something moves: <i>She walked <b>into</b> the room. He ran <b>across</b> the bridge. We drove <b>through</b> the tunnel.</i> Each preposition gives specific information about the direction or path of movement.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left sidebar */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-prepositions-movement" subject="Prepositions of Movement" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
-            <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+            <div className="hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
                 <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
@@ -274,12 +394,30 @@ export default function PrepositionsMovementLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right sidebar */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

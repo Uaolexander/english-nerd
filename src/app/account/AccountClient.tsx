@@ -3,6 +3,12 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { containsProfanity } from "@/lib/profanity";
+import AdUnit from "@/components/AdUnit";
+import ProExpiredModal from "@/components/ProExpiredModal";
+import ProWelcomeModal from "@/components/ProWelcomeModal";
+import DashboardTab from "./DashboardTab";
+import type { TopicRec } from "@/lib/getRecommendations";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -29,7 +35,7 @@ export type ProgressStats = {
     score: number;
     completed_at: string;
   }>;
-  byLevel: Record<string, { completed: number; avgScore: number }>;
+  byLevel: Record<string, { completed: number; avgScore: number; pct: number }>;
   testResults: { grammar?: number; tenses?: number; vocabulary?: number };
 };
 
@@ -42,9 +48,18 @@ type Props = {
   stats: ProgressStats;
   certificates: CertificateRecord[];
   isPro: boolean;
+  hadProBefore: boolean;
+  streak: number;
+  weekly: { day: string; label: string; count: number }[];
+  maxWeekly: number;
+  overallPct: number;
+  currentLevel: string | null;
+  recs: TopicRec[];
+  freezeCount: number;
+  canUseFreeze: boolean;
 };
 
-type Tab = "profile" | "security" | "progress";
+type Tab = "dashboard" | "profile" | "security";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -102,241 +117,6 @@ const LEVEL_COLORS: Record<string, { bar: string; text: string; bg: string; badg
   c1: { bar: "bg-rose-500",    text: "text-rose-700",    bg: "bg-rose-50",    badge: "bg-rose-500"    },
 };
 
-// ── Catalogs for recommendations ──────────────────────────────────────────
-
-type TopicRec = {
-  slug: string; title: string; img: string; href: string;
-  level: string; badge: string; reason?: string;
-};
-
-// Level → best-fit tense recommendation
-const TENSES_BY_LEVEL: Record<string, { slug: string; title: string; img: string; href: string }> = {
-  a1: { slug: "present-simple",    title: "Present Simple",    img: "/topics/tenses/present-simple.jpg",    href: "/tenses/present-simple" },
-  a2: { slug: "past-simple",       title: "Past Simple",       img: "/topics/tenses/past-simple.jpg",       href: "/tenses/past-simple" },
-  b1: { slug: "present-perfect",   title: "Present Perfect",   img: "/topics/tenses/present-perfect.jpg",   href: "/tenses/present-perfect" },
-  b2: { slug: "past-perfect",      title: "Past Perfect",      img: "/topics/tenses/past-perfect.jpg",      href: "/tenses/past-perfect" },
-  c1: { slug: "future-perfect",    title: "Future Perfect",    img: "/topics/tenses/future-perfect.jpg",    href: "/tenses/future-perfect" },
-};
-
-const VOCAB_BY_LEVEL: Record<string, { href: string; title: string }> = {
-  a1: { href: "/vocabulary/a1", title: "A1 Vocabulary" },
-  a2: { href: "/vocabulary/a2", title: "A2 Vocabulary" },
-  b1: { href: "/vocabulary/b1", title: "B1 Vocabulary" },
-  b2: { href: "/vocabulary/b2", title: "B2 Vocabulary" },
-  c1: { href: "/vocabulary/c1", title: "C1 Vocabulary" },
-};
-
-const GRAMMAR_TOPICS: Record<string, Omit<TopicRec, "level" | "badge" | "reason">[]> = {
-  a1: [
-    { slug: "to-be-am-is-are",              title: "To Be: am / is / are",        img: "/topics/a1/to-be-am-is-are.jpg",                href: "/grammar/a1/to-be-am-is-are" },
-    { slug: "present-simple-i-you-we-they", title: "Present Simple I/You/We",     img: "/topics/a1/present-simple-i-you-we-they.jpg",   href: "/grammar/a1/present-simple-i-you-we-they" },
-    { slug: "articles-a-an",                title: "Articles: a / an",            img: "/topics/a1/articles-a-an.jpg",                  href: "/grammar/a1/articles-a-an" },
-    { slug: "plural-nouns",                 title: "Plural Nouns",                img: "/topics/a1/plural-nouns.jpg",                   href: "/grammar/a1/plural-nouns" },
-    { slug: "subject-pronouns",             title: "Subject Pronouns",            img: "/topics/a1/subject-pronouns.jpg",               href: "/grammar/a1/subject-pronouns" },
-    { slug: "there-is-there-are",           title: "There is / There are",        img: "/topics/a1/there-is-there-are.jpg",             href: "/grammar/a1/there-is-there-are" },
-    { slug: "adverbs-frequency",            title: "Adverbs of Frequency",        img: "/topics/a1/adverbs-of-frequency.jpg",           href: "/grammar/a1/adverbs-frequency" },
-    { slug: "can-cant",                     title: "Can / Can't",                 img: "/topics/a1/can-cant.jpg",                       href: "/grammar/a1/can-cant" },
-    { slug: "wh-questions",                 title: "Wh- Questions",               img: "/topics/a1/wh-questions.jpg",                   href: "/grammar/a1/wh-questions" },
-    { slug: "some-any",                     title: "Some / Any",                  img: "/topics/a1/some-any.jpg",                       href: "/grammar/a1/some-any" },
-    { slug: "possessive-adjectives",        title: "Possessive Adjectives",       img: "/topics/a1/possessive-adjectives.jpg",          href: "/grammar/a1/possessive-adjectives" },
-    { slug: "present-simple-he-she-it",     title: "Present Simple He/She/It",    img: "/topics/a1/present-simple-he-she-it.jpg",       href: "/grammar/a1/present-simple-he-she-it" },
-    { slug: "this-that-these-those",        title: "This / That / These / Those", img: "/topics/a1/this-that-these-those.jpg",          href: "/grammar/a1/this-that-these-those" },
-    { slug: "prepositions-place",           title: "Prepositions of Place",       img: "/topics/a1/prepositions-of-place.jpg",          href: "/grammar/a1/prepositions-place" },
-    { slug: "countable-uncountable",        title: "Countable & Uncountable",     img: "/topics/a1/countable-uncountable.jpg",          href: "/grammar/a1/countable-uncountable" },
-    { slug: "have-has-got",                 title: "Have Got / Has Got",          img: "/topics/a1/have-has-got.jpg",                   href: "/grammar/a1/have-has-got" },
-    { slug: "much-many-basic",              title: "Much / Many",                 img: "/topics/a1/much-many.jpg",                      href: "/grammar/a1/much-many-basic" },
-    { slug: "prepositions-time-in-on-at",   title: "Prepositions of Time",        img: "/topics/a1/prepositions-of-time-in-on-at.jpg",  href: "/grammar/a1/prepositions-time-in-on-at" },
-    { slug: "present-simple-negative",      title: "Present Simple Negative",     img: "/topics/a1/present-simple-negative.jpg",        href: "/grammar/a1/present-simple-negative" },
-    { slug: "present-simple-questions",     title: "Present Simple Questions",    img: "/topics/a1/present-simple-questions.jpg",       href: "/grammar/a1/present-simple-questions" },
-  ],
-  a2: [
-    { slug: "past-simple-regular",              title: "Past Simple (Regular)",       img: "/topics/a2/past-simple-regular.jpg",            href: "/grammar/a2/past-simple-regular" },
-    { slug: "past-simple-irregular",            title: "Past Simple (Irregular)",     img: "/topics/a2/past-simple-irregular.jpg",          href: "/grammar/a2/past-simple-irregular" },
-    { slug: "present-continuous",               title: "Present Continuous",          img: "/topics/a2/present-continuous.jpg",             href: "/grammar/a2/present-continuous" },
-    { slug: "comparative-adjectives",           title: "Comparative Adjectives",      img: "/topics/a2/comparative-adjectives.jpg",         href: "/grammar/a2/comparative-adjectives" },
-    { slug: "superlative-adjectives",           title: "Superlative Adjectives",      img: "/topics/a2/superlative-adjectives.jpg",         href: "/grammar/a2/superlative-adjectives" },
-    { slug: "going-to",                         title: "Going To",                    img: "/topics/a2/going-to.jpg",                       href: "/grammar/a2/going-to" },
-    { slug: "will-future",                      title: "Will / Future",               img: "/topics/a2/will-future.jpg",                    href: "/grammar/a2/will-future" },
-    { slug: "articles-the",                     title: "Article: The",                img: "/topics/a2/articles-the.jpg",                   href: "/grammar/a2/articles-the" },
-    { slug: "conjunctions",                     title: "Conjunctions",                img: "/topics/a2/conjunctions.jpg",                   href: "/grammar/a2/conjunctions" },
-    { slug: "have-to",                          title: "Have To / Don't Have To",     img: "/topics/a2/have-to.jpg",                        href: "/grammar/a2/have-to" },
-    { slug: "past-simple-negative-questions",   title: "Past Simple Q & Neg.",        img: "/topics/a2/past-simple-negative-questions.jpg", href: "/grammar/a2/past-simple-negative-questions" },
-    { slug: "adverbs-manner",                   title: "Adverbs of Manner",           img: "/topics/a2/adverbs-manner.jpg",                 href: "/grammar/a2/adverbs-manner" },
-    { slug: "object-pronouns",                  title: "Object Pronouns",             img: "/topics/a2/object-pronouns.jpg",                href: "/grammar/a2/object-pronouns" },
-    { slug: "possessive-pronouns",              title: "Possessive Pronouns",         img: "/topics/a2/possessive-pronouns.jpg",            href: "/grammar/a2/possessive-pronouns" },
-    { slug: "prepositions-movement",            title: "Prepositions of Movement",    img: "/topics/a2/prepositions-movement.jpg",          href: "/grammar/a2/prepositions-movement" },
-    { slug: "present-perfect-intro",            title: "Present Perfect Intro",       img: "/topics/a2/present-perfect-intro.jpg",          href: "/grammar/a2/present-perfect-intro" },
-    { slug: "should-shouldnt",                  title: "Should / Shouldn't",          img: "/topics/a2/should-shouldnt.jpg",                href: "/grammar/a2/should-shouldnt" },
-    { slug: "time-expressions-past",            title: "Time Expressions (Past)",     img: "/topics/a2/time-expressions-past.jpg",          href: "/grammar/a2/time-expressions-past" },
-    { slug: "verb-infinitive",                  title: "Verb + Infinitive",           img: "/topics/a2/verb-infinitive.jpg",                href: "/grammar/a2/verb-infinitive" },
-    { slug: "verb-ing",                         title: "Verb + -ing",                 img: "/topics/a2/verb-ing.jpg",                       href: "/grammar/a2/verb-ing" },
-  ],
-  b1: [
-    { slug: "all-conditionals",             title: "All Conditionals",             img: "/topics/b1/all-conditionals.jpg",              href: "/grammar/b1/all-conditionals" },
-    { slug: "as-as-comparison",             title: "As ... As Comparison",         img: "/topics/b1/as-as-comparison.jpg",              href: "/grammar/b1/as-as-comparison" },
-    { slug: "modal-deduction",              title: "Modal Verbs: Deduction",       img: "/topics/b1/modal-deduction.jpg",               href: "/grammar/b1/modal-deduction" },
-    { slug: "modal-possibility",            title: "Modal Verbs: Possibility",     img: "/topics/b1/modal-possibility.jpg",             href: "/grammar/b1/modal-possibility" },
-    { slug: "passive-past",                 title: "Passive (Past)",               img: "/topics/b1/passive-past.jpg",                  href: "/grammar/b1/passive-past" },
-    { slug: "passive-present",              title: "Passive (Present)",            img: "/topics/b1/passive-present.jpg",               href: "/grammar/b1/passive-present" },
-    { slug: "past-continuous",              title: "Past Continuous",              img: "/topics/b1/past-continuous.jpg",               href: "/grammar/b1/past-continuous" },
-    { slug: "past-perfect",                 title: "Past Perfect",                 img: "/topics/b1/past-perfect.jpg",                  href: "/grammar/b1/past-perfect" },
-    { slug: "phrasal-verbs",                title: "Phrasal Verbs",                img: "/topics/b1/phrasal-verbs.jpg",                 href: "/grammar/b1/phrasal-verbs" },
-    { slug: "present-perfect-continuous",   title: "Present Perfect Continuous",   img: "/topics/b1/present-perfect-continuous.jpg",   href: "/grammar/b1/present-perfect-continuous" },
-    { slug: "relative-clauses-defining",    title: "Relative Clauses (Def.)",      img: "/topics/b1/relative-clauses-defining.jpg",     href: "/grammar/b1/relative-clauses-defining" },
-    { slug: "relative-clauses-non-defining",title: "Relative Clauses (Non-def.)",  img: "/topics/b1/relative-clauses-non-defining.jpg", href: "/grammar/b1/relative-clauses-non-defining" },
-    { slug: "reported-questions",           title: "Reported Questions",           img: "/topics/b1/reported-questions.jpg",            href: "/grammar/b1/reported-questions" },
-    { slug: "reported-statements",          title: "Reported Statements",          img: "/topics/b1/reported-statements.jpg",           href: "/grammar/b1/reported-statements" },
-    { slug: "second-conditional",           title: "Second Conditional",           img: "/topics/b1/second-conditional.jpg",            href: "/grammar/b1/second-conditional" },
-    { slug: "so-such",                      title: "So / Such",                    img: "/topics/b1/so-such.jpg",                       href: "/grammar/b1/so-such" },
-    { slug: "too-enough",                   title: "Too / Enough",                 img: "/topics/b1/too-enough.jpg",                    href: "/grammar/b1/too-enough" },
-    { slug: "used-to",                      title: "Used To",                      img: "/topics/b1/used-to.jpg",                       href: "/grammar/b1/used-to" },
-    { slug: "wish-past",                    title: "Wish (Past)",                  img: "/topics/b1/wish-past.jpg",                     href: "/grammar/b1/wish-past" },
-    { slug: "would-past-habits",            title: "Would (Past Habits)",          img: "/topics/b1/would-past-habits.jpg",             href: "/grammar/b1/would-past-habits" },
-    { slug: "zero-first-conditional",       title: "Zero & First Conditional",     img: "/topics/b1/zero-first-conditional.jpg",        href: "/grammar/b1/zero-first-conditional" },
-  ],
-  b2: [
-    { slug: "all-conditionals-b2",       title: "All Conditionals (B2)",       img: "/topics/b2/all-conditionals-b2.jpg",         href: "/grammar/b2/all-conditionals-b2" },
-    { slug: "causative",                 title: "Causative Have/Get",           img: "/topics/b2/causative.jpg",                   href: "/grammar/b2/causative" },
-    { slug: "cleft-sentences",           title: "Cleft Sentences",              img: "/topics/b2/cleft-sentences.jpg",             href: "/grammar/b2/cleft-sentences" },
-    { slug: "future-continuous",         title: "Future Continuous",            img: "/topics/b2/future-continuous.jpg",           href: "/grammar/b2/future-continuous" },
-    { slug: "future-perfect",            title: "Future Perfect",               img: "/topics/b2/future-perfect.jpg",              href: "/grammar/b2/future-perfect" },
-    { slug: "gerunds-infinitives",       title: "Gerunds & Infinitives",        img: "/topics/b2/gerunds-infinitives.jpg",         href: "/grammar/b2/gerunds-infinitives" },
-    { slug: "inversion",                 title: "Inversion",                    img: "/topics/b2/inversion.jpg",                   href: "/grammar/b2/inversion" },
-    { slug: "linking-words",             title: "Linking Words",                img: "/topics/b2/linking-words.jpg",               href: "/grammar/b2/linking-words" },
-    { slug: "mixed-conditionals",        title: "Mixed Conditionals",           img: "/topics/b2/mixed-conditionals.jpg",          href: "/grammar/b2/mixed-conditionals" },
-    { slug: "modal-perfect",             title: "Modal Perfect",                img: "/topics/b2/modal-perfect.jpg",               href: "/grammar/b2/modal-perfect" },
-    { slug: "participle-clauses",        title: "Participle Clauses",           img: "/topics/b2/participle-clauses.jpg",          href: "/grammar/b2/participle-clauses" },
-    { slug: "passive-advanced",          title: "Passive (Advanced)",           img: "/topics/b2/passive-advanced.jpg",            href: "/grammar/b2/passive-advanced" },
-    { slug: "past-perfect-continuous",   title: "Past Perfect Continuous",      img: "/topics/b2/past-perfect-continuous.jpg",     href: "/grammar/b2/past-perfect-continuous" },
-    { slug: "quantifiers-advanced",      title: "Quantifiers (Advanced)",       img: "/topics/b2/quantifiers-advanced.jpg",        href: "/grammar/b2/quantifiers-advanced" },
-    { slug: "relative-clauses-advanced", title: "Relative Clauses (Adv.)",      img: "/topics/b2/relative-clauses-advanced.jpg",   href: "/grammar/b2/relative-clauses-advanced" },
-    { slug: "reported-speech-advanced",  title: "Reported Speech (Adv.)",       img: "/topics/b2/reported-speech-advanced.jpg",    href: "/grammar/b2/reported-speech-advanced" },
-    { slug: "third-conditional",         title: "Third Conditional",            img: "/topics/b2/third-conditional.jpg",           href: "/grammar/b2/third-conditional" },
-    { slug: "wish-would",                title: "Wish + Would",                 img: "/topics/b2/wish-would.jpg",                  href: "/grammar/b2/wish-would" },
-  ],
-  c1: [
-    { slug: "advanced-discourse-markers",  title: "Discourse Markers",          img: "/topics/c1/advanced-discourse-markers.jpg",  href: "/grammar/c1/advanced-discourse-markers" },
-    { slug: "advanced-inversion",          title: "Inversion (Advanced)",        img: "/topics/c1/advanced-inversion.jpg",          href: "/grammar/c1/advanced-inversion" },
-    { slug: "advanced-modals",             title: "Advanced Modals",             img: "/topics/c1/advanced-modals.jpg",             href: "/grammar/c1/advanced-modals" },
-    { slug: "advanced-participle-clauses", title: "Participle Clauses (Adv.)",   img: "/topics/c1/advanced-participle-clauses.jpg", href: "/grammar/c1/advanced-participle-clauses" },
-    { slug: "advanced-relative-clauses",   title: "Relative Clauses (Adv.)",     img: "/topics/c1/advanced-relative-clauses.jpg",   href: "/grammar/c1/advanced-relative-clauses" },
-    { slug: "complex-noun-phrases",        title: "Complex Noun Phrases",        img: "/topics/c1/complex-noun-phrases.jpg",        href: "/grammar/c1/complex-noun-phrases" },
-    { slug: "complex-passives",            title: "Complex Passives",            img: "/topics/c1/complex-passives.jpg",            href: "/grammar/c1/complex-passives" },
-    { slug: "concession-contrast",         title: "Concession & Contrast",       img: "/topics/c1/concession-contrast.jpg",         href: "/grammar/c1/concession-contrast" },
-    { slug: "ellipsis-substitution",       title: "Ellipsis & Substitution",     img: "/topics/c1/ellipsis-substitution.jpg",       href: "/grammar/c1/ellipsis-substitution" },
-    { slug: "extraposition",               title: "Extraposition",               img: "/topics/c1/extraposition.jpg",               href: "/grammar/c1/extraposition" },
-    { slug: "fronting-emphasis",           title: "Fronting & Emphasis",         img: "/topics/c1/fronting-emphasis.jpg",           href: "/grammar/c1/fronting-emphasis" },
-    { slug: "hedging-language",            title: "Hedging Language",            img: "/topics/c1/hedging-language.jpg",            href: "/grammar/c1/hedging-language" },
-    { slug: "inverted-conditionals",       title: "Inverted Conditionals",       img: "/topics/c1/inverted-conditionals.jpg",       href: "/grammar/c1/inverted-conditionals" },
-    { slug: "nominalisation",              title: "Nominalisation",              img: "/topics/c1/nominalisation.jpg",              href: "/grammar/c1/nominalisation" },
-    { slug: "passive-infinitives",         title: "Passive Infinitives",         img: "/topics/c1/passive-infinitives.jpg",         href: "/grammar/c1/passive-infinitives" },
-    { slug: "reported-speech-c1",          title: "Reported Speech (C1)",        img: "/topics/c1/reported-speech-c1.jpg",          href: "/grammar/c1/reported-speech-c1" },
-    { slug: "subjunctive",                 title: "Subjunctive",                 img: "/topics/c1/subjunctive.jpg",                 href: "/grammar/c1/subjunctive" },
-    { slug: "word-formation",              title: "Word Formation",              img: "/topics/c1/word-formation.jpg",              href: "/grammar/c1/word-formation" },
-  ],
-};
-
-const LEVELS = ["a1", "a2", "b1", "b2", "c1"] as const;
-type Level = typeof LEVELS[number];
-
-const NEXT_LEVEL: Record<string, Level> = { a1: "a2", a2: "b1", b1: "b2", b2: "c1", c1: "c1" };
-
-/** Map a test score (0–100) to an approximate CEFR level */
-function scoreToLevel(score: number): Level {
-  if (score >= 90) return "c1";
-  if (score >= 75) return "b2";
-  if (score >= 60) return "b1";
-  if (score >= 40) return "a2";
-  return "a1";
-}
-
-/** Grammar focus level: first incomplete level based on exercise progress */
-function grammarFocusLevel(stats: ProgressStats): Level {
-  if (stats.totalCompleted === 0) return "a1";
-  for (const lvl of LEVELS) {
-    if ((stats.byLevel[lvl]?.completed ?? 0) < LEVEL_TOTALS[lvl]) return lvl;
-  }
-  return "c1";
-}
-
-function getRecommendations(stats: ProgressStats): TopicRec[] {
-  const recs: TopicRec[] = [];
-  const recentSlugs = new Set(stats.recentActivity.map((a) => a.slug));
-  const { grammar: grammarScore, tenses: tensesScore, vocabulary: vocabScore } = stats.testResults;
-
-  // ── 1. TENSES rec ────────────────────────────────────────────────────────
-  // Level = based on tenses test score; if low → practise that level,
-  // if high (≥70%) → challenge next level up
-  if (tensesScore !== undefined) {
-    const baseLevel = scoreToLevel(tensesScore);
-    const targetLevel = tensesScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
-    const tense = TENSES_BY_LEVEL[targetLevel] ?? TENSES_BY_LEVEL.a2;
-    recs.push({
-      slug: tense.slug,
-      title: tense.title,
-      img: tense.img,
-      href: tense.href,
-      level: targetLevel.toUpperCase(),
-      badge: "bg-violet-500",
-      reason: tensesScore < 70
-        ? `Tenses test: ${tensesScore}% — let's strengthen this level`
-        : `Tenses test: ${tensesScore}% — ready for the next step!`,
-    });
-  }
-
-  // ── 2. VOCABULARY rec ────────────────────────────────────────────────────
-  // Level = based on vocab test score; if high → go deeper at same or next level
-  if (vocabScore !== undefined) {
-    const baseLevel = scoreToLevel(vocabScore);
-    const targetLevel = vocabScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
-    const vocab = VOCAB_BY_LEVEL[targetLevel] ?? VOCAB_BY_LEVEL.a2;
-    recs.push({
-      slug: `vocabulary-${targetLevel}`,
-      title: vocab.title,
-      img: `/topics/vocabulary-${targetLevel}.jpg`,
-      href: vocab.href,
-      level: targetLevel.toUpperCase(),
-      badge: "bg-emerald-500",
-      reason: vocabScore < 70
-        ? `Vocabulary test: ${vocabScore}% — build your word bank here`
-        : `Vocabulary test: ${vocabScore}% — explore this level next`,
-    });
-  }
-
-  // ── 3. GRAMMAR recs: fill remaining slots (up to 3 total) ────────────────
-  // If grammar test taken → use its score to pick level; else use exercise progress
-  let grammarLevel: Level;
-  let grammarReason: string | undefined;
-
-  if (grammarScore !== undefined) {
-    const baseLevel = scoreToLevel(grammarScore);
-    grammarLevel = grammarScore >= 70 ? NEXT_LEVEL[baseLevel] : baseLevel;
-    grammarReason = grammarScore < 70
-      ? `Grammar test: ${grammarScore}% — focus on this level`
-      : `Grammar test: ${grammarScore}% — challenge yourself here`;
-  } else {
-    grammarLevel = grammarFocusLevel(stats);
-    grammarReason = undefined;
-  }
-
-  const topics = GRAMMAR_TOPICS[grammarLevel] ?? [];
-  const pool = topics.filter((t) => !recentSlugs.has(t.slug));
-  const source = pool.length > 0 ? pool : topics;
-  let isFirstGrammar = true;
-
-  for (const t of source) {
-    if (recs.length >= 3) break;
-    recs.push({
-      ...t,
-      level: grammarLevel.toUpperCase(),
-      badge: LEVEL_COLORS[grammarLevel]?.badge ?? "bg-slate-500",
-      reason: isFirstGrammar ? grammarReason : undefined,
-    });
-    isFirstGrammar = false;
-  }
-
-  return recs.slice(0, 3);
-}
 
 function scoreColor(score: number) {
   if (score >= 80) return "text-emerald-600";
@@ -360,8 +140,20 @@ const CERT_LEVEL_COLORS: Record<string, string> = {
   C1: "bg-rose-100 text-rose-800",
 };
 
+const BAND_LABEL_SHORT: Record<string, string> = {
+  A1: "Beginner", A2: "Elementary", B1: "Intermediate",
+  B2: "Upper-Intermediate", C1: "Advanced", C2: "Mastery",
+};
+
+const BAND_BG_HEX: Record<string, string> = {
+  A1: "#6ee7b7", A2: "#5eead4", B1: "#7dd3fc",
+  B2: "#c4b5fd", C1: "#fdba74", C2: "#fda4af",
+};
+
 function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete: () => void }) {
   const [downloading, setDownloading] = useState(false);
+
+  const isVocab = cert.scoreTotal >= 1000;
 
   async function reDownload() {
     setDownloading(true);
@@ -373,43 +165,84 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
       container.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:794px;height:562px;z-index:-1;";
 
       const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      const levelLabel = BAND_LABEL_SHORT[cert.level] ?? "";
 
-      container.innerHTML = `
-        <div id="cert-dl" style="width:794px;height:562px;background:#fff;position:relative;font-family:Georgia,'Times New Roman',serif;overflow:hidden;">
-          <div style="position:absolute;top:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
-          <div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
-          <div style="position:absolute;top:0;left:0;width:8px;bottom:0;background:#F5DA20;"></div>
-          <div style="position:absolute;top:0;right:0;width:8px;bottom:0;background:#F5DA20;"></div>
-          <div style="position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(0,0,0,0.08);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 60px;">
-            <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
-            <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Certificate of Achievement</p>
-            <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
-            <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
-            <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has successfully completed the English Grammar Placement Test</p>
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;">
-              <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
-                <span style="font-size:32px;font-weight:700;color:#0F0F12;line-height:1;">${cert.level}</span>
-                <span style="font-size:11px;font-weight:700;color:rgba(0,0,0,0.6);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">${{ A1:"Beginner",A2:"Elementary",B1:"Intermediate",B2:"Upper-Intermediate",C1:"Advanced" }[cert.level] ?? ""}</span>
+      if (isVocab) {
+        const accentColor = BAND_BG_HEX[cert.level] ?? "#F5DA20";
+        container.innerHTML = `
+          <div id="cert-dl" style="width:794px;height:562px;background:#fff;position:relative;font-family:Georgia,'Times New Roman',serif;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+            <div style="position:absolute;top:0;left:0;width:8px;bottom:0;background:#F5DA20;"></div>
+            <div style="position:absolute;top:0;right:0;width:8px;bottom:0;background:#F5DA20;"></div>
+            <div style="position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(0,0,0,0.08);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 60px;">
+              <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
+              <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Vocabulary Certificate</p>
+              <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
+              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
+              <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has demonstrated an estimated active vocabulary of</p>
+              <div style="display:flex;align-items:center;gap:20px;margin-bottom:22px;">
+                <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
+                  <span style="font-size:32px;font-weight:700;color:#0F0F12;line-height:1;">~${cert.scoreCorrect.toLocaleString()}</span>
+                  <span style="font-size:11px;font-weight:700;color:rgba(0,0,0,0.6);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">words</span>
+                </div>
+                <div style="width:1px;height:60px;background:rgba(0,0,0,0.1);"></div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                    <span style="display:inline-block;background:${accentColor};border-radius:6px;padding:2px 10px;font-size:22px;font-weight:700;color:#0F0F12;">${cert.level}</span>
+                    <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">level</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                    <span style="font-size:14px;font-weight:700;color:#0F0F12;">${levelLabel}</span>
+                    <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">proficiency</span>
+                  </div>
+                </div>
               </div>
-              <div style="width:1px;height:60px;background:rgba(0,0,0,0.1);"></div>
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="display:flex;flex-direction:column;align-items:flex-start;">
-                  <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scoreCorrect}/${cert.scoreTotal}</span>
-                  <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">correct answers</span>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-start;">
-                  <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scorePercent}%</span>
-                  <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">score</span>
-                </div>
+              <div style="width:120px;height:1px;background:rgba(0,0,0,0.12);margin-bottom:16px;"></div>
+              <div style="text-align:center;">
+                <p style="font-size:11px;color:rgba(0,0,0,0.35);margin-bottom:4px;margin-top:0;">${issuedDate}</p>
+                <p style="font-size:9px;color:rgba(0,0,0,0.2);margin-top:0;letter-spacing:0.5px;">englishnerd.cc · This is an informal assessment, not an official CEFR certificate.</p>
               </div>
             </div>
-            <div style="width:120px;height:1px;background:rgba(0,0,0,0.12);margin-bottom:16px;"></div>
-            <div style="text-align:center;">
-              <p style="font-size:11px;color:rgba(0,0,0,0.35);margin-bottom:4px;margin-top:0;">${issuedDate}</p>
-              <p style="font-size:9px;color:rgba(0,0,0,0.2);margin-top:0;letter-spacing:0.5px;">englishnerd.cc · This is an informal assessment, not an official CEFR certificate.</p>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div id="cert-dl" style="width:794px;height:562px;background:#fff;position:relative;font-family:Georgia,'Times New Roman',serif;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:#F5DA20;"></div>
+            <div style="position:absolute;top:0;left:0;width:8px;bottom:0;background:#F5DA20;"></div>
+            <div style="position:absolute;top:0;right:0;width:8px;bottom:0;background:#F5DA20;"></div>
+            <div style="position:absolute;top:28px;left:28px;right:28px;bottom:28px;border:1px solid rgba(0,0,0,0.08);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 60px;">
+              <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
+              <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Certificate of Achievement</p>
+              <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
+              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
+              <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has successfully completed the English Grammar Placement Test</p>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;">
+                <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
+                  <span style="font-size:32px;font-weight:700;color:#0F0F12;line-height:1;">${cert.level}</span>
+                  <span style="font-size:11px;font-weight:700;color:rgba(0,0,0,0.6);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">${levelLabel}</span>
+                </div>
+                <div style="width:1px;height:60px;background:rgba(0,0,0,0.1);"></div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                    <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scoreCorrect}/${cert.scoreTotal}</span>
+                    <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">correct answers</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                    <span style="font-size:22px;font-weight:700;color:#0F0F12;">${cert.scorePercent}%</span>
+                    <span style="font-size:10px;color:rgba(0,0,0,0.4);text-transform:uppercase;letter-spacing:1px;">score</span>
+                  </div>
+                </div>
+              </div>
+              <div style="width:120px;height:1px;background:rgba(0,0,0,0.12);margin-bottom:16px;"></div>
+              <div style="text-align:center;">
+                <p style="font-size:11px;color:rgba(0,0,0,0.35);margin-bottom:4px;margin-top:0;">${issuedDate}</p>
+                <p style="font-size:9px;color:rgba(0,0,0,0.2);margin-top:0;letter-spacing:0.5px;">englishnerd.cc · This is an informal assessment, not an official CEFR certificate.</p>
+              </div>
             </div>
-          </div>
-        </div>`;
+          </div>`;
+      }
 
       document.body.appendChild(container);
       const el = container.querySelector("#cert-dl") as HTMLElement;
@@ -419,7 +252,10 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       pdf.addImage(imgData, "PNG", 0, 0, 297, 210);
-      pdf.save(`EnglishNerd_Certificate_${cert.holderName.replace(/\s+/g, "_")}.pdf`);
+      const fileName = isVocab
+        ? `EnglishNerd_Vocabulary_${cert.holderName.replace(/\s+/g, "_")}.pdf`
+        : `EnglishNerd_Certificate_${cert.holderName.replace(/\s+/g, "_")}.pdf`;
+      pdf.save(fileName);
     } catch (e) {
       console.error(e);
     } finally {
@@ -432,13 +268,19 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5">
       {/* Level badge */}
-      <span className={`shrink-0 rounded-xl px-3 py-1.5 text-base font-black ${CERT_LEVEL_COLORS[cert.level] ?? "bg-slate-100 text-slate-700"}`}>
-        {cert.level}
-      </span>
+      <div className="shrink-0 flex flex-col items-center gap-0.5">
+        <span className={`rounded-xl px-3 py-1.5 text-base font-black ${CERT_LEVEL_COLORS[cert.level] ?? "bg-slate-100 text-slate-700"}`}>
+          {cert.level}
+        </span>
+        {isVocab && <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">vocab</span>}
+      </div>
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-slate-900 truncate">{cert.holderName}</p>
-        <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
+        {isVocab
+          ? <p className="text-xs text-slate-400">{issuedDate} · ~{cert.scoreCorrect.toLocaleString()} words</p>
+          : <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
+        }
       </div>
       {/* Download */}
       <button
@@ -469,11 +311,11 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro }: Props) {
+export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [tab, setTab] = useState<Tab>("progress");
+  const [tab, setTab] = useState<Tab>("dashboard");
 
   // Profile
   const [name, setName] = useState(fullName);
@@ -501,6 +343,38 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   // Delete account
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Promo code
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoMsg, setPromoMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  async function handlePromoRedeem(e: React.FormEvent) {
+    e.preventDefault();
+    if (!promoCode.trim() || promoLoading) return;
+    setPromoLoading(true);
+    setPromoMsg(null);
+    try {
+      const res = await fetch("/api/redeem-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode.trim() }),
+      });
+      const data = await res.json() as { ok: boolean; message?: string; error?: string };
+      if (data.ok) {
+        setPromoCode("");
+        setShowWelcome(true);
+      } else {
+        setPromoMsg({ type: "err", text: data.error ?? "Something went wrong." });
+      }
+    } catch (err) {
+      console.error("[promo] fetch error:", err);
+      setPromoMsg({ type: "err", text: "Could not reach the server. Please try again." });
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   // Certificates
   const [certList, setCertList] = useState(certificates);
@@ -543,8 +417,14 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault(); setProfileSaving(true); setProfileMsg(null);
+    const trimmed = name.trim();
+    if (containsProfanity(trimmed)) {
+      setProfileMsg({ type: "err", text: "This name is not allowed. Please choose a different one." });
+      setProfileSaving(false);
+      return;
+    }
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+    const { error } = await supabase.auth.updateUser({ data: { full_name: trimmed } });
     if (error) { setProfileMsg({ type: "err", text: error.message }); } else { setProfileMsg({ type: "ok", text: "Profile saved." }); router.refresh(); }
     setProfileSaving(false);
   }
@@ -594,10 +474,14 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const recs = getRecommendations(stats);
-
   return (
     <>
+    {/* ── PRO expired re-engagement modal ──────────────────────────────── */}
+    {!isPro && hadProBefore && <ProExpiredModal userKey={email} />}
+
+    {/* ── PRO welcome celebration modal ────────────────────────────────── */}
+    {showWelcome && <ProWelcomeModal onClose={() => { setShowWelcome(false); router.refresh(); }} />}
+
     {/* ── Delete certificate confirmation modal ────────────────────────── */}
     {deleteCertId && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -702,43 +586,57 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
         {/* Breadcrumb */}
-        <div className="mb-5 flex items-center gap-1.5 text-xs text-slate-400">
-          <a href="/" className="hover:text-slate-600 transition">Home</a>
-          <span>/</span>
-          <span className="text-slate-600">Account</span>
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <a href="/" className="hover:text-slate-600 transition">Home</a>
+            <span>/</span>
+            <span className="text-slate-600">My Account</span>
+          </div>
         </div>
 
         {/* ── 3-column grid ─────────────────────────────────────────── */}
-        <div className="grid xl:grid-cols-[220px_1fr_256px] gap-5 items-start">
+        <div className={`grid gap-5 ${isPro ? "xl:grid-cols-[1fr_256px]" : "xl:grid-cols-[220px_1fr_256px]"}`}>
 
           {/* ══ LEFT: AdSense ══ */}
-          <aside className="hidden xl:block">
-            <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-3.5">
-              <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-300">Advertisement</p>
-              <div className="flex h-[600px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-xs text-slate-300">
-                300 × 600
-              </div>
-            </div>
-          </aside>
+          <AdUnit variant="sidebar-account" />
 
           {/* ══ CENTER ══ */}
           <div className="min-w-0 space-y-4">
 
         {/* ── Profile header card ─────────────────────────────────────── */}
         <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
-          {/* Top accent strip */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-300 to-[#F5DA20]" />
+          {/* Top accent strip / PRO banner */}
+          {isPro ? (
+            <div className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
+              <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+              </svg>
+              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-900">PRO Member</span>
+              <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+              </svg>
+            </div>
+          ) : (
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-300 to-[#F5DA20]" />
+          )}
           <div className="flex items-center gap-4 px-5 py-5 sm:gap-6 sm:px-7">
 
             {/* Avatar */}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <div className="shrink-0 h-16 w-16 sm:h-[76px] sm:w-[76px] overflow-hidden rounded-full ring-4 ring-[#F5DA20]/30 shadow-md">
+            <div className={`relative shrink-0 h-16 w-16 sm:h-[76px] sm:w-[76px] overflow-hidden rounded-full shadow-md ${isPro ? "ring-4 ring-[#F5DA20] pro-avatar-ring" : "ring-4 ring-[#F5DA20]/30"}`}>
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
                   {userInitials}
                 </div>
+              )}
+              {isPro && (
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-[#F5DA20] to-amber-500 ring-2 ring-white shadow-sm">
+                  <svg aria-hidden="true" className="h-3 w-3 text-amber-900" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+                  </svg>
+                </span>
               )}
             </div>
 
@@ -753,14 +651,16 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
                 </span>
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[#F5DA20]/40 bg-[#F5DA20]/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
-                    ⚡ Pro
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900 shadow-sm">
+                    <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+                    </svg>
+                    PRO
                   </span>
                 ) : (
                   <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Free plan</span>
                 )}
-                <span className="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-400">Member since {memberSince(createdAt)}</span>
-                {isOAuth && <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">Google</span>}
+{isOAuth && <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">Google</span>}
               </div>
             </div>
 
@@ -781,9 +681,9 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         {/* ── Tabs ──────────────────────────────────────────────────── */}
         <div className="mt-8 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/[0.04]">
           {([
-            { key: "profile"  as const, label: "Profile",  icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" },
-            { key: "progress" as const, label: "Progress", icon: "M3 3v18h18M18 9l-5 5-4-4-4 4" },
-            { key: "security" as const, label: "Security", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" },
+            { key: "dashboard" as const, label: "Dashboard", icon: "M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z" },
+            { key: "profile"   as const, label: "Profile",   icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" },
+            { key: "security"  as const, label: "Security",  icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" },
           ]).map((t) => (
             <button
               key={t.key}
@@ -800,8 +700,78 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           ))}
         </div>
 
+        {/* ══════════════ DASHBOARD TAB ══════════════ */}
+        {tab === "dashboard" && (
+          <div className="space-y-4">
+          <DashboardTab
+            streak={streak}
+            totalCompleted={stats.totalCompleted}
+            avgScore={stats.avgScore ?? 0}
+            topicsMastered={stats.topicsMastered}
+            overallPct={overallPct}
+            currentLevel={currentLevel}
+            byLevel={stats.byLevel}
+            weekly={weekly}
+            maxWeekly={maxWeekly}
+            recentActivity={stats.recentActivity.map((r) => ({
+              category: r.category,
+              level: r.level,
+              slug: r.slug,
+              score: r.score,
+              completed_at: r.completed_at,
+            }))}
+            isPro={isPro}
+            recs={recs}
+            freezeCount={freezeCount}
+            canUseFreeze={canUseFreeze}
+          />
+
+          {/* ── Certificates ────────────────────────────────────────── */}
+          <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">My Certificates</p>
+                <p className="mt-0.5 text-xs text-slate-400">Download or delete your saved certificates</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a href="/tests/grammar" className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-800">
+                  Grammar test →
+                </a>
+                <a href="/tests/vocabulary" className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-800">
+                  Vocabulary test →
+                </a>
+              </div>
+            </div>
+
+            {certList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 mb-3">
+                  <svg className="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="4"/><path d="M8 8v4l-3 7h14l-3-7V8"/><path d="M9 21h6"/>
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-slate-500">No certificates yet</p>
+                <p className="mt-1 text-xs text-slate-400">Complete a grammar or vocabulary test and download your certificate.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {certList.map((cert) => (
+                  <CertificateRow
+                    key={cert.id}
+                    cert={cert}
+                    onDelete={() => setDeleteCertId(cert.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          </div>
+        )}
+
         {/* ══════════════ PROFILE TAB ══════════════ */}
         {tab === "profile" && (
+          <div className="space-y-4">
           <form onSubmit={handleProfileSave} className="space-y-4">
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
               <p className="mb-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Profile information</p>
@@ -858,144 +828,61 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               {profileSaving ? <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Saving…</> : "Save changes"}
             </button>
           </form>
-        )}
 
-        {/* ══════════════ PROGRESS TAB ══════════════ */}
-        {tab === "progress" && (
-          <div className="space-y-4">
-
-            {stats.totalCompleted === 0 ? (
-              /* ── Empty state ── */
-              <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-10 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F5DA20]/15 text-3xl">📊</div>
-                <h2 className="text-lg font-black text-slate-900">No activity yet</h2>
-                <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto">
-                  Complete exercises and tests to see your progress, scores, and learning stats here.
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <a href="/grammar/a1" className="rounded-xl bg-[#F5DA20] px-5 py-2.5 text-sm font-black text-black transition hover:opacity-90">Start Grammar A1</a>
-                  <a href="/tenses" className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50">Explore Tenses</a>
-                </div>
+          {/* ── Promo Code ─────────────────────────────────────────────── */}
+          <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4 sm:px-7">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F5DA20] to-amber-400 shadow-sm">
+                <svg aria-hidden="true" className="h-4 w-4 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
               </div>
-            ) : (
-              <>
-                {/* ── 4 stat cards ── */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[
-                    { label: "Exercises done",    value: stats.totalCompleted,             suffix: "",  icon: "✅", color: "text-slate-900" },
-                    { label: "Average score",     value: stats.avgScore ?? 0,              suffix: "%", icon: "📈", color: scoreColor(stats.avgScore ?? 0) },
-                    { label: "Topics mastered",   value: stats.topicsMastered,             suffix: "",  icon: "🏆", color: "text-amber-600" },
-                    { label: "Levels active",     value: Object.values(stats.byLevel).filter(l => l.completed > 0).length, suffix: "/5", icon: "🎯", color: "text-violet-600" },
-                  ].map(({ label, value, suffix, icon, color }) => (
-                    <div key={label} className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] p-4">
-                      <div className="text-lg mb-1">{icon}</div>
-                      <div className={`text-2xl font-black ${color}`}>{value}{suffix}</div>
-                      <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</div>
-                    </div>
-                  ))}
+              <div>
+                <p className="text-sm font-black text-slate-900">Promo Code</p>
+                <p className="text-xs text-slate-400">Activate PRO for free with a valid code</p>
+              </div>
+              {isPro && (
+                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900">
+                  <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
+                  PRO Active
+                </span>
+              )}
+            </div>
+            <form onSubmit={handlePromoRedeem} className="p-6 sm:p-7">
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoMsg(null); }}
+                  placeholder="e.g. YKO-STAR"
+                  autoComplete="off"
+                  spellCheck={false}
+                  maxLength={20}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm uppercase text-slate-900 placeholder-slate-300 shadow-sm outline-none transition focus:border-[#F5DA20] focus:ring-2 focus:ring-[#F5DA20]/25"
+                />
+                <button
+                  type="submit"
+                  disabled={promoLoading || !promoCode.trim()}
+                  className="shrink-0 flex items-center gap-2 rounded-xl bg-[#F5DA20] px-5 py-3 text-sm font-black text-black shadow-sm transition hover:opacity-90 disabled:opacity-40"
+                >
+                  {promoLoading
+                    ? <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                    : "Activate"
+                  }
+                </button>
+              </div>
+              {promoMsg && (
+                <div className={`mt-3 flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm font-semibold ${promoMsg.type === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>
+                  {promoMsg.type === "ok"
+                    ? <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    : <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  }
+                  {promoMsg.text}
                 </div>
+              )}
+            </form>
+          </div>
 
-                {/* ── Progress by level + Recent activity ── */}
-                <div className="grid gap-4 sm:grid-cols-2">
-
-                  {/* By level */}
-                  <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-5">
-                    <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Grammar progress</p>
-                    <div className="space-y-3">
-                      {(["a1", "a2", "b1", "b2", "c1"] as const).map((lvl) => {
-                        const data = stats.byLevel[lvl] ?? { completed: 0, avgScore: 0 };
-                        const total = LEVEL_TOTALS[lvl];
-                        const pct = Math.min(100, Math.round((data.completed / total) * 100));
-                        const colors = LEVEL_COLORS[lvl];
-                        return (
-                          <a key={lvl} href={`/grammar/${lvl}`} className="block group">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition">{LEVEL_LABELS[lvl]}</span>
-                              <span className={`text-[10px] font-black ${data.completed > 0 ? colors.text : "text-slate-300"}`}>
-                                {data.completed}/{total}
-                              </span>
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                              <div
-                                className={`h-1.5 rounded-full transition-all duration-700 ${data.completed > 0 ? colors.bar : ""}`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Recent activity */}
-                  <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-5">
-                    <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Recent activity</p>
-                    {stats.recentActivity.length === 0 ? (
-                      <p className="text-sm text-slate-400">No activity yet.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {stats.recentActivity.map((item) => (
-                          <div key={item.id} className="flex items-center gap-3">
-                            {/* Score badge */}
-                            <span className={`shrink-0 rounded-lg border px-2 py-0.5 text-[11px] font-black tabular-nums ${scoreBg(item.score)}`}>
-                              {item.score}%
-                            </span>
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="text-xs font-semibold text-slate-800 truncate">
-                                {slugToTitle(item.slug)}
-                                {item.exercise_no != null && <span className="ml-1 text-slate-400">· Ex {item.exercise_no}</span>}
-                              </div>
-                              <div className="text-[10px] text-slate-400 capitalize">
-                                {item.category}{item.level ? ` · ${item.level.toUpperCase()}` : ""}
-                              </div>
-                            </div>
-                            {/* Time */}
-                            <span className="shrink-0 text-[10px] text-slate-300">{timeAgo(item.completed_at)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ── Best scores banner ── */}
-                {stats.recentActivity.some(a => a.score === 100) && (
-                  <div className="rounded-2xl bg-gradient-to-r from-[#F5DA20]/20 to-amber-50 border border-[#F5DA20]/40 px-5 py-4 flex items-center gap-3">
-                    <span className="text-2xl">🎉</span>
-                    <div>
-                      <p className="text-sm font-black text-slate-900">Perfect score!</p>
-                      <p className="text-xs text-slate-500">You got 100% on at least one exercise. Keep it up!</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Certificates ── */}
-                {certList.length > 0 && (
-                  <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-5">
-                    <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">My Certificates</p>
-                    <div className="space-y-3">
-                      {certList.map((cert) => (
-                        <CertificateRow key={cert.id} cert={cert} onDelete={() => setDeleteCertId(cert.id)} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Reset progress ── */}
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => setResetConfirm(true)}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-                  >
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.51"/>
-                    </svg>
-                    Reset all progress
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         )}
 
@@ -1146,7 +1033,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 </a>
               ))}
               <a
-                href="/grammar"
+                href="/nerd-zone"
                 className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
               >
                 Browse all topics

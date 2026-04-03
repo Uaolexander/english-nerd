@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Be Going To Exercises — Practice English Grammar | English Nerd",
@@ -174,7 +175,7 @@ export default function BeGoingToPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="am/is/are going to, plans, evidence predictions, and comparison with will" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/be-going-to" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/be-going-to" />
         </div>
       </div>
     </main>

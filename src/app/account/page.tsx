@@ -1,9 +1,54 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getIsPro } from "@/lib/getIsPro";
+import { getProStatus } from "@/lib/getProStatus";
+import { getRecommendations } from "@/lib/getRecommendations";
 import AccountClient from "./AccountClient";
 import type { ProgressStats, CertificateRecord } from "./AccountClient";
+
+const LEVEL_TOTALS: Record<string, number> = {
+  a1: 76, a2: 80, b1: 84, b2: 72, c1: 72,
+};
+const TOTAL_EXERCISES = Object.values(LEVEL_TOTALS).reduce((a, b) => a + b, 0);
+
+function computeStreak(dates: string[], freezeDates: string[] = []): number {
+  if (!dates.length && !freezeDates.length) return 0;
+  const days = Array.from(new Set([
+    ...dates.map((d) => d.slice(0, 10)),
+    ...freezeDates,
+  ])).sort().reverse();
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  if (days[0] !== today && days[0] !== yesterday) return 0;
+  let streak = 1;
+  for (let i = 1; i < days.length; i++) {
+    const diff = Math.round(
+      (new Date(days[i - 1]).getTime() - new Date(days[i]).getTime()) / 86_400_000
+    );
+    if (diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function weeklyActivity(dates: string[]): { day: string; label: string; count: number }[] {
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const result = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86_400_000);
+    const iso = d.toISOString().slice(0, 10);
+    result.push({ day: iso, label: dayNames[d.getDay()], count: dates.filter((x) => x.slice(0, 10) === iso).length });
+  }
+  return result;
+}
+
+function levelFromScore(score: number): string {
+  if (score >= 90) return "C1";
+  if (score >= 75) return "B2";
+  if (score >= 60) return "B1";
+  if (score >= 40) return "A2";
+  return "A1";
+}
 
 export const metadata: Metadata = {
   title: "My Account — English Nerd",
@@ -51,16 +96,16 @@ export default async function AccountPage() {
     completed_at: r.completed_at as string,
   }));
 
-  // By level stats
+  // By level stats (with pct for dashboard tab)
   const levelKeys = ["a1", "a2", "b1", "b2", "c1"] as const;
   const byLevel: ProgressStats["byLevel"] = {};
   for (const lvl of levelKeys) {
     const lvlRows = progress.filter((r) => r.level === lvl);
+    const completed = lvlRows.length;
     byLevel[lvl] = {
-      completed: lvlRows.length,
-      avgScore: lvlRows.length
-        ? Math.round(lvlRows.reduce((s, r) => s + r.score, 0) / lvlRows.length)
-        : 0,
+      completed,
+      avgScore: completed ? Math.round(lvlRows.reduce((s, r) => s + r.score, 0) / completed) : 0,
+      pct: Math.min(Math.round((completed / (LEVEL_TOTALS[lvl] ?? 1)) * 100), 100),
     };
   }
 
@@ -82,11 +127,54 @@ export default async function AccountPage() {
     testResults,
   };
 
-  // Pro status — source of truth is subscriptions table
-  console.log("[account/page] user.id:", user.id);
-  console.log("[account/page] user.email:", user.email);
-  const isPro = await getIsPro(supabase, user.id);
-  console.log("[account/page] isPro result:", isPro);
+  // Dashboard stats
+  const dates = progress.map((r) => r.completed_at as string);
+  const weekly = weeklyActivity(dates);
+  const maxWeekly = Math.max(...weekly.map((w) => w.count), 1);
+  const overallPct = Math.round((totalCompleted / TOTAL_EXERCISES) * 100);
+  const currentLevel: string | null =
+    testResults.grammar !== undefined ? levelFromScore(testResults.grammar) : null;
+
+  const recs = getRecommendations({
+    totalCompleted,
+    recentActivity: recentActivity.map((r) => ({ slug: r.slug })),
+    byLevel,
+    testResults,
+  });
+
+  // Pro status
+  const { isPro, hadProBefore } = await getProStatus(supabase, user.id);
+
+  // Streak freezes
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const monthlyLimit = isPro ? 7 : 2;
+  let freezeDates: string[] = [];
+  let freezeCount = 0;
+  let canUseFreeze = false;
+
+  const { data: freezeRows } = await supabase
+    .from("streak_freezes")
+    .select("protected_date")
+    .eq("user_id", user.id)
+    .order("protected_date", { ascending: false });
+  if (freezeRows) {
+    freezeDates = freezeRows.map((r) => r.protected_date as string);
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const usedThisMonth = freezeDates.filter((d) => d >= monthStart).length;
+    freezeCount = Math.max(0, monthlyLimit - usedThisMonth);
+  }
+  const yesterdayHasActivity = dates.some((d) => d.slice(0, 10) === yesterday);
+  const yesterdayHasFreeze = freezeDates.includes(yesterday);
+  // Freeze only makes sense if there's a real streak to protect:
+  // the day BEFORE yesterday must have activity or a freeze (so yesterday connects to it).
+  const dayBeforeYesterday = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+  const hasStreakToProtect =
+    dates.some((d) => d.slice(0, 10) === dayBeforeYesterday) ||
+    freezeDates.includes(dayBeforeYesterday);
+  canUseFreeze = !yesterdayHasActivity && !yesterdayHasFreeze && freezeCount > 0 && hasStreakToProtect;
+
+  const streak = computeStreak(dates, freezeDates);
 
   // Fetch certificates
   const { data: certRows } = await supabase
@@ -115,6 +203,15 @@ export default async function AccountPage() {
       stats={stats}
       certificates={certificates}
       isPro={isPro}
+      hadProBefore={hadProBefore}
+      streak={streak}
+      weekly={weekly}
+      maxWeekly={maxWeekly}
+      overallPct={overallPct}
+      currentLevel={currentLevel}
+      recs={recs}
+      freezeCount={freezeCount}
+      canUseFreeze={canUseFreeze}
     />
   );
 }

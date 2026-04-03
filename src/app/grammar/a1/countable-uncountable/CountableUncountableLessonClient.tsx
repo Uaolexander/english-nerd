@@ -1,8 +1,14 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Is 'apple' countable or uncountable?", options: ["uncountable","countable","both","neither"], answer: 1 },
+  { q: "Is 'water' countable or uncountable?", options: ["countable","uncountable","both","neither"], answer: 1 },
+  { q: "I need ___ information about the trip.", options: ["a","an","some","many"], answer: 2 },
+  { q: "There are ___ books on the table.", options: ["much","a little","some","a few → some"], answer: 2 },
+  { q: "There isn't ___ milk in the fridge.", options: ["many","a few","some","any"], answer: 3 },
+  { q: "We don't have ___ apples left.", options: ["much","any","a little","some"], answer: 1 },
+  { q: "Is 'bread' countable or uncountable?", options: ["countable","both","uncountable","neither"], answer: 2 },
+  { q: "I would like ___ coffee, please.", options: ["a","many","some","any"], answer: 2 },
+  { q: "She has ___ friends in this city.", options: ["much","a little","any","some"], answer: 3 },
+  { q: "Is 'chair' countable or uncountable?", options: ["uncountable","countable","both","neither"], answer: 1 },
+  { q: "There isn't ___ sugar in this tea.", options: ["many","a few","some","any"], answer: 3 },
+  { q: "Can I have ___ orange, please?", options: ["some","any","a","an"], answer: 3 },
+  { q: "Is 'rice' countable or uncountable?", options: ["countable","uncountable","both","neither"], answer: 1 },
+  { q: "I don't have ___ money today.", options: ["many","some","a few","any"], answer: 3 },
+  { q: "We need ___ eggs to make the cake.", options: ["much","any → some","some","a little"], answer: 2 },
+  { q: "Is 'homework' countable or uncountable?", options: ["countable","both","uncountable","neither"], answer: 2 },
+  { q: "Would you like ___ tea?", options: ["a","an","many","some"], answer: 3 },
+  { q: "She bought ___ new umbrella.", options: ["some","a","an","any"], answer: 2 },
+  { q: "Is 'advice' countable or uncountable?", options: ["countable","uncountable","both","neither"], answer: 1 },
+  { q: "There is ___ milk in the glass.", options: ["many","some","any → some","a few"], answer: 1 },
+];
 
 export default function CountableUncountableLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -338,6 +367,9 @@ export default function CountableUncountableLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
@@ -391,6 +423,97 @@ export default function CountableUncountableLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Countable & Uncountable",
+        subtitle: "Count nouns vs. mass nouns — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Countable: a/an, some, many, a few. Uncountable: some, much, a little (no a/an, no plural).",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose the correct word to complete the sentence.",
+            questions: [
+              "I need ___ information about the city before our trip.",
+              "Can I have ___ apple, please?",
+              "We don't have ___ bread left in the kitchen.",
+              "There are ___ students in the classroom today.",
+              "She drinks ___ water every morning to stay healthy.",
+              "I need ___ umbrella because it is raining outside.",
+              "There is ___ milk in the fridge — please buy more.",
+              "He gave me ___ good advice about my homework.",
+              "We have ___ chairs in the garden for the party.",
+              "Is there ___ sugar left in the jar?",
+            ],
+            hint: "a / an / some / any",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Medium",
+            instruction: "Choose the correct word: a, an, some, or any.",
+            questions: [
+              "There isn't ___ coffee in the cup — can you make more?",
+              "She wants to eat ___ orange for breakfast.",
+              "Do you have ___ money with you today?",
+              "I would like ___ rice with my meal, please.",
+              "There are ___ books on my desk that I need to read.",
+              "My mum makes ___ excellent apple pie every Sunday.",
+              "We don't need ___ more salt — it is already salty enough.",
+              "I can see ___ egg in the bowl on the table.",
+              "Is there ___ butter in the fridge for the toast?",
+              "He bought ___ new bag for his school trip.",
+            ],
+            hint: "a / an / some / any",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Hard",
+            instruction: "Choose much or many to complete the sentence.",
+            questions: [
+              "How ___ books do you have on your shelf?",
+              "How ___ milk is left in the bottle?",
+              "There are too ___ people in this room.",
+              "She doesn't eat ___ meat during the week.",
+              "How ___ money do you need for the trip?",
+              "There are ___ apples in the basket on the counter.",
+              "We don't have ___ time before the lesson starts.",
+              "How ___ sugar do you want in your tea?",
+              "There are too ___ chairs in this small room.",
+              "He doesn't drink ___ coffee in the evening.",
+            ],
+            hint: "much / many",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Harder",
+            instruction: "Write the missing word: a, an, some, or any.",
+            questions: [
+              "I would like ___ cup of tea, please.",
+              "There isn't ___ homework today, so students are very happy.",
+              "We have ___ eggs, so let's make an omelette for lunch.",
+              "She is reading ___ interesting book about history.",
+              "Do you have ___ information about the new school?",
+              "I need ___ umbrella because it is raining outside.",
+              "There isn't ___ water in my bottle — can I have some?",
+              "He gave me ___ advice that was very helpful.",
+              "We bought ___ new chairs for the living room.",
+              "Is there ___ orange juice in the fridge?",
+            ],
+            hint: "a / an / some / any",
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — a / an / some / any", answers: ["some","an","any","some","some","an","some","some","some","any"] },
+          { exercise: 2, subtitle: "Medium — a / an / some / any", answers: ["any","an","any","some","some","an","any","an","any","a"] },
+          { exercise: 3, subtitle: "Hard — much or many", answers: ["many","much","many","much","much","many","much","much","many","much"] },
+          { exercise: 4, subtitle: "Harder — a / an / some / any", answers: ["a","any","some","an","any","an","any","some","some","any"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -415,15 +538,17 @@ export default function CountableUncountableLessonClient() {
         Learn countable and uncountable nouns with easy A1 rules, clear examples, and graded exercises. Practise words like apples, bread, milk, rice, books, and water.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-countable-uncountable" subject="Countable & Uncountable" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
@@ -443,6 +568,8 @@ export default function CountableUncountableLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -661,14 +788,32 @@ export default function CountableUncountableLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

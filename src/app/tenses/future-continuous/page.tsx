@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Future Continuous Exercises — Practice English Grammar | English Nerd",
@@ -174,7 +175,7 @@ export default function FutureContinuousPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="will be + -ing structure, future moments, polite questions, and comparison with will" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/future-continuous" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/future-continuous" />
         </div>
       </div>
     </main>

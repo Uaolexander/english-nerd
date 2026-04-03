@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Future Simple (will) Exercises — Practice English Grammar | English Nerd",
@@ -174,7 +175,7 @@ export default function FutureSimplePage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="will/won't, predictions, promises, and comparison with going to" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/future-simple" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/future-simple" />
         </div>
       </div>
     </main>

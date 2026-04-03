@@ -3,6 +3,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -27,7 +34,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "How ___ apples are in the bowl?", options: ["much","many","few","lot"], answer: 1 },
+  { q: "How ___ milk is in the fridge?", options: ["many","much","some","lot"], answer: 1 },
+  { q: "There aren't ___ students today.", options: ["much","many","some","any"], answer: 1 },
+  { q: "We don't have ___ bread left.", options: ["many","much","few","some"], answer: 1 },
+  { q: "How ___ books do you have?", options: ["much","many","lot","few"], answer: 1 },
+  { q: "I don't drink ___ coffee.", options: ["many","much","lot","few"], answer: 1 },
+  { q: "How ___ money do you have?", options: ["many","much","lot","few"], answer: 1 },
+  { q: "There weren't ___ cars there.", options: ["much","many","lot","some"], answer: 1 },
+  { q: "How ___ time do we have?", options: ["many","much","lot","few"], answer: 1 },
+  { q: "How ___ languages do you speak?", options: ["much","many","lot","few"], answer: 1 },
+  { q: "There isn't ___ juice in the bottle.", options: ["many","much","few","lot"], answer: 1 },
+  { q: "We don't need ___ sugar.", options: ["many","much","lot","few"], answer: 1 },
+  { q: "How ___ emails did you get?", options: ["much","many","lot","some"], answer: 1 },
+  { q: "There isn't ___ food in the kitchen.", options: ["many","much","few","lot"], answer: 1 },
+  { q: "How ___ sleep did you get?", options: ["many","much","lot","some"], answer: 1 },
+  { q: "How ___ homework do you have?", options: ["many","much","lot","few"], answer: 1 },
+  { q: "We haven't got ___ cheese.", options: ["many","much","lot","few"], answer: 1 },
+  { q: "How ___ people live here?", options: ["much","many","lot","few"], answer: 1 },
+  { q: "I didn't spend ___ money.", options: ["many","much","lot","few"], answer: 1 },
+  { q: "How ___ water do you drink?", options: ["many","much","lot","few"], answer: 1 },
+];
+
 export default function ManyMuchLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -391,6 +423,96 @@ export default function ManyMuchLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Much / Many",
+        subtitle: "Countable & Uncountable Nouns — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Use MANY with countable plural nouns. Use MUCH with uncountable nouns. Both are common in questions and negatives.",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose much or many.",
+            questions: [
+              "How ___ apples are in the bowl?",
+              "How ___ milk is there in the fridge?",
+              "There aren't ___ students in class today.",
+              "We don't have ___ bread left.",
+              "How ___ books do you have?",
+              "I don't drink ___ coffee in the evening.",
+              "There are ___ chairs in the room.",
+              "How ___ water do you drink every day?",
+              "We didn't see ___ cars there.",
+              "There isn't ___ juice in the bottle.",
+            ],
+            hint: "much / many",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Easy",
+            instruction: "Choose much or many.",
+            questions: [
+              "How ___ homework do you usually get?",
+              "There are ___ pictures on the wall.",
+              "We don't need ___ sugar in this tea.",
+              "How ___ bananas do we need for the salad?",
+              "There isn't ___ time before the bus comes.",
+              "I don't know ___ people in this town.",
+              "How ___ money do you have with you?",
+              "There were not ___ mistakes in his test.",
+              "We haven't got ___ cheese in the fridge.",
+              "How ___ lessons do you have on Monday?",
+            ],
+            hint: "much / many",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Medium",
+            instruction: "Choose much or many.",
+            questions: [
+              "We don't have ___ information about the museum.",
+              "How ___ emails do you usually get in the morning?",
+              "There isn't ___ food in the kitchen.",
+              "There are ___ children in the park today.",
+              "I didn't spend ___ money in the shop.",
+              "How ___ countries would you like to visit?",
+              "How ___ sleep do you get with a lot of homework?",
+              "There weren't ___ buses after ten o'clock.",
+              "How ___ languages would you like to learn?",
+              "We need ___ water for the trip.",
+            ],
+            hint: "much / many",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Hard",
+            instruction: "Write much or many.",
+            questions: [
+              "How ___ time do we have before the lesson?",
+              "There are not ___ students in the library.",
+              "We haven't got ___ milk, so I'll buy some.",
+              "How ___ photos did you take on your trip?",
+              "I don't eat ___ chocolate — I prefer fruit.",
+              "There were ___ people at the concert.",
+              "How ___ homework do you usually have on Fridays?",
+              "We don't need ___ plates — only four people are coming.",
+              "There isn't ___ cheese left for the pizza.",
+              "How ___ languages would you like to learn?",
+            ],
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — much or many", answers: ["many","much","many","much","many","much","many","much","many","much"] },
+          { exercise: 2, subtitle: "Easy — much or many", answers: ["much","many","much","many","much","many","much","many","much","many"] },
+          { exercise: 3, subtitle: "Medium — much or many", answers: ["much","many","much","many","much","many","much","many","many","much"] },
+          { exercise: 4, subtitle: "Hard — write much or many", answers: ["much","many","much","many","much","many","much","many","much","many"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -415,15 +537,17 @@ export default function ManyMuchLessonClient() {
         Practise much and many with easy A1 grammar explanations and step-by-step exercises. Learn how to use much with uncountable nouns and many with countable plural nouns.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-much-many" subject="Much / Many" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
@@ -443,6 +567,8 @@ export default function ManyMuchLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -661,14 +787,32 @@ export default function ManyMuchLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

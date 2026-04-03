@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Future Perfect Continuous Exercises — Practice English Grammar | English Nerd",
@@ -174,7 +175,7 @@ export default function FuturePerfectContinuousPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup label="Related Topics" sublabel="will have been + -ing, duration, and comparisons with other future tenses" dotColor="bg-[#F5DA20]" exercises={RELATED} basePath="/tenses/future-perfect-continuous" />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/future-perfect-continuous" />
         </div>
       </div>
     </main>

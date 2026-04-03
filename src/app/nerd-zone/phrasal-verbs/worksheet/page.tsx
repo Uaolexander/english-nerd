@@ -137,7 +137,7 @@ export default async function WorksheetPage() {
 
           {/* Page footer */}
           <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-8 py-3">
-            <span className="text-[11px] text-slate-400">EnglishNerd.cc — Free for registered users</span>
+            <span className="text-[11px] text-slate-400">EnglishNerd.cc — Pro</span>
             <span className="text-[11px] text-slate-400">Page 1 of 2</span>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default async function WorksheetPage() {
 
           {/* Page footer */}
           <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-8 py-3">
-            <span className="text-[11px] text-slate-400">EnglishNerd.cc — Free for registered users</span>
+            <span className="text-[11px] text-slate-400">EnglishNerd.cc — Pro</span>
             <span className="text-[11px] text-slate-400">Page 2 of 2</span>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata = {
     title: "A1 Grammar Lessons & Exercises — English Nerd",
@@ -137,7 +139,11 @@ export const metadata = {
     },
   ];
   
-  export default function GrammarA1Page() {
+  export default async function GrammarA1Page() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const isPro = user ? await getIsPro(supabase, user.id) : false;
+
     return (
       <main className="relative min-h-screen bg-[#0E0F13] text-white">
         {/* Soft gradient background */}
@@ -195,19 +201,89 @@ export const metadata = {
             </div>
     
             {/* Layout: Left ad + content */}
-            <div className="mt-10 grid gap-8 lg:grid-cols-[320px_1fr]">
-              {/* Left ad placeholder */}
-              <aside className="hidden lg:block">
-                <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4 will-change-transform">
-                  <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                  <div className="mt-3 h-[600px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                    Ad
+            {!isPro ? (
+              <div className="mt-10 grid gap-8 lg:grid-cols-[320px_1fr]">
+                {/* Left ad placeholder */}
+                <aside className="hidden lg:block">
+                  <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4 will-change-transform">
+                    <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
+                    <div className="mt-3 h-[600px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
+                      Ad
+                    </div>
                   </div>
-                </div>
-              </aside>
-    
-              {/* Cards */}
-              <section>
+                </aside>
+
+                {/* Cards */}
+                <section>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
+                    {TOPICS_A1.map((t) => (
+                      <article
+                        key={t.slug}
+                        className="group relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"
+                      >
+                        {/* Image area */}
+                        <div className="relative aspect-square w-full overflow-hidden border-b border-white/10 bg-black/30">
+                          <ImageWithFallback
+                            src={t.image}
+                            alt={t.title}
+                            className="h-full w-full object-cover"
+                          />
+
+                          <div className="absolute top-3 right-3 rounded-full bg-[#F5DA20] px-3 py-1 text-xs font-black text-black shadow-lg">
+                            A1
+                          </div>
+                        </div>
+
+                        <div className="p-5">
+                          <h2 className="text-xl font-black leading-snug transition group-hover:text-white">
+                            {t.title}
+                          </h2>
+
+                          <p className="mt-2 text-sm text-white/70">{t.description}</p>
+
+                          <div className="mt-4 flex items-center justify-between">
+                            <a
+                              href={`/grammar/a1/${t.slug}`}
+                              className="absolute inset-0 z-10"
+                              aria-label={t.title}
+                            />
+
+                            <button
+                              className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
+                              type="button"
+                            >
+                              Start
+                            </button>
+
+                            <span className="relative z-20 text-xs text-white/45">A1</span>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+
+                  {/* Mobile ad placeholder */}
+                  <div className="mt-8 lg:hidden rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
+                    <div className="mt-3 h-[250px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
+                      Ad
+                    </div>
+                  </div>
+
+                  {/* More coming soon */}
+                  <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white/40">
+                      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white/60">More exercises coming soon</p>
+                      <p className="text-xs text-white/30 mt-0.5">New topics are added regularly — check back soon.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <section className="mt-10">
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
                   {TOPICS_A1.map((t) => (
                     <article
@@ -221,49 +297,52 @@ export const metadata = {
                           alt={t.title}
                           className="h-full w-full object-cover"
                         />
-    
+
                         <div className="absolute top-3 right-3 rounded-full bg-[#F5DA20] px-3 py-1 text-xs font-black text-black shadow-lg">
                           A1
                         </div>
                       </div>
-    
+
                       <div className="p-5">
                         <h2 className="text-xl font-black leading-snug transition group-hover:text-white">
                           {t.title}
                         </h2>
-    
+
                         <p className="mt-2 text-sm text-white/70">{t.description}</p>
-    
+
                         <div className="mt-4 flex items-center justify-between">
                           <a
                             href={`/grammar/a1/${t.slug}`}
                             className="absolute inset-0 z-10"
                             aria-label={t.title}
                           />
-    
+
                           <button
                             className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
                             type="button"
                           >
                             Start
                           </button>
-    
+
                           <span className="relative z-20 text-xs text-white/45">A1</span>
                         </div>
                       </div>
                     </article>
                   ))}
                 </div>
-    
-                {/* Mobile ad placeholder */}
-                <div className="mt-8 lg:hidden rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                  <div className="mt-3 h-[250px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                    Ad
+
+                {/* More coming soon */}
+                <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white/40">
+                    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white/60">More exercises coming soon</p>
+                    <p className="text-xs text-white/30 mt-0.5">New topics are added regularly — check back soon.</p>
                   </div>
                 </div>
               </section>
-            </div>
+            )}
           </div>
         </div>
       </main>

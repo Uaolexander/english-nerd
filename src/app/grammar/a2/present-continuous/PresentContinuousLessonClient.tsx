@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,7 +33,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I ___ TV right now.", options: ["am watching", "watch", "is watching", "are watching"], answer: 0 },
+  { q: "She ___ a book at the moment.", options: ["reads", "is reading", "are reading", "read"], answer: 1 },
+  { q: "They ___ football in the park.", options: ["is playing", "plays", "are playing", "play"], answer: 2 },
+  { q: "He ___ dinner right now.", options: ["is cooking", "are cooking", "cooks", "cook"], answer: 0 },
+  { q: "We ___ to music.", options: ["listens", "is listening", "are listening", "listen"], answer: 2 },
+  { q: "run → ___", options: ["runing", "running", "runnin", "runs"], answer: 1 },
+  { q: "make → ___", options: ["makeing", "makking", "making", "maked"], answer: 2 },
+  { q: "sit → ___", options: ["siting", "sitting", "sitin", "siting"], answer: 1 },
+  { q: "Is she ___? (dance)", options: ["dancing", "danceing", "dances", "dance"], answer: 0 },
+  { q: "write → ___", options: ["writeing", "writting", "writing", "writning"], answer: 2 },
+  { q: "___ you listening?", options: ["Is", "Am", "Are", "Do"], answer: 2 },
+  { q: "swim → ___", options: ["swiming", "swimmin", "swimming", "swims"], answer: 2 },
+  { q: "He ___ (not/work) today.", options: ["isn't working", "aren't working", "doesn't working", "not working"], answer: 0 },
+  { q: "What ___ she doing?", options: ["do", "are", "is", "am"], answer: 2 },
+  { q: "I ___ (not) feel well.", options: ["am not feeling", "not feeling", "isn't feeling", "aren't feeling"], answer: 0 },
+  { q: "begin → ___", options: ["begining", "beggining", "beginning", "beginig"], answer: 2 },
+  { q: "They ___ a house.", options: ["are building", "is building", "builds", "building"], answer: 0 },
+  { q: "She ___ (cry) again.", options: ["is crying", "are crying", "cries", "crying"], answer: 0 },
+  { q: "get → ___", options: ["geting", "getting", "gettin", "gets"], answer: 1 },
+  { q: "___ I doing this correctly?", options: ["Is", "Are", "Am", "Do"], answer: 2 },
+];
+
 export default function PresentContinuousLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -133,6 +165,117 @@ export default function PresentContinuousLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Present Continuous",
+        subtitle: "am / is / are + verb-ing — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Subject + am/is/are + verb-ing. Actions happening right now or temporary situations around the present.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct present continuous form.",
+            questions: [
+              "Look! The dog ___ in the garden. (is running / runs)",
+              "We ___ to your message right now. (are listening / is listening)",
+              "She ___ a nap on the sofa. (is having / are having)",
+              "I can't talk — I ___ dinner. (am cooking / is cooking)",
+              "They ___ a new school. (are building / is building)",
+              "He ___ on his phone in class! (is playing / are playing)",
+              "My sister ___ for her keys. (is looking / looking)",
+              "Look at her — she ___! (is crying / are crying)",
+              "We ___ a brilliant film right now. (are watching / watches)",
+              "The children ___. Please be quiet. (are sleeping / is sleeping)",
+            ],
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the correct -ing form of each verb.",
+            questions: [
+              "run → ___",
+              "make → ___",
+              "sit → ___",
+              "study → ___",
+              "swim → ___",
+              "write → ___",
+              "get → ___",
+              "dance → ___",
+              "put → ___",
+              "begin → ___",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Harder",
+            instruction: "Choose the correct present continuous form.",
+            questions: [
+              "___ she ___ to music right now? (Is she listening / Does she listen)",
+              "They ___ at us — how embarrassing! (are staring / is staring)",
+              "I ___ the dishes. I'll call you back. (am washing / is washing)",
+              "He ___ well today — I think he's tired. (is not working / not working)",
+              "___ you ___ anything tomorrow evening? (Are you doing / Do you do)",
+              "Look at the sky! It ___ darker every minute. (is getting / gets)",
+              "We ___ for the bus — it's very late. (are still waiting / still wait)",
+              "She ___ Spanish this year at evening classes. (is learning / are learning)",
+              "I ___ to music — I prefer silence when I work. (am not listening / don't listen)",
+              "What ___ he ___ with my pen?! (is he doing / does he do)",
+            ],
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Hardest",
+            instruction: "Write the correct present continuous form of the verb in brackets.",
+            questions: [
+              "She ___ (not/answer) her phone — maybe she's busy.",
+              "We ___ (plan) a surprise party for Emma.",
+              "He ___ (sit) next to the window at the back.",
+              "I ___ (not/feel) very well — I think I have a cold.",
+              "They ___ (argue) again — I can hear them through the wall.",
+              "The cat ___ (sleep) on my laptop keyboard again!",
+              "She ___ (write) her thesis at the moment.",
+              "Look — it ___ (snow)! This is the first snow this year!",
+              "I ___ (think) about your offer. Give me a few days.",
+              "Why ___ he ___ (smile) like that? What does he know?",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the correct form",
+            answers: ["is running", "are listening", "is having", "am cooking", "are building", "is playing", "is looking", "is crying", "are watching", "are sleeping"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write the -ing form",
+            answers: ["running", "making", "sitting", "studying", "swimming", "writing", "getting", "dancing", "putting", "beginning"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Harder — complete the sentence",
+            answers: ["Is she listening", "are staring", "am washing", "is not working", "Are you doing", "is getting", "are still waiting", "is learning", "am not listening", "is he doing"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Hardest — write the full form",
+            answers: ["isn't answering", "are planning", "is sitting", "am not feeling", "are arguing", "is sleeping", "is writing", "is snowing", "am thinking", "is he smiling"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
@@ -174,14 +317,15 @@ export default function PresentContinuousLessonClient() {
       </p>
 
       {/* Layout */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-present-continuous" subject="Present Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -189,6 +333,7 @@ export default function PresentContinuousLessonClient() {
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -314,13 +459,30 @@ export default function PresentContinuousLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       {/* Bottom navigation */}

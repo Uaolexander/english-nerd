@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -25,6 +32,29 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "There is ___ milk in the fridge.", options: ["some","any","a","the"], answer: 0 },
+  { q: "We don't have ___ bread at home.", options: ["some","any","the","an"], answer: 1 },
+  { q: "Would you like ___ sugar in your tea?", options: ["some","any","the","an"], answer: 0 },
+  { q: "Are there ___ students in the class?", options: ["some","any","the","an"], answer: 1 },
+  { q: "I bought ___ apples at the market.", options: ["some","any","a","the"], answer: 0 },
+  { q: "She doesn't know ___ people here.", options: ["some","any","the","an"], answer: 1 },
+  { q: "Can I have ___ water, please?", options: ["some","any","a","the"], answer: 0 },
+  { q: "There aren't ___ clean plates.", options: ["some","any","the","an"], answer: 1 },
+  { q: "We have ___ free time this evening.", options: ["some","any","a","the"], answer: 0 },
+  { q: "Do you have ___ questions?", options: ["some","any","the","an"], answer: 1 },
+  { q: "I need ___ help with this task.", options: ["some","any","a","the"], answer: 0 },
+  { q: "There isn't ___ juice left.", options: ["some","any","a","the"], answer: 1 },
+  { q: "Would you like ___ cake?", options: ["some","any","a","the"], answer: 0 },
+  { q: "Is there ___ homework today?", options: ["some","any","a","the"], answer: 1 },
+  { q: "I have ___ good ideas for us.", options: ["some","any","a","the"], answer: 0 },
+  { q: "He doesn't eat ___ vegetables.", options: ["some","any","a","the"], answer: 1 },
+  { q: "Could I have ___ more time, please?", options: ["some","any","a","the"], answer: 0 },
+  { q: "Did you buy ___ fruit at the shop?", options: ["some","any","a","the"], answer: 1 },
+  { q: "We still have ___ money left.", options: ["some","any","a","the"], answer: 0 },
+  { q: "Are there ___ buses after ten o'clock?", options: ["some","any","a","the"], answer: 1 },
+];
 
 export default function SomeAnyLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -327,6 +357,9 @@ export default function SomeAnyLessonClient() {
     };
   }, []);
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   // Store answers
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -365,6 +398,119 @@ export default function SomeAnyLessonClient() {
     const percent = total ? Math.round((correct / total) * 100) : 0;
     return { correct, total, percent };
   }, [checked, current, mcqAnswers, inputAnswers]);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Some / Any",
+        subtitle: "Some & Any in positive, negative and question sentences — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "Use SOME in positive sentences and offers. Use ANY in negative sentences and most questions.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose some or any.",
+            questions: [
+              "There is ___ milk in the fridge.",
+              "We don't have ___ bread at home.",
+              "Would you like ___ sugar in your coffee?",
+              "Are there ___ students in the classroom?",
+              "I bought ___ apples and bananas.",
+              "She doesn't know ___ people in this town.",
+              "Can I have ___ water, please?",
+              "There aren't ___ clean plates in the kitchen.",
+              "We have ___ free time this evening.",
+              "Do you have ___ questions?",
+            ],
+            hint: "some / any",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write some or any.",
+            questions: [
+              "There are ___ eggs on the table.",
+              "I can't find ___ information about that museum.",
+              "Would you like ___ cake?",
+              "Are there ___ shops near your house?",
+              "We need ___ cheese for the sandwiches.",
+              "There isn't ___ juice left in the bottle.",
+              "Can you give me ___ help with this homework?",
+              "My brother doesn't eat ___ vegetables.",
+              "I have ___ good friends at school.",
+              "Did you buy ___ fruit at the supermarket?",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose some or any.",
+            questions: [
+              "There are ___ lovely photos on the wall.",
+              "We haven't got ___ butter.",
+              "Could I have ___ more time, please?",
+              "Do you know ___ nice places to visit?",
+              "I need to buy ___ paper.",
+              "There aren't ___ buses after ten o'clock.",
+              "Would you like ___ sandwiches?",
+              "Is there ___ homework for tomorrow?",
+              "We still have ___ money left.",
+              "She doesn't want ___ coffee in the evening.",
+            ],
+            hint: "some / any",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write some or any.",
+            questions: [
+              "We bought ___ snacks for the journey.",
+              "There isn't ___ hot water.",
+              "Would you like ___ tea with lemon?",
+              "Do you have ___ brothers or sisters?",
+              "I have ___ ideas for our class project.",
+              "My dad doesn't drink ___ milk.",
+              "Can we have ___ more chairs here, please?",
+              "Are there ___ messages for me?",
+              "There is ___ soup in the pot.",
+              "We don't need ___ more food.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose some or any",
+            answers: ["some", "any", "some", "any", "some", "any", "some", "any", "some", "any"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — type some or any",
+            answers: ["some", "any", "some", "any", "some", "any", "some", "any", "some", "any"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — choose some or any",
+            answers: ["some", "any", "some", "any", "some", "any", "some", "any", "some", "any"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — complete the sentences",
+            answers: ["some", "any", "some", "any", "some", "any", "some", "any", "some", "any"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -405,17 +551,18 @@ export default function SomeAnyLessonClient() {
         Practice some and any with simple A1 sentences, clear rules, and easy exercises for positive sentences, negatives, and questions.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left ad/game + center content + right ad/recommendations */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-some-any" subject="Some / Any" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -437,6 +584,8 @@ export default function SomeAnyLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -658,16 +807,42 @@ export default function SomeAnyLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a1/countable-uncountable" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🔢</span>
+                  <div><div className="text-sm font-bold text-slate-900">Countable / Uncountable</div><div className="text-xs text-slate-500">Related topic</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
+
+      {/* SpeedRound below grid for non-PRO users */}
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a1-some-any" subject="Some / Any" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

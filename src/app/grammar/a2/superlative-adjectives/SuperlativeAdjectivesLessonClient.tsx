@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "tall →", options: ["the tallest", "the most tall", "the taller", "tallest"], answer: 0 },
+  { q: "beautiful →", options: ["the beautifulest", "the most beautiful", "the beautifuller", "most beautiful"], answer: 1 },
+  { q: "big →", options: ["the bigest", "the most big", "the biggest", "the biger"], answer: 2 },
+  { q: "happy →", options: ["the most happy", "the happyest", "the happiest", "the hapiest"], answer: 2 },
+  { q: "good →", options: ["the most good", "the goodest", "the gooder", "the best"], answer: 3 },
+  { q: "bad →", options: ["the most bad", "the baddest", "the worst", "the badder"], answer: 2 },
+  { q: "hot →", options: ["the most hot", "the hotest", "the hotter", "the hottest"], answer: 3 },
+  { q: "interesting →", options: ["the interestingest", "the most interesting", "the interestingst", "most interesting"], answer: 1 },
+  { q: "far →", options: ["the farrest", "the most far", "the furthest", "the farther"], answer: 2 },
+  { q: "cold →", options: ["the coldest", "the most cold", "the colder", "the colddest"], answer: 0 },
+  { q: "popular →", options: ["the popularest", "the most popular", "the popularst", "most popular"], answer: 1 },
+  { q: "thin →", options: ["the thinest", "the most thin", "the thiner", "the thinnest"], answer: 3 },
+  { q: "lazy →", options: ["the most lazy", "the lazyest", "the laziest", "the lazier"], answer: 2 },
+  { q: "comfortable →", options: ["the comfortablest", "the most comfortable", "the comfortabler", "most comfortable"], answer: 1 },
+  { q: "large →", options: ["the larggest", "the most large", "the larger", "the largest"], answer: 3 },
+  { q: "difficult →", options: ["the difficultest", "the most difficult", "the difficulter", "most difficult"], answer: 1 },
+  { q: "young →", options: ["the most young", "the younger", "the youngest", "the younguest"], answer: 2 },
+  { q: "busy →", options: ["the most busy", "the busyest", "the busiest", "the busier"], answer: 2 },
+  { q: "expensive →", options: ["the expensivest", "the most expensivest", "the most expensive", "the expensiver"], answer: 2 },
+  { q: "creative →", options: ["the creativest", "the most creative", "the creativeest", "the creatively"], answer: 1 },
+];
+
 export default function SuperlativeAdjectivesLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,118 @@ export default function SuperlativeAdjectivesLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Superlative Adjectives",
+        subtitle: "the -est / the most — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "Short adjectives: the + -est (the tallest). Long adjectives: the most + adj (the most beautiful). Irregular: good→the best, bad→the worst, far→the furthest.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose the correct superlative form.",
+            questions: [
+              "tall → ___",
+              "beautiful → ___",
+              "big → ___",
+              "happy → ___",
+              "expensive → ___",
+              "good → ___",
+              "bad → ___",
+              "hot → ___",
+              "interesting → ___",
+              "far → ___",
+            ],
+            hint: "the tallest / the most beautiful / the biggest / the happiest / the most expensive / the best / the worst / the hottest / the most interesting / the furthest",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the full superlative form including 'the'.",
+            questions: [
+              "cold → ___",
+              "popular → ___",
+              "thin → ___",
+              "lazy → ___",
+              "good → ___",
+              "bad → ___",
+              "comfortable → ___",
+              "busy → ___",
+              "large → ___",
+              "difficult → ___",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Harder",
+            instruction: "Choose the correct superlative form to complete the sentence.",
+            questions: [
+              "It's ___ (cold) day of the year — it's -15°C!",
+              "She is ___ (good) player on the whole team.",
+              "This is ___ (expensive) restaurant in the city.",
+              "He made ___ (bad) decision of his career.",
+              "That was ___ (interesting) film I've ever seen.",
+              "Mount Everest is ___ (high) mountain in the world.",
+              "This is ___ (happy) day of my life!",
+              "She's ___ (creative) student in the class.",
+              "He is ___ (lazy) person I've ever met.",
+              "That's ___ (far) I've ever run.",
+            ],
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Hardest",
+            instruction: "Write the correct superlative form including 'the'.",
+            questions: [
+              "She's ___ (old) of the three sisters.",
+              "That's ___ (bad) film I've ever watched.",
+              "This is ___ (comfortable) chair in the office.",
+              "He's ___ (young) player ever to win the championship.",
+              "It was ___ (hot) summer on record.",
+              "That's ___ (good) idea you've had all week.",
+              "This is ___ (big) pizza I've ever eaten.",
+              "He's ___ (popular) teacher in the whole school.",
+              "It's ___ (thin) phone currently on the market.",
+              "That was ___ (beautiful) sunset I've ever seen.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — choose the superlative",
+            answers: ["the tallest", "the most beautiful", "the biggest", "the happiest", "the most expensive", "the best", "the worst", "the hottest", "the most interesting", "the furthest"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write the superlative",
+            answers: ["the coldest", "the most popular", "the thinnest", "the laziest", "the best", "the worst", "the most comfortable", "the busiest", "the largest", "the most difficult"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Harder — complete the sentence",
+            answers: ["the coldest", "the best", "the most expensive", "the worst", "the most interesting", "the highest", "the happiest", "the most creative", "the laziest", "the furthest"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Hardest — write the full superlative",
+            answers: ["the oldest", "the worst", "the most comfortable", "the youngest", "the hottest", "the best", "the biggest", "the most popular", "the thinnest", "the most beautiful"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +284,20 @@ export default function SuperlativeAdjectivesLessonClient() {
         Use superlative adjectives to say something is the <b>highest degree</b> in a group. Short adjectives: <b>the + -est</b>. Long adjectives: <b>the most</b>. Always use <b>the</b> before a superlative.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-superlative-adjectives" subject="Superlative Adjectives" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,12 +420,29 @@ export default function SuperlativeAdjectivesLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

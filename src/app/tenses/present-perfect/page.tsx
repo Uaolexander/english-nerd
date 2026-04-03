@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProRelatedTopics from "@/components/ProRelatedTopics";
 
 export const metadata = {
   title: "Present Perfect Exercises — Practice English Grammar | English Nerd",
@@ -216,13 +217,7 @@ export default function PresentPerfectPage() {
               728 × 90
             </div>
           </div>
-          <CardGroup
-            label="Related Topics"
-            sublabel="Irregular participles, for vs since, and comparison with Past Simple"
-            dotColor="bg-[#F5DA20]"
-            exercises={RELATED}
-            basePath="/tenses/present-perfect"
-          />
+          <ProRelatedTopics exercises={RELATED} basePath="/tenses/present-perfect" />
         </div>
 
       </div>

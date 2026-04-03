@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -11,7 +18,32 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I want ___ a coffee.", options: ["have", "having", "to have", "had"], answer: 2 },
+  { q: "She decided ___ the job.", options: ["accept", "accepting", "to accept", "accepted"], answer: 2 },
+  { q: "He hopes ___ a doctor.", options: ["become", "becoming", "to become", "became"], answer: 2 },
+  { q: "They agreed ___ earlier.", options: ["meet", "meeting", "to meet", "met"], answer: 2 },
+  { q: "She refused ___ me.", options: ["help", "helping", "to help", "helped"], answer: 2 },
+  { q: "I managed ___ it on time.", options: ["finish", "finishing", "to finish", "finished"], answer: 2 },
+  { q: "He promised ___ back soon.", options: ["come", "coming", "to come", "came"], answer: 2 },
+  { q: "She plans ___ abroad.", options: ["study", "studying", "to study", "studied"], answer: 2 },
+  { q: "I enjoy ___ chess.", options: ["play", "to play", "playing", "played"], answer: 2 },
+  { q: "He finished ___ the report.", options: ["write", "to write", "writing", "written"], answer: 2 },
+  { q: "Do you mind ___ the window?", options: ["close", "to close", "closing", "closed"], answer: 2 },
+  { q: "She avoided ___ him.", options: ["meet", "to meet", "meeting", "met"], answer: 2 },
+  { q: "They chose ___ by train.", options: ["travel", "travelling", "to travel", "travelled"], answer: 2 },
+  { q: "I expect ___ there by 6.", options: ["be", "being", "to be", "been"], answer: 2 },
+  { q: "He suggested ___ the early train.", options: ["take", "to take", "taking", "took"], answer: 2 },
+  { q: "I look forward to ___ you.", options: ["see", "to see", "seeing", "seen"], answer: 2 },
+  { q: "She kept ___ me.", options: ["interrupt", "to interrupt", "interrupting", "interrupted"], answer: 2 },
+  { q: "I miss ___ near the sea.", options: ["live", "to live", "living", "lived"], answer: 2 },
+  { q: "He'd like ___ a table.", options: ["book", "to book", "booking", "booked"], answer: 1 },
+  { q: "We plan ___ in September.", options: ["travel", "travelled", "to travel", "travelling"], answer: 2 },
+];
+
 export default function VerbInfinitiveLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -115,6 +147,119 @@ export default function VerbInfinitiveLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Verb + to-Infinitive",
+        subtitle: "want, decide, hope, agree, refuse… — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "These verbs are always followed by to + base verb: want, decide, hope, agree, refuse, manage, promise, plan, choose, expect.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose: base verb / -ing / to-infinitive.",
+            questions: [
+              "I want ___ a coffee, please. (have / having / to have)",
+              "She decided ___ the job. (accept / accepting / to accept)",
+              "He hopes ___ a doctor one day. (become / becoming / to become)",
+              "They agreed ___ earlier. (meet / meeting / to meet)",
+              "She refused ___ me. (help / helping / to help)",
+              "I managed ___ it on time. (finish / finishing / to finish)",
+              "He promised ___ back soon. (come / coming / to come)",
+              "She plans ___ abroad next year. (study / studying / to study)",
+              "They chose ___ by train. (travel / travelling / to travel)",
+              "I expect ___ there by 6pm. (be / being / to be)",
+            ],
+            hint: "to have / to accept / to become / to meet / to help / to finish / to come / to study / to travel / to be",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write the to-infinitive form of the verb in brackets.",
+            questions: [
+              "She wants (go) ___ to Paris.",
+              "He decided (sell) ___ his car.",
+              "I hope (pass) ___ the exam.",
+              "They agreed (split) ___ the bill.",
+              "She refused (answer) ___ the question.",
+              "He managed (open) ___ the stuck window.",
+              "I promised (be) ___ on time.",
+              "She plans (visit) ___ her parents next month.",
+              "He chose (stay) ___ at home.",
+              "I expect (hear) ___ from them soon.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose the correct form: -ing or to-infinitive.",
+            questions: [
+              "I enjoy ___ chess in the evenings. (play / to play / playing)",
+              "She wants ___ a new laptop. (buy / to buy / buying)",
+              "He finished ___ the report at midnight. (write / to write / writing)",
+              "They decided ___ a different route. (take / to take / taking)",
+              "I'd like ___ a table for two. (book / to book / booking)",
+              "Do you mind ___ the window? (close / to close / closing)",
+              "He hopes ___ into a good university. (get / to get / getting)",
+              "She avoided ___ him at the party. (meet / to meet / meeting)",
+              "I promised ___ back by 10pm. (come / to come / coming)",
+              "He suggested ___ the earlier train. (take / to take / taking)",
+            ],
+            hint: "playing / to buy / writing / to take / to book / closing / to get / meeting / to come / taking",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write the correct form of the verb in brackets.",
+            questions: [
+              "She agreed (help) ___ us move house.",
+              "He kept (interrupt) ___ me while I was speaking.",
+              "I expect (finish) ___ the project by Friday.",
+              "She avoided (answer) ___ my question.",
+              "He managed (find) ___ a parking space.",
+              "I look forward to (see) ___ you next week.",
+              "She refused (sign) ___ the contract.",
+              "He suggested (order) ___ food online.",
+              "We plan (travel) ___ in September.",
+              "I miss (live) ___ near the sea.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — to-infinitive form",
+            answers: ["to have", "to accept", "to become", "to meet", "to help", "to finish", "to come", "to study", "to travel", "to be"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — write the to-infinitive",
+            answers: ["to go", "to sell", "to pass", "to split", "to answer", "to open", "to be", "to visit", "to stay", "to hear"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — -ing or to-infinitive",
+            answers: ["playing", "to buy", "writing", "to take", "to book", "closing", "to get", "meeting", "to come", "taking"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — correct form",
+            answers: ["to help", "interrupting", "to finish", "answering", "to find", "seeing", "to sign", "ordering", "to travel", "living"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
   function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
@@ -140,18 +285,22 @@ export default function VerbInfinitiveLessonClient() {
         Some verbs are always followed by <b>to + base verb</b> (to-infinitive): <i>want, decide, hope, agree, refuse, manage, promise, plan, choose, expect</i>. Exercise 3 contrasts these with verbs that take <b>-ing</b>.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-verb-infinitive" subject="Verb + to-Infinitive" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -274,13 +423,38 @@ export default function VerbInfinitiveLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-verb-infinitive" subject="Verb + to-Infinitive" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All A2 topics</a>

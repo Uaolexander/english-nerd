@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,7 +33,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I wake up ___ 7 o'clock every morning.", options: ["in","on","at","for"], answer: 2 },
+  { q: "She was born ___ Monday.", options: ["in","at","on","by"], answer: 2 },
+  { q: "We go to school ___ September.", options: ["at","on","for","in"], answer: 3 },
+  { q: "The party starts ___ midnight.", options: ["on","in","at","by"], answer: 2 },
+  { q: "He always calls ___ Sundays.", options: ["in","at","for","on"], answer: 3 },
+  { q: "I was born ___ 1995.", options: ["on","at","in","by"], answer: 2 },
+  { q: "The meeting is ___ Tuesday morning.", options: ["in","at","by","on"], answer: 3 },
+  { q: "They go on holiday ___ summer.", options: ["at","on","in","by"], answer: 2 },
+  { q: "The class starts ___ 9 am.", options: ["on","in","by","at"], answer: 3 },
+  { q: "I watch films ___ the weekend.", options: ["in","at","on","by"], answer: 1 },
+  { q: "She reads ___ the evening.", options: ["at","on","in","by"], answer: 2 },
+  { q: "The shop closes ___ Christmas Day.", options: ["in","at","on","by"], answer: 2 },
+  { q: "We eat dinner ___ 7 pm.", options: ["on","in","by","at"], answer: 3 },
+  { q: "I started this job ___ January.", options: ["at","on","in","by"], answer: 2 },
+  { q: "They met ___ Valentine's Day.", options: ["in","at","on","by"], answer: 2 },
+  { q: "The museum opens ___ 10 o'clock.", options: ["on","in","by","at"], answer: 3 },
+  { q: "I love skiing ___ winter.", options: ["at","on","in","by"], answer: 2 },
+  { q: "She calls her mum ___ Sundays.", options: ["in","at","by","on"], answer: 3 },
+  { q: "We always eat cake ___ New Year.", options: ["in","on","at","by"], answer: 2 },
+  { q: "He studies English ___ the morning.", options: ["at","on","in","by"], answer: 2 },
+];
+
 export default function PrepositionsOfTimeLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -378,6 +410,96 @@ export default function PrepositionsOfTimeLessonClient() {
     setInputAnswers({});
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Prepositions of Time",
+        subtitle: "in / on / at — 4 exercises + answer key",
+        level: "A1",
+        keyRule: "AT + exact time (at 7 o'clock, at midnight). ON + days & dates (on Monday, on 5th May). IN + months, years, seasons, parts of day (in January, in 2020, in the morning).",
+        exercises: [
+          {
+            number: 1, title: "Exercise 1", difficulty: "Easy",
+            instruction: "Choose in, on, or at.",
+            questions: [
+              "I wake up ___ 7 o'clock every morning.",
+              "She was born ___ Monday.",
+              "We go back to school ___ September.",
+              "The party starts ___ midnight.",
+              "He calls his parents ___ Sundays.",
+              "I was born ___ 1995.",
+              "The meeting is ___ Tuesday morning.",
+              "They always go on holiday ___ summer.",
+              "The class starts ___ 9 am.",
+              "I usually watch films ___ the weekend.",
+            ],
+            hint: "in / on / at",
+          },
+          {
+            number: 2, title: "Exercise 2", difficulty: "Easy",
+            instruction: "Choose in, on, or at.",
+            questions: [
+              "She loves reading ___ the evening.",
+              "The shop closes ___ Christmas Day.",
+              "We always have dinner ___ 7 pm.",
+              "I started this new job ___ January.",
+              "They first met ___ Valentine's Day.",
+              "The museum opens ___ 10 o'clock.",
+              "I love skiing ___ winter.",
+              "She calls her mum ___ Sundays.",
+              "We always eat cake ___ New Year.",
+              "He studies English ___ the morning.",
+            ],
+            hint: "in / on / at",
+          },
+          {
+            number: 3, title: "Exercise 3", difficulty: "Medium",
+            instruction: "Choose in, on, or at.",
+            questions: [
+              "The film starts ___ half past eight.",
+              "I usually go jogging ___ Saturday mornings.",
+              "My birthday is ___ the 12th of April.",
+              "We moved to London ___ 2018.",
+              "She fell asleep ___ midnight.",
+              "The concert is ___ Friday evening.",
+              "I always feel tired ___ the afternoon.",
+              "He graduated ___ June.",
+              "We have English classes ___ Tuesdays and Thursdays.",
+              "The temperature drops ___ night in winter.",
+            ],
+            hint: "in / on / at",
+          },
+          {
+            number: 4, title: "Exercise 4", difficulty: "Hard",
+            instruction: "Write in, on, or at.",
+            questions: [
+              "I go to the gym ___ Monday and Wednesday mornings.",
+              "The New Year begins ___ midnight.",
+              "She was born ___ a cold day ___ January.",
+              "We visited Rome ___ the spring of 2022.",
+              "The bus arrives ___ 8:15 every morning.",
+              "I love going for walks ___ the evening.",
+              "School starts again ___ the 5th of September.",
+              "He phoned me ___ Saturday afternoon.",
+              "They got married ___ summer, ___ a beautiful day.",
+              "The shop is closed ___ Sundays.",
+            ],
+          },
+        ],
+        answerKey: [
+          { exercise: 1, subtitle: "Easy — in/on/at", answers: ["at","on","in","at","on","in","on","in","at","at"] },
+          { exercise: 2, subtitle: "Easy — in/on/at", answers: ["in","on","at","in","on","at","in","on","at","in"] },
+          { exercise: 3, subtitle: "Medium — in/on/at", answers: ["at","on","on","in","at","on","in","in","on","at"] },
+          { exercise: 4, subtitle: "Hard — write in/on/at", answers: ["on","at","on / in","in","at","in","on","on","in / on","on"] },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Breadcrumb */}
@@ -402,17 +524,18 @@ export default function PrepositionsOfTimeLessonClient() {
         Learn how to use <b>in, on, at</b> — the three most common prepositions of time. These words tell us <em>when</em> something happens: in the morning, on Monday, at 5 o&apos;clock.
       </p>
 
-      {/* Layout: left ad + center content + right ad */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        {/* Left Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
-            </div>
+      {/* Layout: left col + center content + right col */}
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {/* Left column */}
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a1-prepositions-time" subject="Prepositions of Time" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
 
         {/* Center */}
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -434,6 +557,8 @@ export default function PrepositionsOfTimeLessonClient() {
             >
               Explanation
             </button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
 
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
@@ -655,15 +780,32 @@ export default function PrepositionsOfTimeLessonClient() {
           </div>
         </section>
 
-        {/* Right Ad */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">
-              300 × 600
+        {/* Right column */}
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
             </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation */}

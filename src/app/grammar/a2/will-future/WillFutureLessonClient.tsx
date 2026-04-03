@@ -2,6 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import PDFButton from "@/components/PDFButton";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = {
   id: string;
@@ -26,7 +33,32 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Don't worry — everything ___ be okay.", options: ["won't", "will", "going to", "is"], answer: 1 },
+  { q: "I promise I ___ tell anyone.", options: ["will", "won't", "am going to", "isn't"], answer: 1 },
+  { q: "The phone is ringing — I ___ get it!", options: ["am going to", "will", "won't", "going"], answer: 1 },
+  { q: "Look at those clouds! It ___ rain.", options: ["will", "is going to", "won't", "going"], answer: 1 },
+  { q: "'I'm thirsty.' — 'I ___ get you water.'", options: ["am going to", "will", "won't", "going to"], answer: 1 },
+  { q: "He has booked tickets — he ___ visit Paris.", options: ["will", "is going to", "won't", "going"], answer: 1 },
+  { q: "I think robots ___ replace jobs.", options: ["are going to", "will", "won't", "going to"], answer: 1 },
+  { q: "She ___ love this gift!", options: ["won't", "will", "going to", "is going"], answer: 1 },
+  { q: "She ___ (be) fine — I'm sure.", options: ["won't be", "will be", "going to be", "is"], answer: 1 },
+  { q: "He ___ (not/come) — he's working late.", options: ["will come", "won't come", "is going to come", "not come"], answer: 1 },
+  { q: "Be careful — you ___ knock over that glass!", options: ["will", "are going to", "won't", "going"], answer: 1 },
+  { q: "'The printer is broken!' — 'I ___ call IT.'", options: ["am going to", "will", "won't", "going to"], answer: 1 },
+  { q: "We've chosen the venue — we ___ marry in June.", options: ["will", "are going to", "won't", "going"], answer: 1 },
+  { q: "I think it ___ rain tomorrow.", options: ["is going to", "will", "won't", "going to"], answer: 1 },
+  { q: "She has enrolled — she ___ study dentistry.", options: ["will", "is going to", "won't", "going"], answer: 1 },
+  { q: "'I can't open this.' — 'Give it to me, I ___ try.'", options: ["am going to", "will", "won't", "going to"], answer: 1 },
+  { q: "Watch out! You ___ hit that car!", options: ["will", "are going to", "won't", "going"], answer: 1 },
+  { q: "I promise I ___ remember your birthday.", options: ["won't", "will", "going to", "am going"], answer: 1 },
+  { q: "She ___ (pass) the exam — she's worked so hard.", options: ["won't pass", "will pass", "going to pass", "pass"], answer: 1 },
+  { q: "Scientists predict sea levels ___ rise.", options: ["are going to", "will", "won't", "going to"], answer: 1 },
+];
+
 export default function WillFutureLessonClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -133,6 +165,119 @@ export default function WillFutureLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: LessonPDFConfig = {
+        title: "Will — Future",
+        subtitle: "Predictions, decisions, promises & offers — 4 exercises + answer key",
+        level: "A2",
+        keyRule: "will + base verb (all subjects). Negative: won't. Use will for: predictions, spontaneous decisions, promises, offers.",
+        exercises: [
+          {
+            number: 1,
+            title: "Exercise 1",
+            difficulty: "Easy",
+            instruction: "Choose will or won't to complete each sentence.",
+            questions: [
+              "Don't worry — everything ___ be okay. (will / won't / going to)",
+              "I promise I ___ tell anyone your secret. (will / won't / am going to)",
+              "She ___ love this gift — it's perfect! (will / won't / is going to)",
+              "The phone is ringing — I ___ get it! (am going to / will / won't)",
+              "Don't ask him — he ___ help you, he never does. (will / won't / is not going to)",
+              "I think she ___ get the job — she was brilliant. (will / won't / is going to)",
+              "It's my birthday tomorrow — I hope you ___ forget! (will / won't / are going to)",
+              "The doctor says she ___ make a full recovery. (will / won't / is going to)",
+              "I know! I ___ call a taxi — that'll solve it. (am going to / will / won't)",
+              "They ___ be here by 8 — they said they'd come early. (will / won't / are going to)",
+            ],
+            hint: "will / won't / will / will / won't / will / won't / will / will / will",
+          },
+          {
+            number: 2,
+            title: "Exercise 2",
+            difficulty: "Medium",
+            instruction: "Write will + verb OR won't + verb (e.g. will go, won't come).",
+            questions: [
+              "Don't worry — she ___ (be) fine. I'm sure.",
+              "I'm sure they ___ (love) the film — it's incredible.",
+              "He ___ (not/come) to the party — he's working late.",
+              "I ___ (help) you move the furniture — just say when.",
+              "She ___ (not/tell) anyone — I trust her completely.",
+              "He ___ (arrive) very late — the flight lands at midnight.",
+              "They ___ (be) surprised when they see the new office.",
+              "I promise I ___ (remember) your birthday this year.",
+              "It ___ (not/be) a problem — we have plenty of time.",
+              "She ___ (pass) the exam — she's been working so hard.",
+            ],
+          },
+          {
+            number: 3,
+            title: "Exercise 3",
+            difficulty: "Hard",
+            instruction: "Choose will or going to. Think about the situation.",
+            questions: [
+              "Look at those dark clouds! It ___ rain any second. (is going to / will)",
+              "'I'm thirsty.' — 'Wait, I ___ get you some water.' (am going to / will)",
+              "He has booked tickets and packed his bags — he ___ visit Paris. (will / is going to)",
+              "I think robots ___ replace many jobs in the future. (will / are going to)",
+              "'The printer is broken!' — 'I ___ call the IT department.' (am going to / will)",
+              "We've already chosen the venue — we ___ get married in June. (will / are going to)",
+              "Be careful — you ___ knock over that glass! (will / are going to)",
+              "Scientists predict that sea levels ___ rise by 2100. (will / are going to)",
+              "She has already told her boss — she ___ resign next Friday. (will / is going to)",
+              "There's no milk! — 'I ___ buy some on my way home.' (am going to / will)",
+            ],
+            hint: "is going to / will / is going to / will / will / are going to / are going to / will / is going to / will",
+          },
+          {
+            number: 4,
+            title: "Exercise 4",
+            difficulty: "Harder",
+            instruction: "Write will + verb, won't + verb, or is/are going to + verb.",
+            questions: [
+              "She has already enrolled — she ___ (study) dentistry from September.",
+              "'I can't open this jar.' — 'Give it to me, I ___ (try).'",
+              "'The baby is coming!' — 'I ___ (call) a doctor!'",
+              "Look at him run — he ___ (win) this race easily!",
+              "I promise I ___ (finish) the report by Friday.",
+              "They have bought plane tickets — they ___ (move) abroad.",
+              "'What do you want?' — 'I think I ___ (have) the fish.'",
+              "She ___ (be) a great teacher — she's so patient.",
+              "Watch out! You ___ (hit) that car — brake now!",
+              "He ___ (not/come) to the meeting — he just sent a message.",
+            ],
+          },
+        ],
+        answerKey: [
+          {
+            exercise: 1,
+            subtitle: "Easy — will or won't",
+            answers: ["will", "won't", "will", "will", "won't", "will", "won't", "will", "will", "will"],
+          },
+          {
+            exercise: 2,
+            subtitle: "Medium — will / won't + verb",
+            answers: ["will be", "will love", "won't come", "will help", "won't tell", "will arrive", "will be", "will remember", "won't be", "will pass"],
+          },
+          {
+            exercise: 3,
+            subtitle: "Hard — will vs going to",
+            answers: ["is going to", "will", "is going to", "will", "will", "are going to", "are going to", "will", "is going to", "will"],
+          },
+          {
+            exercise: 4,
+            subtitle: "Harder — correct future form",
+            answers: ["is going to study", "will try", "will call", "is going to win", "will finish", "are going to move", "will have", "will be", "are going to hit", "isn't going to come"],
+          },
+        ],
+      };
+      await generateLessonPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   function resetExercise() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
@@ -172,18 +317,22 @@ export default function WillFutureLessonClient() {
         Use <b>will</b> for <b>predictions, spontaneous decisions, promises and offers</b>. Form: <b>will + base verb</b> for all subjects. Negative: <b>won't</b> (= will not).
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+        {isPro ? (
+          <div className="sticky top-24">
+            <SpeedRound gameId="grammar-a2-will-future" subject="Will — Future" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+        )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+
+            <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -308,13 +457,38 @@ export default function WillFutureLessonClient() {
           </div>
         </section>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-4">
-            <div className="text-xs font-semibold text-slate-500">ADVERTISEMENT</div>
-            <div className="mt-3 h-[600px] rounded-xl border border-black/10 bg-white flex items-center justify-center text-slate-400 text-sm">300 × 600</div>
+        {isPro ? (
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
+              <div className="space-y-2">
+                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">📚</span>
+                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
+                </a>
+                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">🚀</span>
+                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
+                </a>
+                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
+                  <span className="text-lg">⏰</span>
+                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
+                </a>
+              </div>
+            </div>
           </div>
-        </aside>
+        ) : (
+          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-will-future" subject="Will — Future" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">

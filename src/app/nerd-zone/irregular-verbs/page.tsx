@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata: Metadata = {
   title: "Irregular Verbs — Nerd Zone — English Nerd",
@@ -64,7 +65,7 @@ const VERBS: [string, string, string][] = [
 export default async function IrregularVerbsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const isLoggedIn = !!user;
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
@@ -122,7 +123,7 @@ export default async function IrregularVerbsPage() {
 
             {/* Download */}
             <div className="mt-6">
-              {isLoggedIn ? (
+              {isPro ? (
                 <a
                   href="/api/materials/download?slug=irregular-verbs-50"
                   className="inline-flex items-center gap-2.5 rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-md hover:opacity-90 transition"
@@ -131,32 +132,24 @@ export default async function IrregularVerbsPage() {
                   Download PDF
                 </a>
               ) : (
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <a
-                    href="/login?next=/nerd-zone/irregular-verbs"
-                    className="inline-flex items-center gap-2.5 rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-md hover:opacity-90 transition"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Log in to download PDF
-                  </a>
-                  <a
-                    href="/register"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition shadow-sm"
-                  >
-                    Create free account
-                  </a>
-                </div>
+                <a
+                  href="/pro"
+                  className="inline-flex items-center gap-2.5 rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-md hover:opacity-90 transition"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Pro only — Upgrade to download
+                </a>
               )}
-              <p className="mt-2 text-xs text-slate-400">Free for all registered users · PDF · 4 pages</p>
+              <p className="mt-2 text-xs text-slate-400">Pro · PDF · 4 pages</p>
             </div>
           </div>
 
           {/* Right: cover image — clickable download card */}
           <div className="shrink-0 self-start">
             <a
-              href={isLoggedIn
+              href={isPro
                 ? "/api/materials/download?slug=irregular-verbs-50"
-                : "/login?next=/nerd-zone/irregular-verbs"}
+                : "/pro"}
               className="group relative block w-[190px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg transition-shadow hover:shadow-2xl"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -175,14 +168,14 @@ export default async function IrregularVerbsPage() {
               {/* Hover overlay */}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F5DA20] shadow-lg">
-                  {isLoggedIn ? (
+                  {isPro ? (
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
                   ) : (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="black"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                   )}
                 </div>
                 <span className="text-xs font-black text-white">
-                  {isLoggedIn ? "Download PDF" : "Log in to download"}
+                  {isPro ? "Download PDF" : "Pro only"}
                 </span>
               </div>
             </a>
@@ -251,7 +244,7 @@ export default async function IrregularVerbsPage() {
           {/* Table footer */}
           <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-between">
             <span className="text-xs text-slate-400">50 irregular verbs · sorted alphabetically</span>
-            {isLoggedIn && (
+            {isPro && (
               <a
                 href="/api/materials/download?slug=irregular-verbs-50"
                 className="inline-flex items-center gap-1.5 rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-black text-black hover:opacity-90 transition"
@@ -286,7 +279,7 @@ export default async function IrregularVerbsPage() {
             Back to Nerd Zone
           </a>
 
-          {!isLoggedIn && (
+          {!isPro && (
             <a
               href="/login?next=/nerd-zone/irregular-verbs"
               className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-4 py-2.5 text-sm font-bold text-black hover:opacity-90 transition shadow-sm"

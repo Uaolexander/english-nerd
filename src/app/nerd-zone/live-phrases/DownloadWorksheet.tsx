@@ -5,12 +5,11 @@ import { useRef, useState } from "react";
 export type Exercise = { before: string; answer: string; after: string };
 
 type Props = {
-  isLoggedIn: boolean;
+  isPro: boolean;
   level: string;
   title: string;
   wordBank: string[];
   exercises: Exercise[];
-  loginRedirect: string;
   filename: string;
 };
 
@@ -38,13 +37,13 @@ function Header({ level, tag }: { level: string; tag: string }) {
 function Footer({ page }: { page: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "10px 32px" }}>
-      <span style={{ ...C, fontSize: 10, color: "#94a3b8" }}>EnglishNerd.cc — Free for registered users</span>
+      <span style={{ ...C, fontSize: 10, color: "#94a3b8" }}>EnglishNerd.cc — Pro</span>
       <span style={{ ...C, fontSize: 10, color: "#94a3b8" }}>{page}</span>
     </div>
   );
 }
 
-export default function DownloadWorksheet({ isLoggedIn, level, title, wordBank, exercises, loginRedirect, filename }: Props) {
+export default function DownloadWorksheet({ isPro, level, title, wordBank, exercises, filename }: Props) {
   const page1Ref = useRef<HTMLDivElement>(null);
   const page2Ref = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
@@ -68,12 +67,12 @@ export default function DownloadWorksheet({ isLoggedIn, level, title, wordBank, 
     }
   }
 
-  if (!isLoggedIn) {
+  if (!isPro) {
     return (
-      <a href={`/login?next=${loginRedirect}`} className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-6 py-3.5 text-sm font-black text-black shadow-[0_0_0_2px_#F5DA20] transition-all duration-300 hover:shadow-[0_0_0_3px_#F5DA20,0_4px_20px_rgba(245,218,32,0.35)] hover:scale-[1.03] active:scale-[0.98]">
+      <a href="/pro" className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl bg-[#F5DA20] px-6 py-3.5 text-sm font-black text-black shadow-[0_0_0_2px_#F5DA20] transition-all duration-300 hover:shadow-[0_0_0_3px_#F5DA20,0_4px_20px_rgba(245,218,32,0.35)] hover:scale-[1.03] active:scale-[0.98]">
         <span className="shimmer-auto pointer-events-none absolute inset-0 w-1/3 skew-x-[-20deg] bg-white/40" />
-        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Log in to download worksheet
+        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Pro only — Upgrade to download
       </a>
     );
   }

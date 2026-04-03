@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
 
 type Tense =
   | "Present Simple"
@@ -134,6 +136,7 @@ export default function TensesTestClient() {
   }, [answers, questions, total]);
 
   const { save } = useProgress();
+  const isPro = useIsPro();
   useEffect(() => {
     if (submitted) save(undefined, score.percent, score.total);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,7 +190,7 @@ export default function TensesTestClient() {
             Your <span className="rounded-lg bg-[#F5DA20] px-2 py-0.5 text-[#0F0F12]">Tenses Results</span>
           </h1>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <div className={`mt-6 grid gap-6 ${!isPro ? "lg:grid-cols-[1fr_300px]" : ""}`}>
             <section>
               {/* Score summary */}
               <div className="grid gap-4 sm:grid-cols-3">
@@ -297,14 +300,7 @@ export default function TensesTestClient() {
               </div>
             </section>
 
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/70 backdrop-blur p-4">
-                <div className="text-xs font-semibold text-black/35">ADVERTISEMENT</div>
-                <div className="mt-3 h-[600px] rounded-xl border border-black/8 bg-black/[0.02] flex items-center justify-center text-black/25 text-sm">
-                  300 × 600
-                </div>
-              </div>
-            </aside>
+            <AdUnit variant="sidebar-test" />
           </div>
         </div>
       </main>
@@ -355,7 +351,7 @@ export default function TensesTestClient() {
           Choose the correct verb form for each sentence. <b className="text-black">Free</b>, no registration, no paywall. Answer as many as you can — then hit <b className="text-black">See results</b> to get a full breakdown by tense.
         </p>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+        <div className={`grid gap-6 ${!isPro ? "lg:grid-cols-[1fr_300px]" : ""}`}>
           <section className="flex flex-col gap-4">
             {questions.map((q, i) => {
               const selected = answers[q.id];
@@ -433,14 +429,7 @@ export default function TensesTestClient() {
             </button>
           </section>
 
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-2xl border border-black/10 bg-white/70 backdrop-blur p-4">
-              <div className="text-xs font-semibold text-black/35">ADVERTISEMENT</div>
-              <div className="mt-3 h-[600px] rounded-xl border border-black/8 bg-black/[0.02] flex items-center justify-center text-black/25 text-sm">
-                300 × 600
-              </div>
-            </div>
-          </aside>
+          <AdUnit variant="sidebar-test" />
         </div>
       </div>
     </main>
