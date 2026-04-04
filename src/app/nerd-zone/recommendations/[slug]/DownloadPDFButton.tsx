@@ -10,9 +10,9 @@ const H_RGB: Record<Level, [number, number, number]> = {
   A1: [245, 218, 32], A2: [52, 211, 153], B1: [124, 58, 237], B2: [234, 88, 12], C1: [2, 132, 199],
 };
 const D_RGB: Record<Level, [number, number, number]> = {
-  A1: [150, 118, 5], B1: [76, 29, 149], B2: [154, 52, 18], C1: [7, 89, 133],
+  A1: [150, 118, 5], A2: [13, 148, 100], B1: [76, 29, 149], B2: [154, 52, 18], C1: [7, 89, 133],
 };
-const DARK_HEADER: Record<Level, boolean> = { A1: true, B1: false, B2: false, C1: false };
+const DARK_HEADER: Record<Level, boolean> = { A1: true, A2: true, B1: false, B2: false, C1: false };
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 function blankWord(example: string, word: string): string {

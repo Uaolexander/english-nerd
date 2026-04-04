@@ -688,7 +688,7 @@ export default function IrregularVerbsClient({ isPro }: { isPro: boolean }) {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm" />
               <h2 className="text-2xl font-black text-slate-900">SpeedRound <span className="text-sm font-bold text-amber-500 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">GAME</span></h2>
             </div>
-            <SpeedRound questions={SPEED_QUESTIONS} isPro={isPro} />
+            <SpeedRound questions={SPEED_QUESTIONS} gameId="irregular-verbs" />
           </div>
         </div>
 

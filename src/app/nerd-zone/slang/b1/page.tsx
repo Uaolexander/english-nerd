@@ -47,8 +47,8 @@ const EXERCISES = [
 ];
 
 const LEVELS = [
-  { label: "A1", href: "/nerd-zone/slang",     active: false },
-  { label: "B1", href: "/nerd-zone/slang/b1",  active: true  },
+  { label: "A1-A2", href: "/nerd-zone/slang",     active: false },
+  { label: "B1",    href: "/nerd-zone/slang/b1",  active: true  },
   { label: "B2", href: "/nerd-zone/slang/b2",  active: false },
   { label: "C1", href: "/nerd-zone/slang/c1",  active: false },
 ];

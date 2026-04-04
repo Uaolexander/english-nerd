@@ -9,7 +9,7 @@ import DownloadWorksheet from "./DownloadWorksheet";
 
 /* ─── Data ───────────────────────────────────────────────────────────────── */
 
-const VERBS = [
+const VERBS_A1 = [
   { verb: "wake up",  meaning: "to stop sleeping",                example: "I wake up at 7 every morning." },
   { verb: "get up",   meaning: "to rise from bed",                example: "She gets up and makes coffee." },
   { verb: "turn on",  meaning: "to start a device",               example: "Can you turn on the TV?" },
@@ -23,6 +23,23 @@ const VERBS = [
   { verb: "sit down", meaning: "to take a seat",                  example: "Please sit down and relax." },
   { verb: "stand up", meaning: "to rise from a sitting position", example: "Stand up when the teacher enters." },
 ];
+
+const VERBS_A2 = [
+  { verb: "find out",    meaning: "to discover information",           example: "I need to find out what time the bus leaves." },
+  { verb: "give back",   meaning: "to return something to someone",    example: "Can you give back my book when you finish?" },
+  { verb: "grow up",     meaning: "to become an adult",                example: "He grew up in a small town near the coast." },
+  { verb: "hang out",    meaning: "to spend time casually",            example: "We like to hang out at the café after class." },
+  { verb: "hold on",     meaning: "to wait a moment",                  example: "Hold on — I'll be ready in two minutes." },
+  { verb: "keep on",     meaning: "to continue doing something",       example: "Keep on practising and you'll improve fast." },
+  { verb: "look up",     meaning: "to search for information",         example: "Look it up in the dictionary if you're unsure." },
+  { verb: "move on",     meaning: "to stop thinking about the past",   example: "It's time to move on and start something new." },
+  { verb: "run out of",  meaning: "to have no more of something",      example: "We ran out of milk — can you buy some more?" },
+  { verb: "show up",     meaning: "to arrive or appear",               example: "He showed up an hour late to the meeting." },
+  { verb: "think about", meaning: "to consider something",             example: "I'll think about your offer and call you tomorrow." },
+  { verb: "try on",      meaning: "to put on clothing to check the fit", example: "Can I try on these shoes in a size 8?" },
+];
+
+const VERBS = [...VERBS_A1, ...VERBS_A2];
 
 const WORD_BANK = ["come in", "get up", "turn on", "turn off", "put on", "take off", "look for", "wake up", "pick up", "go out"];
 
@@ -40,10 +57,10 @@ const EXERCISES_WS = [
 ];
 
 const LEVELS = [
-  { label: "A1", href: "/nerd-zone/phrasal-verbs",    color: "bg-[#F5DA20] text-black" },
-  { label: "B1", href: "/nerd-zone/phrasal-verbs/b1", color: "bg-violet-500 text-white" },
-  { label: "B2", href: "/nerd-zone/phrasal-verbs/b2", color: "bg-orange-500 text-white" },
-  { label: "C1", href: "/nerd-zone/phrasal-verbs/c1", color: "bg-sky-500 text-white" },
+  { label: "A1-A2", href: "/nerd-zone/phrasal-verbs",    color: "bg-[#F5DA20] text-black" },
+  { label: "B1",    href: "/nerd-zone/phrasal-verbs/b1", color: "bg-violet-500 text-white" },
+  { label: "B2",    href: "/nerd-zone/phrasal-verbs/b2", color: "bg-orange-500 text-white" },
+  { label: "C1",    href: "/nerd-zone/phrasal-verbs/c1", color: "bg-sky-500 text-white" },
 ];
 
 /* ─── SpeedRound ─────────────────────────────────────────────────────────── */
@@ -452,14 +469,14 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
               <svg className="h-3 w-3 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
             </span>
           ))}
-          <span className="text-slate-700 font-medium">Phrasal Verbs · A1</span>
+          <span className="text-slate-700 font-medium">Phrasal Verbs · A1-A2</span>
         </nav>
 
         {/* Hero */}
         <div className="mt-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="rounded-full bg-violet-100 px-3 py-0.5 text-[11px] font-black text-violet-700">Phrasal Verbs</span>
-            <span className="rounded-full bg-[#F5DA20] px-3 py-0.5 text-[11px] font-black text-black">A1</span>
+            <span className="rounded-full bg-[#F5DA20] px-3 py-0.5 text-[11px] font-black text-black">A1-A2</span>
             <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Beginner</span>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.05] md:text-6xl">
@@ -470,7 +487,7 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
             </span>
           </h1>
           <p className="mt-4 max-w-lg text-[15px] text-slate-500 leading-relaxed">
-            Start with these 12 essential A1 phrasal verbs. They appear in everyday conversations, instructions and short texts — master them first.
+            24 essential A1-A2 phrasal verbs for beginners and elementary learners. They appear in everyday conversations, instructions and short texts — master them first.
           </p>
         </div>
 
@@ -478,7 +495,7 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {LEVELS.map(({ label, href, color }) => (
-              label === "A1" ? (
+              label === "A1-A2" ? (
                 <span key={label} className={`rounded-xl ${color} px-5 py-2 text-sm font-black shadow-sm`}>{label}</span>
               ) : (
                 <a key={label} href={href} className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-500 hover:border-slate-300 hover:text-slate-700 transition">{label}</a>
@@ -486,7 +503,7 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
             ))}
           </div>
           <div className="flex flex-col items-end gap-1">
-            <DownloadWorksheet isPro={isPro} level="A1" wordBank={WORD_BANK} exercises={EXERCISES_WS} filename="PhrasalVerbs_A1_Worksheet_EnglishNerd.pdf" />
+            <DownloadWorksheet isPro={isPro} level="A1-A2" wordBank={WORD_BANK} exercises={EXERCISES_WS} filename="PhrasalVerbs_A1A2_Worksheet_EnglishNerd.pdf" />
             <span className="text-[11px] text-slate-400">10 exercises + answer key · PDF</span>
           </div>
         </div>
@@ -499,13 +516,25 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
             <div className="flex items-center gap-2 border-l border-sky-100 bg-sky-50/60 px-5 py-4"><span className="h-2 w-2 rounded-full bg-sky-500" /><span className="text-[10px] font-black uppercase tracking-widest text-sky-700">Example</span></div>
           </div>
           <div>
-            {visibleVerbs.map(({ verb, meaning, example }, i) => (
-              <div key={verb} className={`group grid grid-cols-[1fr_1fr_1.5fr] gap-0 border-b border-slate-50 transition-colors hover:bg-[#F5DA20]/8 last:border-0 ${i % 2 === 1 ? "bg-slate-50/40" : "bg-white"}`}>
-                <div className="flex items-center px-5 py-3.5"><span className="text-sm font-black text-slate-900">{verb}</span></div>
-                <div className="flex items-center border-l border-emerald-50 bg-emerald-50/30 px-5 py-3.5 group-hover:bg-emerald-50/60"><span className="inline-flex rounded-lg bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800">{meaning}</span></div>
-                <div className="flex items-center border-l border-sky-50 bg-sky-50/30 px-5 py-3.5 group-hover:bg-sky-50/60"><span className="text-sm italic text-sky-800">{example}</span></div>
-              </div>
-            ))}
+            {visibleVerbs.flatMap(({ verb, meaning, example }, i) => {
+              const row = (
+                <div key={verb} className={`group grid grid-cols-[1fr_1fr_1.5fr] gap-0 border-b border-slate-50 transition-colors hover:bg-[#F5DA20]/8 last:border-0 ${i % 2 === 1 ? "bg-slate-50/40" : "bg-white"}`}>
+                  <div className="flex items-center px-5 py-3.5"><span className="text-sm font-black text-slate-900">{verb}</span></div>
+                  <div className="flex items-center border-l border-emerald-50 bg-emerald-50/30 px-5 py-3.5 group-hover:bg-emerald-50/60"><span className="inline-flex rounded-lg bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800">{meaning}</span></div>
+                  <div className="flex items-center border-l border-sky-50 bg-sky-50/30 px-5 py-3.5 group-hover:bg-sky-50/60"><span className="text-sm italic text-sky-800">{example}</span></div>
+                </div>
+              );
+              if (i === 12) {
+                return [
+                  <div key="a2-divider" className="border-y-2 border-slate-200 bg-slate-50 flex items-center gap-2 px-5 py-2">
+                    <span className="rounded-full bg-[#F5DA20] px-2 py-0.5 text-[10px] font-black text-black">A2</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Elementary</span>
+                  </div>,
+                  row,
+                ];
+              }
+              return [row];
+            })}
           </div>
           <div className="border-t border-slate-100 bg-slate-50 px-5 py-4 flex items-center justify-center">
             <button
@@ -520,7 +549,7 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
               ) : (
                 <>
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 9l-7 7-7-7"/></svg>
-                  Show all 12 verbs
+                  Show all 24 verbs
                 </>
               )}
             </button>
@@ -602,7 +631,7 @@ export default function PhrasalVerbsA1Client({ isPro }: { isPro: boolean }) {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm" />
               <h2 className="text-2xl font-black text-slate-900">SpeedRound <span className="text-sm font-bold text-amber-500 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">GAME</span></h2>
             </div>
-            <SpeedRound questions={SPEED_QUESTIONS} isPro={isPro} />
+            <SpeedRound questions={SPEED_QUESTIONS} gameId="phrasal-verbs-a1" />
           </div>
         </div>
 

@@ -29,6 +29,18 @@ const PHRASES = [
   { phrase: "Hang on",            meaning: "Wait a moment",                             example: "Hang on — let me check the schedule first." },
   { phrase: "Cheers",             meaning: "Thank you / goodbye (informal, British)",   example: "— Here's your coffee. — Cheers!" },
   { phrase: "That said",          meaning: "Despite what I just said (introduces contrast)", example: "It's a tough course. That said, I learned a lot." },
+  { phrase: "I was wondering",    meaning: "A polite way to ask something",             example: "I was wondering if you could help me with this." },
+  { phrase: "It depends",         meaning: "The answer changes in different situations", example: "— Is it expensive? — It depends on the restaurant." },
+  { phrase: "What do you reckon?", meaning: "What is your opinion?",                   example: "I'm not sure about this idea. What do you reckon?" },
+  { phrase: "To be honest",       meaning: "Said before an honest or surprising opinion", example: "To be honest, I didn't really enjoy the film." },
+  { phrase: "I'll get back to you", meaning: "I'll contact you later with an answer",  example: "I need to check my diary — I'll get back to you." },
+  { phrase: "Same here",          meaning: "Me too / I feel the same way",              example: "— I'm exhausted. — Same here, it's been a long week." },
+  { phrase: "Let me know",        meaning: "Tell me / inform me",                       example: "Let me know if you need any help with the report." },
+  { phrase: "Either way",         meaning: "Regardless of which option",               example: "We can eat in or out — either way is fine with me." },
+  { phrase: "As far as I know",   meaning: "Based on the information I have",          example: "As far as I know, the meeting is still at 3 pm." },
+  { phrase: "It's up to you",     meaning: "You can decide / it's your choice",        example: "We can go now or later — it's up to you." },
+  { phrase: "Out of the blue",    meaning: "Unexpectedly / without warning",            example: "She called me out of the blue after three years." },
+  { phrase: "On second thought",  meaning: "Having reconsidered",                       example: "On second thought, let's take the train instead." },
 ];
 
 const WORD_BANK = ["sounds good", "no worries", "go ahead", "fair enough", "bear with me", "by all means", "my bad", "hang on", "cheers", "that said"];
@@ -47,10 +59,10 @@ const EXERCISES = [
 ];
 
 const LEVELS = [
-  { label: "A1", href: "/nerd-zone/live-phrases",     color: "bg-[#F5DA20] text-black" },
-  { label: "B1", href: "/nerd-zone/live-phrases/b1",  color: "bg-violet-500 text-white" },
-  { label: "B2", href: "/nerd-zone/live-phrases/b2",  color: "bg-orange-500 text-white" },
-  { label: "C1", href: "/nerd-zone/live-phrases/c1",  color: "bg-sky-500 text-white" },
+  { label: "A1-A2", href: "/nerd-zone/live-phrases",     color: "bg-[#F5DA20] text-black" },
+  { label: "B1",    href: "/nerd-zone/live-phrases/b1",  color: "bg-violet-500 text-white" },
+  { label: "B2",    href: "/nerd-zone/live-phrases/b2",  color: "bg-orange-500 text-white" },
+  { label: "C1",    href: "/nerd-zone/live-phrases/c1",  color: "bg-sky-500 text-white" },
 ];
 
 export default async function LivePhrasesA1Page() {
@@ -69,13 +81,13 @@ export default async function LivePhrasesA1Page() {
               <svg className="h-3 w-3 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
             </span>
           ))}
-          <span className="text-slate-700 font-medium">Live Phrases · A1</span>
+          <span className="text-slate-700 font-medium">Live Phrases · A1-A2</span>
         </nav>
 
         <div className="mt-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="rounded-full bg-emerald-100 px-3 py-0.5 text-[11px] font-black text-emerald-700">Live Phrases</span>
-            <span className="rounded-full bg-[#F5DA20] px-3 py-0.5 text-[11px] font-black text-black">A1</span>
+            <span className="rounded-full bg-[#F5DA20] px-3 py-0.5 text-[11px] font-black text-black">A1-A2</span>
             <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Beginner</span>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.05] md:text-6xl">
@@ -86,7 +98,7 @@ export default async function LivePhrasesA1Page() {
             </span>
           </h1>
           <p className="mt-4 max-w-lg text-[15px] text-slate-500 leading-relaxed">
-            12 essential A1 expressions that native speakers use every day — in shops, offices, and casual conversations. Start here.
+            24 essential A1-A2 expressions that native speakers use every day — in shops, offices, and casual conversations. Start here.
           </p>
         </div>
 
@@ -94,7 +106,7 @@ export default async function LivePhrasesA1Page() {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {LEVELS.map(({ label, href, color }) => (
-              label === "A1" ? (
+              label === "A1-A2" ? (
                 <span key={label} className={`rounded-xl ${color} px-5 py-2 text-sm font-black shadow-sm`}>{label}</span>
               ) : (
                 <a key={label} href={href} className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-500 hover:border-slate-300 hover:text-slate-700 transition">{label}</a>
@@ -102,7 +114,7 @@ export default async function LivePhrasesA1Page() {
             ))}
           </div>
           <div className="flex flex-col items-end gap-1">
-            <DownloadWorksheet isPro={isPro} level="A1" title="Live Phrases" wordBank={WORD_BANK} exercises={EXERCISES} filename="LivePhrases_A1_Worksheet_EnglishNerd.pdf" />
+            <DownloadWorksheet isPro={isPro} level="A1-A2" title="Live Phrases" wordBank={WORD_BANK} exercises={EXERCISES} filename="LivePhrases_A1A2_Worksheet_EnglishNerd.pdf" />
             <span className="text-[11px] text-slate-400">10 exercises + answer key · PDF</span>
           </div>
         </div>
@@ -115,15 +127,29 @@ export default async function LivePhrasesA1Page() {
             <div className="flex items-center gap-2 border-l border-sky-100 bg-sky-50/60 px-5 py-4"><span className="h-2 w-2 rounded-full bg-sky-500" /><span className="text-[10px] font-black uppercase tracking-widest text-sky-700">Example</span></div>
           </div>
           <div>
-            {PHRASES.map(({ phrase, meaning, example }, i) => (
-              <div key={phrase} className={`group grid grid-cols-[1fr_1fr_1.5fr] gap-0 border-b border-slate-50 transition-colors hover:bg-[#F5DA20]/8 last:border-0 ${i % 2 === 1 ? "bg-slate-50/40" : "bg-white"}`}>
-                <div className="flex items-center px-5 py-3.5"><span className="text-sm font-black text-slate-900">{phrase}</span></div>
-                <div className="flex items-center border-l border-emerald-50 bg-emerald-50/30 px-5 py-3.5 group-hover:bg-emerald-50/60"><span className="inline-flex rounded-lg bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800">{meaning}</span></div>
-                <div className="flex items-center border-l border-sky-50 bg-sky-50/30 px-5 py-3.5 group-hover:bg-sky-50/60"><span className="text-sm italic text-sky-800">{example}</span></div>
-              </div>
-            ))}
+            {PHRASES.flatMap(({ phrase, meaning, example }, i) => {
+              const row = (
+                <div key={phrase} className={`group grid grid-cols-[1fr_1fr_1.5fr] gap-0 border-b border-slate-50 transition-colors hover:bg-[#F5DA20]/8 last:border-0 ${i % 2 === 1 ? "bg-slate-50/40" : "bg-white"}`}>
+                  <div className="flex items-center px-5 py-3.5"><span className="text-sm font-black text-slate-900">{phrase}</span></div>
+                  <div className="flex items-center border-l border-emerald-50 bg-emerald-50/30 px-5 py-3.5 group-hover:bg-emerald-50/60"><span className="inline-flex rounded-lg bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800">{meaning}</span></div>
+                  <div className="flex items-center border-l border-sky-50 bg-sky-50/30 px-5 py-3.5 group-hover:bg-sky-50/60"><span className="text-sm italic text-sky-800">{example}</span></div>
+                </div>
+              );
+              if (i === 12) {
+                return [
+                  <div key="a2-divider" className="border-y-2 border-slate-200 bg-slate-50">
+                    <div className="flex items-center gap-2 px-5 py-2">
+                      <span className="rounded-full bg-[#F5DA20] px-2 py-0.5 text-[10px] font-black text-black">A2</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Elementary</span>
+                    </div>
+                  </div>,
+                  row,
+                ];
+              }
+              return [row];
+            })}
           </div>
-          <div className="border-t border-slate-100 bg-slate-50 px-5 py-3"><span className="text-xs text-slate-400">12 expressions · A1 Beginner · everyday spoken English</span></div>
+          <div className="border-t border-slate-100 bg-slate-50 px-5 py-3"><span className="text-xs text-slate-400">24 expressions · A1-A2 · everyday spoken English</span></div>
         </div>
 
         <div className="mt-5 flex gap-4 rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4">

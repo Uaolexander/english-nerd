@@ -47,9 +47,9 @@ const EXERCISES = [
 ];
 
 const LEVELS = [
-  { label: "A1", href: "/nerd-zone/live-phrases",     active: false },
-  { label: "B1", href: "/nerd-zone/live-phrases/b1",  active: false },
-  { label: "B2", href: "/nerd-zone/live-phrases/b2",  active: true  },
+  { label: "A1-A2", href: "/nerd-zone/live-phrases",     active: false },
+  { label: "B1",    href: "/nerd-zone/live-phrases/b1",  active: false },
+  { label: "B2",    href: "/nerd-zone/live-phrases/b2",  active: true  },
   { label: "C1", href: "/nerd-zone/live-phrases/c1",  active: false },
 ];
 
