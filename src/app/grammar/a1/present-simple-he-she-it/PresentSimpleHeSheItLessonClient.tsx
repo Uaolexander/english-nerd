@@ -549,9 +549,8 @@ export default function PresentSimpleHeSheItLessonClient() {
             <SpeedRound gameId="grammar-a1-present-simple-he-she-it" subject="Present Simple (he/she/it)" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -801,9 +800,8 @@ export default function PresentSimpleHeSheItLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-light" />
-          </div>
+          <AdUnit variant="sidebar-light" />
+
         )}
       </div>
 

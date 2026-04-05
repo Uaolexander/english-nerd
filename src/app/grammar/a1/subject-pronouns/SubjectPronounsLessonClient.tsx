@@ -566,9 +566,8 @@ export default function SubjectPronounsLessonClient() {
             <SpeedRound gameId="grammar-a1-subject-pronouns" subject="Subject Pronouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -818,9 +817,8 @@ export default function SubjectPronounsLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
       </div>
 

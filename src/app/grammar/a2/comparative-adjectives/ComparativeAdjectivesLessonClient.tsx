@@ -257,9 +257,8 @@ export default function ComparativeAdjectivesLessonClient() {
             <SpeedRound gameId="grammar-a2-comparative-adjectives" subject="Comparative Adjectives" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -393,9 +392,8 @@ export default function ComparativeAdjectivesLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a2" allLabel="All A2 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-light" />
-          </div>
+          <AdUnit variant="sidebar-light" />
+
         )}
       </div>
 

@@ -406,9 +406,8 @@ export default function WishPastLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
       </div>
 

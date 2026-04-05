@@ -593,9 +593,8 @@ export default function PresentSimpleQuestionsLessonClient() {
             <SpeedRound gameId="grammar-a1-present-simple-questions" subject="Present Simple Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -845,9 +844,8 @@ export default function PresentSimpleQuestionsLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-light" />
-          </div>
+          <AdUnit variant="sidebar-light" />
+
         )}
       </div>
 

@@ -570,9 +570,8 @@ export default function PluralNounsLessonClient() {
             <SpeedRound gameId="grammar-a1-plural-nouns" subject="Plural Nouns" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -822,9 +821,8 @@ export default function PluralNounsLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
       </div>
 

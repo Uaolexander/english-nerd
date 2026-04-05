@@ -544,9 +544,8 @@ export default function CanCantLessonClient() {
             <SpeedRound gameId="grammar-a1-can-cant" subject="Can / Can't" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -796,9 +795,8 @@ export default function CanCantLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-light" />
-          </div>
+          <AdUnit variant="sidebar-light" />
+
         )}
       </div>
 

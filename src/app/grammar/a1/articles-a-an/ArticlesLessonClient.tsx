@@ -810,9 +810,8 @@ export default function ArticlesLessonClient() {
             />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -1113,9 +1112,8 @@ export default function ArticlesLessonClient() {
             </a>
           </aside>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
       </div>
 

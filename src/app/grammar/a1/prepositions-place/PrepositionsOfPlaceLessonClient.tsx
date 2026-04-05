@@ -539,9 +539,8 @@ export default function PrepositionsOfPlaceLessonClient() {
             <SpeedRound gameId="grammar-a1-prepositions-place" subject="Prepositions of Place" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-dark" />
-          </div>
+          <AdUnit variant="sidebar-dark" />
+
         )}
 
         {/* Center */}
@@ -791,9 +790,8 @@ export default function PrepositionsOfPlaceLessonClient() {
         {isPro ? (
           <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
-          <div className="sticky top-24">
-            <AdUnit variant="sidebar-light" />
-          </div>
+          <AdUnit variant="sidebar-light" />
+
         )}
       </div>
 
