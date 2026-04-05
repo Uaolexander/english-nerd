@@ -13,6 +13,7 @@ import { Suspense } from "react";
 import { ProProvider } from "@/lib/ProContext";
 import { StudentProvider } from "@/lib/StudentContext";
 import { TeacherProvider } from "@/lib/TeacherContext";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -88,6 +89,7 @@ export default async function RootLayout({
             </TeacherProvider>
           </StudentProvider>
         </ProProvider>
+      <GoogleAnalytics gaId="G-GH5V660B0X" />
       </body>
     </html>
   );
