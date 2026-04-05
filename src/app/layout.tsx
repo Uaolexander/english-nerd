@@ -46,6 +46,9 @@ export const metadata: Metadata = {
     siteName: "English Nerd",
     type: "website",
   },
+  other: {
+    "google-adsense-account": "ca-pub-2015658649191943",
+  },
 };
 
 export default async function RootLayout({
