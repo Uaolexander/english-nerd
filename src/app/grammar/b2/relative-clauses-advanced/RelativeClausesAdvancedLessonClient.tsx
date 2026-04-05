@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Defining relative clause is?", options: ["In commas, extra info", "Essential to identify the noun", "Always uses 'which'", "Can be omitted freely"], answer: 1 },
+  { q: "Non-defining relative clause is?", options: ["Essential info, no commas", "Extra info, always in commas", "Uses only 'that'", "Identifies the noun"], answer: 1 },
+  { q: "In non-defining clauses, 'that' is?", options: ["Preferred", "Optional", "NOT used", "Required"], answer: 2 },
+  { q: "'The man WHO called me' — 'who' refers to?", options: ["A thing", "A person", "A place", "A time"], answer: 1 },
+  { q: "'The book WHICH/THAT I read' — these words refer to?", options: ["A person", "A thing", "A place", "A time"], answer: 1 },
+  { q: "'The town WHERE I grew up' — 'where' refers to?", options: ["A person", "A thing", "A place", "A time"], answer: 2 },
+  { q: "'The year WHEN she was born' — 'when' refers to?", options: ["A person", "A place", "A time", "A thing"], answer: 2 },
+  { q: "'The reason WHY she left' — 'why' refers to?", options: ["A person", "A time", "A place", "A reason"], answer: 3 },
+  { q: "In a defining clause, the pronoun can be omitted when?", options: ["It's the subject", "It's the object", "It refers to a person", "It follows a comma"], answer: 1 },
+  { q: "'WHOSE' in relative clauses shows?", options: ["Location", "Possession", "Time", "Reason"], answer: 1 },
+  { q: "'The contract, the terms of WHICH were complex...' uses?", options: ["Informal relative clause", "Formal relative clause with preposition", "Defining relative clause", "Reduced relative clause"], answer: 1 },
+  { q: "Reduced relative clause replaces 'who/which + be' with?", options: ["A gerund or past participle", "A full clause", "A preposition", "An adjective only"], answer: 0 },
+  { q: "'The man standing there' = ?", options: ["The man who stands there", "The man who is standing there", "The man stood there", "The standing man"], answer: 1 },
+  { q: "Non-defining relative clauses give?", options: ["Essential identification", "Extra, non-essential information", "Conditional information", "Temporal information only"], answer: 1 },
+  { q: "'The film, which I loved, ...' — commas mean?", options: ["Defining clause", "Non-defining clause", "Reduced clause", "Conditional clause"], answer: 1 },
+  { q: "Which sentence is WRONG?", options: ["The book that I read was great", "The man, that called me, was rude", "The car which is red is mine", "The town where I grew up is small"], answer: 1 },
+  { q: "Formal preposition placement in relative clause?", options: ["The person I talked to", "The person to whom I talked", "The person to who I talked", "The person whom I talked"], answer: 1 },
+  { q: "Reduced passive relative clause: 'the car ___ last year'?", options: ["which stolen", "stolen", "that was stolen", "being stolen"], answer: 1 },
+  { q: "Which is a correct non-defining clause?", options: ["The woman who works there is nice", "My sister, who works there, is nice", "The woman, that works there, is nice", "My sister who works there is nice"], answer: 1 },
+  { q: "In formal English, 'whom' replaces 'who' when?", options: ["Subject of clause", "Object of clause or preposition", "After commas", "Before commas"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Relative Clauses",
+  subtitle: "Defining, non-defining, reduced clauses",
+  level: "B2",
+  keyRule: "Defining = no commas, 'that' OK. Non-defining = commas, no 'that'.",
+  exercises: [
+    {
+      number: 1,
+      title: "Defining or non-defining?",
+      difficulty: "easy" as const,
+      instruction: "Choose: defining or non-defining clause.",
+      questions: [
+        "The book that I read was amazing.",
+        "My mother, who is a doctor, lives in Paris.",
+        "The film which won the award was long.",
+        "London, where I was born, is huge.",
+        "The man who called me was rude.",
+        "My car, which I bought last year, broke down.",
+        "The woman whose handbag was stolen called police.",
+        "Sarah, whose sister I know, moved abroad.",
+        "The house that was built in 1900 is listed.",
+        "Oxford, where she studied, is beautiful.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Choose the correct relative pronoun",
+      difficulty: "medium" as const,
+      instruction: "Choose who, which, whose, where, when, why.",
+      questions: [
+        "The girl ___ won the prize smiled.",
+        "The book ___ I lost was expensive.",
+        "The company ___ products are popular.",
+        "That's the town ___ I grew up.",
+        "I remember the day ___ we first met.",
+        "That's the reason ___ I left.",
+        "The woman ___ I interviewed was great.",
+        "The flat, ___ is on the 5th floor, is small.",
+        "The year ___ she graduated was 2015.",
+        "The man ___ car was stolen filed a report.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Reduced relative clauses",
+      difficulty: "hard" as const,
+      instruction: "Reduce the relative clause.",
+      questions: [
+        "The man who is standing there is my boss.",
+        "The package which was sent yesterday arrived.",
+        "The students who were selected joined the team.",
+        "The woman who is sitting by the window is my aunt.",
+        "The report which was submitted last week is missing.",
+        "The dog that is barking is next door.",
+        "The company which was founded in 1990 grew fast.",
+        "The items that were ordered have arrived.",
+        "The candidate who was interviewed last was best.",
+        "The house that was built last year is already sold.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Formal and advanced relative clauses",
+      difficulty: "hard" as const,
+      instruction: "Rewrite using formal or advanced structures.",
+      questions: [
+        "The person I talked to was very helpful.",
+        "This is the book I was telling you about.",
+        "The woman I met her sister is very kind.",
+        "The agreement the terms of it were complex.",
+        "She's the director I worked for.",
+        "This is the office I spent 10 years in.",
+        "The project I was in charge of was cancelled.",
+        "The colleague I recommended was promoted.",
+        "The city I was born in is now very different.",
+        "The contract I signed last month is now void.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Defining/non-defining", answers: ["Defining", "Non-defining", "Defining", "Non-defining", "Defining", "Non-defining", "Defining", "Non-defining", "Defining", "Non-defining"] },
+    { exercise: 2, subtitle: "Relative pronouns", answers: ["who", "which/that", "whose", "where", "when", "why", "whom/who", "which", "when", "whose"] },
+    { exercise: 3, subtitle: "Reduced clauses", answers: ["The man standing there", "The package sent yesterday", "The students selected", "The woman sitting by the window", "The report submitted last week", "The barking dog", "The company founded in 1990", "The ordered items", "The candidate interviewed last", "The house built last year"] },
+    { exercise: 4, subtitle: "Formal structures", answers: ["The person to whom I talked", "This is the book about which I was telling you", "The woman whose sister I met", "The agreement the terms of which were complex", "She's the director for whom I worked", "This is the office in which I spent 10 years", "The project of which I was in charge", "The colleague whom I recommended", "The city in which I was born", "The contract which I signed"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Participle Clauses", href: "/grammar/b2/participle-clauses", level: "B2", badge: "bg-orange-500", reason: "Participle clauses are a concise alternative to relative clauses" },
+  { title: "Cleft Sentences", href: "/grammar/b2/cleft-sentences", level: "B2", badge: "bg-orange-500", reason: "Cleft sentences use relative clauses for emphasis" },
+  { title: "Advanced Reported Speech", href: "/grammar/b2/reported-speech-advanced", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function RelativeClausesAdvancedLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function RelativeClausesAdvancedLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function RelativeClausesAdvancedLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-relative-clauses-advanced" subject="Advanced Relative Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function RelativeClausesAdvancedLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-relative-clauses-advanced" subject="Advanced Relative Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

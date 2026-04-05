@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Past Perfect Continuous structure?", options: ["had + -ing", "had been + -ing", "has been + -ing", "was + -ing"], answer: 1 },
+  { q: "Past Perfect Continuous focuses on?", options: ["Completed past action", "Duration of action before past point", "General past truth", "Future plan"], answer: 1 },
+  { q: "Which signal word goes with PPC?", options: ["yesterday", "for / since (before past point)", "by tomorrow", "right now"], answer: 1 },
+  { q: "PPC negative form?", options: ["had not been + -ing", "hadn't be + -ing", "wasn't been + -ing", "didn't been + -ing"], answer: 0 },
+  { q: "PPC question form?", options: ["Was he been working?", "Had he been working?", "Has he been working?", "Did he been working?"], answer: 1 },
+  { q: "'She was exhausted — she had been running for hours' — structure?", options: ["Past simple", "Past perfect continuous", "Present perfect continuous", "Past continuous"], answer: 1 },
+  { q: "PPC vs Past Perfect: key difference?", options: ["No difference", "PPC = duration/process, PP = completed result", "PP = duration, PPC = completed", "PPC uses 'has'"], answer: 1 },
+  { q: "'They had been arguing for hours when I arrived' — the arguing was?", options: ["Completed before arrival", "Ongoing up to arrival", "Started at arrival", "Irrelevant to arrival"], answer: 1 },
+  { q: "PPC can show cause of past result by?", options: ["Using 'because' only", "Duration explains why the result happened", "Using modal verbs", "Using 'since' only"], answer: 1 },
+  { q: "Which is correct PPC?", options: ["She had been working", "She was been working", "She had working", "She been working"], answer: 0 },
+  { q: "'He had been studying' — 'been studying' uses?", options: ["Past participle", "Present participle (-ing)", "Infinitive", "Base form"], answer: 1 },
+  { q: "PPC can be used with?", options: ["'for' and 'since'", "'by' and 'until' only", "'will' and 'shall'", "'do' and 'did'"], answer: 0 },
+  { q: "Which sentence uses PPC correctly?", options: ["They had been waited for an hour", "They had been waiting for an hour", "They were been waiting an hour", "They had waited for an hour being"], answer: 1 },
+  { q: "PPC is typically used when?", options: ["Talking about the future", "Explaining a past state or result", "Describing general truths", "Making promises"], answer: 1 },
+  { q: "'How long had she been working there?' — had been working means?", options: ["She left the job", "She worked continuously up to a past point", "She started working", "She works there now"], answer: 1 },
+  { q: "PPC vs Past Continuous — difference?", options: ["Same meaning", "PPC shows longer duration before a past point", "Past Cont. is for longer actions", "No past point with PPC"], answer: 1 },
+  { q: "Which time expression suggests PPC?", options: ["right now", "for three years when I met him", "tomorrow morning", "always"], answer: 1 },
+  { q: "Which is NOT appropriate for PPC?", options: ["She had been cooking for 3 hours", "He had been reading for 20 mins", "I had been love (stative verb)", "They had been training hard"], answer: 2 },
+  { q: "Stative verbs like 'know' or 'love' are NOT used in PPC because?", options: ["They are irregular", "They don't describe actions/processes", "They are too formal", "They require 'had' only"], answer: 1 },
+  { q: "PPC timeline: action starts → continues → past moment → ?", options: ["Action is still happening now", "Action was in progress up to that past moment", "Action starts after past moment", "No connection to past moment"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Past Perfect Continuous",
+  subtitle: "had been + -ing: duration before a past point",
+  level: "B2",
+  keyRule: "had been + -ing = action in progress for some time before a past moment.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct Past Perfect Continuous.",
+      questions: [
+        "She was tired — she ___ all day. (work)",
+        "They ___ for an hour when I arrived.",
+        "He ___ English for 5 years by then.",
+        "The children ___ in the garden.",
+        "She ___ since morning when he called.",
+        "We ___ to solve it for weeks.",
+        "He ___ her for months before she noticed.",
+        "They ___ together for years when they split.",
+        "She ___ piano since she was 5.",
+        "He looked exhausted — he ___ all night.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the Past Perfect Continuous",
+      difficulty: "medium" as const,
+      instruction: "Write the PPC form of the verb.",
+      questions: [
+        "The road was wet — it (rain) for hours.",
+        "She was happy — she (wait) for this moment.",
+        "He (not/sleep) well for months.",
+        "How long (they/argue) before she left?",
+        "I was tired because I (drive) all day.",
+        "She was pale — she (not/eat) properly.",
+        "They (try) to contact us for days.",
+        "He could answer — he (study) all term.",
+        "The team was exhausted — they (train) hard.",
+        "(you/work) there long before it closed?",
+      ],
+    },
+    {
+      number: 3,
+      title: "PPC vs Past Perfect",
+      difficulty: "hard" as const,
+      instruction: "Choose PPC or Past Perfect based on context.",
+      questions: [
+        "She was tired b/c she ___ all day. (walk)",
+        "He ___ the report before the meeting. (finish)",
+        "They ___ together for years. (work)",
+        "By 10am, she ___ her homework. (complete)",
+        "He was muddy — he ___ in the garden.",
+        "She ___ French for 3 years when she moved.",
+        "He ___ the email before she could reply.",
+        "They were nervous — they ___ for hours.",
+        "She ___ so many mistakes that she gave up.",
+        "He ___ on the project for months when it was cancelled.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full PPC practice",
+      difficulty: "hard" as const,
+      instruction: "Write the complete PPC answer.",
+      questions: [
+        "I was exhausted — drive / all day",
+        "She was nervous — prepare / for weeks",
+        "How long / they wait / before she arrived?",
+        "He hadn't slept — work / all night",
+        "They were wet — play / in the rain",
+        "She was fluent — study / Spanish for 5 yrs",
+        "We missed the deadline — not/manage time",
+        "He found it hard — not/practice enough",
+        "They were in love — know each other / for years",
+        "The project failed — not/plan / properly",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "PPC forms", answers: ["had been working", "had been waiting", "had been learning", "had been playing", "had been cooking", "had been trying", "had been watching", "had been working", "had been playing", "had been working"] },
+    { exercise: 2, subtitle: "Written PPC", answers: ["had been raining", "had been waiting", "hadn't been sleeping", "Had they been arguing", "had been driving", "hadn't been eating", "had been trying", "had been studying", "had been training", "Had you been working"] },
+    { exercise: 3, subtitle: "PPC vs Past Perfect", answers: ["had been walking", "had finished", "had been working", "had completed", "had been digging", "had been studying", "had deleted", "had been waiting", "had made", "had been working"] },
+    { exercise: 4, subtitle: "Full PPC sentences", answers: ["I had been driving all day", "She had been preparing for weeks", "How long had they been waiting", "He had been working all night", "They had been playing in the rain", "She had been studying Spanish for 5 years", "We hadn't been managing our time", "He hadn't been practising enough", "They had been knowing / had known each other for years", "They hadn't been planning properly"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Future Continuous", href: "/grammar/b2/future-continuous", level: "B2", badge: "bg-orange-500", reason: "Master the continuous aspect across all tenses" },
+  { title: "Future Perfect", href: "/grammar/b2/future-perfect", level: "B2", badge: "bg-orange-500", reason: "Perfect aspect in future time — complement to past perfect" },
+  { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function PastPerfectContinuousLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PastPerfectContinuousLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PastPerfectContinuousLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-past-perfect-continuous" subject="Past Perfect Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PastPerfectContinuousLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-past-perfect-continuous" subject="Past Perfect Continuous" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

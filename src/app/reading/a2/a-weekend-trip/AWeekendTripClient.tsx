@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const TEXT = `Sofia and her family drove to the mountains last weekend. They left home on Saturday morning at eight o'clock. The drive took two hours. When they arrived, they checked into a small hotel near a lake. In the afternoon, Sofia and her brother went for a walk in the forest. They saw a deer and took many photos. On Sunday morning, they had breakfast at the hotel. It was a big breakfast with eggs, bread, cheese, and fresh orange juice. After breakfast, they rented bicycles and rode around the lake. The weather was perfect, sunny and not too hot. They stopped at a small cafe for lunch and had soup and sandwiches. They drove home on Sunday evening. Sofia said it was the best weekend of the summer.`;
 
@@ -396,6 +397,9 @@ export default function AWeekendTripClient() {
           </a>
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </main>
   );

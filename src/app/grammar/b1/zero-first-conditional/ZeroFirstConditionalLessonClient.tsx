@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Zero conditional formula:", options: ["if + past, present", "if + present, will + verb", "if + present, present", "if + past, would + verb"], answer: 2 },
+  { q: "First conditional formula:", options: ["if + present, present", "if + past, would + verb", "if + present, will + verb", "if + past, past"], answer: 2 },
+  { q: "Zero conditional expresses:", options: ["Hypothetical situations", "General truths and facts", "Unlikely future events", "Past habits"], answer: 1 },
+  { q: "First conditional expresses:", options: ["Impossible situations", "Past regrets", "Real/likely future possibilities", "General scientific facts"], answer: 2 },
+  { q: "'If you heat ice, it ___.' (zero conditional)", options: ["will melt", "would melt", "melts", "melt"], answer: 2 },
+  { q: "'If it ___ tomorrow, we'll cancel.' (first conditional)", options: ["rained", "rains", "would rain", "has rained"], answer: 1 },
+  { q: "In the if-clause of first conditional, use:", options: ["will + verb", "would + verb", "present simple", "past simple"], answer: 2 },
+  { q: "'If she ___ hard, she'll pass.' Correct form:", options: ["will study", "studied", "studies", "would study"], answer: 2 },
+  { q: "Zero vs First: 'If you exercise, you feel better.' This is ___", options: ["First — real future", "Zero — general truth", "Second — hypothetical", "Third — past regret"], answer: 1 },
+  { q: "Zero vs First: 'If it rains, I'll take an umbrella.' This is ___", options: ["Zero — fact", "First — real future", "Second — unlikely", "Third — regret"], answer: 1 },
+  { q: "Can you use 'when' instead of 'if' in zero conditional?", options: ["No, never", "Yes, with same meaning", "Only in questions", "Only with negatives"], answer: 1 },
+  { q: "'Unless you study, you ___ fail.' Unless = ___", options: ["if", "if not", "even if", "when"], answer: 1 },
+  { q: "'If you ___ help, call me.' (zero or first?)", options: ["need — zero", "need — first", "needed — first", "will need — zero"], answer: 1 },
+  { q: "Which is WRONG in the if-clause?", options: ["If it rains…", "If she studies…", "If he will come…", "If they leave early…"], answer: 2 },
+  { q: "First conditional: negative result: 'If she doesn't hurry, she ___ miss the train.'", options: ["would", "might/will", "missed", "misses"], answer: 1 },
+  { q: "'Metals ___ when heated.' Zero conditional:", options: ["will expand", "would expand", "expand", "expanded"], answer: 2 },
+  { q: "'If I ___ free, I'll come to the party.' First conditional:", options: ["am", "was", "would be", "will be"], answer: 0 },
+  { q: "Which uses zero conditional correctly?", options: ["If I was a bird, I'd fly.", "If you heat water, it boils.", "If it rains, I'll stay home.", "If she studies, she'd pass."], answer: 1 },
+  { q: "Which uses first conditional correctly?", options: ["If he studied, he passes.", "If she works hard, she would succeed.", "If they leave now, they'll catch the bus.", "If water freezes, it expands."], answer: 2 },
+  { q: "'___ it gets cold, the pipes freeze.' (general fact)", options: ["If", "When", "Both if/when", "Unless"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Zero & First Conditional",
+  subtitle: "if + present → present | if + present → will",
+  level: "B1",
+  keyRule: "Zero: if + present, present (facts). First: if + present, will + infinitive (real future). Never use 'will' in the if-clause.",
+  exercises: [
+    {
+      number: 1,
+      title: "Zero Conditional: facts",
+      difficulty: "Easy",
+      instruction: "Complete the zero conditional (general truths).",
+      questions: [
+        "If you heat water to 100°C, it ___.",
+        "Plants ___ if they don't get enough water.",
+        "If you ___ ice, it melts.",
+        "She always ___ a headache if sleepless.",
+        "If you mix red and blue, you ___ purple.",
+        "Metals ___ when you heat them.",
+        "If I drink coffee late, I ___ sleep.",
+        "If you ___ a dog, it trusts you.",
+        "The engine ___ if there's no oil.",
+        "If you ___ in the sun too long, you burn.",
+      ],
+    },
+    {
+      number: 2,
+      title: "First Conditional: real future",
+      difficulty: "Medium",
+      instruction: "Complete the first conditional.",
+      questions: [
+        "If it rains tomorrow, we ___ stay inside.",
+        "If she ___ hard, she'll pass the exam.",
+        "We'll miss the train if we ___ leave now.",
+        "If he calls, I ___ tell him the news.",
+        "She ___ be angry if you forget her birthday.",
+        "If they ___ the project, they'll get a bonus.",
+        "If you don't eat, you ___ be hungry later.",
+        "He'll be late if he ___ leave now.",
+        "If I ___ time, I'll visit you this weekend.",
+        "I ___ call you if I need help.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Zero or First Conditional?",
+      difficulty: "Hard",
+      instruction: "Choose the correct conditional type.",
+      questions: [
+        "Ice melts if you ___ it. (fact)",
+        "If you ___ early, you'll get a seat. (future)",
+        "Water ___ at 100°C. (fact)",
+        "If I ___ tired, I go to bed. (habit/fact)",
+        "If she ___, she'll feel better. (future)",
+        "The alarm goes off if you ___ the wire. (fact)",
+        "If he ___ the interview, he'll get the job.",
+        "If you run fast, you ___ tired quickly. (fact)",
+        "If it ___ warm, we'll have a barbecue.",
+        "If plants don't get water, they ___. (fact)",
+      ],
+    },
+    {
+      number: 4,
+      title: "First Conditional with unless/when",
+      difficulty: "Harder",
+      instruction: "Complete using if, unless, or when.",
+      questions: [
+        "___ you don't hurry, you'll be late.",
+        "___ it rains, we'll stay inside.",
+        "___ you study, you'll fail. (if not)",
+        "I'll help you ___ you ask me.",
+        "___ the weather is nice, we'll go out.",
+        "She won't pass ___ she revises.",
+        "___ I see him, I'll give him the message.",
+        "He'll be upset ___ you forget.",
+        "___ they arrive, we'll start eating.",
+        "We won't go ___ it stops raining.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Zero conditional", answers: ["boils", "die", "heat", "gets", "get", "expand", "can't", "feed", "overheats", "stay"] },
+    { exercise: 2, subtitle: "First conditional", answers: ["will", "studies", "don't", "will", "will", "finish", "will", "doesn't", "have", "will"] },
+    { exercise: 3, subtitle: "Zero or first", answers: ["heat", "arrive", "boils", "feel", "exercises", "cut", "passes", "get", "gets", "die"] },
+    { exercise: 4, subtitle: "unless/when/if", answers: ["If", "If", "Unless", "if", "If", "unless", "When", "if", "When", "unless"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "All Conditionals", href: "/grammar/b1/all-conditionals", level: "B1", badge: "bg-violet-500", reason: "See all three conditional types together" },
+  { title: "Second Conditional", href: "/grammar/b1/second-conditional", level: "B1", badge: "bg-violet-500" },
+  { title: "Modal Verbs: Possibility", href: "/grammar/b1/modal-possibility", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function ZeroFirstConditionalLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function ZeroFirstConditionalLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function ZeroFirstConditionalLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-zero-first-conditional" subject="Zero & First Conditional" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +405,22 @@ export default function ZeroFirstConditionalLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-zero-first-conditional" subject="Zero & First Conditional" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "too + ___", options: ["noun", "adjective/adverb", "article + noun", "infinitive"], answer: 1 },
+  { q: "enough + ___ (before noun)", options: ["adjective", "adverb", "noun", "infinitive"], answer: 2 },
+  { q: "adjective + enough: correct position?", options: ["enough + adjective", "adjective + enough", "adjective + too", "too + enough"], answer: 1 },
+  { q: "'She's ___ young to drive.' (too or enough?)", options: ["enough", "too", "very", "such"], answer: 1 },
+  { q: "'She's old ___ to vote.' (too or enough?)", options: ["too", "enough", "so", "very"], answer: 1 },
+  { q: "too = more than ___:", options: ["needed", "possible", "less", "wanted (both)"], answer: 3 },
+  { q: "enough = ___:", options: ["too much", "the right amount", "not at all", "very much"], answer: 1 },
+  { q: "'There isn't ___ food for everyone.'", options: ["too", "enough", "very", "so"], answer: 1 },
+  { q: "'It's ___ cold to swim.' (too or enough?)", options: ["enough", "too", "so", "very"], answer: 1 },
+  { q: "Which is CORRECT?", options: ["She's enough tall.", "She's tall enough.", "She's too tall enough.", "Enough she's tall."], answer: 1 },
+  { q: "Which is CORRECT?", options: ["I don't have money enough.", "I don't have enough money.", "I have money too.", "Money enough I have."], answer: 1 },
+  { q: "'He runs ___ slowly to win the race.'", options: ["enough", "too", "very", "such"], answer: 1 },
+  { q: "too + adjective + to + infinitive: meaning?", options: ["Able to do it", "Cannot do it (extreme)", "Should do it", "Did it before"], answer: 1 },
+  { q: "'The bag is ___ heavy for me to carry.'", options: ["enough", "too", "very", "so"], answer: 1 },
+  { q: "enough + infinitive: 'She's smart ___ pass.'", options: ["too to", "enough to", "too enough to", "to enough"], answer: 1 },
+  { q: "'Are you warm ___?' Correct form:", options: ["too", "enough", "so", "very"], answer: 1 },
+  { q: "'I can't read this — it's ___ small.'", options: ["enough", "too", "very", "such"], answer: 1 },
+  { q: "too much / too many: use 'too many' with:", options: ["uncountable nouns", "countable nouns", "adjectives", "adverbs"], answer: 1 },
+  { q: "'There's ___ much sugar in this coffee.'", options: ["enough", "too", "very", "so"], answer: 1 },
+  { q: "Correct: 'He is ___ to go to the cinema.'", options: ["young enough", "too young", "enough young", "young too"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "too / enough",
+  subtitle: "too + adj/adv | adj + enough | enough + noun",
+  level: "B1",
+  keyRule: "too = more than needed (negative). enough = the right amount. too + adj/adv; adj/adv + enough; enough + noun.",
+  exercises: [
+    {
+      number: 1,
+      title: "too or enough?",
+      difficulty: "Easy",
+      instruction: "Choose too or enough.",
+      questions: [
+        "This coffee is ___ hot to drink.",
+        "She isn't old ___ to drive.",
+        "I'm ___ tired to go out.",
+        "He doesn't earn ___ money.",
+        "The bag is ___ heavy to carry.",
+        "Is there ___ time to finish?",
+        "This jacket is ___ small.",
+        "Are you warm ___?",
+        "I can't sleep — it's ___ noisy.",
+        "There aren't ___ chairs.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Word order with too/enough",
+      difficulty: "Medium",
+      instruction: "Choose the sentence with correct word order.",
+      questions: [
+        "tall enough OR enough tall?",
+        "too cold OR cold too?",
+        "enough food OR food enough?",
+        "too slowly OR slowly too?",
+        "enough money OR money enough?",
+        "boring enough OR enough boring?",
+        "too loud OR loud too?",
+        "enough chairs OR chairs enough?",
+        "too fast OR fast too?",
+        "enough time OR time enough?",
+      ],
+    },
+    {
+      number: 3,
+      title: "Complete with too or enough",
+      difficulty: "Hard",
+      instruction: "Write too or enough in the blank.",
+      questions: [
+        "The film is ___ long to watch now.",
+        "Is she experienced ___ for the job?",
+        "The soup is ___ hot for the child.",
+        "We don't have ___ information.",
+        "He is ___ young to vote.",
+        "Is there ___ petrol in the car?",
+        "It's ___ dark to read without a lamp.",
+        "She was brave ___ to speak up.",
+        "The shirt is ___ tight for me.",
+        "Have you had ___ sleep?",
+      ],
+    },
+    {
+      number: 4,
+      title: "too much / too many / enough",
+      difficulty: "Harder",
+      instruction: "Choose too much, too many, or enough.",
+      questions: [
+        "There's ___ sugar in my tea.",
+        "There are ___ people at the party.",
+        "I don't have ___ time to help.",
+        "She drinks ___ coffee every day.",
+        "There were ___ cars on the road.",
+        "Have we got ___ chairs for everyone?",
+        "He spends ___ money on clothes.",
+        "There are ___ options — I can't choose.",
+        "We have ___ food for the trip.",
+        "She made ___ mistakes on the test.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "too or enough", answers: ["too", "enough", "too", "enough", "too", "enough", "too", "enough", "too", "enough"] },
+    { exercise: 2, subtitle: "Word order", answers: ["tall enough", "too cold", "enough food", "too slowly", "enough money", "boring enough", "too loud", "enough chairs", "too fast", "enough time"] },
+    { exercise: 3, subtitle: "Complete", answers: ["too", "enough", "too", "enough", "too", "enough", "too", "enough", "too", "enough"] },
+    { exercise: 4, subtitle: "too much/many/enough", answers: ["too much", "too many", "enough", "too much", "too many", "enough", "too much", "too many", "enough", "too many"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "So / Such", href: "/grammar/b1/so-such", level: "B1", badge: "bg-violet-500", reason: "Closely related intensifier structures" },
+  { title: "As...as Comparison", href: "/grammar/b1/as-as-comparison", level: "B1", badge: "bg-violet-500" },
+  { title: "Modal Verbs: Possibility", href: "/grammar/b1/modal-possibility", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function TooEnoughLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function TooEnoughLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function TooEnoughLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-too-enough" subject="Too and Enough" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +405,22 @@ export default function TooEnoughLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-too-enough" subject="Too and Enough" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 type Planner = {
   name: string;
@@ -393,6 +394,9 @@ export default function ChangingCitiesClient() {
           )}
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </div>
   );

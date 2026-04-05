@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Non-defining clauses always have:", options: ["no commas", "one comma at start", "commas around them", "brackets around them"], answer: 2 },
+  { q: "Can 'that' be used in non-defining clauses?", options: ["Yes, always", "Yes, sometimes", "No, never", "Only for things"], answer: 2 },
+  { q: "'My sister, ___ lives in Paris, is visiting.'", options: ["that", "which", "whose", "who"], answer: 3 },
+  { q: "'The Eiffel Tower, ___ was built in 1889…'", options: ["that", "who", "whose", "which"], answer: 3 },
+  { q: "Non-defining clause gives:", options: ["Essential information", "Extra, additional info", "The subject of sentence", "The verb of sentence"], answer: 1 },
+  { q: "'My brother, who lives in Canada, is visiting.' The clause is:", options: ["Defining", "Non-defining"], answer: 1 },
+  { q: "'The student who got 100% won a prize.' The clause is:", options: ["Defining", "Non-defining"], answer: 0 },
+  { q: "'My car, which is ten years old, needs repair.' The clause is:", options: ["Defining", "Non-defining"], answer: 1 },
+  { q: "'People who exercise regularly live longer.' The clause is:", options: ["Defining", "Non-defining"], answer: 0 },
+  { q: "'The Amazon, which is the world's largest river…' is:", options: ["Defining", "Non-defining"], answer: 1 },
+  { q: "For non-defining, use 'which' for:", options: ["people", "places", "things", "times"], answer: 2 },
+  { q: "'My mother, ___ is a teacher, loves reading.'", options: ["that", "which", "whose", "who"], answer: 3 },
+  { q: "'Rome, ___ I lived for two years, is beautiful.'", options: ["that", "who", "which", "where"], answer: 3 },
+  { q: "'My colleague, ___ wife is a journalist, won.' Need:", options: ["who", "which", "whose", "where"], answer: 2 },
+  { q: "Which is WRONG (non-defining)?", options: ["My sister, who is tall, loves sport.", "My sister, that is tall, loves sport.", "My sister, who lives abroad, visited.", "My sister, whose job is good, came."], answer: 1 },
+  { q: "'He told me about his new job, ___ made me happy.' This 'which' refers to:", options: ["his job only", "his new job", "the whole situation", "me"], answer: 2 },
+  { q: "Non-defining clause: commas on both sides?", options: ["Only one comma before", "Only one comma after", "Yes, both sides needed", "No commas needed"], answer: 2 },
+  { q: "'My parents, who they live in countryside, visit.' Error:", options: ["Wrong pronoun 'who'", "Double subject 'who they'", "No comma needed", "Wrong tense"], answer: 1 },
+  { q: "'Tokyo, ___ is the capital of Japan, is crowded.'", options: ["where is", "who is", "that is", "which is"], answer: 3 },
+  { q: "'My friend, ___ father is a pilot, travels a lot.'", options: ["who's", "which", "that", "whose"], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Non-defining Relative Clauses",
+  subtitle: "who / which / whose / where (with commas)",
+  level: "B1",
+  keyRule: "Non-defining = extra info in commas. NEVER use 'that'. Use who (people), which (things), where (places).",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose who or which",
+      difficulty: "Easy",
+      instruction: "Choose who or which (never 'that').",
+      questions: [
+        "My sister, ___ lives in Paris, is visiting.",
+        "The Eiffel Tower, ___ was built in 1889…",
+        "My boss, ___ I respect a lot, promoted me.",
+        "The new law, ___ passed last month, affects all.",
+        "My grandfather, ___ was a sailor, travelled widely.",
+        "The film, ___ won three Oscars, is on streaming.",
+        "London, ___ I visited last summer, is wonderful.",
+        "Her novel, ___ took five years, is a bestseller.",
+        "Our neighbour, ___ is 90, still goes jogging.",
+        "The report, ___ was by the CEO, caused controversy.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Defining or Non-defining?",
+      difficulty: "Medium",
+      instruction: "Is the clause defining or non-defining?",
+      questions: [
+        "My brother, who lives in Canada, is visiting.",
+        "The student who got 100% won a prize.",
+        "Shakespeare, who was born in 1564, wrote Hamlet.",
+        "The book that I lent you is very rare.",
+        "My car, which is ten years old, needs repair.",
+        "People who exercise regularly live longer.",
+        "The Amazon, which is world's largest river…",
+        "Do you know anyone who can help me move?",
+        "Her father, who is a surgeon, works long hours.",
+        "The hotel where we stayed had amazing view.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write who/which/whose/where",
+      difficulty: "Hard",
+      instruction: "Write the correct relative pronoun.",
+      questions: [
+        "My mother, ___ is a teacher, loves reading.",
+        "The museum, ___ we visited, closes on Mondays.",
+        "Rome, ___ I lived for two years, is beautiful.",
+        "My colleague, ___ wife is a journalist, won.",
+        "The new bridge, ___ opened last year, saves time.",
+        "My best friend, ___ I've known 15 years, is engaged.",
+        "Paris, ___ is capital of France, has great food.",
+        "The director, ___ latest film won Oscar, is talented.",
+        "My flat, ___ I've lived 3 years, is very small.",
+        "The match, ___ lasted four hours, was incredible.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Spot the error",
+      difficulty: "Harder",
+      instruction: "Choose the correct sentence.",
+      questions: [
+        "Option A: 'My sister, that lives in Oslo…' OR Option B: 'My sister, who lives in Oslo…'",
+        "Option A: 'The Nile, which is longest river…' OR Option B: 'The Nile, that is longest river…'",
+        "Option A: 'He told me about new job which made me happy' OR Option B: '…job, which made me happy'",
+        "Option A: 'My parents, who they live…' OR Option B: 'My parents, who live…'",
+        "Option A: '…concert, which I went to last night' OR Option B: '…concert, which I went it to'",
+        "Option A: 'Mr Brown who is my neighbour, won.' OR Option B: 'Mr Brown, who is my neighbour, won.'",
+        "Option A: 'Her car, which is red, needs service.' OR Option B: 'Her car which is red needs service.'",
+        "Option A: 'Tokyo, where is the capital, is crowded.' OR Option B: 'Tokyo, which is the capital, is crowded.'",
+        "Option A: 'My friend, whose father is a pilot…' OR Option B: 'My friend, who's father is a pilot…'",
+        "Option A: 'The president, who gave a speech…' OR Option B: 'The president, that gave a speech…'",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "who / which", answers: ["who", "which", "who", "which", "who", "which", "which", "which", "who", "which"] },
+    { exercise: 2, subtitle: "Defining / Non-defining", answers: ["Non-defining", "Defining", "Non-defining", "Defining", "Non-defining", "Defining", "Non-defining", "Defining", "Non-defining", "Defining"] },
+    { exercise: 3, subtitle: "Pronouns", answers: ["who", "which", "where", "whose", "which", "who", "which", "whose", "where", "which"] },
+    { exercise: 4, subtitle: "Correct sentences", answers: ["Option B", "Option A", "Option B", "Option B", "Option A", "Option B", "Option A", "Option B", "Option A", "Option A"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Defining Relative Clauses", href: "/grammar/b1/relative-clauses-defining", level: "B1", badge: "bg-violet-500", reason: "The companion to non-defining relative clauses" },
+  { title: "Reported Statements", href: "/grammar/b1/reported-statements", level: "B1", badge: "bg-violet-500" },
+  { title: "Reported Questions", href: "/grammar/b1/reported-questions", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function RelativeClausesNonDefiningLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function RelativeClausesNonDefiningLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function RelativeClausesNonDefiningLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-relative-clauses-non-defining" subject="Non-defining Relative Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function RelativeClausesNonDefiningLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-relative-clauses-non-defining" subject="Non-defining Relative Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

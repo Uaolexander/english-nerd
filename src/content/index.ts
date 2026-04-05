@@ -168,6 +168,28 @@ export const searchIndex: SearchItem[] = [
   { title: "Be Going To", keywords: ["going to", "future plans", "tense", "a2"], href: "/tenses/be-going-to", badge: "A2" },
   { title: "Future Continuous", keywords: ["future continuous", "will be", "tense", "b2"], href: "/tenses/future-continuous", badge: "B2" },
   { title: "Future Perfect", keywords: ["future perfect", "will have", "tense", "b2 c1"], href: "/tenses/future-perfect", badge: "B2–C1" },
+
+  // ─── Vocabulary ───────────────────────────────────────────────────────────
+  { title: "Animals", keywords: ["animals", "vocabulary", "a1"], href: "/vocabulary/a1/animals", badge: "A1" },
+  { title: "At the Café", keywords: ["cafe", "coffee", "food", "vocabulary", "a1"], href: "/vocabulary/a1/at-the-cafe", badge: "A1" },
+  { title: "My Body", keywords: ["body", "parts", "health", "vocabulary", "a1"], href: "/vocabulary/a1/my-body", badge: "A1" },
+  { title: "My Family", keywords: ["family", "relatives", "vocabulary", "a1"], href: "/vocabulary/a1/my-family", badge: "A1" },
+  { title: "Around the Town", keywords: ["town", "city", "places", "vocabulary", "a2"], href: "/vocabulary/a2/around-the-town", badge: "A2" },
+  { title: "At the Restaurant", keywords: ["restaurant", "food", "menu", "vocabulary", "a2"], href: "/vocabulary/a2/at-the-restaurant", badge: "A2" },
+  { title: "Clothes and Shopping", keywords: ["clothes", "shopping", "fashion", "vocabulary", "a2"], href: "/vocabulary/a2/clothes-and-shopping", badge: "A2" },
+  { title: "My Weekend", keywords: ["weekend", "free time", "hobbies", "vocabulary", "a2"], href: "/vocabulary/a2/my-weekend", badge: "A2" },
+  { title: "City Life", keywords: ["city", "urban", "life", "vocabulary", "b1"], href: "/vocabulary/b1/city-life", badge: "B1" },
+  { title: "Health and Fitness", keywords: ["health", "fitness", "exercise", "vocabulary", "b1"], href: "/vocabulary/b1/health-and-fitness", badge: "B1" },
+  { title: "Job Interview", keywords: ["job", "interview", "work", "career", "vocabulary", "b1"], href: "/vocabulary/b1/job-interview", badge: "B1" },
+  { title: "Travel Plans", keywords: ["travel", "plans", "holiday", "trip", "vocabulary", "b1"], href: "/vocabulary/b1/travel-plans", badge: "B1" },
+  { title: "Business Meeting", keywords: ["business", "meeting", "work", "professional", "vocabulary", "b2"], href: "/vocabulary/b2/business-meeting", badge: "B2" },
+  { title: "Environment", keywords: ["environment", "nature", "climate", "ecology", "vocabulary", "b2"], href: "/vocabulary/b2/environment", badge: "B2" },
+  { title: "Media and Technology", keywords: ["media", "technology", "internet", "social media", "vocabulary", "b2"], href: "/vocabulary/b2/media-and-technology", badge: "B2" },
+  { title: "Social Issues", keywords: ["social", "issues", "society", "problems", "vocabulary", "b2"], href: "/vocabulary/b2/social-issues", badge: "B2" },
+  { title: "Academic Debate", keywords: ["academic", "debate", "argue", "opinion", "vocabulary", "c1"], href: "/vocabulary/c1/academic-debate", badge: "C1" },
+  { title: "Economic Challenges", keywords: ["economic", "economy", "finance", "vocabulary", "c1"], href: "/vocabulary/c1/economic-challenges", badge: "C1" },
+  { title: "Formal English", keywords: ["formal", "professional", "writing", "vocabulary", "c1"], href: "/vocabulary/c1/formal-english", badge: "C1" },
+  { title: "Idioms and Phrases", keywords: ["idioms", "phrases", "expressions", "vocabulary", "c1"], href: "/vocabulary/c1/idioms-and-phrases", badge: "C1" },
 ];
 
 export function searchContent(query: string): SearchItem[] {

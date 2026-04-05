@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { sendWelcomeEmail } from "@/lib/email";
 
 function deviceHint(ua: string): string {
   if (/iPhone|iPad/i.test(ua)) return "iOS";
@@ -96,6 +97,12 @@ export async function GET(request: Request) {
       console.error("[auth/callback] Failed to create app session:", err);
       // Non-fatal — user is still logged in via Supabase auth
     }
+  }
+
+  // Send welcome email to brand-new users (registered within last 60s)
+  if (user && (Date.now() - new Date(user.created_at).getTime()) < 60_000) {
+    const name = (user.user_metadata?.full_name as string | null) ?? null;
+    void sendWelcomeEmail(user.email!, name);
   }
 
   return response;

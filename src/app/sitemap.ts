@@ -48,6 +48,38 @@ const VOCAB_SLUGS: string[] = [
   "kings-speech", "oppenheimer",
 ];
 
+const VOCABULARY_TOPICS: string[] = [
+  "a1/animals", "a1/at-the-cafe", "a1/my-body", "a1/my-family",
+  "a2/around-the-town", "a2/at-the-restaurant", "a2/clothes-and-shopping", "a2/my-weekend",
+  "b1/city-life", "b1/health-and-fitness", "b1/job-interview", "b1/travel-plans",
+  "b2/business-meeting", "b2/environment", "b2/media-and-technology", "b2/social-issues",
+  "c1/academic-debate", "c1/economic-challenges", "c1/formal-english", "c1/idioms-and-phrases",
+];
+
+const READING_ARTICLES: string[] = [
+  "a1/four-friends", "a1/at-the-market", "a1/my-school-day",
+  "a2/a-weekend-trip", "a2/city-or-country", "a2/pen-pals",
+  "b1/digital-lives", "b1/the-slow-travel-movement", "b1/work-from-home",
+  "b2/the-gig-economy", "b2/changing-cities", "b2/the-psychology-of-habits",
+  "c1/rethinking-intelligence", "c1/language-and-thought", "c1/the-attention-economy",
+];
+
+const TENSES_EXERCISES: [string, string[]][] = [
+  ["present-simple",           ["to-be", "do-dont-do-i", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "ps-vs-pc", "ps-pc-advanced"]],
+  ["present-continuous",       ["ing-forms", "stative-verbs", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "ps-vs-pc", "ps-pc-advanced"]],
+  ["present-perfect",          ["have-has", "for-since", "irregular-participles", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "pp-vs-ps"]],
+  ["present-perfect-continuous",["have-been-ing", "for-since-duration", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "pp-vs-ppc", "all-present-tenses"]],
+  ["past-simple",              ["regular-past-simple", "irregular-past-simple", "did-didnt", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "ps-vs-pc"]],
+  ["past-continuous",          ["was-were-ing", "when-while", "interrupted-actions", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "ps-vs-pc"]],
+  ["past-perfect",             ["had-past-participle", "irregular-participles", "sequence-of-events", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "past-perfect-vs-past-simple"]],
+  ["past-perfect-continuous",  ["had-been-ing", "for-since-past", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake", "pp-vs-ppc-past", "all-past-tenses"]],
+  ["future-simple",            ["will-wont", "will-vs-going-to", "predictions", "promises-offers", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake"]],
+  ["be-going-to",              ["am-is-are-going-to", "evidence-predictions", "plans-intentions", "will-vs-going-to", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake"]],
+  ["future-continuous",        ["will-be-ing", "at-future-moment", "polite-questions", "will-vs-will-be-ing", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake"]],
+  ["future-perfect",           ["will-have-past-participle", "by-the-time", "irregular-participles", "future-perfect-vs-simple", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake"]],
+  ["future-perfect-continuous", ["will-have-been-ing", "for-duration-future", "fp-vs-fpc", "all-future-tenses", "fill-in-blank", "quiz", "sentence-builder", "spot-the-mistake"]],
+];
+
 function url(path: string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "monthly"): MetadataRoute.Sitemap[number] {
   return { url: `${BASE}${path}`, lastModified: new Date(), changeFrequency, priority };
 }
@@ -94,5 +126,44 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...VOCAB_SLUGS.map((slug) =>
       url(`/nerd-zone/recommendations/${slug}`, 0.8, "monthly")
     ),
+
+    // Vocabulary hub + level hubs + topics
+    url("/vocabulary",      0.9, "weekly"),
+    url("/vocabulary/a1",   0.8, "monthly"),
+    url("/vocabulary/a2",   0.8, "monthly"),
+    url("/vocabulary/b1",   0.8, "monthly"),
+    url("/vocabulary/b2",   0.8, "monthly"),
+    url("/vocabulary/c1",   0.8, "monthly"),
+    ...VOCABULARY_TOPICS.map((t) => url(`/vocabulary/${t}`, 0.75, "monthly")),
+
+    // Tenses hub + tense hubs + exercises
+    url("/tenses",          0.9, "weekly"),
+    ...TENSES_EXERCISES.flatMap(([tense, exercises]) => [
+      url(`/tenses/${tense}`, 0.8, "monthly"),
+      ...exercises.map((ex) => url(`/tenses/${tense}/${ex}`, 0.7, "monthly")),
+    ]),
+
+    // Reading hub + level hubs + articles
+    url("/reading",         0.85, "weekly"),
+    url("/reading/a1",      0.75, "monthly"),
+    url("/reading/a2",      0.75, "monthly"),
+    url("/reading/b1",      0.75, "monthly"),
+    url("/reading/b2",      0.75, "monthly"),
+    url("/reading/c1",      0.75, "monthly"),
+    ...READING_ARTICLES.map((a) => url(`/reading/${a}`, 0.7, "monthly")),
+
+    // Listening hub + articles
+    url("/listening",       0.8, "weekly"),
+    url("/listening/b2",    0.7, "monthly"),
+    url("/listening/b2/work-life-balance", 0.65, "monthly"),
+
+    // Tests hub + individual tests
+    url("/tests",           0.85, "weekly"),
+    url("/tests/grammar",   0.8,  "monthly"),
+    url("/tests/tenses",    0.8,  "monthly"),
+    url("/tests/vocabulary",0.8,  "monthly"),
+
+    // PRO page
+    url("/pro",             0.9, "weekly"),
   ];
 }

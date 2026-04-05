@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Discourse Markers", href: "/grammar/c1/advanced-discourse-markers", level: "C1", badge: "bg-sky-600", reason: "Both are key cohesion devices in advanced writing" },
+  { title: "Advanced Relative Clauses", href: "/grammar/c1/advanced-relative-clauses", level: "C1", badge: "bg-sky-600" },
+  { title: "Extraposition", href: "/grammar/c1/extraposition", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'Do so' is used to substitute:", options: ["A verb phrase", "A noun", "An adjective", "A clause"], answer: 0 },
+  { q: "'So' substitutes after think/believe:", options: ["A whole clause", "A noun phrase", "An adverb", "A verb only"], answer: 0 },
+  { q: "Can I come? Yes, ___ can.", options: ["you", "it", "do", "that"], answer: 0 },
+  { q: "She left and so ___ John.", options: ["did", "has", "was", "had"], answer: 0 },
+  { q: "Will she win? I think ___.", options: ["so", "it", "that", "this"], answer: 0 },
+  { q: "'Not' substitutes a negative clause:", options: ["I hope not", "I hope no", "I hope never", "I hope none"], answer: 0 },
+  { q: "Ellipsis means:", options: ["Omitting understood words", "Repeating key words", "Changing word order", "Adding extra words"], answer: 0 },
+  { q: "She can sing and I can ___ too.", options: ["(nothing)", "do", "sing", "it"], answer: 0 },
+  { q: "'One' substitutes a singular ___.", options: ["Countable noun", "Uncountable noun", "Verb phrase", "Whole clause"], answer: 0 },
+  { q: "I don't like this hat. Try the red ___.", options: ["one", "it", "ones", "that"], answer: 0 },
+  { q: "She passed and so did I. ('so did I' =)", options: ["I also passed", "I passed before her", "I tried too", "She failed"], answer: 0 },
+  { q: "Auxiliary ellipsis: I can't run but she ___.", options: ["can", "does", "is", "will"], answer: 0 },
+  { q: "Substitution of 'that' after verbs:", options: ["say / think / know", "run / walk / jump", "is / are / was", "have / had / has"], answer: 0 },
+  { q: "He said he'd come and he ___ so.", options: ["did", "has", "was", "had"], answer: 0 },
+  { q: "'Ones' substitutes:", options: ["Plural countable nouns", "Uncountable nouns", "Verb phrases", "Clauses"], answer: 0 },
+  { q: "I wanted to help but wasn't able ___.", options: ["to", "doing", "for", "of"], answer: 0 },
+  { q: "Gapping omits:", options: ["Repeated verb in parallel", "Subject only", "Object only", "Adjective only"], answer: 0 },
+  { q: "She likes jazz and he ___ rock.", options: ["(nothing / gapping)", "likes too", "does rock", "plays jazz"], answer: 0 },
+  { q: "'Do so' vs 'do it': 'do so' is ___.", options: ["More formal", "More informal", "Identical", "Always incorrect"], answer: 0 },
+  { q: "I called her but she didn't ___.", options: ["reply", "replied", "replying", "have replied"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Ellipsis and Substitution",
+  subtitle: "Avoiding repetition: do so, one/ones, so, not, gapping",
+  level: "C1",
+  keyRule: "Ellipsis = omit; substitution = replace with do so/one/so/not.",
+  exercises: [
+    {
+      number: 1,
+      title: "Substitution with do so / one / ones",
+      difficulty: "Easy",
+      instruction: "Choose the correct substitute.",
+      questions: [
+        "She left. John did ___ too.",
+        "Try this hat or the red ___.",
+        "I think ___ (that he's right).",
+        "Will it rain? I hope ___.",
+        "I don't like these. Try those ___.",
+        "She sang well and he did ___ too.",
+        "One chair broke; the other ___ fine.",
+        "I'd buy the blue ___.",
+        "She helped and I did ___ too.",
+        "Won't he come? I believe ___.",
+      ],
+      hint: "so / one / ones / not",
+    },
+    {
+      number: 2,
+      title: "Ellipsis: Omitting Words",
+      difficulty: "Medium",
+      instruction: "Identify what is omitted or choose correct ellipsis.",
+      questions: [
+        "She can sing and I can ___ too.",
+        "I wanted to help but wasn't able ___.",
+        "He said he'd come and ___ did.",
+        "She likes jazz; he ___ rock.",
+        "I'll try if you ___ .",
+        "Tom passed and so ___ Jerry.",
+        "Can you help? Yes, I ___.",
+        "She likes tea, not coffee, and he ___.",
+        "I should call but I don't want ___.",
+        "We hoped to win and we ___.",
+      ],
+      hint: "(nothing) / to / did / will",
+    },
+    {
+      number: 3,
+      title: "So / Not After Reporting Verbs",
+      difficulty: "Hard",
+      instruction: "Choose the correct form after the reporting verb.",
+      questions: [
+        "Will they agree? I expect ___.",
+        "Did she pass? I believe ___.",
+        "Will it work? I'm afraid ___.",
+        "Is he wrong? I think ___.",
+        "Is she coming? I hope ___.",
+        "Did they fail? I'm afraid ___.",
+        "Will it rain? I suppose ___.",
+        "Is it correct? I believe ___.",
+        "Did he resign? I heard ___.",
+        "Will she recover? I hope ___.",
+      ],
+      hint: "so / not",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Ellipsis or Substitution",
+      difficulty: "Very Hard",
+      instruction: "Rewrite avoiding repetition.",
+      questions: [
+        "She sang well and he sang well.",
+        "I like this book. Buy this book.",
+        "He promised he'd come, he came.",
+        "She can help and I can help too.",
+        "I bought the red hat not blue hat.",
+        "Tom studies hard; Anna studies hard.",
+        "She said she'd finish, she finished.",
+        "He hoped to pass and he passed.",
+        "I'll come if she comes.",
+        "They left and we left too.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Substitution with do so / one / ones", answers: ["so", "one", "so", "not", "ones", "so", "ones (were)", "one", "so", "not"] },
+    { exercise: 2, subtitle: "Ellipsis: Omitting Words", answers: ["(nothing)", "to", "he", "(nothing - gapping)", "will", "did", "can", "(nothing - gapping)", "to", "did"] },
+    { exercise: 3, subtitle: "So / Not After Reporting Verbs", answers: ["so", "so", "not", "so", "so", "so", "so", "so", "so", "so"] },
+    { exercise: 4, subtitle: "Rewrite Using Ellipsis or Substitution", answers: ["She sang well and so did he.", "I like this book. Buy it.", "He promised he'd come and did so.", "She can help and so can I.", "I bought the red hat, not the blue one.", "Tom studies hard and so does Anna.", "She said she'd finish and did so.", "He hoped to pass and did.", "I'll come if she does.", "They left and so did we."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function EllipsisSubstitutionLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function EllipsisSubstitutionLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function EllipsisSubstitutionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-ellipsis-substitution" subject="Ellipsis and Substitution" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function EllipsisSubstitutionLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-ellipsis-substitution" subject="Ellipsis and Substitution" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const TEXT = `The concept of the attention economy rests on a simple but profound premise: in an age of information abundance, human attention has become the scarcest and most valuable resource. Technology companies, media platforms and advertisers compete aggressively for a finite commodity that cannot be manufactured or expanded. The phrase was popularised by psychologist and Nobel laureate Herbert Simon, who observed in 1971 that information consumes the attention of its recipients and that a wealth of information creates a poverty of attention.
 
@@ -358,6 +359,9 @@ export default function AttentionEconomyClient() {
           )}
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </div>
   );

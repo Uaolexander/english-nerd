@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'enjoy' is followed by?", options: ["infinitive", "gerund (-ing)", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'decide' is followed by?", options: ["gerund (-ing)", "to + infinitive", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'suggest' is followed by?", options: ["to + infinitive", "gerund (-ing)", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'avoid' is followed by?", options: ["to + infinitive", "bare infinitive", "gerund (-ing)", "past participle"], answer: 2 },
+  { q: "'want' is followed by?", options: ["gerund (-ing)", "to + infinitive", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'remember + -ing' means?", options: ["Remembering to do it", "Memory of past action", "Future intention", "Obligation"], answer: 1 },
+  { q: "'remember + to' means?", options: ["Memory of past action", "Not forgetting to do it", "Past habit", "Ongoing action"], answer: 1 },
+  { q: "'stop + -ing' means?", options: ["Stop in order to do", "Cease doing", "Start doing", "Continue doing"], answer: 1 },
+  { q: "'stop + to' means?", options: ["Cease doing", "Pause in order to do", "Past habit", "Regular action"], answer: 1 },
+  { q: "Prepositions are followed by?", options: ["to + infinitive", "gerund (-ing)", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'try + -ing' means?", options: ["Make an effort to do", "Experiment/attempt a solution", "Past habit", "Future plan"], answer: 1 },
+  { q: "'try + to' means?", options: ["Experiment with something", "Make an effort to do", "Past action", "Obligation"], answer: 1 },
+  { q: "'She's used to ___ early' uses?", options: ["to + infinitive", "gerund (-ing)", "bare infinitive", "past participle"], answer: 1 },
+  { q: "'He used to ___ a lot' uses?", options: ["gerund (-ing)", "bare infinitive", "to + infinitive", "past participle"], answer: 1 },
+  { q: "Verb 'mind' is followed by?", options: ["to + infinitive", "bare infinitive", "gerund (-ing)", "past participle"], answer: 2 },
+  { q: "'forget + -ing' means?", options: ["Forget to do in future", "Forget memory of past action", "Future plan", "Obligation"], answer: 1 },
+  { q: "'forget + to' means?", options: ["Memory of past action", "Fail to remember to do", "Past habit", "Present action"], answer: 1 },
+  { q: "'He managed ___ the door' uses?", options: ["opening", "to open", "open", "opened"], answer: 1 },
+  { q: "After 'it's worth' use?", options: ["to + infinitive", "gerund (-ing)", "bare infinitive", "modal"], answer: 1 },
+  { q: "'I can't help ___ at his jokes' uses?", options: ["to laugh", "laugh", "laughing", "laughed"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Gerunds vs Infinitives",
+  subtitle: "verb + -ing or to + infinitive",
+  level: "B2",
+  keyRule: "Some verbs take gerund, some infinitive; some change meaning with each.",
+  exercises: [
+    {
+      number: 1,
+      title: "Gerund or infinitive?",
+      difficulty: "easy" as const,
+      instruction: "Choose the correct form.",
+      questions: [
+        "She enjoys ___ by the sea. (walk)",
+        "He decided ___ a new laptop. (buy)",
+        "They suggested ___ a diff route. (take)",
+        "I avoid ___ on weekends. (drive)",
+        "She wants ___ abroad next year. (study)",
+        "We finished ___ the report. (write)",
+        "He promised ___ on time. (arrive)",
+        "They kept ___ the same mistake. (make)",
+        "She agreed ___ the meeting. (attend)",
+        "I don't mind ___ for you. (wait)",
+      ],
+    },
+    {
+      number: 2,
+      title: "Change of meaning verbs",
+      difficulty: "medium" as const,
+      instruction: "Choose the correct form based on meaning.",
+      questions: [
+        "I remember ___ her at the party. (see)",
+        "Remember ___ your medicine! (take)",
+        "She stopped ___ (gave up smoking).",
+        "He stopped ___ a newspaper. (buy)",
+        "Try ___ a different approach. (use)",
+        "Try ___ a doctor about it. (see)",
+        "He forgot ___ her at the cafe. (meet)",
+        "Don't forget ___ the lights. (turn off)",
+        "I regret ___ that policy. (introduce)",
+        "We regret ___ you of the delay. (inform)",
+      ],
+    },
+    {
+      number: 3,
+      title: "Gerunds after prepositions",
+      difficulty: "hard" as const,
+      instruction: "Fill in with the gerund or infinitive.",
+      questions: [
+        "She's interested in ___ languages. (learn)",
+        "He's good at ___ problems. (solve)",
+        "I'm looking forward to ___ you. (see)",
+        "Thank you for ___ so patient. (be)",
+        "She's capable of ___ better. (do)",
+        "I'm not used to ___ up early. (get)",
+        "He insisted on ___ the bill. (pay)",
+        "She's tired of ___ excuses. (hear)",
+        "We talked about ___ abroad. (move)",
+        "He left without ___ goodbye. (say)",
+      ],
+    },
+    {
+      number: 4,
+      title: "Mixed practice",
+      difficulty: "hard" as const,
+      instruction: "Choose gerund or infinitive (tricky cases).",
+      questions: [
+        "It's worth ___ this film. (watch)",
+        "I can't help ___ at his jokes. (laugh)",
+        "She's used to ___ alone. (live)",
+        "He used to ___ the bus. (take)",
+        "I'd rather ___ at home tonight. (stay)",
+        "She managed ___ first place. (reach)",
+        "Would you mind ___ the window? (open)",
+        "He seems ___ upset about it. (be)",
+        "They allowed her ___ early. (leave)",
+        "She admitted ___ the money. (take)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Basic gerund/infinitive", answers: ["walking", "to buy", "taking", "driving", "to study", "writing", "to arrive", "making", "to attend", "waiting"] },
+    { exercise: 2, subtitle: "Meaning-change verbs", answers: ["meeting", "to take", "smoking", "to buy", "using", "to see", "meeting her", "to turn off", "introducing", "to inform"] },
+    { exercise: 3, subtitle: "Gerunds after prepositions", answers: ["learning", "solving", "seeing", "being", "doing", "getting", "paying", "hearing", "moving", "saying"] },
+    { exercise: 4, subtitle: "Mixed tricky cases", answers: ["watching", "laughing", "living", "take", "stay", "to reach", "opening", "to be", "to leave", "taking"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Causative have/get", href: "/grammar/b2/causative", level: "B2", badge: "bg-orange-500", reason: "Causative uses object + infinitive patterns from this topic" },
+  { title: "Modal Perfect", href: "/grammar/b2/modal-perfect", level: "B2", badge: "bg-orange-500", reason: "Modal verbs are followed by gerund or infinitive forms" },
+  { title: "Advanced Reported Speech", href: "/grammar/b2/reported-speech-advanced", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function GerundsInfinitivesLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function GerundsInfinitivesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function GerundsInfinitivesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-gerunds-infinitives" subject="Gerunds vs Infinitives" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function GerundsInfinitivesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-gerunds-infinitives" subject="Gerunds vs Infinitives" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

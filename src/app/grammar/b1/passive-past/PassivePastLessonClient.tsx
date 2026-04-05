@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Past Simple Passive formula:", options: ["am/is/are + pp", "was/were + pp", "had + pp", "will be + pp"], answer: 1 },
+  { q: "'The letter ___ sent yesterday.' (singular)", options: ["were", "are", "was", "is"], answer: 2 },
+  { q: "'The windows ___ broken in storm.' (plural)", options: ["was", "is", "am", "were"], answer: 3 },
+  { q: "'I ___ told about the meeting.' Correct:", options: ["were", "am", "was", "is"], answer: 2 },
+  { q: "The Eiffel Tower ___ built in 1889.", options: ["were", "are", "is", "was"], answer: 3 },
+  { q: "'Shakespeare wrote Hamlet.' Passive:", options: ["Hamlet was wrote by Shakespeare.", "Hamlet was written by Shakespeare.", "Hamlet were written by Shakespeare.", "Hamlet is written by Shakespeare."], answer: 1 },
+  { q: "'Three people ___ arrested.' (plural)", options: ["was", "is", "am", "were"], answer: 3 },
+  { q: "'She ___ offered the job.' Correct:", options: ["were", "are", "is", "was"], answer: 3 },
+  { q: "Active: 'Someone stole my wallet.' → Passive:", options: ["My wallet was steal.", "My wallet were stolen.", "My wallet was stolen.", "My wallet is stolen."], answer: 2 },
+  { q: "'The paintings ___ damaged in fire.' (plural)", options: ["was", "is", "am", "were"], answer: 3 },
+  { q: "Active: 'The earthquake destroyed homes.' → Passive:", options: ["Homes was destroyed.", "Homes were destroyed.", "Homes are destroyed.", "Homes had destroyed."], answer: 1 },
+  { q: "'The match ___ cancelled because of rain.'", options: ["were", "are", "was", "had"], answer: 2 },
+  { q: "When to use Past Passive:", options: ["When the doer is known and important", "When the action matters more than the doer", "Only in formal writing", "Only for past habits"], answer: 1 },
+  { q: "'The police arrested three suspects.' → Passive:", options: ["Three suspects was arrested.", "Three suspects were arrested.", "Three suspects are arrested.", "Three suspects had arrested."], answer: 1 },
+  { q: "We ___ not informed about the change.", options: ["was", "is", "am", "were"], answer: 3 },
+  { q: "'The report ___ written by the head of department.'", options: ["were", "are", "is", "was"], answer: 3 },
+  { q: "Active: 'They showed the film at festival.' → Passive:", options: ["The film was shown.", "The film were shown.", "The film is shown.", "The film showed."], answer: 0 },
+  { q: "'I ___ not invite to the party.'  Negative passive:", options: ["were not invited", "am not invited", "was not invited", "had not invited"], answer: 2 },
+  { q: "Which uses was correctly?", options: ["The cars was stolen.", "The bridge was built in 1890.", "The documents was signed.", "We was not informed."], answer: 1 },
+  { q: "Which is WRONG?", options: ["She was offered the job.", "He was invited to the party.", "The results were announced.", "The letter were sent."], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Past Simple Passive",
+  subtitle: "was / were + past participle",
+  level: "B1",
+  keyRule: "Past Passive = was/were + past participle. Use when the action matters more than who did it.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose was or were",
+      difficulty: "Easy",
+      instruction: "Choose was or were.",
+      questions: [
+        "The letter ___ sent yesterday.",
+        "The windows ___ broken in storm.",
+        "I ___ told about the meeting.",
+        "The cars ___ stolen from car park.",
+        "The bridge ___ built in 1890.",
+        "The documents ___ signed by director.",
+        "She ___ offered the job last week.",
+        "The paintings ___ damaged in fire.",
+        "The match ___ cancelled due to rain.",
+        "We ___ not informed about change.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the passive form",
+      difficulty: "Medium",
+      instruction: "Write was/were + past participle.",
+      questions: [
+        "Eiffel Tower ___ (build) in 1889.",
+        "Three people ___ (arrest) after incident.",
+        "The email ___ (send) to wrong address.",
+        "The results ___ (announce) at noon.",
+        "She ___ (give) a prize for her work.",
+        "Children ___ (pick up) by grandmother.",
+        "The old hospital ___ (demolish) last year.",
+        "I ___ (not/invite) to the party.",
+        "Two new schools ___ (open) in area.",
+        "The report ___ (write) by the head.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Active or Past Passive?",
+      difficulty: "Hard",
+      instruction: "Choose active or passive.",
+      questions: [
+        "Scientists ___ a new planet last year.",
+        "A new planet ___ by scientists last year.",
+        "The fire ___ quickly by fire brigade.",
+        "The fire brigade ___ the fire fast.",
+        "The contract ___ by both parties.",
+        "Both parties ___ the contract.",
+        "Leonardo da Vinci ___ the Mona Lisa.",
+        "The Mona Lisa ___ by Leonardo.",
+        "Many houses ___ in earthquake.",
+        "The earthquake ___ thousands of homes.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Active to Passive",
+      difficulty: "Harder",
+      instruction: "Write passive verb phrase only.",
+      questions: [
+        "Someone stole my wallet. → My wallet ___.",
+        "Police arrested three suspects. → suspects ___.",
+        "They built church in 15th century. → church ___.",
+        "Shakespeare wrote Hamlet. → Hamlet ___.",
+        "Someone broke the window. → window ___.",
+        "Manager fired two employees. → employees ___.",
+        "They showed film at festival. → film ___.",
+        "Someone left lights on all night. → lights ___.",
+        "Company launched product in March. → product ___.",
+        "Thousands saw the match. → match ___.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "was / were", answers: ["was", "were", "was", "were", "was", "were", "was", "were", "was", "were"] },
+    { exercise: 2, subtitle: "Passive forms", answers: ["was built", "were arrested", "was sent", "were announced", "was given", "were picked up", "was demolished", "was not invited", "were opened", "was written"] },
+    { exercise: 3, subtitle: "Active/Passive", answers: ["discovered (active)", "was discovered", "was put out", "put out (active)", "was signed", "signed (active)", "painted (active)", "was painted", "were destroyed", "destroyed (active)"] },
+    { exercise: 4, subtitle: "Passive phrases", answers: ["was stolen", "were arrested", "was built", "was written", "was broken", "were fired", "was shown", "were left", "was launched", "was seen"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Present Passive", href: "/grammar/b1/passive-present", level: "B1", badge: "bg-violet-500", reason: "The present counterpart of this tense" },
+  { title: "Past Perfect", href: "/grammar/b1/past-perfect", level: "B1", badge: "bg-violet-500" },
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function PassivePastLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PassivePastLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PassivePastLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-passive-past" subject="Past Passive" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PassivePastLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-passive-past" subject="Past Passive" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

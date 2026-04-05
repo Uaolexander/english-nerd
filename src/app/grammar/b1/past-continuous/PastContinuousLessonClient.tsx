@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,146 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "At 8pm, she ___ TV.", options: ["watched","was watching","is watching","watches"], answer: 1 },
+  { q: "They ___ football when it rained.", options: ["played","were playing","are playing","play"], answer: 1 },
+  { q: "___ it raining when you left?", options: ["Did","Was","Were","Is"], answer: 1 },
+  { q: "I ___ when she knocked.", options: ["slept","was sleeping","sleep","sleeps"], answer: 1 },
+  { q: "We ___ dinner when she arrived.", options: ["had","were having","have","have had"], answer: 1 },
+  { q: "She ___ a shower when phone rang.", options: ["took","was taking","takes","take"], answer: 1 },
+  { q: "Past Continuous = was/were + ___", options: ["verb","past tense","verb-ing","infinitive"], answer: 2 },
+  { q: "He ___ all morning.", options: ["took","takes","was working","has taken"], answer: 2 },
+  { q: "What ___ you doing at midnight?", options: ["did","are","were","was"], answer: 2 },
+  { q: "I ___ — please pay attention!", options: ["wasn't listening","didn't listen","not listen","haven't listened"], answer: 0 },
+  { q: "She (read) ___ when I arrived.", options: ["read","was reading","reads","is reading"], answer: 1 },
+  { q: "They (wait) ___ for an hour.", options: ["waited","were waiting","are waiting","wait"], answer: 1 },
+  { q: "He ___ fast when it happened.", options: ["drove","was driving","drives","had driven"], answer: 1 },
+  { q: "While I ___ TV, she cooked.", options: ["watched","was watching","watch","have watched"], answer: 1 },
+  { q: "He stood up and ___ the room.", options: ["was leaving","left","leaves","had left"], answer: 1 },
+  { q: "She ___ when I said hello.", options: ["cried","was crying","cry","has cried"], answer: 1 },
+  { q: "Use 'while' + past ___ for background.", options: ["simple","perfect","continuous","passive"], answer: 2 },
+  { q: "I (study) ___ all evening.", options: ["studied","was studying","studies","study"], answer: 1 },
+  { q: "It (rain) ___ when we left.", options: ["rained","was raining","rains","rain"], answer: 1 },
+  { q: "Were they travelling when it ___?", options: ["happens","happened","was happening","has happened"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Past Continuous",
+  subtitle: "was/were + -ing — 4 exercises + answer key",
+  level: "B1",
+  keyRule: "was/were + verb-ing  ·  I was reading when she called.",
+  exercises: [
+    {
+      number: 1,
+      title: "Exercise 1",
+      difficulty: "Easy",
+      instruction: "Choose the correct Past Continuous form.",
+      questions: [
+        "At 8pm she ___ TV.",
+        "They ___ football in the rain.",
+        "I ___ when she knocked.",
+        "He ___ to music at noon.",
+        "We ___ dinner when she came.",
+        "___ it raining when you left?",
+        "The kids ___ all afternoon.",
+        "She ___ a shower then.",
+        "What ___ you doing at midnight?",
+        "I ___ — please pay attention!",
+      ],
+      hint: "was/were + -ing",
+    },
+    {
+      number: 2,
+      title: "Exercise 2",
+      difficulty: "Medium",
+      instruction: "Write the Past Continuous form.",
+      questions: [
+        "She (read) ___ when I arrived.",
+        "They (wait) ___ for an hour.",
+        "He (not/listen) ___ to me.",
+        "What (you/do) ___ at midnight?",
+        "I (study) ___ all evening.",
+        "It (rain) ___ when we left.",
+        "We (not/expect) ___ guests.",
+        "She (talk) ___ for an hour.",
+        "(they/travel) ___ at that time?",
+        "The dog (sleep) ___ all day.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Exercise 3",
+      difficulty: "Hard",
+      instruction: "Past Continuous or Past Simple?",
+      questions: [
+        "While I ___ TV, she cooked.",
+        "He stood up and ___ the room.",
+        "They ___ as soon as the bell rang.",
+        "While she ___, he cooked.",
+        "I ___ my keys while cleaning.",
+        "It ___ all day — we stayed in.",
+        "She ___ when I said hello.",
+        "He ___ and broke his arm.",
+        "I ___ when earthquake struck.",
+        "She ___ the door and walked in.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Exercise 4",
+      difficulty: "Hardest",
+      instruction: "Write the correct tense form.",
+      questions: [
+        "While I (walk) ___ it rained.",
+        "She (find) ___ her wallet then.",
+        "He (not/pay) ___ attention.",
+        "They (meet) ___ at work.",
+        "I (read) ___ when lights went out.",
+        "At 3am the baby (cry) ___.",
+        "She (arrive) ___ as we left.",
+        "He (drive) ___ fast then.",
+        "I (not/pay) ___ attention again.",
+        "They (discuss) ___ when he came.",
+      ],
+    },
+  ],
+  answerKey: [
+    {
+      exercise: 1,
+      subtitle: "Easy — was/were + -ing",
+      answers: ["was watching","were playing","was sleeping","was listening","were having","Was it raining","were playing","was taking","were you doing","wasn't listening"],
+    },
+    {
+      exercise: 2,
+      subtitle: "Medium — write the form",
+      answers: ["was reading","were waiting","wasn't listening","were you doing","was studying","was raining","weren't expecting","was talking","were they travelling","was sleeping"],
+    },
+    {
+      exercise: 3,
+      subtitle: "Hard — Past Cont. vs Simple",
+      answers: ["was watching","left","left","was shopping","found","was raining","was crying","fell","was sleeping","opened"],
+    },
+    {
+      exercise: 4,
+      subtitle: "Hardest — choose the tense",
+      answers: ["was walking","found","wasn't paying","met","was reading","was crying","arrived","was driving","wasn't paying","were discussing"],
+    },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Past Perfect", href: "/grammar/b1/past-perfect", level: "B1", badge: "bg-violet-500", reason: "Pairs naturally with Past Continuous in narrative" },
+  { title: "Present Perfect Continuous", href: "/grammar/b1/present-perfect-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "Past Passive", href: "/grammar/b1/passive-past", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function PastContinuousLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +233,12 @@ export default function PastContinuousLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +288,19 @@ export default function PastContinuousLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-past-continuous" subject="Past Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +423,22 @@ export default function PastContinuousLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-past-continuous" subject="Past Continuous" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

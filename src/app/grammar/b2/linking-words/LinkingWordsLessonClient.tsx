@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'However' connects?", options: ["Two nouns", "Two contrasting sentences", "Reasons", "Conditions"], answer: 1 },
+  { q: "'Despite' is followed by?", options: ["Subject + verb", "Noun/gerund", "Adjective", "Adverb"], answer: 1 },
+  { q: "'Although' is followed by?", options: ["Noun/gerund", "Subject + verb (clause)", "Adjective", "Preposition"], answer: 1 },
+  { q: "'Therefore' shows?", options: ["Contrast", "Cause and result", "Addition", "Concession"], answer: 1 },
+  { q: "'In addition to' is followed by?", options: ["Subject + verb", "Noun/gerund", "Adjective", "Adverb"], answer: 1 },
+  { q: "'Nevertheless' means?", options: ["Because of that", "In spite of that", "In addition to that", "As a result"], answer: 1 },
+  { q: "'Furthermore' adds?", options: ["Contrast", "More information", "Cause", "Condition"], answer: 1 },
+  { q: "'As a result' expresses?", options: ["Contrast", "Cause and consequence", "Concession", "Addition"], answer: 1 },
+  { q: "'Even though' is similar to?", options: ["Despite", "Although", "However", "Therefore"], answer: 1 },
+  { q: "'In spite of the fact that' is followed by?", options: ["Noun", "Gerund", "Clause (subject + verb)", "Adjective"], answer: 2 },
+  { q: "'Consequently' is similar to?", options: ["However", "Nevertheless", "Therefore", "Although"], answer: 2 },
+  { q: "'Whereas' compares?", options: ["Similar ideas", "Contrasting ideas", "Results", "Causes"], answer: 1 },
+  { q: "'Due to' is followed by?", options: ["Subject + verb", "Noun/gerund", "Adjective", "Adverb"], answer: 1 },
+  { q: "'On the contrary' means?", options: ["In addition", "Quite the opposite", "Because of", "In spite of"], answer: 1 },
+  { q: "'Nonetheless' is used for?", options: ["Addition", "Concession/contrast", "Cause", "Condition"], answer: 1 },
+  { q: "'Owing to' is followed by?", options: ["Subject + verb", "Noun/gerund", "Adjective", "Adverb"], answer: 1 },
+  { q: "'As long as' expresses?", options: ["Contrast", "Condition", "Cause", "Addition"], answer: 1 },
+  { q: "'What is more' adds?", options: ["Contrast", "Cause", "Even more information", "Concession"], answer: 2 },
+  { q: "'Provided that' expresses?", options: ["Contrast", "Cause", "Condition", "Concession"], answer: 2 },
+  { q: "'In contrast' compares?", options: ["Similar things", "Different/opposite things", "Causes", "Results"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Linking Words",
+  subtitle: "Connectors: contrast, cause, addition, result",
+  level: "B2",
+  keyRule: "Match the linker to its grammatical category: +clause, +noun, or sentence connector.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct linking word",
+      difficulty: "easy" as const,
+      instruction: "Pick the best linking word/phrase.",
+      questions: [
+        "The project was delayed. ___, we met deadline.",
+        "___ the heavy rain, the match continued.",
+        "___ she was exhausted, she kept working.",
+        "She studied hard. ___, she failed.",
+        "___ its cost, the phone sold well.",
+        "He was late. ___, he missed the start.",
+        "___ working hard, he earned little.",
+        "It was cold. ___, we went for a walk.",
+        "___ she was ill, she came to work.",
+        "Traffic was bad. ___, I was on time.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Contrast or cause/result?",
+      difficulty: "medium" as const,
+      instruction: "Choose linker matching the relationship.",
+      questions: [
+        "He failed the exam ___ studying all night.",
+        "She got the job ___ her lack of experience.",
+        "The plan failed. ___, we had to start again.",
+        "___ it was expensive, they bought it anyway.",
+        "He arrived late ___ the traffic jam.",
+        "Sales fell. ___, staff were made redundant.",
+        "___ her nerves, she gave a great speech.",
+        "He's very intelligent. ___, he's lazy.",
+        "She applied ___ knowing she'd be rejected.",
+        "___ the delay, we reached our destination.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Formal linking words",
+      difficulty: "hard" as const,
+      instruction: "Choose the most natural formal connector.",
+      questions: [
+        "He was well-qualified. ___, he was rejected.",
+        "She improved her skills. ___ she got promoted.",
+        "___ its size, the city has few museums.",
+        "Costs rose. ___, profits fell sharply.",
+        "___ the findings were alarming, no action taken.",
+        "He apologised. ___, she didn't forgive him.",
+        "___ long hours, she completed the project.",
+        "Sales dropped. ___, we reviewed our strategy.",
+        "___ the report, we changed the approach.",
+        "___ the storm, the event was cancelled.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Rewrite using linking words",
+      difficulty: "hard" as const,
+      instruction: "Rewrite with the linker in brackets.",
+      questions: [
+        "Despite the cost, it was worth it. (In spite of)",
+        "She worked hard but she didn't succeed. (Although)",
+        "Because of traffic I was late. (Due to)",
+        "He's smart. Also, he's hard-working. (Furthermore)",
+        "She failed but tried again. (Nevertheless)",
+        "The film was long. Still, I enjoyed it. (However)",
+        "Traffic was bad. So I was late. (As a result)",
+        "He works hard. But earns little. (Despite)",
+        "She's talented. Also creative. (What is more)",
+        "You can go if you finish your work. (As long as)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Linker choice", answers: ["However", "Despite", "Although", "Nevertheless", "Despite", "As a result", "Despite/In spite of", "Nevertheless", "Even though", "Nevertheless"] },
+    { exercise: 2, subtitle: "Contrast vs cause/result", answers: ["despite", "despite/in spite of", "As a result/Consequently", "Although/Even though", "due to/because of", "Consequently/Therefore", "Despite/In spite of", "However", "despite/even though", "Despite/In spite of"] },
+    { exercise: 3, subtitle: "Formal connectors", answers: ["Nevertheless/However", "Consequently/As a result", "Despite/In spite of", "Consequently/As a result", "Although/Even though", "Nevertheless/However", "Despite/In spite of", "Consequently/As a result", "As a result of/Due to", "Due to/Owing to"] },
+    { exercise: 4, subtitle: "Rewritten sentences", answers: ["In spite of the cost, it was worth it", "Although she worked hard, she didn't succeed", "Due to traffic, I was late", "Furthermore, he is hard-working", "Nevertheless, she tried again", "However, I enjoyed it", "As a result, I was late", "Despite working hard, he earns little", "What is more, she is creative", "As long as you finish your work, you can go"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Quantifiers", href: "/grammar/b2/quantifiers-advanced", level: "B2", badge: "bg-orange-500", reason: "Quantifiers work hand-in-hand with linking words in complex sentences" },
+  { title: "Cleft Sentences", href: "/grammar/b2/cleft-sentences", level: "B2", badge: "bg-orange-500", reason: "Cleft sentences use linking structures for emphasis" },
+  { title: "Inversion", href: "/grammar/b2/inversion", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function LinkingWordsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function LinkingWordsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function LinkingWordsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-linking-words" subject="Linking Words" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function LinkingWordsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-linking-words" subject="Linking Words" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

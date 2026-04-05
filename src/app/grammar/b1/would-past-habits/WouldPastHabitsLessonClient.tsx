@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "would for past habits: would + ___", options: ["gerund", "infinitive (base verb)", "past participle", "present tense"], answer: 1 },
+  { q: "would for past habits describes:", options: ["A single past event", "A future plan", "Repeated past actions", "A present fact"], answer: 2 },
+  { q: "would CANNOT be used with past ___:", options: ["actions", "routines", "states (be, have, know)", "habits"], answer: 2 },
+  { q: "'Every Sunday, my dad ___ make breakfast.'", options: ["will", "is", "would", "does"], answer: 2 },
+  { q: "used to vs. would: 'I used to be shy' — can you replace with 'would'?", options: ["Yes, always", "No — 'be' is a state", "Yes, sometimes", "Only in questions"], answer: 1 },
+  { q: "'She ___ always bring flowers when she visited.'", options: ["will", "is", "would", "was"], answer: 2 },
+  { q: "Which is WRONG?", options: ["He would play chess.", "She would visit us.", "They would be poor.", "We would walk there."], answer: 2 },
+  { q: "'In summer, we ___ go to the lake every day.'", options: ["will", "would", "are", "were"], answer: 1 },
+  { q: "would + past habit: needs a ___ time reference", options: ["Future", "Present", "Past", "No reference needed"], answer: 2 },
+  { q: "'As a child, she ___ collect stamps.'", options: ["will", "would", "does", "is"], answer: 1 },
+  { q: "Can 'would' replace 'used to' in: 'I used to have a dog'?", options: ["Yes", "No — have is a state", "Only in negative", "Only in questions"], answer: 1 },
+  { q: "Negative form of would for past habits:", options: ["wouldn't + infinitive", "didn't would", "used to not", "won't"], answer: 0 },
+  { q: "'My grandfather ___ tell us stories about old days.'", options: ["will", "would", "does", "is"], answer: 1 },
+  { q: "'They ___ meet at the café after school.'", options: ["are", "will", "would", "do"], answer: 2 },
+  { q: "Which sentence is CORRECT?", options: ["She would have long hair as a child.", "She would be tall as a child.", "She would walk to school as a child.", "She would know everyone in town."], answer: 2 },
+  { q: "'On Saturdays, they ___ visit the market together.'", options: ["are", "would", "will", "do"], answer: 1 },
+  { q: "'We ___ play board games every Friday evening.'", options: ["will", "would", "are", "do"], answer: 1 },
+  { q: "would for habits is used in ___ style writing/speaking:", options: ["Informal only", "Formal or literary narrative", "Scientific only", "Future tense"], answer: 1 },
+  { q: "Which CANNOT use would?", options: ["play tennis every day", "go swimming in summer", "live in a small village", "visit grandma on Sundays"], answer: 2 },
+  { q: "'In the evenings, we ___ sit on the porch and talk.'", options: ["will", "would", "are", "do"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Would for Past Habits",
+  subtitle: "would + infinitive = repeated past action",
+  level: "B1",
+  keyRule: "would + infinitive = repeated past action/routine. Cannot use 'would' with past states (be, have, like, know).",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct option",
+      difficulty: "Easy",
+      instruction: "Choose 'would' to express a past habit.",
+      questions: [
+        "Every Sunday, my dad ___ make breakfast.",
+        "When I was a student, I ___ stay up late.",
+        "She ___ always bring flowers when she visited.",
+        "In summer, we ___ go to the lake every day.",
+        "He ___ read a story to his children every night.",
+        "They ___ meet at the café after school.",
+        "My grandfather ___ tell us stories.",
+        "As a child, she ___ collect stamps.",
+        "On Saturdays, they ___ visit the market.",
+        "We ___ play board games every Friday.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the correct form",
+      difficulty: "Medium",
+      instruction: "Write 'would' + verb for past habit.",
+      questions: [
+        "Every evening, my mother (read) ___ to us.",
+        "In winter, we (sit) ___ by the fire.",
+        "He (walk) ___ to school every day, even in rain.",
+        "On Saturdays, they (visit) ___ the market.",
+        "She (write) ___ long letters to her pen pal.",
+        "As a student, I (spend) ___ hours in the library.",
+        "My dad (cook) ___ Sunday dinner for everyone.",
+        "She (practise) ___ piano every afternoon.",
+        "They (play) ___ chess after school.",
+        "He (bring) ___ flowers for his mother every week.",
+      ],
+    },
+    {
+      number: 3,
+      title: "would or used to?",
+      difficulty: "Hard",
+      instruction: "Decide: use would OR used to (where would is wrong).",
+      questions: [
+        "I ___ be very shy as a teenager. (state)",
+        "She ___ sing in the choir every week. (habit)",
+        "They ___ have a big house by the sea. (state)",
+        "He ___ walk to school every morning. (habit)",
+        "We ___ know everyone in the village. (state)",
+        "I ___ practise guitar every night. (habit)",
+        "She ___ like classical music. (state)",
+        "He ___ tell jokes at every party. (habit)",
+        "We ___ live in a small flat. (state)",
+        "She ___ cycle to work every day. (habit)",
+      ],
+    },
+    {
+      number: 4,
+      title: "Error correction",
+      difficulty: "Harder",
+      instruction: "Correct the mistake if there is one.",
+      questions: [
+        "She would be a dancer when she was young.",
+        "He would walk miles to get to school.",
+        "I would have a cat when I was young.",
+        "We would eat dinner together every evening.",
+        "They would know everyone in the neighbourhood.",
+        "She would practice piano every afternoon.",
+        "He would love playing football as a child.",
+        "We would visit our grandparents every summer.",
+        "I would be scared of the dark as a child.",
+        "She would bake bread every Saturday morning.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "would + habit", answers: ["would", "would", "would", "would", "would", "would", "would", "would", "would", "would"] },
+    { exercise: 2, subtitle: "Write would + verb", answers: ["would read", "would sit", "would walk", "would visit", "would write", "would spend", "would cook", "would practise", "would play", "would bring"] },
+    { exercise: 3, subtitle: "would or used to", answers: ["used to", "would", "used to", "would", "used to", "would", "used to", "would", "used to", "would"] },
+    { exercise: 4, subtitle: "Error correction", answers: ["used to be (state)", "correct", "used to have (state)", "correct", "used to know (state)", "correct", "used to love (state)", "correct", "used to be (state)", "correct"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Used to", href: "/grammar/b1/used-to", level: "B1", badge: "bg-violet-500", reason: "The other common way to talk about past habits" },
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "So / Such", href: "/grammar/b1/so-such", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function WouldPastHabitsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function WouldPastHabitsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function WouldPastHabitsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-would-past-habits" subject="Would for Past Habits" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +405,22 @@ export default function WouldPastHabitsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-would-past-habits" subject="Would for Past Habits" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

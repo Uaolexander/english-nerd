@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const ARTICLE = `Habits are remarkably powerful forces in human behaviour. Research suggests that approximately 40 per cent of daily actions are habitual rather than the result of conscious decision-making. Understanding how habits form can help people change unwanted behaviours and establish new, positive ones.
 
@@ -351,6 +352,9 @@ export default function PsychologyHabitsClient() {
           )}
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </div>
   );

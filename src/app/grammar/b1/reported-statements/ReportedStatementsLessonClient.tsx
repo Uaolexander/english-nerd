@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Reported speech: 'I live in Paris.' → She said she ___ in Paris.", options: ["lives", "live", "lived", "will live"], answer: 2 },
+  { q: "Reported speech: 'I am tired.' → He said he ___ tired.", options: ["is", "am", "will be", "was"], answer: 3 },
+  { q: "Reported speech: 'I have finished.' → She said she ___ finished.", options: ["has", "have", "had", "is"], answer: 2 },
+  { q: "Reported speech: 'I will help you.' → He said he ___ help me.", options: ["will", "shall", "would", "could"], answer: 2 },
+  { q: "Reported speech: 'I can swim.' → He said he ___ swim.", options: ["can", "will", "shall", "could"], answer: 3 },
+  { q: "Reported speech: 'I must leave.' → He said he ___ to leave.", options: ["must", "would", "had", "should"], answer: 2 },
+  { q: "'say' vs 'tell': 'She ___ that she was tired.'", options: ["told", "told me", "said", "said me"], answer: 2 },
+  { q: "'say' vs 'tell': 'He ___ me that he'd be late.'", options: ["said", "said me", "told", "say"], answer: 2 },
+  { q: "Fixed: 'tell a joke' → Past tense:", options: ["said a joke", "told a joke", "said joke", "told joke"], answer: 1 },
+  { q: "Fixed: 'say goodbye' → Past tense:", options: ["told goodbye", "said goodbye", "said goodbye to", "told goodbye to"], answer: 1 },
+  { q: "In reported speech 'now' becomes:", options: ["here", "there", "then", "today"], answer: 2 },
+  { q: "In reported speech 'today' becomes:", options: ["yesterday", "that day", "the next day", "this day"], answer: 1 },
+  { q: "In reported speech 'tomorrow' becomes:", options: ["yesterday", "that day", "the next day", "later"], answer: 2 },
+  { q: "Backshift: 'was cooking' → reported speech:", options: ["was cooking", "had been cooking", "would be cooking", "is cooking"], answer: 1 },
+  { q: "Backshift: 'have been waiting' → reported:", options: ["have been waiting", "had been waiting", "were waiting", "was waiting"], answer: 1 },
+  { q: "Backshift: 'don't like' → reported:", options: ["doesn't like", "didn't like", "won't like", "wouldn't like"], answer: 1 },
+  { q: "'I am going to resign.' → He said he ___ to resign.", options: ["is going", "was going", "will go", "would go"], answer: 1 },
+  { q: "'They are going to move.' → she said they ___ to move.", options: ["are going", "were going", "will go", "would go"], answer: 1 },
+  { q: "Which backshift is WRONG?", options: ["live → lived", "will → would", "can → could", "must → musted"], answer: 3 },
+  { q: "'I have been waiting.' → She said she ___ waiting.", options: ["has been", "had been", "was", "is"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Reported Statements",
+  subtitle: "Backshift, say vs tell, time expressions",
+  level: "B1",
+  keyRule: "Backshift: present→past, will→would, can→could, must→had to. 'tell' needs an object; 'say' does not.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the backshifted verb",
+      difficulty: "Easy",
+      instruction: "Choose the correct backshifted verb.",
+      questions: [
+        "'I live in Paris.' → She said she ___ in Paris.",
+        "'I am tired.' → He said he ___ tired.",
+        "'I have finished.' → She said she ___ finished.",
+        "'I will help you.' → He said he ___ help me.",
+        "'I was cooking.' → She said she ___ cooking.",
+        "'I can swim.' → He said he ___ swim.",
+        "'I don't know.' → She said she ___ know.",
+        "'I am going to leave.' → He said he ___ going to leave.",
+        "'I have been waiting.' → She said she ___ waiting.",
+        "'I must leave.' → He said he ___ to leave.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Said or Told?",
+      difficulty: "Medium",
+      instruction: "Choose 'said' or 'told'. Tell needs an object.",
+      questions: [
+        "She ___ that she was tired.",
+        "He ___ me that he would be late.",
+        "They ___ that the meeting was cancelled.",
+        "She ___ her friend that she couldn't come.",
+        "He ___ a joke and everyone laughed.",
+        "She ___ that she had already eaten.",
+        "The doctor ___ me I needed to rest.",
+        "He ___ the truth in the end.",
+        "She ___ goodbye and left.",
+        "They ___ us that prices would go up.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write the reported statement",
+      difficulty: "Hard",
+      instruction: "Write the reported clause only.",
+      questions: [
+        "'I work in hospital.' → He said he ___.",
+        "'She is coming tomorrow.' → He said she ___.",
+        "'I have lost my keys.' → She said she ___.",
+        "'We will finish soon.' → They said they ___.",
+        "'I can't find it.' → She said she ___.",
+        "'I don't like this.' → He said he ___.",
+        "'They are going to move.' → She said they ___.",
+        "'I must call her.' → He said he ___ her.",
+        "'I was sleeping.' → She said she ___.",
+        "'We have been waiting.' → They said they ___.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full reported sentences",
+      difficulty: "Harder",
+      instruction: "Write the complete reported speech sentence.",
+      questions: [
+        "Direct: 'I live here.' (She / said)",
+        "Direct: 'I'll call you tomorrow.' (He / told me)",
+        "Direct: 'We have finished the project.' (They / said)",
+        "Direct: 'I can't come today.' (She / told him)",
+        "Direct: 'I am going to resign.' (He / said)",
+        "Direct: 'We were waiting for an hour.' (They / said)",
+        "Direct: 'I don't know the answer.' (She / told me)",
+        "Direct: 'I must leave now.' (He / said)",
+        "Direct: 'We'll be here tomorrow.' (They / told us)",
+        "Direct: 'I've never been to Japan.' (She / said)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Backshifted verbs", answers: ["lived", "was", "had", "would", "had been", "could", "didn't", "was", "had been", "had"] },
+    { exercise: 2, subtitle: "said / told", answers: ["said", "told", "said", "told", "told", "said", "told", "told", "said", "told"] },
+    { exercise: 3, subtitle: "Reported clauses", answers: ["worked in a hospital", "was coming the next day", "had lost her keys", "would finish soon", "couldn't find it", "didn't like it", "were going to move", "had to call", "had been sleeping", "had been waiting"] },
+    { exercise: 4, subtitle: "Full sentences", answers: ["she said she lived there", "he told me he would call me the next day", "they said they had finished the project", "she told him she couldn't come that day", "he said he was going to resign", "they said they had been waiting for an hour", "she told me she didn't know the answer", "he said he had to leave then", "they told us they would be there the next day", "she said she had never been to japan"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Reported Questions", href: "/grammar/b1/reported-questions", level: "B1", badge: "bg-violet-500", reason: "Direct companion topic in reported speech" },
+  { title: "Defining Relative Clauses", href: "/grammar/b1/relative-clauses-defining", level: "B1", badge: "bg-violet-500" },
+  { title: "Modal Verbs: Deduction", href: "/grammar/b1/modal-deduction", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function ReportedStatementsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ReportedStatementsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ReportedStatementsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-reported-statements" subject="Reported Statements" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function ReportedStatementsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-reported-statements" subject="Reported Statements" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

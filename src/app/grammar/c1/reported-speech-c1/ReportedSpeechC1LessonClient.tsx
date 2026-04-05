@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Complex Passives", href: "/grammar/c1/complex-passives", level: "C1", badge: "bg-sky-600", reason: "Passive reporting structures are core to C1 reported speech" },
+  { title: "Passive Infinitives", href: "/grammar/c1/passive-infinitives", level: "C1", badge: "bg-sky-600" },
+  { title: "Hedging Language", href: "/grammar/c1/hedging-language", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Report 'I will help' → he said ___.", options: ["he would help", "he will help", "he helped", "he had helped"], answer: 0 },
+  { q: "Report 'I have finished' → said ___.", options: ["he had finished", "he has finished", "he finished", "he'd finish"], answer: 0 },
+  { q: "Report 'I'm working' → said ___.", options: ["he was working", "he is working", "he worked", "he works"], answer: 0 },
+  { q: "'Can' backshifts to ___.", options: ["could", "can", "would", "might"], answer: 0 },
+  { q: "'May' backshifts to ___.", options: ["might", "may", "could", "would"], answer: 0 },
+  { q: "'Must' backshifts to ___ (obligation).", options: ["had to", "must", "should", "would have to"], answer: 0 },
+  { q: "No backshift when reporting ___.", options: ["Permanent truth", "Specific past event", "Opinion", "Command"], answer: 0 },
+  { q: "She asked if I ___ help.", options: ["could", "can", "will", "would be able"], answer: 0 },
+  { q: "He told me ___ wait outside.", options: ["to", "that", "not", "he"], answer: 0 },
+  { q: "She warned me ___ be late.", options: ["not to", "to not", "not", "don't"], answer: 0 },
+  { q: "'reported speech' verb suggest:", options: ["+ gerund or that-clause", "+ infinitive only", "+ bare inf", "+ pp only"], answer: 0 },
+  { q: "Report 'Will you help?' →", options: ["if I would help", "if I will help", "if help", "whether will I"], answer: 0 },
+  { q: "'Admit' is used to report:", options: ["A confession", "A command", "A question", "A suggestion"], answer: 0 },
+  { q: "'Deny' + ___", options: ["gerund", "infinitive", "bare inf", "that only"], answer: 0 },
+  { q: "Report 'Don't touch that!' →", options: ["told not to touch", "said to not touch", "told don't touch", "said not touch"], answer: 0 },
+  { q: "'Persuade' + object + ___", options: ["to-infinitive", "gerund", "bare inf", "that-clause"], answer: 0 },
+  { q: "'Recommend' + ___", options: ["gerund or that-clause", "bare inf", "object + inf", "pp only"], answer: 0 },
+  { q: "He urged me ___ act quickly.", options: ["to", "that", "for", "into"], answer: 0 },
+  { q: "Report 'I would come' → said ___.", options: ["he would come", "he will come", "he comes", "he'd came"], answer: 0 },
+  { q: "'Insist' + ___", options: ["on gerund or that-clause", "to-infinitive", "bare inf", "object + inf"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "C1 Reported Speech",
+  subtitle: "Backshift, reporting verbs, mixed patterns",
+  level: "C1",
+  keyRule: "Backshift: will→would, can→could, must→had to, is→was.",
+  exercises: [
+    {
+      number: 1,
+      title: "Backshifting Tenses",
+      difficulty: "Easy",
+      instruction: "Report the speech using correct backshift.",
+      questions: [
+        "'I will help.' → said he ___.",
+        "'I have finished.' → said he ___.",
+        "'I'm working.' → said he ___.",
+        "'I can do it.' → said he ___.",
+        "'I may leave.' → said he ___.",
+        "'I must go.' → said he ___.",
+        "'I did it.' → said he ___.",
+        "'I had seen it.' → said he ___.",
+        "'I would come.' → said he ___.",
+        "'I was tired.' → said he ___.",
+      ],
+      hint: "would / had finished / was working",
+    },
+    {
+      number: 2,
+      title: "Reporting Questions",
+      difficulty: "Medium",
+      instruction: "Report the question using correct form.",
+      questions: [
+        "'Will you help?' → asked if ___.",
+        "'Are you coming?' → asked if ___.",
+        "'Have you finished?' → asked if ___.",
+        "'Can you drive?' → asked if ___.",
+        "'Where do you live?' → asked ___.",
+        "'Why did she leave?' → asked ___.",
+        "'What is your name?' → asked ___.",
+        "'Did you see him?' → asked if ___.",
+        "'Who called?' → asked ___.",
+        "'How long will it take?' → asked ___.",
+      ],
+      hint: "if I would / where I lived",
+    },
+    {
+      number: 3,
+      title: "Reporting Verbs with Patterns",
+      difficulty: "Hard",
+      instruction: "Choose the correct reporting verb pattern.",
+      questions: [
+        "She admitted ___ the money.",
+        "He denied ___ the report.",
+        "She recommended ___ the book.",
+        "They urged me ___ act quickly.",
+        "She persuaded him ___ stay.",
+        "He insisted on ___ for it.",
+        "She warned me ___ be late.",
+        "They suggested ___ a new plan.",
+        "He refused ___ sign the papers.",
+        "She promised ___ be on time.",
+      ],
+      hint: "taking / writing / reading / to / on paying",
+    },
+    {
+      number: 4,
+      title: "Full Reported Speech Rewrite",
+      difficulty: "Very Hard",
+      instruction: "Rewrite as full reported speech.",
+      questions: [
+        "'I will call you.' (promised)",
+        "'Don't be late!' (warned)",
+        "'I have seen it.' (said)",
+        "'Can you help?' (asked if)",
+        "'I stole the money.' (admitted)",
+        "'I didn't break it.' (denied)",
+        "'You should rest.' (suggested)",
+        "'Let's try again.' (proposed)",
+        "'I'll do it.' (agreed)",
+        "'I won't go.' (refused)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Backshifting Tenses", answers: ["would help", "had finished", "was working", "could do it", "might leave", "had to go", "had done it", "had seen it", "would come", "had been tired"] },
+    { exercise: 2, subtitle: "Reporting Questions", answers: ["if I would help", "if I was coming", "if I had finished", "if I could drive", "where I lived", "why she had left", "what my name was", "if I had seen him", "who had called", "how long it would take"] },
+    { exercise: 3, subtitle: "Reporting Verbs with Patterns", answers: ["taking", "writing/having written", "reading", "to", "to", "paying", "not to", "trying / that they try", "to", "to"] },
+    { exercise: 4, subtitle: "Full Reported Speech Rewrite", answers: ["She promised to call me.", "He warned me not to be late.", "She said she had seen it.", "He asked if I could help.", "She admitted stealing the money.", "He denied breaking it.", "She suggested I should rest.", "He proposed trying again.", "She agreed to do it.", "He refused to go."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function ReportedSpeechC1LessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function ReportedSpeechC1LessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function ReportedSpeechC1LessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-reported-speech-c1" subject="C1 Reported Speech" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function ReportedSpeechC1LessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-reported-speech-c1" subject="C1 Reported Speech" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

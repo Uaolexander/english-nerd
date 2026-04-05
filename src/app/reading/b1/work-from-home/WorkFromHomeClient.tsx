@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const WORD_BOX = [
   "productive",
@@ -347,6 +348,9 @@ export default function WorkFromHomeClient() {
           </a>
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </main>
   );

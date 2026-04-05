@@ -88,7 +88,7 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
     return ["#222222", Y]; // Harder
   }
 
-  function exHeader(ex: PDFExercise, y: number) {
+  function exHeader(ex: PDFExercise, y: number): number {
     const [bg, fg] = difficultyStyle(ex.difficulty);
     numCircle(ml, y, ex.number);
     pdf.setFont("helvetica", "bold");
@@ -101,9 +101,18 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
     pdf.setFontSize(8.5);
     pdf.setTextColor(GR);
     pdf.text(ex.instruction, ml + 10 + tw + 26, y + 4.5);
+    // Hint rendered as a compact word-bank line below the header
+    if (ex.hint) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor("#888888");
+      pdf.text(`Word bank: ${ex.hint}`, ml + 10, y + 9.5);
+      return y + 13; // extra height consumed by hint row
+    }
+    return y + 8; // normal header height (caller adds +2 gap)
   }
 
-  function exItems(yStart: number, items: string[], hint?: string): number {
+  function exItems(yStart: number, items: string[]): number {
     const qH = 9.5, colW = cw / 2;
     const rows = Math.ceil(items.length / 2);
     for (let row = 0; row < rows; row++) {
@@ -126,13 +135,6 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
         pdf.setTextColor("#222222");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pdf.text(items[i], qx + (col === 1 ? 10 : 6), qy + qH / 2, { baseline: "middle" } as any);
-        if (hint) {
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(7.5);
-          pdf.setTextColor(MG);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          pdf.text(hint, qx + colW - (col === 1 ? 4 : 6), qy + qH / 2, { align: "right", baseline: "middle" } as any);
-        }
       }
     }
     return yStart + rows * qH;
@@ -194,14 +196,14 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
   // Exercises 1 & 2
   const [ex1, ex2, ex3, ex4] = config.exercises;
 
-  exHeader(ex1, y);
-  y += 10;
-  y = exItems(y, ex1.questions, ex1.hint);
+  y = exHeader(ex1, y);
+  y += 2;
+  y = exItems(y, ex1.questions);
   y += 8;
 
-  exHeader(ex2, y);
-  y += 10;
-  y = exItems(y, ex2.questions, ex2.hint);
+  y = exHeader(ex2, y);
+  y += 2;
+  y = exItems(y, ex2.questions);
 
   pageFooter(1);
 
@@ -211,14 +213,14 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
   pageHeader(2, "Grammar Worksheet");
   y = 20;
 
-  exHeader(ex3, y);
-  y += 10;
-  y = exItems(y, ex3.questions, ex3.hint);
+  y = exHeader(ex3, y);
+  y += 2;
+  y = exItems(y, ex3.questions);
   y += 8;
 
-  exHeader(ex4, y);
-  y += 10;
-  y = exItems(y, ex4.questions, ex4.hint);
+  y = exHeader(ex4, y);
+  y += 2;
+  y = exItems(y, ex4.questions);
 
   pageFooter(2);
 
@@ -256,30 +258,37 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
     pdf.line(ml, y + 9, W - mr, y + 9);
     y += 13;
 
-    const chipW = 28, chipH = 7.5, chipStep = 38;
-    answers.forEach((a, ai) => {
-      const col = ai % 5;
-      const row = Math.floor(ai / 5);
-      const cx = ml + col * chipStep;
-      const cy = y + row * 11;
-      // Number badge
-      pdf.setFillColor(MG);
-      pdf.roundedRect(cx, cy, 6, chipH, 1, 1, "F");
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(7);
-      pdf.setTextColor("#555555");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      pdf.text(`${ai + 1}`, cx + 3, cy + chipH / 2, { align: "center", baseline: "middle" } as any);
-      // Answer chip
-      pdf.setFillColor(Y);
-      pdf.roundedRect(cx + 7, cy, chipW, chipH, 1, 1, "F");
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(8.5);
-      pdf.setTextColor(BK);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      pdf.text(a, cx + 7 + chipW / 2, cy + chipH / 2, { align: "center", baseline: "middle" } as any);
-    });
-    y += (Math.ceil(answers.length / 5)) * 11 + 6;
+    // 2-column answer list — left col: answers 1-5, right col: 6-10
+    const colW = cw / 2;
+    const rowH = 9;
+    const half = Math.ceil(answers.length / 2);
+    for (let i = 0; i < half; i++) {
+      for (let col = 0; col < 2; col++) {
+        const idx = col === 0 ? i : i + half;
+        if (idx >= answers.length) continue;
+        const ax = ml + col * colW;
+        const ay = y + i * rowH;
+        // Yellow circle bullet with number
+        pdf.setFillColor(Y);
+        pdf.circle(ax + 2.5, ay + rowH / 2, 2.5, "F");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(BK);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(`${idx + 1}`, ax + 2.5, ay + rowH / 2, { align: "center", baseline: "middle" } as any);
+        // Answer text
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(answers[idx], ax + 7, ay + rowH / 2, { baseline: "middle" } as any);
+        // Separator line
+        pdf.setDrawColor(LG);
+        pdf.setLineWidth(0.15);
+        pdf.line(ax + (col === 1 ? 2 : 0), ay + rowH, ax + colW - (col === 0 ? 2 : 0), ay + rowH);
+      }
+    }
+    y += half * rowH + 8;
   });
 
   pageFooter(3);

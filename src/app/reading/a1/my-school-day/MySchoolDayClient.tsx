@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const TEXT = `Emma is 10 years old. She gets up at 7 o'clock every morning. She has breakfast with her family. She eats cereal and drinks orange juice. She goes to school by bus. School starts at 9 o'clock. Emma's favourite subject is art. She also likes maths. She has lunch at school at 12 o'clock. She usually eats a sandwich and an apple. After school she goes home at 3 o'clock. She does her homework and then watches TV. In the evening she reads a book before bed. She goes to bed at 9 o'clock.`;
 
@@ -346,6 +347,9 @@ export default function MySchoolDayClient() {
           )}
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </div>
   );

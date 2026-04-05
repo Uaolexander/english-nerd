@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Future Continuous structure is?", options: ["will have + pp", "will be + -ing", "would be + -ing", "will + infinitive"], answer: 1 },
+  { q: "Future Continuous is used for?", options: ["Completed future action", "Action in progress at future moment", "Past habit", "General truth"], answer: 1 },
+  { q: "'At 8pm I will be eating' means?", options: ["I will eat at 8pm", "Eating is in progress at 8pm", "I ate at 8pm", "I might eat at 8pm"], answer: 1 },
+  { q: "Which is correct Future Continuous?", options: ["will eating", "will be eating", "will been eating", "would eating"], answer: 1 },
+  { q: "Future Continuous negative?", options: ["won't be working", "will not working", "won't been working", "will be not working"], answer: 0 },
+  { q: "Future Continuous question form?", options: ["Will he be working?", "Will he working?", "He will be working?", "Does he will work?"], answer: 0 },
+  { q: "'This time next week' signals?", options: ["Past continuous", "Future continuous", "Present continuous", "Future perfect"], answer: 1 },
+  { q: "Future Continuous can express?", options: ["Past regrets", "Polite inquiry about plans", "Completed actions", "General truths"], answer: 1 },
+  { q: "'Will you be using the car later?' is?", options: ["A command", "A polite question about plans", "A future perfect", "An inversion"], answer: 1 },
+  { q: "Future Continuous parallel action: while + clause uses?", options: ["Past simple", "Future perfect", "Future continuous in both", "Present simple"], answer: 2 },
+  { q: "Which adverb signals Future Continuous?", options: ["Yesterday", "By then", "At this time tomorrow", "Already"], answer: 2 },
+  { q: "Can Future Continuous be used to predict?", options: ["No, never", "Yes, ongoing prediction", "Only with 'might'", "Only negative"], answer: 1 },
+  { q: "'-ing' form in Future Continuous is?", options: ["Present participle", "Past participle", "Infinitive", "Gerund"], answer: 0 },
+  { q: "Which is NOT Future Continuous use?", options: ["Action at specific future time", "Polite enquiry", "Future result before deadline", "Parallel future actions"], answer: 2 },
+  { q: "'Don't call — he will be sleeping' means?", options: ["He slept", "He will be in the middle of sleeping", "He might sleep", "He has slept"], answer: 1 },
+  { q: "Future Continuous vs Future Simple: difference?", options: ["No difference", "Cont. = in progress, Simple = instant", "Simple is more formal", "Cont. is only for questions"], answer: 1 },
+  { q: "'By this time next year' uses?", options: ["Future continuous", "Future perfect", "Past perfect", "Present perfect"], answer: 1 },
+  { q: "Which is a polite Future Continuous question?", options: ["Do you use the car?", "Will you be needing anything?", "Are you going to need?", "Did you need anything?"], answer: 1 },
+  { q: "Future Continuous with 'while' means?", options: ["Sequential actions", "Simultaneous future actions", "Past actions", "Conditional actions"], answer: 1 },
+  { q: "'She will be working when I arrive' — working refers to?", options: ["Completed action", "Action already done", "Ongoing at arrival time", "Starting after arrival"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Future Continuous",
+  subtitle: "will be + -ing: action in progress at a future time",
+  level: "B2",
+  keyRule: "will be + -ing = action in progress at a specific future moment.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct Future Continuous form.",
+      questions: [
+        "At 8pm tomorrow, I ___ dinner.",
+        "This time next week, she ___ in Spain.",
+        "Don't call — he ___ his online class.",
+        "They ___ the project at midnight.",
+        "I ___ in the office at 3pm tomorrow.",
+        "She ___ her presentation this time Fri.",
+        "We ___ our exams next Monday morning.",
+        "He ___ at the airport when you call.",
+        "By noon, they ___ the final session.",
+        "I ___ dinner when she arrives.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the Future Continuous",
+      difficulty: "medium" as const,
+      instruction: "Write the correct Future Continuous form.",
+      questions: [
+        "At 10pm (she/work) on her report.",
+        "This time tomorrow (I/fly) to Rome.",
+        "Don't come at 3 — (we/have) a meeting.",
+        "(he/still sleep) when I get back?",
+        "They (not/wait) for us at the station.",
+        "What (you/do) at 6pm on Saturday?",
+        "She (teach) all day on Tuesday.",
+        "At midnight (they/still argue)?",
+        "I (not/use) the car this afternoon.",
+        "By evening (he/drive) back from Paris.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Choose: Future Continuous or Simple",
+      difficulty: "hard" as const,
+      instruction: "Select the best tense for the context.",
+      questions: [
+        "The train ___ at 9:05 sharp. (depart)",
+        "I ___ in the library at 2pm. (study)",
+        "___ you ___ the projector later?",
+        "She ___ when you call. (probably work)",
+        "He ___ the report by Friday. (complete)",
+        "I'll call when I ___ this meeting.",
+        "They ___ the speech all morning.",
+        "___ you ___ past the post office?",
+        "We ___ the whole time. (talk)",
+        "He ___ before you even get there.",
+      ],
+    },
+    {
+      number: 4,
+      title: "All Future Continuous uses",
+      difficulty: "hard" as const,
+      instruction: "Write the full answer using Future Continuous.",
+      questions: [
+        "Predict: (she/probably work) late tonight.",
+        "Parallel: While I cook, (he/set the table).",
+        "Polite Q: (you/use) the printer at 4pm?",
+        "At a point: At 9am (they/board the plane).",
+        "Not done: She (not/attend) the meeting.",
+        "Duration: All evening (I/help) my sister.",
+        "Q: What (you/do) this time tomorrow?",
+        "Negative: He (not/sleep) at 11pm.",
+        "Prediction: (it/rain) when we land?",
+        "Simultaneous: (they/perform) while we eat.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Future Continuous forms", answers: ["will be having", "will be sitting", "will be attending", "will be working", "will be working", "will be giving", "will be taking", "will be waiting", "will be running", "will be cooking"] },
+    { exercise: 2, subtitle: "Written forms", answers: ["she will be working", "I will be flying", "we will be having", "Will he still be sleeping", "they won't be waiting", "What will you be doing", "She will be teaching", "Will they still be arguing", "I won't be using", "he will be driving"] },
+    { exercise: 3, subtitle: "Best tense choice", answers: ["will depart", "will be studying", "Will / be using", "will probably be working", "will have completed", "finish", "will be practising", "Will / be going", "will be talking", "will have left"] },
+    { exercise: 4, subtitle: "Full Future Continuous answers", answers: ["She will probably be working", "he will be setting the table", "Will you be using", "they will be boarding the plane", "She won't be attending", "I will be helping", "What will you be doing", "He won't be sleeping", "Will it be raining", "they will be performing"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Future Perfect", href: "/grammar/b2/future-perfect", level: "B2", badge: "bg-orange-500", reason: "Future Perfect is the natural companion to Future Continuous" },
+  { title: "Past Perfect Continuous", href: "/grammar/b2/past-perfect-continuous", level: "B2", badge: "bg-orange-500", reason: "Continuous aspect in complex time frames" },
+  { title: "Modal Perfect", href: "/grammar/b2/modal-perfect", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function FutureContinuousLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function FutureContinuousLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function FutureContinuousLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-future-continuous" subject="Future Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function FutureContinuousLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-future-continuous" subject="Future Continuous" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

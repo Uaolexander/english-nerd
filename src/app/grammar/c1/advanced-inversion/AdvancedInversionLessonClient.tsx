@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Fronting & Emphasis", href: "/grammar/c1/fronting-emphasis", level: "C1", badge: "bg-sky-600", reason: "Both use marked word order for emphasis" },
+  { title: "Inverted Conditionals", href: "/grammar/c1/inverted-conditionals", level: "C1", badge: "bg-sky-600" },
+  { title: "Advanced Discourse Markers", href: "/grammar/c1/advanced-discourse-markers", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Never ___ such courage.", options: ["have I seen", "I have seen", "I had seen", "I saw"], answer: 0 },
+  { q: "Rarely ___ in such conditions.", options: ["have we worked", "we have worked", "we worked", "we had worked"], answer: 0 },
+  { q: "Not only ___ late, but forgot too.", options: ["was he", "he was", "is he", "he is"], answer: 0 },
+  { q: "No sooner ___ the door than...", options: ["had I opened", "I had opened", "I opened", "did I open"], answer: 0 },
+  { q: "Hardly ___ when it started raining.", options: ["had we left", "we had left", "we left", "did we leave"], answer: 0 },
+  { q: "Under no circumstances ___ allowed.", options: ["are students", "students are", "were students", "students were"], answer: 0 },
+  { q: "Only after ___ the truth.", options: ["did we learn", "we learned", "we did learn", "we learn"], answer: 0 },
+  { q: "Little ___ what awaited them.", options: ["did they know", "they knew", "they did know", "they know"], answer: 0 },
+  { q: "So loud ___ the music that...", options: ["was", "is", "had been", "were"], answer: 0 },
+  { q: "Such ___ the pressure that...", options: ["was", "were", "is", "has been"], answer: 0 },
+  { q: "At no point ___ responsibility.", options: ["did he accept", "he accepted", "he did accept", "did he accepted"], answer: 0 },
+  { q: "Scarcely ___ when guests arrived.", options: ["had we prepared", "we had prepared", "we prepared", "did we prepare"], answer: 0 },
+  { q: "Not until later ___ the truth.", options: ["did we realise", "we realised", "we did realise", "we had realised"], answer: 0 },
+  { q: "In no way ___ responsible.", options: ["am I", "I am", "do I", "I do"], answer: 0 },
+  { q: "So hard ___ she that she won.", options: ["did work", "worked", "did she work", "she did work"], answer: 0 },
+  { q: "Only by working ___ succeed.", options: ["can we", "we can", "we could", "could we"], answer: 0 },
+  { q: "Seldom ___ such support received.", options: ["does a policy", "a policy does", "a policy", "is a policy"], answer: 0 },
+  { q: "Not for one moment ___ worried.", options: ["was I", "I was", "I am", "am I"], answer: 0 },
+  { q: "Barely ___ when the alarm rang.", options: ["had we entered", "we had entered", "we entered", "did we enter"], answer: 0 },
+  { q: "Such was her talent ___.", options: ["that she got a scholarship", "she got scholarship", "and she got one", "because scholarship"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Inversion",
+  subtitle: "Subject-auxiliary inversion with negative adverbials",
+  level: "C1",
+  keyRule: "Negative adverbials (Never, Rarely, Not only) trigger inversion.",
+  exercises: [
+    {
+      number: 1,
+      title: "Identify Correct Inversion",
+      difficulty: "Easy",
+      instruction: "Choose the correctly inverted form.",
+      questions: [
+        "Never ___ such a brave decision.",
+        "Rarely ___ in such conditions.",
+        "Not only ___ late, but forgot.",
+        "No sooner ___ the door than...",
+        "Hardly ___ when the storm broke.",
+        "Under no circumstances ___ out.",
+        "Only after the meeting ___ truth.",
+        "Little ___ what lay ahead.",
+        "At no point ___ responsibility.",
+        "Scarcely ___ when guests came.",
+      ],
+      hint: "Never have I / Rarely have we / did they know",
+    },
+    {
+      number: 2,
+      title: "So/Such Inversion",
+      difficulty: "Medium",
+      instruction: "Complete with correct so/such inversion.",
+      questions: [
+        "So ___ the noise that no sleep.",
+        "Such ___ the pressure: staff quit.",
+        "So ___ she work: barely slept.",
+        "Such ___ scale: agencies overwhelmed.",
+        "So ___ temperature: pipes froze.",
+        "As ___ his predecessor, so too.",
+        "Such ___ talent: got scholarship.",
+        "So ___ response: added seating.",
+        "As ___ prior gen, so too today.",
+        "Such ___ enthusiasm: week early.",
+      ],
+      hint: "So loud was / Such was the...",
+    },
+    {
+      number: 3,
+      title: "Mixed Inversion",
+      difficulty: "Hard",
+      instruction: "Choose the correct inversion form.",
+      questions: [
+        "Not until results ___ full extent.",
+        "No sooner ___ announcement, protests.",
+        "Only by working ___ overcome this.",
+        "Seldom ___ such unanimous support.",
+        "Not only ___ test, broke record.",
+        "In no way ___ responsible.",
+        "Barely ___ when alarm went off.",
+        "Not for one moment ___ would fail.",
+        "So ___ the impact: tears in eyes.",
+        "At no time ___ original terms.",
+      ],
+      hint: "did we realise / can we / am I",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Inversion",
+      difficulty: "Very Hard",
+      instruction: "Rewrite beginning with the word(s) given.",
+      questions: [
+        "Never seen: (Never before...)",
+        "Barely sat when rang. (Barely...)",
+        "Not only sorry, offered resign.",
+        "So quiet: no one dared breathe.",
+        "No sooner results: complaints.",
+        "No phones during exams allowed.",
+        "Little knew other side.",
+        "Pressure: team threatened quit.",
+        "Worked hard: collapsed. (So hard...)",
+        "Only after years: impact known.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Identify Correct Inversion", answers: ["have I seen", "have we worked", "was he", "had I opened", "had we left", "are students allowed", "did we find out", "did they know", "did the manager accept", "had we prepared"] },
+    { exercise: 2, subtitle: "So/Such Inversion", answers: ["loud was", "was the pressure", "hard did", "was", "sudden was", "was", "was", "overwhelming was", "did", "was"] },
+    { exercise: 3, subtitle: "Mixed Inversion", answers: ["did we realise", "had the announcement been made", "can we", "does a policy", "did she pass", "am I", "had we stepped", "did I imagine", "profound was", "did they discuss"] },
+    { exercise: 4, subtitle: "Rewrite Using Inversion", answers: ["Never before have I seen such determination", "Barely had she sat down when her phone rang", "Not only did he apologise but he also offered to resign", "So complete was the silence that no one dared to breathe", "No sooner had we announced the results than the complaints started", "Under no circumstances are students allowed to use their phones during exams", "Little did they know what awaited them on the other side", "Such was the pressure that the entire team threatened to quit", "So hard did he work that he collapsed from exhaustion", "Only after many years did we understand the full impact of the decision"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function AdvancedInversionLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function AdvancedInversionLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function AdvancedInversionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-advanced-inversion" subject="Advanced Inversion" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function AdvancedInversionLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-advanced-inversion" subject="Advanced Inversion" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

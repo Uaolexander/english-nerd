@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import PDFButton from "@/components/PDFButton";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 
 type MCQ = {
   id: string;
@@ -32,6 +33,12 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase().replace(/['']/g, "'");
 }
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Past Simple (Regular)", href: "/grammar/a2/past-simple-regular", level: "A2", badge: "bg-emerald-600", reason: "Master the regular verb forms used in these questions" },
+  { title: "Past Simple (Irregular)", href: "/grammar/a2/past-simple-irregular", level: "A2", badge: "bg-emerald-600", reason: "Practice irregular verbs in negative and question forms" },
+  { title: "Time Expressions (Past)", href: "/grammar/a2/time-expressions-past", level: "A2", badge: "bg-emerald-600" },
+];
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "She ___ go to the party. (negative)", options: ["didn't went", "didn't go", "doesn't go", "don't go"], answer: 1 },
@@ -524,7 +531,7 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
       </p>
 
       {/* Layout */}
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
         {/* Left sidebar */}
         {isPro ? (
@@ -771,29 +778,21 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
 
         {/* Right sidebar */}
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a2" allLabel="All A2 topics" />
         ) : (
-          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
         )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-past-simple-negative-questions" subject="Past Simple Negatives & Questions" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       {/* Bottom navigation */}
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Complex Passives", href: "/grammar/c1/complex-passives", level: "C1", badge: "bg-sky-600", reason: "Both deal with advanced passive structures at C1 level" },
+  { title: "Advanced Modals", href: "/grammar/c1/advanced-modals", level: "C1", badge: "bg-sky-600" },
+  { title: "Reported Speech C1", href: "/grammar/c1/reported-speech-c1", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Passive infinitive structure:", options: ["to be + past participle", "to have + past participle", "being + pp", "to be + gerund"], answer: 0 },
+  { q: "She wants ___ promoted.", options: ["to be", "to have been", "being", "to get"], answer: 0 },
+  { q: "Perfect passive infinitive:", options: ["to have been + pp", "to be + pp", "having + pp", "been + pp"], answer: 0 },
+  { q: "He seems ___ the winner.", options: ["to have been declared", "to be declared", "being declared", "declared"], answer: 0 },
+  { q: "They expected ___ on time.", options: ["to be paid", "to pay", "being paid", "paid"], answer: 0 },
+  { q: "She was pleased ___ chosen.", options: ["to have been", "to be", "having been", "to been"], answer: 0 },
+  { q: "He deserves ___ recognised.", options: ["to be", "to have been", "being", "being have"], answer: 0 },
+  { q: "She claims ___ unfairly treated.", options: ["to have been", "to be", "being", "been"], answer: 0 },
+  { q: "The house needs ___ repainted.", options: ["to be", "to have been", "being", "been"], answer: 0 },
+  { q: "They appear ___ the project.", options: ["to have been given", "to be given", "being given", "given"], answer: 0 },
+  { q: "Passive inf. after 'want' = ___.", options: ["Subject's wish to receive", "Subject does action", "Object's wish", "Both active"], answer: 0 },
+  { q: "He was said ___ a genius.", options: ["to be", "to have been", "being", "been"], answer: 0 },
+  { q: "She seems ___ the award.", options: ["to have been given", "to be given", "being given", "having given"], answer: 0 },
+  { q: "The report is understood ___ wrong.", options: ["to have been", "to be", "being", "been"], answer: 0 },
+  { q: "It needs ___ carefully.", options: ["to be handled", "to have handled", "being handle", "handling"], answer: 0 },
+  { q: "He was relieved ___ chosen.", options: ["to have been", "to be", "being", "been"], answer: 0 },
+  { q: "She hoped ___ promoted soon.", options: ["to be", "to have been", "being", "to been"], answer: 0 },
+  { q: "Passive inf. after 'seem/appear':", options: ["to be / to have been", "being", "having been", "been"], answer: 0 },
+  { q: "He is believed ___ escaped.", options: ["to have", "to be", "having", "been"], answer: 0 },
+  { q: "They expect ___ invited.", options: ["to be", "to have been", "being", "been"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Passive Infinitives",
+  subtitle: "to be + pp and to have been + pp structures",
+  level: "C1",
+  keyRule: "Passive inf: to be + pp (present); to have been + pp (past).",
+  exercises: [
+    {
+      number: 1,
+      title: "Simple Passive Infinitive",
+      difficulty: "Easy",
+      instruction: "Choose the correct passive infinitive.",
+      questions: [
+        "She wants ___ promoted.",
+        "He deserves ___ recognised.",
+        "She hoped ___ selected.",
+        "They expected ___ invited.",
+        "The house needs ___ repainted.",
+        "He was said ___ a genius.",
+        "She was pleased ___ chosen.",
+        "It needs ___ carefully handled.",
+        "They want ___ informed first.",
+        "He was relieved ___ accepted.",
+      ],
+      hint: "to be promoted / to be recognised",
+    },
+    {
+      number: 2,
+      title: "Perfect Passive Infinitive",
+      difficulty: "Medium",
+      instruction: "Choose the correct perfect passive infinitive.",
+      questions: [
+        "She claims ___ unfairly treated.",
+        "He seems ___ the winner.",
+        "Report understood ___ wrong.",
+        "She appears ___ the job.",
+        "He is believed ___ escaped.",
+        "They seem ___ a warning.",
+        "She was pleased ___ chosen.",
+        "He was relieved ___ cleared.",
+        "They claim ___ deceived.",
+        "She seems ___ the award.",
+      ],
+      hint: "to have been treated / to have been declared",
+    },
+    {
+      number: 3,
+      title: "Passive Infinitive in Context",
+      difficulty: "Hard",
+      instruction: "Choose to be or to have been.",
+      questions: [
+        "She wants ___ promoted. (future wish)",
+        "She claims ___ treated unfairly. (past)",
+        "He deserves ___ recognised. (now)",
+        "He is believed ___ escaped. (past)",
+        "Report needs ___ filed today.",
+        "She seems ___ given a choice. (past)",
+        "They expect ___ promoted next year.",
+        "He appears ___ the best candidate.",
+        "She was glad ___ included. (past)",
+        "The issue needs ___ resolved. (now)",
+      ],
+      hint: "to be (present/future) / to have been (past)",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Passive Infinitive",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using a passive infinitive structure.",
+      questions: [
+        "She wants promotion.",
+        "He deserves recognition.",
+        "Someone treated her unfairly. (claim)",
+        "Someone declared him the winner.",
+        "Someone gave them a warning.",
+        "She hoped they'd select her.",
+        "He believed they'd clear him.",
+        "Someone invited them. (expect)",
+        "She wanted them to paint house.",
+        "They believe he escaped. (is)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Simple Passive Infinitive", answers: ["to be promoted", "to be recognised", "to be selected", "to be invited", "to be repainted", "to be", "to have been chosen", "to be handled", "to be informed", "to have been accepted"] },
+    { exercise: 2, subtitle: "Perfect Passive Infinitive", answers: ["to have been treated", "to have been declared", "to have been written", "to have been offered", "to have escaped", "to have been given", "to have been chosen", "to have been cleared", "to have been deceived", "to have been given"] },
+    { exercise: 3, subtitle: "Passive Infinitive in Context", answers: ["to be", "to have been", "to be", "to have", "to be", "to have been", "to be", "to be", "to have been", "to be"] },
+    { exercise: 4, subtitle: "Rewrite Using Passive Infinitive", answers: ["She wants to be promoted.", "He deserves to be recognised.", "She claims to have been treated unfairly.", "He seems to have been declared the winner.", "They seem to have been given a warning.", "She hoped to be selected.", "He was relieved to have been cleared.", "They expected to be invited.", "She wanted the house to be painted.", "He is believed to have escaped."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function PassiveInfinitivesLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function PassiveInfinitivesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function PassiveInfinitivesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-passive-infinitives" subject="Passive Infinitives" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function PassiveInfinitivesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-passive-infinitives" subject="Passive Infinitives" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

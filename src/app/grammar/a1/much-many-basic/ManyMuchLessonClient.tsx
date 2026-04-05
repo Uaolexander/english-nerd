@@ -6,6 +6,7 @@ import { useProgress } from "@/lib/useProgress";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
@@ -55,6 +56,12 @@ const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "How ___ people live here?", options: ["much","many","lot","few"], answer: 1 },
   { q: "I didn't spend ___ money.", options: ["many","much","lot","few"], answer: 1 },
   { q: "How ___ water do you drink?", options: ["many","much","lot","few"], answer: 1 },
+];
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Countable & Uncountable", href: "/grammar/a1/countable-uncountable", img: "/topics/a1/countable-uncountable.jpg", level: "A1", badge: "bg-emerald-500", reason: "Much/many depends on this" },
+  { title: "Some / Any", href: "/grammar/a1/some-any", img: "/topics/a1/some-any.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Plural Nouns", href: "/grammar/a1/plural-nouns", img: "/topics/a1/plural-nouns.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 
 export default function ManyMuchLessonClient() {
@@ -537,7 +544,7 @@ export default function ManyMuchLessonClient() {
         Practise much and many with easy A1 grammar explanations and step-by-step exercises. Learn how to use much with uncountable nouns and many with countable plural nouns.
       </p>
 
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">
@@ -789,25 +796,7 @@ export default function ManyMuchLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
           <div className="sticky top-24">
             <AdUnit variant="sidebar-light" />

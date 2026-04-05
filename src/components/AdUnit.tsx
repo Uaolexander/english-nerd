@@ -1,9 +1,11 @@
 "use client";
 
 import { useIsPro } from "@/lib/ProContext";
+import { useIsStudent } from "@/lib/StudentContext";
+import { useIsTeacher } from "@/lib/TeacherContext";
 
 /**
- * Ad placeholder component. Renders nothing for Pro users.
+ * Ad placeholder component. Renders nothing for Pro, Teacher, or Student users.
  *
  * variant:
  *  "sidebar-dark"   — 300×600, dark-glass style (grammar / tenses pages)
@@ -23,15 +25,15 @@ type Variant =
 
 export default function AdUnit({ variant }: { variant: Variant }) {
   const isPro = useIsPro();
+  const isStudent = useIsStudent();
+  const isTeacher = useIsTeacher();
 
-  // Pro users: for sidebar variants preserve the grid cell (empty aside),
-  // for non-sidebar variants render nothing.
-  if (isPro) {
-    // sidebar-dark / sidebar-light: preserve 3-column lg grid so center section stays centred
+  // Pro, Teacher, and Student users see no ads.
+  // For sidebar-dark / sidebar-light: preserve the grid cell so layout stays intact.
+  if (isPro || isStudent || isTeacher) {
     if (variant === "sidebar-dark" || variant === "sidebar-light") {
       return <aside className="hidden lg:block" aria-hidden />;
     }
-    // All other variants: render nothing — consuming component adjusts its own grid
     return null;
   }
 

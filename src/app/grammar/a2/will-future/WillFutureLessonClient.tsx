@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 
 type MCQ = {
   id: string;
@@ -32,6 +33,12 @@ type ExerciseSet =
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Going to (Future Plans)", href: "/grammar/a2/going-to", level: "A2", badge: "bg-emerald-600", reason: "Compare 'will' with 'going to' for future" },
+  { title: "Should / Shouldn't", href: "/grammar/a2/should-shouldnt", level: "A2", badge: "bg-emerald-600", reason: "Both 'will' and 'should' are modal verbs" },
+  { title: "Present Continuous", href: "/grammar/a2/present-continuous", level: "A2", badge: "bg-emerald-600" },
+];
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "Don't worry — everything ___ be okay.", options: ["won't", "will", "going to", "is"], answer: 1 },
@@ -317,7 +324,7 @@ export default function WillFutureLessonClient() {
         Use <b>will</b> for <b>predictions, spontaneous decisions, promises and offers</b>. Form: <b>will + base verb</b> for all subjects. Negative: <b>won't</b> (= will not).
       </p>
 
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {isPro ? (
           <div className="sticky top-24">
             <SpeedRound gameId="grammar-a2-will-future" subject="Will — Future" questions={SPEED_QUESTIONS} variant="sidebar" />
@@ -458,27 +465,11 @@ export default function WillFutureLessonClient() {
         </section>
 
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a2" allLabel="All A2 topics" />
         ) : (
-          <div className="sticky top-24"><AdUnit variant="sidebar-light" /></div>
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-light" />
+          </div>
         )}
       </div>
 

@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -17,6 +18,12 @@ type ExerciseSet =
   | { type: "input"; title: string; instructions: string; questions: InputQ[] };
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Possessive Pronouns", href: "/grammar/a2/possessive-pronouns", level: "A2", badge: "bg-emerald-600", reason: "Mine, yours, his — the natural next step" },
+  { title: "The Definite Article", href: "/grammar/a2/articles-the", level: "A2", badge: "bg-emerald-600", reason: "Articles and pronouns both refer to specific things" },
+  { title: "Present Continuous", href: "/grammar/a2/present-continuous", level: "A2", badge: "bg-emerald-600" },
+];
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "I love my sister. I call ___ every day.", options: ["him", "her", "them", "it"], answer: 1 },
@@ -221,7 +228,7 @@ export default function ObjectPronounsLessonClient() {
         Object pronouns replace nouns that receive the action of a verb or follow a preposition. They are: <b>me, you, him, her, it, us, them</b>.
       </p>
 
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">
@@ -362,31 +369,21 @@ export default function ObjectPronounsLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a2" allLabel="All A2 topics" />
         ) : (
           <div className="sticky top-24">
             <AdUnit variant="sidebar-light" />
           </div>
         )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-object-pronouns" subject="Object Pronouns" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All A2 topics</a>

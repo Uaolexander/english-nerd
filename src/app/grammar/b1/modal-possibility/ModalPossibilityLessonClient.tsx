@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Which modal expresses possibility?", options: ["must", "can't", "might", "will definitely"], answer: 2 },
+  { q: "'She ___ be at the library.' (uncertain)", options: ["must", "might", "will", "should"], answer: 1 },
+  { q: "'It ___ rain later — bring umbrella.' (uncertain future)", options: ["must", "will", "could", "should"], answer: 2 },
+  { q: "May / might / could all express:", options: ["certainty", "possibility", "obligation", "impossibility"], answer: 1 },
+  { q: "'I ___ come to the party, but not sure.' Correct:", options: ["must", "might", "will", "should"], answer: 1 },
+  { q: "'She ___ be right — I hadn't thought of that.'", options: ["must", "might", "will", "can't"], answer: 1 },
+  { q: "Past possibility: 'He ___ have missed the bus.'", options: ["must have", "might have", "can't have", "will have"], answer: 1 },
+  { q: "'It ___ not rain tomorrow.' Means:", options: ["It will definitely be sunny.", "There's a chance it won't rain.", "It will definitely rain.", "It must be sunny."], answer: 1 },
+  { q: "Which expresses MORE certainty?", options: ["She might come.", "She could come.", "She will probably come.", "She may come."], answer: 2 },
+  { q: "Which expresses LEAST certainty?", options: ["She should be there.", "She will be there.", "She might be there.", "She ought to be there."], answer: 2 },
+  { q: "'The keys ___ be in the kitchen.' Correct:", options: ["must", "could", "will", "can't"], answer: 1 },
+  { q: "'She ___ not have seen your message.' (possible)", options: ["must", "may", "will", "should"], answer: 1 },
+  { q: "Which is a past possibility?", options: ["She might be home.", "She could be home.", "She might have left.", "She must be home."], answer: 2 },
+  { q: "'This ___ be a problem.' (possible)", options: ["must", "will", "could", "can't"], answer: 2 },
+  { q: "'You ___ be right.' The speaker thinks:", options: ["You are wrong.", "Possibly you are right.", "You are definitely right.", "You should be right."], answer: 1 },
+  { q: "'They ___ arrive any minute.' (expected)", options: ["might not", "could not", "should", "must not"], answer: 2 },
+  { q: "'It ___ have been a mistake.' This refers to:", options: ["a certain past event", "a possible past event", "a future event", "a general truth"], answer: 1 },
+  { q: "Best way to say 50% chance of rain:", options: ["It will rain.", "It must rain.", "It might rain.", "It can't rain."], answer: 2 },
+  { q: "'There ___ be an accident.' (explaining road closure)", options: ["must", "will", "could", "can't"], answer: 2 },
+  { q: "'Don't call now — they ___ be sleeping.'", options: ["must", "may", "will", "can't"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Modal Verbs for Possibility",
+  subtitle: "may / might / could",
+  level: "B1",
+  keyRule: "may / might / could = possible (not certain) | might have + pp = past possibility",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose might, may or could",
+      difficulty: "Easy",
+      instruction: "Choose the best modal for possibility.",
+      questions: [
+        "She ___ be at the library. (uncertain)",
+        "It ___ rain later — bring umbrella.",
+        "He ___ not have seen your message.",
+        "There's a chance we ___ finish early.",
+        "She ___ be right — I hadn't thought of it.",
+        "Don't call — they ___ be sleeping.",
+        "The meeting ___ start late. We'll see.",
+        "I ___ come to the party — not sure yet.",
+        "No answer. She ___ have left already.",
+        "Keys ___ be in kitchen — I left them there.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Possibility vs Certainty",
+      difficulty: "Medium",
+      instruction: "Choose the modal matching the certainty level.",
+      questions: [
+        "He's late again. He ___ have missed bus. (possible)",
+        "She knows topic well. She ___ pass. (certain)",
+        "Undecided: I ___ go, I ___ not. (50/50)",
+        "No light on. They ___ be out. (fairly possible)",
+        "Roads icy. Journey ___ take longer. (possible)",
+        "Don't worry — it ___ not be as bad. (possible)",
+        "She practises daily. She ___ win. (likely)",
+        "Left my phone. It ___ be in my bag. (possible)",
+        "They said 6pm. They ___ arrive any minute.",
+        "Difficult exam. Some students ___ fail.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write might / may / could + verb",
+      difficulty: "Hard",
+      instruction: "Write the possibility phrase.",
+      questions: [
+        "Not sure about tomorrow: I ___ (come).",
+        "Not answering: she ___ (be) busy.",
+        "Take coat — it ___ (get) cold later.",
+        "He ___ (not/know) about the change.",
+        "Chance they ___ (cancel) the event.",
+        "She ___ (be) at home — try calling.",
+        "Test ___ (not/be) as hard as we thought.",
+        "I left keys inside: I ___ (lock) myself out.",
+        "Road closed: there ___ (be) an accident.",
+        "Traffic bad: they ___ (arrive) late.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Choose the correct interpretation",
+      difficulty: "Harder",
+      instruction: "What does the sentence mean?",
+      questions: [
+        "'She might be at work.' This means:",
+        "'He could have taken wrong train.' This means:",
+        "'It may not rain tomorrow.' This means:",
+        "'They might not know.' This means:",
+        "'This could be a problem.' This means:",
+        "Which is MORE certain?",
+        "Which is LEAST certain?",
+        "'You could be right.' Speaker thinks:",
+        "'It may have been a mistake.' Refers to:",
+        "Best way to say 50% chance of rain:",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Possibility modals", answers: ["might", "could", "may", "could", "might", "may", "could", "might", "may", "could"] },
+    { exercise: 2, subtitle: "Certainty levels", answers: ["might have", "will", "might / might not", "may", "could", "might", "should", "could", "should", "might"] },
+    { exercise: 3, subtitle: "Possibility phrases", answers: ["might come", "may be", "could get", "might not know", "might cancel", "could be", "may not be", "might have locked", "could be", "might arrive"] },
+    { exercise: 4, subtitle: "Meanings", answers: ["It's possible she's at work", "It's possible he took wrong train", "There's a chance it won't rain", "It's possible they don't know", "It's possible this will cause a problem", "She will probably come", "She might be there", "Possibly you are right", "A possible past event", "It might rain"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Modal Verbs: Deduction", href: "/grammar/b1/modal-deduction", level: "B1", badge: "bg-violet-500", reason: "Closely related modal verb use" },
+  { title: "Second Conditional", href: "/grammar/b1/second-conditional", level: "B1", badge: "bg-violet-500" },
+  { title: "Wish + Past", href: "/grammar/b1/wish-past", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function ModalPossibilityLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ModalPossibilityLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ModalPossibilityLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-modal-possibility" subject="Modal Possibility" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function ModalPossibilityLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-modal-possibility" subject="Modal Possibility" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

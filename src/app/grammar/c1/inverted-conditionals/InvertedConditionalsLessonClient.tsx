@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Inversion", href: "/grammar/c1/advanced-inversion", level: "C1", badge: "bg-sky-600", reason: "Inverted conditionals are a special case of subject-verb inversion" },
+  { title: "Subjunctive", href: "/grammar/c1/subjunctive", level: "C1", badge: "bg-sky-600" },
+  { title: "Advanced Modals", href: "/grammar/c1/advanced-modals", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Inverted conditional drops 'if' and:", options: ["Moves aux before subject", "Adds 'would'", "Uses passive", "Adds 'should'"], answer: 0 },
+  { q: "___ I known, I'd have helped.", options: ["Had", "If", "Should", "Were"], answer: 0 },
+  { q: "___ you need help, call me.", options: ["Should", "Had", "Were", "Would"], answer: 0 },
+  { q: "___ it not for the rain, we'd go.", options: ["Were", "Had", "Should", "If"], answer: 0 },
+  { q: "Had she arrived earlier, ___ .", options: ["she'd have seen him", "she sees him", "she saw him", "she'd see him"], answer: 0 },
+  { q: "Should they refuse, ___ .", options: ["we'll take action", "we'd take action", "we took action", "we'd taken action"], answer: 0 },
+  { q: "'Were it not for' = ___.", options: ["If it weren't for", "Because of", "Despite", "Although"], answer: 0 },
+  { q: "Inverted type 2: Were I you, ___.", options: ["I'd apologise", "I apologise", "I apologised", "I'll apologise"], answer: 0 },
+  { q: "Inverted type 3: Had they known, ___.", options: ["they'd have acted", "they'd act", "they act", "they've acted"], answer: 0 },
+  { q: "Type 1 inversion uses which aux?", options: ["Should", "Had", "Were", "Would"], answer: 0 },
+  { q: "Type 2 inversion uses which aux?", options: ["Were", "Should", "Had", "Will"], answer: 0 },
+  { q: "Type 3 inversion uses which aux?", options: ["Had", "Were", "Should", "Would"], answer: 0 },
+  { q: "___ he to resign, chaos follows.", options: ["Were", "Should", "Had", "Would"], answer: 0 },
+  { q: "Inverted conditionals are used in:", options: ["Formal/written English", "Informal speech only", "Questions only", "Commands only"], answer: 0 },
+  { q: "Should you change mind, ___ .", options: ["let me know", "you let me know", "let knowing", "known let"], answer: 0 },
+  { q: "Had we not acted, ___ .", options: ["it'd have been worse", "it will be worse", "it was worse", "it would be worse"], answer: 0 },
+  { q: "Were she here, ___ .", options: ["she'd be proud", "she was proud", "she'll be proud", "she'd been proud"], answer: 0 },
+  { q: "___ I in your position, I'd quit.", options: ["Were", "Had", "Should", "Would"], answer: 0 },
+  { q: "Were it possible, ___ .", options: ["I'd do it differently", "I'd done it", "I did it", "I do it"], answer: 0 },
+  { q: "Had she studied harder, ___ .", options: ["she'd have passed", "she'd pass", "she passes", "she'd passed"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Inverted Conditionals",
+  subtitle: "Formal conditionals without 'if': had/were/should",
+  level: "C1",
+  keyRule: "Inverted conditionals drop 'if' and move aux before subject.",
+  exercises: [
+    {
+      number: 1,
+      title: "Type 1 Inversion with Should",
+      difficulty: "Easy",
+      instruction: "Choose the correct inverted conditional.",
+      questions: [
+        "___ you need help, call me.",
+        "___ any problems arise, contact.",
+        "___ they agree, we proceed.",
+        "___ she change her mind, inform.",
+        "___ the plan fail, try again.",
+        "___ we need more data, request.",
+        "___ he be interested, show him.",
+        "___ the team be available, call.",
+        "___ costs increase, adjust budget.",
+        "___ you wish to leave, go now.",
+      ],
+      hint: "Should you / Should any",
+    },
+    {
+      number: 2,
+      title: "Type 2 Inversion with Were",
+      difficulty: "Medium",
+      instruction: "Complete with the correct were-inversion.",
+      questions: [
+        "___ I you, I'd apologise now.",
+        "___ it not for rain, we'd go.",
+        "___ she here, she'd be proud.",
+        "___ he the manager, he'd act.",
+        "___ it possible, I'd help more.",
+        "___ they to refuse, we'd leave.",
+        "___ I in your shoes, I'd quit.",
+        "___ this true, it'd be shocking.",
+        "___ she aware, she'd object.",
+        "___ I free this weekend, I'd come.",
+      ],
+      hint: "Were I / Were it not for / Were she",
+    },
+    {
+      number: 3,
+      title: "Type 3 Inversion with Had",
+      difficulty: "Hard",
+      instruction: "Complete with the correct had-inversion.",
+      questions: [
+        "___ she earlier, she'd have seen.",
+        "___ we known, we'd have acted.",
+        "___ they prepared, they'd have won.",
+        "___ he studied, he'd have passed.",
+        "___ I listened, I'd have known.",
+        "___ we not acted, it'd be worse.",
+        "___ she been told, she'd left.",
+        "___ they checked, errors avoided.",
+        "___ he agreed, plan would've worked.",
+        "___ I refused, outcome different.",
+      ],
+      hint: "Had she / Had we not",
+    },
+    {
+      number: 4,
+      title: "Rewrite as Inverted Conditional",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using an inverted conditional.",
+      questions: [
+        "If you need help, call me.",
+        "If I were you, I'd apologise.",
+        "If they had known, they'd acted.",
+        "If it weren't for you, I'd fail.",
+        "If she changes mind, let me know.",
+        "If we had prepared, we'd have won.",
+        "If he were here, he'd be proud.",
+        "If problems arise, contact us.",
+        "If they had checked, no errors.",
+        "If it were possible, I'd help.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Type 1 Inversion with Should", answers: ["Should you", "Should any", "Should they", "Should she", "Should the plan", "Should we", "Should he", "Should the team", "Should costs", "Should you wish"] },
+    { exercise: 2, subtitle: "Type 2 Inversion with Were", answers: ["Were I", "Were it not for", "Were she", "Were he", "Were it", "Were they", "Were I", "Were this", "Were she", "Were I"] },
+    { exercise: 3, subtitle: "Type 3 Inversion with Had", answers: ["Had she arrived earlier", "Had we known", "Had they prepared", "Had he studied", "Had I listened", "Had we not acted", "Had she been told", "Had they checked", "Had he agreed", "Had I refused"] },
+    { exercise: 4, subtitle: "Rewrite as Inverted Conditional", answers: ["Should you need help, call me.", "Were I you, I'd apologise.", "Had they known, they'd have acted.", "Were it not for you, I'd fail.", "Should she change her mind, let me know.", "Had we prepared, we'd have won.", "Were he here, he'd be proud.", "Should any problems arise, contact us.", "Had they checked, there would have been no errors.", "Were it possible, I'd help."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function InvertedConditionalsLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function InvertedConditionalsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function InvertedConditionalsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-inverted-conditionals" subject="Inverted Conditionals" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function InvertedConditionalsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-inverted-conditionals" subject="Inverted Conditionals" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Causative structure is?", options: ["have + object + pp", "have + pp + object", "get + verb + object", "object + have + pp"], answer: 0 },
+  { q: "'I had my hair cut' means?", options: ["I cut my hair", "Someone cut my hair", "I will cut my hair", "My hair was long"], answer: 1 },
+  { q: "Which is correct causative?", options: ["I had cut my car", "I had my car cut", "I cut had my car", "My car had cut"], answer: 1 },
+  { q: "Get causative is more?", options: ["Formal", "Informal/colloquial", "Old-fashioned", "Incorrect"], answer: 1 },
+  { q: "'She had her bag stolen' means?", options: ["She arranged it", "It happened to her", "She stole her bag", "She lost her bag"], answer: 1 },
+  { q: "Which shows involuntary causative?", options: ["I had my hair cut", "He had his car stolen", "She got it painted", "They had it fixed"], answer: 1 },
+  { q: "Correct causative question form?", options: ["Did you have fixed it?", "Did you have it fixed?", "Have you fixed it had?", "You had it fixed?"], answer: 1 },
+  { q: "Present perfect causative of 'test eyes'?", options: ["had my eyes tested", "have had my eyes tested", "have my eyes tested", "got tested my eyes"], answer: 1 },
+  { q: "Modal causative: you should ___?", options: ["have your brakes check", "have your brakes checked", "get checked your brakes", "your brakes checked"], answer: 1 },
+  { q: "Object position in causative is?", options: ["After past participle", "Before past participle", "Before have/get", "At the end"], answer: 1 },
+  { q: "Which is WRONG causative?", options: ["I had my car repaired", "I got my car fixed", "I had repaired my car", "She had it done"], answer: 2 },
+  { q: "Future causative with 'will'?", options: ["will had it fixed", "will have it fixed", "will get fixed it", "will have fixed it"], answer: 1 },
+  { q: "Past simple causative?", options: ["had it fixed", "have it fixed", "got fixed it", "had it fix"], answer: 0 },
+  { q: "Both have/get are used for?", options: ["Formal writing", "Questions only", "Involuntary causative", "Future only"], answer: 2 },
+  { q: "'Getting it done' tone is?", options: ["Very formal", "Neutral", "Implies effort/active", "Old-fashioned"], answer: 2 },
+  { q: "Going to causative: she's going to ___?", options: ["have her hair cut", "cut have her hair", "her hair have cut", "had her hair cut"], answer: 0 },
+  { q: "Present continuous causative?", options: ["is having it fixed", "is had it fixed", "is getting fixed it", "has it being fixed"], answer: 0 },
+  { q: "'He got his wallet stolen' = ___?", options: ["He arranged it", "Something bad happened", "He lost it himself", "He stole a wallet"], answer: 1 },
+  { q: "Which changes tense in causative?", options: ["have/get", "the object", "the past participle", "nothing"], answer: 0 },
+  { q: "Past perfect causative?", options: ["had already had it sent", "had been had it sent", "had it had sent", "had have it sent"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Causative: have / get",
+  subtitle: "have/get + object + past participle",
+  level: "B2",
+  keyRule: "have/get + object + past participle = arranged for someone else to do it.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct causative",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct causative form.",
+      questions: [
+        "I ___ it cut at the salon.",
+        "She ___ her car serviced often.",
+        "We're ___ the house painted.",
+        "He needs to ___ teeth checked.",
+        "Did you ___ your photo taken?",
+        "They ___ their roof repaired.",
+        "I must ___ this suit dry-cleaned.",
+        "She ___ her nails done weekly.",
+        "Where do you ___ eyes tested?",
+        "They ___ a new kitchen fitted.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the causative form",
+      difficulty: "medium" as const,
+      instruction: "Rewrite using have/get causative.",
+      questions: [
+        "Plumber fixed boiler. (We/have/past):",
+        "Photographer takes portrait. (She/have/pres cont):",
+        "Dentist will check teeth. (He/get/future):",
+        "Someone repaired phone. (I/get/past):",
+        "Stylist cuts her hair. (She/have/going to):",
+        "Decorator painted flat. (They/have/pres perf):",
+        "Vet vaccinated dog. (We/get/past):",
+        "Tailor makes suit. (He/have/pres cont):",
+        "Mechanic should check brakes. (should/have):",
+        "Electrician installed lights. (She/have/past):",
+      ],
+    },
+    {
+      number: 3,
+      title: "have vs get + negatives",
+      difficulty: "hard" as const,
+      instruction: "Choose the best option.",
+      questions: [
+        "She ___ her bag stolen on tube.",
+        "Did you ___ laptop fixed?",
+        "I haven't ___ eyes tested in yrs.",
+        "He ___ wallet stolen on holiday.",
+        "___ you ___ docs translated?",
+        "She prefers to ___ reports checked.",
+        "We ___ windows cleaned at last.",
+        "I need to ___ this tooth ___ out.",
+        "They ___ house broken into twice.",
+        "Why not ___ the leak fixed?",
+      ],
+    },
+    {
+      number: 4,
+      title: "All tenses + involuntary",
+      difficulty: "hard" as const,
+      instruction: "Write the correct causative form.",
+      questions: [
+        "Thieves stole car. (involuntary/have):",
+        "Tech installs alarm. (We/have/going to):",
+        "By move-in cleaner done. (have/Fut Perf):",
+        "Someone hacked email. (he/have/pres perf):",
+        "Tailor altered dress. (She/get/past):",
+        "He had parcel sent. (have/past perf):",
+        "Check gas pipes. (We/should/get):",
+        "Expert appraised paintings. (They/have/past):",
+        "Someone broke into office. (he/get):",
+        "Surgeon operates on knee. (She/have/future):",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Causative forms", answers: ["have it cut", "gets her car serviced", "having the house painted", "have his teeth checked", "have your passport photo taken", "got their roof repaired", "get this suit dry-cleaned", "has her nails done", "get your eyes tested", "had a new kitchen fitted"] },
+    { exercise: 2, subtitle: "Rewritten causatives", answers: ["had our boiler fixed", "is having her portrait taken", "will get his teeth checked", "got my phone repaired", "is going to have her hair cut", "have had their flat painted", "got our dog vaccinated", "is having his suit made", "have your brakes checked", "had the new lights installed"] },
+    { exercise: 3, subtitle: "have vs get", answers: ["had/got (both)", "have your laptop fixed", "had my eyes tested", "had/got (both)", "Have / had", "get her reports proofread", "had our windows cleaned", "have / pulled", "had/got (both)", "have the leak fixed"] },
+    { exercise: 4, subtitle: "All tenses", answers: ["had her car stolen", "are going to have our alarm installed", "will have had the flat cleaned", "has had his email account hacked", "got her dress altered", "had already had the parcel sent", "get the gas pipes checked", "had their paintings appraised", "got his office broken into", "will have her knee operated on"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Passive", href: "/grammar/b2/passive-advanced", level: "B2", badge: "bg-orange-500", reason: "Causative builds directly on advanced passive structures" },
+  { title: "Gerunds & Infinitives", href: "/grammar/b2/gerunds-infinitives", level: "B2", badge: "bg-orange-500", reason: "Have/get + object + infinitive patterns" },
+  { title: "Reported Speech Advanced", href: "/grammar/b2/reported-speech-advanced", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function CausativeLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function CausativeLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function CausativeLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-causative" subject="Causative have/get" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function CausativeLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-causative" subject="Causative have/get" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

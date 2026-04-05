@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import AdUnit from "@/components/AdUnit";
 
 type Person = {
   name: string;
@@ -354,6 +355,9 @@ export default function DigitalLivesClient() {
           </a>
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </main>
   );

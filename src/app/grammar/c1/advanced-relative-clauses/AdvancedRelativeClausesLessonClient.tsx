@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Participle Clauses", href: "/grammar/c1/advanced-participle-clauses", level: "C1", badge: "bg-sky-600", reason: "Both expand noun/clause modification at C1 level" },
+  { title: "Complex Noun Phrases", href: "/grammar/c1/complex-noun-phrases", level: "C1", badge: "bg-sky-600" },
+  { title: "Ellipsis & Substitution", href: "/grammar/c1/ellipsis-substitution", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She arrived late, ___ annoyed everyone.", options: ["which", "that", "what", "who"], answer: 0 },
+  { q: "Sentential relative 'which' refers to:", options: ["Whole preceding clause", "A noun only", "A person", "Nothing specific"], answer: 0 },
+  { q: "The report ___ we based decision.", options: ["on which", "which", "that", "in which"], answer: 0 },
+  { q: "The professor ___ she had studied.", options: ["with whom", "with who", "that", "which"], answer: 0 },
+  { q: "___ arrives first should set up.", options: ["Whoever", "Whomever", "Anyone", "Someone"], answer: 0 },
+  { q: "___ she goes, makes new friends.", options: ["Wherever", "Whenever", "However", "Whatever"], answer: 0 },
+  { q: "The prize goes to ___ scores best.", options: ["whoever", "whomever", "that person", "anyone"], answer: 0 },
+  { q: "The building ___ conference held.", options: ["in which", "where that", "which", "that"], answer: 0 },
+  { q: "'Whomever' is used when it is:", options: ["Object of a verb/prep", "Subject of a clause", "Always correct", "Never correct"], answer: 0 },
+  { q: "Preposition + whom/which is:", options: ["Formal style", "Informal style", "Incorrect", "Optional only"], answer: 0 },
+  { q: "The letter ___ never replied.", options: ["to whom it was addressed", "which addressed", "that addressed", "to who addressed"], answer: 0 },
+  { q: "Pass message to ___ is in charge.", options: ["whoever", "whomever", "who", "the one"], answer: 0 },
+  { q: "'That' can introduce:", options: ["Defining clauses only", "Non-defining clauses", "Sentential relatives", "Free relatives"], answer: 0 },
+  { q: "She passed every exam, ___ amazed.", options: ["which", "that", "who", "what"], answer: 0 },
+  { q: "The committee ___ proposal submitted.", options: ["to which", "that", "to who", "which"], answer: 0 },
+  { q: "___ said that misunderstood it.", options: ["Whoever", "Whomever", "Whatever", "However"], answer: 0 },
+  { q: "Free relative 'whatever' means:", options: ["Anything that", "Which thing", "Who knows", "Nothing"], answer: 0 },
+  { q: "'However' as free relative means:", options: ["In any way that", "Despite", "Contrast", "Addition"], answer: 0 },
+  { q: "The circumstances ___ they arrived.", options: ["in which", "which", "in that", "that"], answer: 0 },
+  { q: "He resigned, ___ surprised everyone.", options: ["which", "that", "what", "who"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Relative Clauses",
+  subtitle: "Sentential relatives, preposition+which/whom, free relatives",
+  level: "C1",
+  keyRule: "'Which' refers to whole clauses; prep+whom is formal.",
+  exercises: [
+    {
+      number: 1,
+      title: "Sentential & Formal Relatives",
+      difficulty: "Easy",
+      instruction: "Choose the correct relative pronoun.",
+      questions: [
+        "Arrived late, ___ annoyed everyone.",
+        "Went bankrupt, ___ no surprise.",
+        "Report ___ we based decision.",
+        "Professor ___ she had studied.",
+        "Building ___ conference held.",
+        "He resigned, ___ left no leader.",
+        "Committee ___ proposal submitted.",
+        "Passed every exam, ___ delighted.",
+        "Circumstances ___ they arrived.",
+        "Letter ___ minister never replied.",
+      ],
+      hint: "which / on which / with whom / in which",
+    },
+    {
+      number: 2,
+      title: "Whoever / Whatever / Whichever",
+      difficulty: "Medium",
+      instruction: "Choose the correct free relative.",
+      questions: [
+        "___ arrives first sets up room.",
+        "Choose ___ colour you prefer.",
+        "___ she goes, makes friends.",
+        "___ said that misunderstood.",
+        "Prize to ___ scores highest.",
+        "Pass message to ___ in charge.",
+        "I'll support ___ you decide.",
+        "___ the cost, it must be done.",
+        "Give it to ___ needs it most.",
+        "___ happens, stay calm.",
+      ],
+      hint: "Whoever / wherever / whatever / whichever",
+    },
+    {
+      number: 3,
+      title: "Formal vs Informal Relatives",
+      difficulty: "Hard",
+      instruction: "Rewrite informally or formally.",
+      questions: [
+        "Formal: whom the letter addressed.",
+        "Formal: on which they relied.",
+        "Formal: in which it took place.",
+        "Formal: to whom she spoke.",
+        "Informal → formal: report we used.",
+        "Formal: by which she succeeded.",
+        "Correct or incorrect: 'with who'?",
+        "Formal: from which she came.",
+        "'That' vs 'which' in non-defining.",
+        "Sentential: She won, ___ shocked.",
+      ],
+      hint: "whom/which with preposition fronted",
+    },
+    {
+      number: 4,
+      title: "Complete the Relative Clause",
+      difficulty: "Very Hard",
+      instruction: "Complete with one word or phrase.",
+      questions: [
+        "She won, ___ amazed the crowd.",
+        "The city ___ she was born is old.",
+        "The man ___ car was stolen called.",
+        "Report ___ decision was based wrong.",
+        "___ arrives first opens the door.",
+        "I'll take ___ option is cheapest.",
+        "She called whoever ___ available.",
+        "Building ___ signed is historical.",
+        "The board ___ report submitted.",
+        "He left, ___ caused a problem.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Sentential & Formal Relatives", answers: ["which", "which", "on which", "with whom", "in which", "which", "to which", "which", "in which", "to whom"] },
+    { exercise: 2, subtitle: "Whoever / Whatever / Whichever", answers: ["Whoever", "whichever / whatever", "Wherever", "Whoever", "whoever", "whoever", "whatever", "Whatever", "whoever", "Whatever"] },
+    { exercise: 3, subtitle: "Formal vs Informal Relatives", answers: ["to whom the letter was addressed", "the report on which they relied", "the venue in which it took place", "the person to whom she spoke", "the report on which we based our decision", "the method by which she succeeded", "Incorrect (should be 'with whom')", "the place from which she came", "'that' cannot be used in non-defining", "which"] },
+    { exercise: 4, subtitle: "Complete the Relative Clause", answers: ["which", "in which / where", "whose", "on which", "Whoever", "whichever", "who was", "in which the treaty was", "to which the report was submitted", "which"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function AdvancedRelativeClausesLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function AdvancedRelativeClausesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function AdvancedRelativeClausesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-advanced-relative-clauses" subject="Advanced Relative Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function AdvancedRelativeClausesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-advanced-relative-clauses" subject="Advanced Relative Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

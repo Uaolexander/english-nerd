@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -17,6 +18,12 @@ type ExerciseSet =
   | { type: "input"; title: string; instructions: string; questions: InputQ[] };
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Comparative Adjectives", href: "/grammar/a2/comparative-adjectives", level: "A2", badge: "bg-emerald-600", reason: "Compare things using adjectives — a natural next step" },
+  { title: "Superlative Adjectives", href: "/grammar/a2/superlative-adjectives", level: "A2", badge: "bg-emerald-600", reason: "Express the highest degree with superlatives" },
+  { title: "Conjunctions (and/but/because)", href: "/grammar/a2/conjunctions", level: "A2", badge: "bg-emerald-600" },
+];
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "slow → adverb", options: ["slow", "slowly", "slowy", "slowly"], answer: 1 },
@@ -243,7 +250,7 @@ export default function AdverbsMannerLessonClient() {
         Adverbs of manner describe <b>how</b> an action is done: <i>She speaks <b>fluently</b>. He drives <b>carefully</b>.</i> Most are formed by adding <b>-ly</b> to an adjective. Some are irregular: <b>good → well</b>, <b>fast → fast</b>, <b>hard → hard</b>.
       </p>
 
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">
@@ -384,31 +391,21 @@ export default function AdverbsMannerLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A2 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/b1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">B1 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a2" allLabel="All A2 topics" />
         ) : (
           <div className="sticky top-24">
             <AdUnit variant="sidebar-light" />
           </div>
         )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-a2-adverbs-manner" subject="Adverbs of Manner" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/a2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All A2 topics</a>

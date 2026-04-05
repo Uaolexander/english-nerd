@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "used to + ___", options: ["gerund (-ing)", "infinitive (base)", "past participle", "present tense"], answer: 1 },
+  { q: "'I used to live in Rome.' Tense of 'used to'?", options: ["Present", "Future", "Past only", "Both present and past"], answer: 2 },
+  { q: "Negative form of 'used to':", options: ["didn't used to", "didn't use to", "wasn't used to", "used not"], answer: 1 },
+  { q: "Question form: '___ you use to play football?'", options: ["Was", "Were", "Did", "Do"], answer: 2 },
+  { q: "used to = ___ past habit or state", options: ["a current", "a repeated / permanent", "a single", "a future"], answer: 1 },
+  { q: "Which is CORRECT?", options: ["Did she used to smoke?", "Did she use to smoke?", "Was she used to smoke?", "Is she used to smoke?"], answer: 1 },
+  { q: "Which is CORRECT?", options: ["He used to being shy.", "He used to be shy.", "He was used to be shy.", "He use to be shy."], answer: 1 },
+  { q: "'___ your parents use to work abroad?'", options: ["Were", "Is", "Did", "Do"], answer: 2 },
+  { q: "'I ___ like vegetables, but now I love them.'", options: ["didn't use to", "don't use to", "wasn't used to", "used to not"], answer: 0 },
+  { q: "used to refers to:", options: ["Something still happening now", "Something in the past, no longer true", "Something about the future", "A general fact"], answer: 1 },
+  { q: "Which is WRONG?", options: ["She used to be a dancer.", "They used to meet every week.", "He use to play tennis.", "We used to live near the sea."], answer: 2 },
+  { q: "Correct negative: 'We ___ have a car.'", options: ["used to not have", "didn't use to have", "didn't used to have", "weren't used to have"], answer: 1 },
+  { q: "'My grandfather ___ tell us stories.' Correct form:", options: ["use to", "was used to", "used to", "is used to"], answer: 2 },
+  { q: "used to is only used in which tense?", options: ["Present", "Future", "Past", "All tenses"], answer: 2 },
+  { q: "What does 'She used to live in Brazil' imply?", options: ["She lives there now.", "She doesn't live there now.", "She will live there.", "She has always lived there."], answer: 1 },
+  { q: "'___ he use to work late?' (question form)", options: ["Was", "Is", "Did", "Has"], answer: 2 },
+  { q: "used to vs. would: would CANNOT be used with ___", options: ["actions", "past habits", "states (be, have, like)", "routines"], answer: 2 },
+  { q: "'I ___ play chess every day as a child.'", options: ["am used to", "used to", "is used to", "use to"], answer: 1 },
+  { q: "Correct question: 'Did you use to ___ sport?'", options: ["played", "playing", "play", "plays"], answer: 2 },
+  { q: "'We ___ not have a TV when I was young.'", options: ["use to", "used to", "are used to", "were used to"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "used to",
+  subtitle: "used to + infinitive (past habits & states)",
+  level: "B1",
+  keyRule: "used to + infinitive = past habit or state no longer true. Negative: didn't use to. Question: Did … use to?",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct form",
+      difficulty: "Easy",
+      instruction: "Choose the correct form of used to.",
+      questions: [
+        "She ___ live in Paris. (used to / use to)",
+        "They ___ play football on Saturdays.",
+        "He ___ smoke, but he quit.",
+        "___ you ___ walk to school?",
+        "I ___ like vegetables. (negative)",
+        "My grandfather ___ tell us stories.",
+        "We ___ have a dog.",
+        "She ___ be very shy.",
+        "___ your parents ___ work abroad?",
+        "He ___ be the best student.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the correct form",
+      difficulty: "Medium",
+      instruction: "Write used to, didn't use to, or did ... use to.",
+      questions: [
+        "My family (live) ___ in a village.",
+        "I (not/eat) ___ fish, but I love it now.",
+        "(your parents/work) ___ abroad?",
+        "She (be) ___ a teacher before.",
+        "We (not/have) ___ a car.",
+        "He (spend) ___ summers at the beach.",
+        "(you/walk) ___ to school?",
+        "They (not/watch) ___ much TV.",
+        "I (want) ___ be an actor.",
+        "She (not/like) ___ coffee.",
+      ],
+    },
+    {
+      number: 3,
+      title: "True or false? Correct the errors",
+      difficulty: "Hard",
+      instruction: "Correct the mistake if there is one.",
+      questions: [
+        "Did she used to live here?",
+        "We used to be good friends.",
+        "He didn't used to like sport.",
+        "I use to work in London.",
+        "Did you use to have a pet?",
+        "They used to went to that school.",
+        "She was used to be a nurse.",
+        "We didn't use to eat out much.",
+        "Do you used to play chess?",
+        "He used to love skiing.",
+      ],
+    },
+    {
+      number: 4,
+      title: "used to or past simple?",
+      difficulty: "Harder",
+      instruction: "Decide: use 'used to' or past simple.",
+      questions: [
+        "I ___ go to school by bus. (habit)",
+        "She ___ call me yesterday. (once)",
+        "We ___ live in a flat. (past state)",
+        "He ___ break his leg last winter.",
+        "They ___ meet every Sunday. (habit)",
+        "I ___ visit Rome in 2019. (one trip)",
+        "She ___ be very shy. (past state)",
+        "He ___ buy a new laptop last week.",
+        "We ___ go camping every summer.",
+        "They ___ move to London in 2022.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "used to forms", answers: ["used to", "used to", "used to", "Did / use to", "didn't use to", "used to", "used to", "used to", "Did / use to", "used to"] },
+    { exercise: 2, subtitle: "Write the form", answers: ["used to live", "didn't use to eat", "did your parents use to work", "used to be", "didn't use to have", "used to spend", "did you use to walk", "didn't use to watch", "used to want", "didn't use to like"] },
+    { exercise: 3, subtitle: "Correct errors", answers: ["Did she use to live here?", "correct", "He didn't use to like sport.", "I used to work in London.", "correct", "They used to go to that school.", "She used to be a nurse.", "correct", "Did you use to play chess?", "correct"] },
+    { exercise: 4, subtitle: "used to or past simple", answers: ["used to", "called", "used to", "broke", "used to", "visited", "used to", "bought", "used to", "moved"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Would (Past Habits)", href: "/grammar/b1/would-past-habits", level: "B1", badge: "bg-violet-500", reason: "The other way to express past habits" },
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "Past Perfect", href: "/grammar/b1/past-perfect", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function UsedToLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function UsedToLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function UsedToLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-used-to" subject="Used To" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +405,22 @@ export default function UsedToLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-used-to" subject="Used To" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Nominalisation", href: "/grammar/c1/nominalisation", level: "C1", badge: "bg-sky-600", reason: "Nominalisation relies directly on word formation skills" },
+  { title: "Advanced Discourse Markers", href: "/grammar/c1/advanced-discourse-markers", level: "C1", badge: "bg-sky-600" },
+  { title: "Complex Noun Phrases", href: "/grammar/c1/complex-noun-phrases", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'happy' → opposite with un-:", options: ["unhappy", "dishappy", "inhappy", "mishappy"], answer: 0 },
+  { q: "'honest' → opposite with dis-:", options: ["dishonest", "unhonest", "inhonest", "mishonest"], answer: 0 },
+  { q: "'possible' → opposite:", options: ["impossible", "unpossible", "dispossible", "nonpossible"], answer: 0 },
+  { q: "'legal' → opposite:", options: ["illegal", "unlegal", "nonlegal", "dislegal"], answer: 0 },
+  { q: "'regular' → opposite:", options: ["irregular", "unregular", "disregular", "nonregular"], answer: 0 },
+  { q: "'over' + estimate =", options: ["overestimate", "overestimation", "overestimated", "overly"], answer: 0 },
+  { q: "Suffix -ful means:", options: ["Full of", "Without", "Too much", "Before"], answer: 0 },
+  { q: "Suffix -less means:", options: ["Without", "Full of", "Too much", "Again"], answer: 0 },
+  { q: "'care' + -less =", options: ["careless", "carefull", "uncaring", "carely"], answer: 0 },
+  { q: "'use' + -ful =", options: ["useful", "useless", "useable", "userful"], answer: 0 },
+  { q: "Prefix mis- means:", options: ["Wrongly/badly", "Not", "Too much", "Again"], answer: 0 },
+  { q: "Prefix re- means:", options: ["Again", "Not", "Too much", "Wrongly"], answer: 0 },
+  { q: "Prefix pre- means:", options: ["Before", "After", "Again", "Not"], answer: 0 },
+  { q: "Prefix post- means:", options: ["After", "Before", "Again", "Not"], answer: 0 },
+  { q: "Suffix -ise/-ize creates:", options: ["Verbs", "Nouns", "Adjectives", "Adverbs"], answer: 0 },
+  { q: "Suffix -tion creates:", options: ["Nouns", "Verbs", "Adjectives", "Adverbs"], answer: 0 },
+  { q: "Suffix -ous creates:", options: ["Adjectives", "Nouns", "Verbs", "Adverbs"], answer: 0 },
+  { q: "'courage' + -ous =", options: ["courageous", "couragy", "courageful", "couragy"], answer: 0 },
+  { q: "'under' + estimate =", options: ["underestimate", "underestimation", "undervalue", "subvalue"], answer: 0 },
+  { q: "'interpret' + mis- =", options: ["misinterpret", "disinterpret", "uninterpret", "noninterpret"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Word Formation",
+  subtitle: "Prefixes, suffixes, and word building at C1",
+  level: "C1",
+  keyRule: "Prefixes change meaning; suffixes change word class.",
+  exercises: [
+    {
+      number: 1,
+      title: "Negative Prefixes",
+      difficulty: "Easy",
+      instruction: "Add the correct negative prefix.",
+      questions: [
+        "___ + happy = unhappy",
+        "___ + honest = dishonest",
+        "___ + possible = impossible",
+        "___ + legal = illegal",
+        "___ + regular = irregular",
+        "___ + responsible = irresponsible",
+        "___ + agree = disagree",
+        "___ + accurate = inaccurate",
+        "___ + moral = immoral",
+        "___ + logical = illogical",
+      ],
+      hint: "un- / dis- / im- / il- / ir-",
+    },
+    {
+      number: 2,
+      title: "Suffixes: -ful / -less / -ous",
+      difficulty: "Medium",
+      instruction: "Add the correct suffix to form an adjective.",
+      questions: [
+        "care + ___ = careless",
+        "use + ___ = useful",
+        "hope + ___ = hopeless",
+        "courage + ___ = courageous",
+        "harm + ___ = harmless",
+        "beauty + ___ = beautiful",
+        "danger + ___ = dangerous",
+        "home + ___ = homeless",
+        "wonder + ___ = wonderful",
+        "mystery + ___ = mysterious",
+      ],
+      hint: "-less / -ful / -ous",
+    },
+    {
+      number: 3,
+      title: "Prefixes: over- / under- / mis- / re-",
+      difficulty: "Hard",
+      instruction: "Add the correct prefix.",
+      questions: [
+        "___ + estimate (too high) = ___",
+        "___ + estimate (too low) = ___",
+        "___ + interpret (wrongly) = ___",
+        "___ + write (again) = ___",
+        "___ + work (too much) = ___",
+        "___ + understand (wrongly) = ___",
+        "___ + use (wrongly) = ___",
+        "___ + pay (too little) = ___",
+        "___ + read (again) = ___",
+        "___ + judge (wrongly) = ___",
+      ],
+      hint: "over- / under- / mis- / re-",
+    },
+    {
+      number: 4,
+      title: "Form the Correct Word",
+      difficulty: "Very Hard",
+      instruction: "Use the base word to form the correct part of speech.",
+      questions: [
+        "DECIDE: The ___ was final.",
+        "ACHIEVE: Her ___ was remarkable.",
+        "DEVELOP: Rapid ___ was noted.",
+        "ANALYSE: The ___ was thorough.",
+        "IMPROVE: The ___ was clear.",
+        "COMPETE: They faced ___ challenges.",
+        "INNOVATE: Their ___ inspired.",
+        "ORGANISE: The ___ was poor.",
+        "COURAGE: She showed great ___.",
+        "MYSTERY: He behaved ___.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Negative Prefixes", answers: ["un-", "dis-", "im-", "il-", "ir-", "ir-", "dis-", "in-", "im-", "il-"] },
+    { exercise: 2, subtitle: "Suffixes: -ful / -less / -ous", answers: ["-less", "-ful", "-less", "-ous", "-less", "-ful", "-ous", "-less", "-ful", "-ous"] },
+    { exercise: 3, subtitle: "Prefixes: over- / under- / mis- / re-", answers: ["overestimate", "underestimate", "misinterpret", "rewrite", "overwork", "misunderstand", "misuse", "underpay", "reread", "misjudge"] },
+    { exercise: 4, subtitle: "Form the Correct Word", answers: ["decision", "achievement", "development", "analysis", "improvement", "competitive", "innovation", "organisation", "courage", "mysteriously"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function WordFormationLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function WordFormationLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function WordFormationLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-word-formation" subject="Word Formation" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function WordFormationLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-word-formation" subject="Word Formation" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

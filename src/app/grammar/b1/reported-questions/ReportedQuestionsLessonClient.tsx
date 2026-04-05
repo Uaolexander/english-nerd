@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Reported yes/no questions use:", options: ["that", "which", "where", "if / whether"], answer: 3 },
+  { q: "Reported wh-questions keep the:", options: ["auxiliary verb", "wh-word", "question mark", "inversion"], answer: 1 },
+  { q: "Word order in reported questions:", options: ["Inversion (V+S)", "Statement order (S+V)", "Question order (aux+S)", "No change"], answer: 1 },
+  { q: "'Are you coming?' → She asked me ___ coming.", options: ["if I was", "that I was", "what I was", "if was I"], answer: 0 },
+  { q: "'Where do you live?' → He asked me ___.", options: ["where did I live", "where I lived", "where do I live", "if I lived"], answer: 1 },
+  { q: "In reported questions, 'do/did' is:", options: ["kept", "changed to 'would'", "removed", "changed to 'have'"], answer: 2 },
+  { q: "'Can you help?' → He asked ___ I could help.", options: ["that", "what", "if", "which"], answer: 2 },
+  { q: "'Why are you late?' → She asked him ___ he was late.", options: ["if", "that", "what", "why"], answer: 3 },
+  { q: "'Did she call?' → They asked ___ she had called.", options: ["what", "who", "if", "that"], answer: 2 },
+  { q: "'What time is it?' → She asked ___ time it was.", options: ["if", "whether", "what", "when"], answer: 2 },
+  { q: "'I was tired.' Direct question form:", options: ["Was you tired?", "Are you tired?", "Were you tired?", "Did you be tired?"], answer: 1 },
+  { q: "She asked where ___.", options: ["did I live", "I lived", "do I live", "I do live"], answer: 1 },
+  { q: "'How long have you been here?' → He asked how long ___.", options: ["had I been there", "I had been there", "I have been here", "was I there"], answer: 1 },
+  { q: "'Will you come to the party?' → if I ___ come.", options: ["will", "would", "can", "might"], answer: 1 },
+  { q: "They asked when ___ arrive.", options: ["would we", "we would", "we will", "will we"], answer: 1 },
+  { q: "'Have you eaten?' → He asked ___ I had eaten.", options: ["what", "that", "if", "how"], answer: 2 },
+  { q: "'How much does it cost?' → He asked how much ___ cost.", options: ["did it", "it", "does it", "it does"], answer: 1 },
+  { q: "'Who did you see?' → She asked me ___ I had seen.", options: ["if", "that", "which", "who"], answer: 3 },
+  { q: "In reported speech 'tomorrow' becomes:", options: ["yesterday", "the next day", "today", "last day"], answer: 1 },
+  { q: "In reported speech 'here' becomes:", options: ["there", "here", "this", "near"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Reported Questions",
+  subtitle: "if/whether and wh-words, statement order",
+  level: "B1",
+  keyRule: "Yes/no questions → if/whether. Wh-questions keep the wh-word. No inversion, no do/did.",
+  exercises: [
+    {
+      number: 1,
+      title: "if/whether or wh-word?",
+      difficulty: "Easy",
+      instruction: "Choose the correct word to introduce the reported question.",
+      questions: [
+        "'Are you coming?' → asked me ___ I was coming.",
+        "'Where do you live?' → asked me ___ I lived.",
+        "'Did she call?' → asked ___ she had called.",
+        "'What time is it?' → asked ___ time it was.",
+        "'Can you help me?' → asked ___ I could help.",
+        "'Why are you late?' → asked him ___ he was late.",
+        "'Have you eaten?' → asked ___ I had eaten.",
+        "'Who did you see?' → asked me ___ I had seen.",
+        "'How long were you there?' → asked ___ long I'd been.",
+        "'Is this yours?' → asked ___ it was mine.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Choose the correct word order",
+      difficulty: "Medium",
+      instruction: "Choose: no inversion, no auxiliary do/did.",
+      questions: [
+        "She asked me where ___.",
+        "He asked if ___.",
+        "They asked what time ___.",
+        "She asked whether ___.",
+        "He asked why ___.",
+        "I asked how much ___.",
+        "She asked me if ___.",
+        "He asked who ___.",
+        "They asked when ___.",
+        "She asked how long ___.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write the reported question",
+      difficulty: "Hard",
+      instruction: "Write the reported clause after 'asked'.",
+      questions: [
+        "'Are you tired?' → She asked me ___.",
+        "'Where do you work?' → He asked me ___.",
+        "'Have you finished?' → She asked me ___.",
+        "'What are you doing?' → He asked me ___.",
+        "'Can you swim?' → She asked me ___.",
+        "'Why did you leave early?' → He asked me ___.",
+        "'Who did you speak to?' → She asked me ___.",
+        "'How long have you been here?' → He asked me ___.",
+        "'Will you come to the party?' → She asked me ___.",
+        "'How much does it cost?' → He asked ___.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full reported question sentences",
+      difficulty: "Harder",
+      instruction: "Write the complete reported question sentence.",
+      questions: [
+        "'Do you live nearby?' (She / asked me)",
+        "'Where are you going?' (He / asked her)",
+        "'Have you seen my keys?' (She / asked him)",
+        "'What time will you arrive?' (He / asked me)",
+        "'Can you help me tomorrow?' (She / asked him)",
+        "'Why didn't you call me?' (He / asked her)",
+        "'Are you coming to meeting today?' (She / asked him)",
+        "'How long have you been waiting?' (He / asked me)",
+        "'Did you enjoy the film?' (She / asked them)",
+        "'Where were you yesterday?' (He / asked her)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Introductory words", answers: ["if", "where", "if", "what", "if", "why", "if", "who", "how", "if"] },
+    { exercise: 2, subtitle: "Word order", answers: ["I lived", "she was coming", "the train left", "I had finished", "I was upset", "it cost", "I could drive", "I called", "we would arrive", "I had been waiting"] },
+    { exercise: 3, subtitle: "Reported clauses", answers: ["if I was tired", "where I worked", "if I had finished", "what I was doing", "if I could swim", "why I had left early", "who I had spoken to", "how long I had been there", "if I would come to the party", "how much it cost"] },
+    { exercise: 4, subtitle: "Full sentences", answers: ["she asked me if I lived nearby", "he asked her where she was going", "she asked him if he had seen her keys", "he asked me what time I would arrive", "she asked him if he could help her the next day", "he asked her why she hadn't called him", "she asked him if he was coming to the meeting that day", "he asked me how long I had been waiting", "she asked them if they had enjoyed the film", "he asked her where she had been the day before"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Reported Statements", href: "/grammar/b1/reported-statements", level: "B1", badge: "bg-violet-500", reason: "Direct companion topic in reported speech" },
+  { title: "Defining Relative Clauses", href: "/grammar/b1/relative-clauses-defining", level: "B1", badge: "bg-violet-500" },
+  { title: "Non-defining Relative Clauses", href: "/grammar/b1/relative-clauses-non-defining", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function ReportedQuestionsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ReportedQuestionsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ReportedQuestionsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-reported-questions" subject="Reported Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function ReportedQuestionsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-reported-questions" subject="Reported Questions" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

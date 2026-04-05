@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const WORD_BOX = ["quiet", "transport", "nature", "exciting", "neighbours", "expensive", "fresh", "busy"];
 
@@ -365,6 +366,9 @@ export default function CityOrCountryClient() {
           </a>
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </main>
   );

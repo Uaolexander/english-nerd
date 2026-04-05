@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Modals", href: "/grammar/c1/advanced-modals", level: "C1", badge: "bg-sky-600", reason: "Modals are the primary grammar tool for hedging at C1 level" },
+  { title: "Concession & Contrast", href: "/grammar/c1/concession-contrast", level: "C1", badge: "bg-sky-600" },
+  { title: "Subjunctive", href: "/grammar/c1/subjunctive", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Hedging makes claims ___.", options: ["Less absolute/tentative", "Stronger/definite", "More formal", "More aggressive"], answer: 0 },
+  { q: "'It seems that' = ___.", options: ["A hedge", "A fact", "Certainty", "A question"], answer: 0 },
+  { q: "Hedging modal for possibility:", options: ["might/may", "must", "should", "will"], answer: 0 },
+  { q: "'Tend to' hedges by expressing:", options: ["General tendency, not always", "Certainty", "Impossibility", "Obligation"], answer: 0 },
+  { q: "'It is generally believed' = ___.", options: ["Hedge via distancing", "Strong claim", "Certainty", "Personal view"], answer: 0 },
+  { q: "'Broadly speaking' is a ___.", options: ["Hedging adverb", "Discourse marker", "Intensifier", "Conjunction"], answer: 0 },
+  { q: "Which hedges a claim most?", options: ["It could be argued that", "It is definitely true", "Everyone knows that", "The fact is that"], answer: 0 },
+  { q: "'To some extent' means:", options: ["Partially/not fully", "Completely", "Not at all", "Very much so"], answer: 0 },
+  { q: "Hedging is common in ___.", options: ["Academic writing", "Command forms", "Greetings", "Exclamations"], answer: 0 },
+  { q: "'As far as we know' = ___.", options: ["Epistemic hedge", "Certainty marker", "Result marker", "Concession"], answer: 0 },
+  { q: "In many ways = ___.", options: ["Partial hedge", "Strong claim", "Result", "Contrast"], answer: 0 },
+  { q: "'Arguably' introduces a ___.", options: ["Contestable claim", "Certain fact", "Question", "Contradiction"], answer: 0 },
+  { q: "The results ___ suggest a link.", options: ["would appear to", "definitely", "always", "must"], answer: 0 },
+  { q: "'It is worth noting that' = ___.", options: ["Soft emphasis hedge", "Strong claim", "Denial", "Apology"], answer: 0 },
+  { q: "Which is NOT a hedge?", options: ["This conclusively proves", "This might suggest", "It appears that", "Evidence indicates"], answer: 0 },
+  { q: "'On the whole' hedges by ___.", options: ["Qualifying a general claim", "Making it absolute", "Adding more info", "Showing contrast"], answer: 0 },
+  { q: "'Could be seen as' hedges ___.", options: ["An interpretation", "A fact", "A definition", "A question"], answer: 0 },
+  { q: "Hedging main purpose in academia:", options: ["Show appropriate caution", "Make text longer", "Avoid passive", "Use fewer words"], answer: 0 },
+  { q: "'There is evidence to suggest' ___.", options: ["Hedges a conclusion", "Proves a point", "Denies a claim", "Changes the topic"], answer: 0 },
+  { q: "'Largely' = ___.", options: ["Mostly but not fully", "Completely", "Never", "Rarely"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Hedging Language",
+  subtitle: "Expressing caution and tentativeness in academic writing",
+  level: "C1",
+  keyRule: "Hedges soften claims: might, appear to, tend to, broadly, arguably.",
+  exercises: [
+    {
+      number: 1,
+      title: "Hedging Modals & Verbs",
+      difficulty: "Easy",
+      instruction: "Choose the best hedging expression.",
+      questions: [
+        "The results ___ suggest a link.",
+        "This ___ indicate a wider problem.",
+        "Prices ___ continue to rise.",
+        "The data ___ point to a trend.",
+        "She ___ have misunderstood.",
+        "The findings ___ be significant.",
+        "This ___ be seen as a weakness.",
+        "The situation ___ improve.",
+        "Their approach ___ work better.",
+        "The proposal ___ be reconsidered.",
+      ],
+      hint: "might / may / could / would appear to",
+    },
+    {
+      number: 2,
+      title: "Hedging Adverbs & Phrases",
+      difficulty: "Medium",
+      instruction: "Choose the correct hedging phrase.",
+      questions: [
+        "___, the plan has merit.",
+        "The study is ___ accurate.",
+        "___, technology brings risks.",
+        "The findings are ___ positive.",
+        "___, this is the best approach.",
+        "This is ___ a complex issue.",
+        "The results are ___ conclusive.",
+        "___, costs will rise.",
+        "The approach is ___ effective.",
+        "___, the benefits outweigh risks.",
+      ],
+      hint: "Broadly speaking / largely / arguably / to some extent",
+    },
+    {
+      number: 3,
+      title: "Hedging with It-Constructions",
+      difficulty: "Hard",
+      instruction: "Choose the correct it-hedge.",
+      questions: [
+        "___ that change is needed.",
+        "___ that costs will rise.",
+        "___ that this is the best way.",
+        "___ that more research is due.",
+        "___ to be a widespread issue.",
+        "___ that views are mixed.",
+        "___ that the plan will work.",
+        "___ that problems exist.",
+        "___ clear there is no easy fix.",
+        "___ to suggest a causal link.",
+      ],
+      hint: "It seems / It appears / It could be argued",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Hedging Language",
+      difficulty: "Very Hard",
+      instruction: "Rewrite to make the claim more tentative.",
+      questions: [
+        "Technology causes inequality.",
+        "The plan will fail completely.",
+        "This proves the theory correct.",
+        "The economy will recover fast.",
+        "Climate change is man-made.",
+        "This is the wrong approach.",
+        "The drug cures the disease.",
+        "She made the wrong decision.",
+        "This method is superior.",
+        "The data shows a clear link.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Hedging Modals & Verbs", answers: ["would appear to", "might", "may", "could", "may", "could", "could", "might", "could", "might"] },
+    { exercise: 2, subtitle: "Hedging Adverbs & Phrases", answers: ["Broadly speaking", "largely", "Arguably", "broadly", "To some extent", "arguably", "not entirely", "In all likelihood", "relatively", "On the whole"] },
+    { exercise: 3, subtitle: "Hedging with It-Constructions", answers: ["It seems", "It appears", "It could be argued", "It is worth noting", "It appears", "It seems", "It might be hoped", "It is generally acknowledged", "It is not entirely", "There is evidence"] },
+    { exercise: 4, subtitle: "Rewrite Using Hedging Language", answers: ["Technology may contribute to inequality.", "The plan could potentially fail.", "This would appear to support the theory.", "The economy might recover relatively quickly.", "Climate change is largely considered to be man-made.", "This could be seen as the wrong approach.", "The drug appears to help treat the disease.", "She may have made the wrong decision.", "This method could be considered superior.", "The data appears to suggest a possible link."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function HedgingLanguageLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function HedgingLanguageLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function HedgingLanguageLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-hedging-language" subject="Hedging Language" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function HedgingLanguageLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-hedging-language" subject="Hedging Language" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

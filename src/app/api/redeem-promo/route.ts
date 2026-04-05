@@ -46,6 +46,66 @@ export async function POST(req: Request) {
   }
 
   if (!promoCode || !promoCode.is_active) {
+    // Not a Pro promo code — check if it's a teacher voucher
+    const { data: voucher } = await service
+      .from("teacher_vouchers")
+      .select("id, allowed_email, plan, student_limit, duration_days, is_active")
+      .eq("code", code)
+      .maybeSingle();
+
+    if (voucher && voucher.is_active) {
+      // Personal voucher check
+      if (voucher.allowed_email && user.email?.toLowerCase() !== voucher.allowed_email.toLowerCase()) {
+        return NextResponse.json({ ok: false, error: "This voucher is not valid for your account." }, { status: 403 });
+      }
+
+      // Monthly reuse check
+      const { data: lastRedemption } = await service
+        .from("teacher_voucher_redemptions")
+        .select("redeemed_at")
+        .eq("voucher_id", voucher.id)
+        .eq("user_id", user.id)
+        .order("redeemed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastRedemption) {
+        const daysSinceLast = (Date.now() - new Date(lastRedemption.redeemed_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceLast < voucher.duration_days) {
+          const nextAvailable = new Date(lastRedemption.redeemed_at);
+          nextAvailable.setDate(nextAvailable.getDate() + voucher.duration_days);
+          const formatted = nextAvailable.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+          return NextResponse.json({ ok: false, error: `Already used this period. Available again on ${formatted}.` }, { status: 400 });
+        }
+      }
+
+      const expiresAt = new Date(Date.now() + voucher.duration_days * 24 * 60 * 60 * 1000).toISOString();
+
+      await service.from("teacher_profiles").upsert({
+        user_id: user.id,
+        plan: voucher.plan,
+        student_limit: voucher.student_limit,
+        is_active: true,
+        subscription_expires_at: expiresAt,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+
+      await service.from("teacher_voucher_redemptions").insert({
+        voucher_id: voucher.id,
+        user_id: user.id,
+        expires_at: expiresAt,
+      });
+
+      const expiryLabel = new Date(expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      return NextResponse.json({
+        ok: true,
+        message: `🎓 Teacher access activated until ${expiryLabel}!`,
+        expiresAt,
+        isTeacher: true,
+        plan: voucher.plan,
+      });
+    }
+
     return NextResponse.json({ ok: false, error: "This promo code is invalid or has expired." }, { status: 400 });
   }
 

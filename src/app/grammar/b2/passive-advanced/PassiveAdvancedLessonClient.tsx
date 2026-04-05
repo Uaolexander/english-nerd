@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Passive voice structure is?", options: ["subject + verb + object", "subject + be + pp", "object + have + pp", "subject + pp + be"], answer: 1 },
+  { q: "Passive is used when?", options: ["Agent is known and important", "Agent is unknown or unimportant", "Action is ongoing", "Subject is doing the action"], answer: 1 },
+  { q: "Passive of 'They built the bridge' is?", options: ["The bridge had built", "The bridge was built", "The bridge has built", "The bridge built"], answer: 1 },
+  { q: "'It is said that...' is a type of?", options: ["Active sentence", "Reporting passive", "Modal passive", "Conditional"], answer: 1 },
+  { q: "'He is believed to be honest' = ?", options: ["He is honest", "People believe he is honest", "He believes he is honest", "He was believed to be honest"], answer: 1 },
+  { q: "Present perfect passive of 'fix'?", options: ["has been fixed", "is fixed", "was fixed", "had been fixed"], answer: 0 },
+  { q: "Future passive of 'announce'?", options: ["is announced", "was announced", "will be announced", "has been announced"], answer: 2 },
+  { q: "Modal passive structure is?", options: ["modal + been + pp", "modal + be + pp", "modal + pp", "modal + being + pp"], answer: 1 },
+  { q: "'The car needs repairing' means?", options: ["I need to repair the car", "The car needs to be repaired", "Repairing the car is needed", "I repaired the car"], answer: 1 },
+  { q: "Past perfect passive of 'approve'?", options: ["had approved", "was approved", "had been approved", "has been approved"], answer: 2 },
+  { q: "'It was reported that...' — this is?", options: ["Active reporting", "Impersonal passive reporting", "Modal perfect", "Conditional passive"], answer: 1 },
+  { q: "Passive continuous: 'The road ___ repaired' (pres.)?", options: ["is repaired", "is being repaired", "is been repaired", "has been repaired"], answer: 1 },
+  { q: "Agent in passive is introduced by?", options: ["for", "by", "with", "from"], answer: 1 },
+  { q: "'They say she is talented' in passive?", options: ["She is said to be talented", "She says to be talented", "It says she is talented", "She has said to be talented"], answer: 0 },
+  { q: "Causative passive differs from standard in?", options: ["It uses 'by'", "It uses have/get + object + pp", "It uses modal", "It doesn't use 'be'"], answer: 1 },
+  { q: "Reporting verb + passive infinitive: 'She is known ___'?", options: ["being successful", "to being successful", "to be successful", "of being successful"], answer: 2 },
+  { q: "Which is passive perfect continuous?", options: ["has been being built", "is being built", "was built", "had been building"], answer: 0 },
+  { q: "Passive of 'could build the bridge'?", options: ["could build the bridge", "could be built the bridge", "the bridge could be built", "the bridge was built"], answer: 2 },
+  { q: "'The report must be submitted' is?", options: ["Active modal", "Passive modal", "Active present", "Passive continuous"], answer: 1 },
+  { q: "Double passive sentence example is?", options: ["The car was built", "He was said to have been promoted", "The report will be done", "It is believed she left"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Passive",
+  subtitle: "Passive in all tenses + reporting structures",
+  level: "B2",
+  keyRule: "subject + be (any tense) + past participle; agent optional with 'by'.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct passive form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct passive structure.",
+      questions: [
+        "The report ___ by tomorrow. (submit)",
+        "This building ___ in 1850. (construct)",
+        "The results ___ already. (announce)",
+        "The road ___ right now. (repair)",
+        "The contract ___ next week. (sign)",
+        "Several files ___ by the hacker. (access)",
+        "The project ___ before we arrived. (complete)",
+        "New rules ___ since last month. (introduce)",
+        "The decision ___ by the board. (make)",
+        "The car ___ every year. (service)",
+      ],
+    },
+    {
+      number: 2,
+      title: "Reporting passives",
+      difficulty: "medium" as const,
+      instruction: "Rewrite using impersonal passive reporting.",
+      questions: [
+        "People believe he is innocent.",
+        "They say she earns a lot.",
+        "Experts think the economy will grow.",
+        "People know they worked hard.",
+        "They report that the plan failed.",
+        "People consider her very talented.",
+        "It seems he has left the company.",
+        "They expect prices to rise.",
+        "People allege he committed fraud.",
+        "Authorities claim the suspect fled.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Modal passives",
+      difficulty: "hard" as const,
+      instruction: "Choose the correct modal passive form.",
+      questions: [
+        "The report ___ by Friday. (must/submit)",
+        "These instructions ___ clearly. (should/follow)",
+        "Mistakes ___ at all costs. (must/avoid)",
+        "The old files ___ before deletion. (should/back up)",
+        "Results ___ within 24 hours. (may/release)",
+        "A new system ___ next year. (will/implement)",
+        "This problem ___ earlier. (could/solve)",
+        "The deadline ___ if needed. (can/extend)",
+        "The documents ___ in English. (must/write)",
+        "The bridge ___ by the end of the year. (should/repair)",
+      ],
+    },
+    {
+      number: 4,
+      title: "Mixed passive practice",
+      difficulty: "hard" as const,
+      instruction: "Write the full passive sentence.",
+      questions: [
+        "build / the stadium / in 1999",
+        "announce / the winner / just now",
+        "repair / the road / currently",
+        "They said / he / be / arrested",
+        "The plan / must / approve / first",
+        "They know / she / be / talented",
+        "inspect / the car / before the trip",
+        "The exam / should / reschedule",
+        "It is believed / they / escape",
+        "translate / the document / into 5 languages",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Passive forms", answers: ["will be submitted", "was constructed", "have already been announced", "is being repaired", "will be signed", "were accessed", "had been completed", "have been introduced", "was made", "is serviced"] },
+    { exercise: 2, subtitle: "Reporting passives", answers: ["He is believed to be innocent", "She is said to earn a lot", "The economy is thought to grow", "They are known to have worked hard", "It was reported that the plan failed", "She is considered very talented", "He is said/seems to have left", "Prices are expected to rise", "He is alleged to have committed fraud", "The suspect is claimed to have fled"] },
+    { exercise: 3, subtitle: "Modal passives", answers: ["must be submitted", "should be followed", "must be avoided", "should be backed up", "may be released", "will be implemented", "could have been solved", "can be extended", "must be written", "should be repaired"] },
+    { exercise: 4, subtitle: "Full passive sentences", answers: ["The stadium was built in 1999", "The winner has just been announced", "The road is currently being repaired", "He was said/reported to have been arrested", "The plan must be approved first", "She is known to be talented", "The car is to be inspected before the trip", "The exam should be rescheduled", "It is believed they have escaped", "The document was translated into 5 languages"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Causative have/get", href: "/grammar/b2/causative", level: "B2", badge: "bg-orange-500", reason: "Causative is a natural extension of the advanced passive" },
+  { title: "Reported Speech Advanced", href: "/grammar/b2/reported-speech-advanced", level: "B2", badge: "bg-orange-500", reason: "Reporting passive structures and complex clauses" },
+  { title: "Participle Clauses", href: "/grammar/b2/participle-clauses", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function PassiveAdvancedLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PassiveAdvancedLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PassiveAdvancedLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-passive-advanced" subject="Advanced Passive" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PassiveAdvancedLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-passive-advanced" subject="Advanced Passive" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

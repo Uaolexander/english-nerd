@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Mixed A: past condition → present result uses?", options: ["would have + pp", "would + infinitive", "had + pp", "will + infinitive"], answer: 1 },
+  { q: "Mixed B: present condition → past result uses?", options: ["would + infinitive", "would have + pp", "will + infinitive", "had + pp"], answer: 1 },
+  { q: "'If I had slept more, I wouldn't be tired now' is?", options: ["Mixed B", "Mixed A", "Third conditional", "Second conditional"], answer: 1 },
+  { q: "'If she weren't stubborn, she'd have listened' is?", options: ["Mixed A", "Mixed B", "Third conditional", "Second conditional"], answer: 1 },
+  { q: "Mixed A if-clause uses?", options: ["Past simple", "Past perfect", "Present simple", "would + verb"], answer: 1 },
+  { q: "Mixed B if-clause uses?", options: ["Past perfect", "Past simple/were", "Present simple", "would + verb"], answer: 1 },
+  { q: "Which clue word suggests Mixed A?", options: ["yesterday", "now / currently", "always", "never"], answer: 1 },
+  { q: "Mixed A result clause = ?", options: ["would have + pp", "would + infinitive", "had + pp", "will + infinitive"], answer: 1 },
+  { q: "Mixed B result clause = ?", options: ["would + infinitive", "would have + pp", "had + pp", "will + infinitive"], answer: 1 },
+  { q: "'If he weren't so shy, he'd have spoken' shows?", options: ["Past condition → present result", "Present character → past missed action", "General truth", "First conditional"], answer: 1 },
+  { q: "'If she had studied, she'd be a doctor now' is?", options: ["Mixed B", "Mixed A", "Third conditional", "Second conditional"], answer: 1 },
+  { q: "In Mixed B if-clause 'were' replaces?", options: ["was only", "was/were (hypothetical)", "had been", "would be"], answer: 1 },
+  { q: "Mixed conditionals combine which types?", options: ["Zero + First", "Second + Third", "First + Second", "Zero + Third"], answer: 1 },
+  { q: "'If he spoke better, he'd have got the job' is?", options: ["Mixed A", "Mixed B", "Third", "Second"], answer: 1 },
+  { q: "Result of Mixed A is about?", options: ["Past", "The present moment", "Future only", "General truth"], answer: 1 },
+  { q: "Result of Mixed B is about?", options: ["The present moment", "A specific past event", "Future plan", "General truth"], answer: 1 },
+  { q: "Which is a Mixed A sentence?", options: ["If he'd been careful, he'd be fine now", "If she were taller, she'd have made the team", "If it rains, I'll stay in", "If I had money, I'd travel"], answer: 0 },
+  { q: "Which is a Mixed B sentence?", options: ["If he'd saved money, he'd be rich now", "If she were less stubborn, she'd have agreed", "If I knew, I'd tell you", "If it were sunny, I'd go out"], answer: 1 },
+  { q: "Mixed conditional is more complex because?", options: ["It uses two different times", "It has no result clause", "It only uses past tense", "It requires modal verbs"], answer: 0 },
+  { q: "Which is NOT a mixed conditional?", options: ["If I'd saved more, I'd be richer now", "If she were nicer, she'd have more friends", "If I had studied, I would have passed", "If she weren't tired, she'd have come"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Mixed Conditionals",
+  subtitle: "Past condition → present result and vice versa",
+  level: "B2",
+  keyRule: "Mixed A: if + Past Perfect → would + infinitive. Mixed B: if + Past Simple → would have + pp.",
+  exercises: [
+    {
+      number: 1,
+      title: "Identify the mixed type",
+      difficulty: "easy" as const,
+      instruction: "Choose the correct mixed conditional form.",
+      questions: [
+        "If I'd slept more, I ___ tired now.",
+        "If she weren't stubborn, she ___ listened.",
+        "He ___ lead it if he had more experience.",
+        "If he'd worked harder, he ___ a better job.",
+        "She'd be fluent if she ___ those classes.",
+        "If I ___ more confident, I'd have applied.",
+        "They ___ richer if they'd invested wisely.",
+        "If he weren't so shy, he ___ spoken up.",
+        "She ___ be a doctor if she'd graduated.",
+        "If they'd planned it, they ___ struggling.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the correct form",
+      difficulty: "medium" as const,
+      instruction: "Complete with the correct mixed conditional verb.",
+      questions: [
+        "If I (save) ___ more, I'd be comfortable.",
+        "If she (not/be) ___ so rash, she'd have succeeded.",
+        "He (speak) ___ better if he'd taken the course.",
+        "If they (invest) ___, they'd be millionaires.",
+        "She (have) ___ more friends if she were nicer.",
+        "If he (be) ___ more careful, he'd have passed.",
+        "We (know) ___ the answer if we'd paid attention.",
+        "She (earn) ___ more if she'd studied finance.",
+        "He (attend) ___ if he weren't so antisocial.",
+        "If we (leave) ___ earlier, we'd be there now.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Mixed conditionals in context",
+      difficulty: "hard" as const,
+      instruction: "Choose the best mixed conditional form.",
+      questions: [
+        "If he'd taken the medicine, he ___ better now.",
+        "She ___ to advice if she weren't so stubborn.",
+        "If I'd studied harder, I ___ stressed now.",
+        "He ___ richer if he hadn't quit his job.",
+        "If she ___ more patient, she'd have succeeded.",
+        "They ___ here now if the project hadn't failed.",
+        "If I weren't so tired, I ___ gone to the party.",
+        "She'd have more confidence if she ___ introvert.",
+        "If we hadn't argued, we ___ still together now.",
+        "He ___ promoted if he showed more initiative.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full mixed conditional practice",
+      difficulty: "hard" as const,
+      instruction: "Write both verbs in the correct mixed form.",
+      questions: [
+        "If I (sleep) more, I (not/be) tired now.",
+        "She (listen) if she (not/be) so stubborn.",
+        "If he (study), he (not/struggle) now.",
+        "We (still together) if we (not/argue) then.",
+        "If she (take) the job, she (be) rich now.",
+        "He (attend) if he (not/be) so antisocial.",
+        "If they (invest) wisely, they (be) successful.",
+        "She (win) if she (train) harder last year.",
+        "If I (know) then, I (not/do) it now.",
+        "He (live) abroad if he (not/have) debts.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Mixed conditional forms", answers: ["wouldn't be", "would have listened", "would lead", "would have got", "had taken", "were", "would be", "would have spoken", "would", "wouldn't be"] },
+    { exercise: 2, subtitle: "Written verb forms", answers: ["had saved", "weren't", "would speak", "had invested", "would have", "were", "would know", "would earn", "would have attended", "had left"] },
+    { exercise: 3, subtitle: "Contextual choice", answers: ["would feel", "would have listened", "wouldn't be", "would be", "were", "would be", "would have gone", "weren't such an", "would still be", "would have been"] },
+    { exercise: 4, subtitle: "Both verb forms", answers: ["had slept / wouldn't be", "would have listened / weren't", "had studied / wouldn't be struggling", "would still be together / hadn't argued", "had taken / would be", "would have attended / weren't", "had invested / would be", "would have won / had trained", "had known / wouldn't do", "would live / didn't have"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500", reason: "Foundation for mixed conditionals" },
+  { title: "Wish / Would", href: "/grammar/b2/wish-would", level: "B2", badge: "bg-orange-500", reason: "Hypothetical structures that pair with conditionals" },
+  { title: "All B2 Conditionals", href: "/grammar/b2/all-conditionals-b2", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function MixedConditionalsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function MixedConditionalsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function MixedConditionalsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-mixed-conditionals" subject="Mixed Conditionals" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function MixedConditionalsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-mixed-conditionals" subject="Mixed Conditionals" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

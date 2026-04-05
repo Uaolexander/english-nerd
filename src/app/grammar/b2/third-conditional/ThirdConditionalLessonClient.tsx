@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Third conditional if-clause uses?", options: ["Past simple", "Past perfect", "Present simple", "would + verb"], answer: 1 },
+  { q: "Third conditional result clause uses?", options: ["would + verb", "would have + pp", "had + pp", "will + verb"], answer: 1 },
+  { q: "Third conditional refers to?", options: ["Real future", "Hypothetical present", "Hypothetical past", "General truth"], answer: 2 },
+  { q: "'If she had studied, she ___ passed' — correct form?", options: ["would pass", "would have passed", "had passed", "passed"], answer: 1 },
+  { q: "Which is correct 3rd conditional?", options: ["If he would come, I'd have met him", "If he had come, I would have met him", "If he came, I would meet him", "If he comes, I will meet him"], answer: 1 },
+  { q: "Third conditional is used to express?", options: ["Future plans", "Present habits", "Regrets/unreal past", "General truths"], answer: 2 },
+  { q: "'Could have + pp' in result clause means?", options: ["Stronger certainty", "Possibility (not certain)", "Obligation", "Permission"], answer: 1 },
+  { q: "'Might have + pp' in result clause means?", options: ["Certain result", "Possible but uncertain result", "Obligation", "Forbidden result"], answer: 1 },
+  { q: "Third conditional negative: 'If she hadn't gone...'?", options: ["She went", "She didn't go", "She might go", "She will go"], answer: 0 },
+  { q: "The if-clause can come?", options: ["Only at the start", "Only at the end", "Either at start or end", "Only in the middle"], answer: 2 },
+  { q: "'Had I known...' is a formal version of?", options: ["'If I knew...' (2nd conditional)", "'If I had known...' (3rd conditional)", "'If I know...' (1st conditional)", "'Knowing that...'"], answer: 1 },
+  { q: "Contracted form of 'would have' is?", options: ["would've", "wouldn't", "woud've", "would'v"], answer: 0 },
+  { q: "Which modal replaces 'would' in 3rd cond. result?", options: ["will", "could/might", "shall", "do"], answer: 1 },
+  { q: "'She would have won if she had tried harder' — failed because?", options: ["She tried hard enough", "She didn't try hard enough", "She won anyway", "She will try again"], answer: 1 },
+  { q: "Passive 3rd conditional result: 'it would have been ___'?", options: ["build", "building", "built", "been build"], answer: 2 },
+  { q: "Which sentence is NOT a 3rd conditional?", options: ["If I had known, I would have helped", "If she had left, she'd have been safe", "If he were richer, he'd travel more", "If it had rained, we'd have stayed in"], answer: 2 },
+  { q: "In formal 3rd conditional, 'if' can be replaced by?", options: ["Though", "Inversion: Had I...", "Because", "Unless"], answer: 1 },
+  { q: "What does 3rd conditional express about the past?", options: ["What really happened", "What did NOT happen but could have", "A past plan", "A past prediction"], answer: 1 },
+  { q: "Which time word confirms 3rd conditional context?", options: ["tomorrow", "right now", "last year / at that time", "usually"], answer: 2 },
+  { q: "Both 'if' and result clauses in 3rd conditional use?", options: ["Present forms", "Perfect forms (had + pp / would have + pp)", "Future forms", "Simple past forms"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Third Conditional",
+  subtitle: "If + Past Perfect → would have + pp",
+  level: "B2",
+  keyRule: "If + Past Perfect → would/could/might have + pp (hypothetical past).",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the 3rd conditional form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct third conditional form.",
+      questions: [
+        "If she had studied, she ___ passed.",
+        "If he had come, I ___ met him.",
+        "If we ___ earlier, we'd have made it.",
+        "If it had rained, we ___ stayed in.",
+        "She ___ the job if she'd applied.",
+        "If I'd known, I ___ told you.",
+        "They ___ won if they'd tried harder.",
+        "If he ___ careful, it wouldn't have happened.",
+        "I ___ there if I had known.",
+        "If you'd asked, I ___ helped.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the 3rd conditional",
+      difficulty: "medium" as const,
+      instruction: "Write the complete third conditional form.",
+      questions: [
+        "She didn't study. She failed. (If she...)",
+        "He didn't come. I didn't meet him.",
+        "We didn't leave early. We missed it.",
+        "It didn't rain. We went out.",
+        "I didn't know. I didn't call.",
+        "They didn't try. They didn't win.",
+        "He was careless. The accident happened.",
+        "She didn't apply. She didn't get the job.",
+        "You didn't ask. I didn't help.",
+        "They didn't plan. The project failed.",
+      ],
+    },
+    {
+      number: 3,
+      title: "3rd conditional with could/might",
+      difficulty: "hard" as const,
+      instruction: "Choose: would have, could have, or might have.",
+      questions: [
+        "If she'd trained, she ___ won. (certain result)",
+        "If he'd tried, he ___ passed. (possibility)",
+        "If they'd planned better, they ___ succeeded.",
+        "If I'd left earlier, I ___ arrived on time.",
+        "If she'd spoken up, things ___ been different.",
+        "If he'd invested wisely, he ___ made millions.",
+        "If they'd communicated, ___ avoided the conflict.",
+        "If I'd known the route, I ___ taken a shortcut.",
+        "If we'd prepared, we ___ done better.",
+        "If she'd gone to the doctor, she ___ recovered.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full 3rd conditional practice",
+      difficulty: "hard" as const,
+      instruction: "Write the full third conditional sentence.",
+      questions: [
+        "miss alarm / be late (if...)",
+        "not study / fail the exam (if...)",
+        "take the job / move to London (if...)",
+        "not warn him / have an accident (if...)",
+        "book early / get a better seat (if...)",
+        "she / be more careful / not break it (if...)",
+        "they / listen / avoid the mistake (if...)",
+        "he / save money / buy the car (if...)",
+        "not rain / hold the event outside (if...)",
+        "she / take the medicine / recover faster (if...)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "3rd conditional forms", answers: ["would have", "would have met", "had left", "would have stayed", "would have got", "would have told", "would have won", "had been", "would have been", "would have helped"] },
+    { exercise: 2, subtitle: "Written 3rd conditionals", answers: ["If she had studied, she wouldn't have failed", "If he had come, I would have met him", "If we had left early, we wouldn't have missed it", "If it had rained, we wouldn't have gone out", "If I had known, I would have called", "If they had tried, they would have won", "If he hadn't been careless, the accident wouldn't have happened", "If she had applied, she would have got the job", "If you had asked, I would have helped", "If they had planned, the project wouldn't have failed"] },
+    { exercise: 3, subtitle: "would/could/might have", answers: ["would have won", "could have/might have passed", "could have/would have succeeded", "could have/would have arrived", "might have/would have been", "could have made/would have made", "could have/would have avoided", "could have taken", "could have/would have done", "might have/would have recovered"] },
+    { exercise: 4, subtitle: "Full sentences", answers: ["If she hadn't missed the alarm, she wouldn't have been late", "If she had studied, she wouldn't have failed", "If he had taken the job, he would have moved to London", "If we had warned him, he wouldn't have had an accident", "If they had booked early, they would have got a better seat", "If she had been more careful, she wouldn't have broken it", "If they had listened, they would have avoided the mistake", "If he had saved money, he could have bought the car", "If it hadn't rained, they would have held the event outside", "If she had taken the medicine, she would have recovered faster"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Mixed Conditionals", href: "/grammar/b2/mixed-conditionals", level: "B2", badge: "bg-orange-500", reason: "Extend conditional mastery with mixed time frames" },
+  { title: "Wish / Would", href: "/grammar/b2/wish-would", level: "B2", badge: "bg-orange-500", reason: "Hypothetical structures closely related to conditionals" },
+  { title: "Modal Perfect", href: "/grammar/b2/modal-perfect", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function ThirdConditionalLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ThirdConditionalLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ThirdConditionalLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-third-conditional" subject="Third Conditional" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function ThirdConditionalLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-third-conditional" subject="Third Conditional" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

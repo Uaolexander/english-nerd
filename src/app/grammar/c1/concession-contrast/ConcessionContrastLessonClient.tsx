@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Discourse Markers", href: "/grammar/c1/advanced-discourse-markers", level: "C1", badge: "bg-sky-600", reason: "Discourse markers are essential for expressing concession and contrast" },
+  { title: "Hedging Language", href: "/grammar/c1/hedging-language", level: "C1", badge: "bg-sky-600" },
+  { title: "Inverted Conditionals", href: "/grammar/c1/inverted-conditionals", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "___ the rain, the match went on.", options: ["Despite", "Although", "However", "Even though"], answer: 0 },
+  { q: "___ it rained, match went ahead.", options: ["Although", "Despite", "However", "In spite of"], answer: 0 },
+  { q: "Despite + ___", options: ["noun phrase/gerund", "full clause", "sentence", "adjective"], answer: 0 },
+  { q: "Although + ___", options: ["full clause", "noun phrase", "gerund", "adverb"], answer: 0 },
+  { q: "However connects: ___", options: ["Two separate sentences", "One clause", "A noun phrase", "Gerunds"], answer: 0 },
+  { q: "___ efforts, she failed to convince.", options: ["In spite of", "Even though", "However", "Despite that"], answer: 0 },
+  { q: "Despite the fact that = ___", options: ["Although", "However", "In spite of", "Even so"], answer: 0 },
+  { q: "Urban areas grew, ___ rural fell.", options: ["while", "despite", "however", "in spite"], answer: 0 },
+  { q: "Whereas = ___", options: ["Direct two-way contrast", "Cause and effect", "Addition", "Result"], answer: 0 },
+  { q: "'On the other hand' goes between:", options: ["Two separate sentences", "Two clauses", "A gerund", "Introductions"], answer: 0 },
+  { q: "___ being qualified, struggled.", options: ["Despite", "Although", "In spite", "Even though"], answer: 0 },
+  { q: "Yet as conjunction means:", options: ["But/however", "And", "Because", "Therefore"], answer: 0 },
+  { q: "Even so = ___", options: ["Despite this", "Also", "As a result", "In addition"], answer: 0 },
+  { q: "Nonetheless connects two ___.", options: ["Sentences", "Clauses", "Gerunds", "Infinitives"], answer: 0 },
+  { q: "For all = ___", options: ["Despite (formal)", "Because of", "In addition to", "Without"], answer: 0 },
+  { q: "While at sentence start means:", options: ["Although/even though", "At the same time", "Duration", "Contrast only"], answer: 0 },
+  { q: "Granted that = ___", options: ["Admittedly/conceding", "As a result", "In addition", "Furthermore"], answer: 0 },
+  { q: "'Much as' introduces:", options: ["Strong concession", "Addition", "Result", "Cause"], answer: 0 },
+  { q: "'Whilst' is the ___ form of 'while'.", options: ["British English", "American English", "Formal written", "Informal spoken"], answer: 0 },
+  { q: "In spite of ___ (correct form)", options: ["his best efforts", "he tried hard", "he was tired", "they worked"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Concession and Contrast",
+  subtitle: "Although, despite, however, while, whereas",
+  level: "C1",
+  keyRule: "Despite + noun/gerund; Although + clause; However + new sentence.",
+  exercises: [
+    {
+      number: 1,
+      title: "Although / Despite / However",
+      difficulty: "Easy",
+      instruction: "Choose the grammatically correct form.",
+      questions: [
+        "___ the rain, match went on.",
+        "___ it rained, match went on.",
+        "Results bad. ___, optimistic.",
+        "___ her efforts, she failed.",
+        "___ fact that tired, continued.",
+        "Rejected. ___, they resubmitted.",
+        "___ being qualified, struggled.",
+        "Costs rose. ___, quality same.",
+        "___ all challenges, finished ok.",
+        "Warned of risks. ___, invested.",
+      ],
+      hint: "Despite / Although / Nevertheless / Even so",
+    },
+    {
+      number: 2,
+      title: "While / Whereas / On Other Hand",
+      difficulty: "Medium",
+      instruction: "Choose the most appropriate connector.",
+      questions: [
+        "Urban grew, ___ rural declined.",
+        "Fast but risky. ___, slow but safe.",
+        "___ some argue tech bad, others...",
+        "North exports raw, ___ south mfg.",
+        "Effective. ___, side effects exist.",
+        "___ transport improving, drive still.",
+        "Gen A spends lot. ___, Gen B saves.",
+        "East invests more, ___ west less.",
+        "She is loud. ___, he is quiet.",
+        "Art enriches. ___, funding is cut.",
+      ],
+      hint: "while / whereas / on the other hand",
+    },
+    {
+      number: 3,
+      title: "Advanced Concession: for all / much as",
+      difficulty: "Hard",
+      instruction: "Choose the correct advanced form.",
+      questions: [
+        "___ its flaws, plan has value.",
+        "___ I admire her, disagree here.",
+        "___ the criticism, kept going.",
+        "___ its benefits, has risks too.",
+        "___ her talent, she still failed.",
+        "___ I respect you, this is wrong.",
+        "___ the cost, it must be done.",
+        "___ difficulty, succeeded anyway.",
+        "___ admiring the view, disagree.",
+        "___ promise, plan cannot work.",
+      ],
+      hint: "For all / Much as / Despite",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Concession",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using the connector given.",
+      questions: [
+        "Even though it rained, went on.",
+        "She failed despite hard effort.",
+        "He's qualified but can't find work.",
+        "Urban grew but rural declined.",
+        "Costs rose but no quality gain.",
+        "Rejected; still resubmitted it.",
+        "Fast option risky. Other safer.",
+        "Criticism didn't stop them.",
+        "Good plan; has major weaknesses.",
+        "Warning ignored; invested anyway.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Although / Despite / However", answers: ["Despite", "Although", "Nevertheless", "In spite of", "Despite", "Even so", "Despite", "Yet", "In spite of", "Nonetheless"] },
+    { exercise: 2, subtitle: "While / Whereas / On Other Hand", answers: ["while", "On the other hand", "While", "whereas", "On the other hand", "While", "On the other hand", "whereas", "whereas", "On the other hand"] },
+    { exercise: 3, subtitle: "Advanced Concession", answers: ["For all", "Much as", "Despite", "For all", "Despite", "Much as", "Despite", "Despite", "Much as", "For all its"] },
+    { exercise: 4, subtitle: "Rewrite Using Concession", answers: ["Despite the rain, the match went on.", "In spite of her best efforts, she failed.", "Despite being highly qualified, she can't find work.", "Urban areas grew while rural communities declined.", "Costs rose, yet quality did not improve.", "The proposal was rejected; even so, they resubmitted it.", "The fast option is risky; on the other hand, the slow one is safer.", "Despite the criticism, they kept going.", "Although it's a good plan, it has major weaknesses.", "Although he was warned about the risks, he invested."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function ConcessionContrastLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function ConcessionContrastLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function ConcessionContrastLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-concession-contrast" subject="Concession and Contrast" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function ConcessionContrastLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-concession-contrast" subject="Concession and Contrast" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

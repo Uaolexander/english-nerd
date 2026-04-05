@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Use 'who' in a relative clause for:", options: ["places", "things", "times", "people"], answer: 3 },
+  { q: "Use 'which' in a relative clause for:", options: ["people", "places only", "things", "times"], answer: 2 },
+  { q: "Use 'where' in a relative clause for:", options: ["people", "times", "things", "places"], answer: 3 },
+  { q: "Use 'when' in a relative clause for:", options: ["people", "times", "things", "places"], answer: 1 },
+  { q: "Use 'whose' to show:", options: ["time", "place", "possession", "reason"], answer: 2 },
+  { q: "'The woman ___ lives next door is a doctor.'", options: ["which", "whose", "where", "who"], answer: 3 },
+  { q: "'The book ___ changed my life.' Correct:", options: ["who", "whose", "where", "which"], answer: 3 },
+  { q: "'The man ___ bag was stolen called police.'", options: ["who", "which", "whose", "where"], answer: 2 },
+  { q: "'This is the restaurant ___ we had our date.'", options: ["which", "who", "whose", "where"], answer: 3 },
+  { q: "Can 'that' replace 'who' and 'which' in defining clauses?", options: ["Never", "Only for things", "Only for people", "Yes, for both"], answer: 3 },
+  { q: "'Is there anything ___ I can do to help?'", options: ["who", "which", "where", "that"], answer: 3 },
+  { q: "'The year ___ she was born was 1995.'", options: ["which", "whose", "where", "when"], answer: 3 },
+  { q: "When can 'that' be omitted in defining clauses?", options: ["Always", "Never", "When it's the subject", "When it's the object"], answer: 3 },
+  { q: "'The book (that) I read was amazing.' Can 'that' be omitted?", options: ["No — it's subject", "No — it's object", "Yes — it's object", "Yes — it's subject"], answer: 2 },
+  { q: "'The man who called me is my uncle.' Can 'who' be omitted?", options: ["Yes — object pronoun", "No — subject pronoun", "Yes — subject pronoun", "No — object pronoun"], answer: 1 },
+  { q: "'The company ___ she works for is successful.'", options: ["who", "whose", "where", "which"], answer: 3 },
+  { q: "Defining relative clause: commas needed?", options: ["Always", "Never", "Sometimes", "Only for 'which'"], answer: 1 },
+  { q: "'The students ___ passed got certificates.'", options: ["which", "whose", "where", "who"], answer: 3 },
+  { q: "'I know a girl ___ father is a famous actor.'", options: ["who", "which", "where", "whose"], answer: 3 },
+  { q: "'The laptop ___ I bought last month is broken.'", options: ["who", "whose", "where", "which"], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Defining Relative Clauses",
+  subtitle: "who / which / that / where / when / whose",
+  level: "B1",
+  keyRule: "who = people | which/that = things | where = places | when = times | whose = possession",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose who, which or whose",
+      difficulty: "Easy",
+      instruction: "Choose the correct relative pronoun.",
+      questions: [
+        "The woman ___ lives next door is a doctor.",
+        "This is the book ___ changed my life.",
+        "The students ___ passed got certificates.",
+        "I hate films ___ have sad endings.",
+        "The man ___ bag was stolen called police.",
+        "The restaurant ___ we had our date.",
+        "The company ___ she works for is successful.",
+        "The person ___ you need is in room 5.",
+        "I know a girl ___ father is famous.",
+        "The year ___ she was born was 1995.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Choose who/which/where/when/whose",
+      difficulty: "Medium",
+      instruction: "Choose the best relative pronoun.",
+      questions: [
+        "The town ___ I grew up has changed a lot.",
+        "I remember the day ___ we first met.",
+        "Children ___ are playing are my cousins.",
+        "Is this the key ___ opens the front door?",
+        "The teacher ___ class I missed was strict.",
+        "I love cities ___ have good transport.",
+        "She's the person ___ never gives up.",
+        "2020 was the year ___ everything changed.",
+        "The laptop ___ I bought is already broken.",
+        "The man ___ car broke down asked us.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write the relative pronoun",
+      difficulty: "Hard",
+      instruction: "Write who/which/that/where/when/whose.",
+      questions: [
+        "The hotel ___ we stayed was comfortable.",
+        "She's the singer ___ voice I love.",
+        "I know someone ___ can help you.",
+        "This is the film ___ won five Oscars.",
+        "The summer ___ we met was very hot.",
+        "The doctor ___ treated me was kind.",
+        "Is there anything ___ I can do to help?",
+        "The company ___ she works for pays well.",
+        "I need someone ___ is good at maths.",
+        "The village ___ I was born has a church.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Can the pronoun be omitted?",
+      difficulty: "Harder",
+      instruction: "Can be omitted (object) or cannot (subject)?",
+      questions: [
+        "The book (that) I read last week was great.",
+        "The man who called me is my uncle.",
+        "The film (that) we watched was boring.",
+        "The woman who lives upstairs is a nurse.",
+        "The restaurant (that) you recommended.",
+        "The car which broke down = my friend's.",
+        "The song (that) she sang was beautiful.",
+        "I know someone whose sister is famous.",
+        "The exam (that) I failed was very hard.",
+        "The students who passed got a certificate.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Relative pronouns", answers: ["who", "which", "who", "which", "whose", "where", "which", "who", "whose", "when"] },
+    { exercise: 2, subtitle: "Relative pronouns", answers: ["where", "when", "who", "which", "whose", "which", "who", "when", "which", "whose"] },
+    { exercise: 3, subtitle: "Written pronouns", answers: ["where", "whose", "who", "that", "when", "who", "that", "which", "who", "where"] },
+    { exercise: 4, subtitle: "Omitted or not", answers: ["Can be omitted", "Cannot be omitted", "Can be omitted", "Cannot be omitted", "Can be omitted", "Cannot be omitted", "Can be omitted", "Cannot be omitted", "Can be omitted", "Cannot be omitted"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Non-defining Relative Clauses", href: "/grammar/b1/relative-clauses-non-defining", level: "B1", badge: "bg-violet-500", reason: "The companion to defining relative clauses" },
+  { title: "Reported Statements", href: "/grammar/b1/reported-statements", level: "B1", badge: "bg-violet-500" },
+  { title: "Reported Questions", href: "/grammar/b1/reported-questions", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function RelativeClausesDefiningLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function RelativeClausesDefiningLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function RelativeClausesDefiningLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-relative-clauses-defining" subject="Defining Relative Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function RelativeClausesDefiningLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-relative-clauses-defining" subject="Defining Relative Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

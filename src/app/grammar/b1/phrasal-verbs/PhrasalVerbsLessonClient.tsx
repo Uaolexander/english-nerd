@@ -3,15 +3,138 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type ExerciseSet = { type: "mcq"; title: string; instructions: string; questions: MCQ[] };
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'give up' means:", options: ["start", "continue", "quit / stop", "slow down"], answer: 2 },
+  { q: "'look after' means:", options: ["search for", "take care of", "look at", "ignore"], answer: 1 },
+  { q: "'find out' means:", options: ["forget", "discover / learn", "search", "book"], answer: 1 },
+  { q: "'put off' means:", options: ["cancel", "attend", "postpone", "continue"], answer: 2 },
+  { q: "'turn on' means:", options: ["switch off", "break", "switch on", "repair"], answer: 2 },
+  { q: "'pick up' can mean:", options: ["drop", "throw away", "learn informally", "forget"], answer: 2 },
+  { q: "'carry on' means:", options: ["stop", "slow down", "finish", "continue"], answer: 3 },
+  { q: "'set up' means:", options: ["close", "sell", "move", "establish / start"], answer: 3 },
+  { q: "'turn off' means:", options: ["switch on", "break", "switch off", "repair"], answer: 2 },
+  { q: "'She gave up smoking.' Meaning:", options: ["She started smoking.", "She quit smoking.", "She continued smoking.", "She enjoyed smoking."], answer: 1 },
+  { q: "'He picked up a cold.' Meaning:", options: ["He threw a cold.", "He caught a cold.", "He cured a cold.", "He gave a cold."], answer: 1 },
+  { q: "'Don't give up — you're nearly there!'", options: ["Don't slow down.", "Don't stop trying.", "Don't hurry.", "Don't start."], answer: 1 },
+  { q: "'Put off the meeting' means:", options: ["Cancel it permanently.", "Postpone it.", "Attend it early.", "Start it now."], answer: 1 },
+  { q: "'She set up a new company.' Meaning:", options: ["She closed a company.", "She sold a company.", "She established a company.", "She joined a company."], answer: 2 },
+  { q: "'Can you pick up some milk?' Meaning:", options: ["Drop some milk.", "Buy some milk on the way.", "Throw some milk.", "Forget the milk."], answer: 1 },
+  { q: "'Carry on with your work.' Meaning:", options: ["Stop your work.", "Restart your work.", "Continue your work.", "Finish your work quickly."], answer: 2 },
+  { q: "'Find out what time the train leaves.' Meaning:", options: ["Book the train.", "Discover the time.", "Forget the train.", "Miss the train."], answer: 1 },
+  { q: "'Turn off the heating.' Meaning:", options: ["Activate the heating.", "Repair the heating.", "Deactivate the heating.", "Increase the heating."], answer: 2 },
+  { q: "'He gave up his job to travel.' Meaning:", options: ["He started a new job.", "He enjoyed his job.", "He resigned from his job.", "He applied for his job."], answer: 2 },
+  { q: "Which is wrong? 'She ___ three languages while abroad.'", options: ["picked up", "set up (wrong)", "learnt", "acquired"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Common Phrasal Verbs",
+  subtitle: "give up, look after, find out, put off…",
+  level: "B1",
+  keyRule: "Phrasal verb = verb + particle. The particle changes the meaning: give up = quit, pick up = learn/catch.",
+  exercises: [
+    {
+      number: 1,
+      title: "Match meaning: give up / look after",
+      difficulty: "Easy",
+      instruction: "Choose the correct meaning.",
+      questions: [
+        "'give up' means:",
+        "'look after' means:",
+        "'find out' means:",
+        "'put off' means:",
+        "'She gave up smoking.' Meaning:",
+        "'He looks after his siblings.' Meaning:",
+        "'I'll find out what time it leaves.'",
+        "'They put off the meeting.' Meaning:",
+        "'Don't give up — nearly there!'",
+        "'Can you look after my cat?'",
+      ],
+    },
+    {
+      number: 2,
+      title: "Match: turn on/off / pick up / carry on",
+      difficulty: "Medium",
+      instruction: "Choose the correct meaning.",
+      questions: [
+        "'turn on' means:",
+        "'pick up' (learn) means:",
+        "'carry on' means:",
+        "'set up' means:",
+        "'turn off' means:",
+        "'pick up a cold' means:",
+        "'carry on with your work' means:",
+        "'set up a fundraising event' means:",
+        "'pick up some milk on the way':",
+        "'turn on the heating' means:",
+      ],
+    },
+    {
+      number: 3,
+      title: "Choose the right phrasal verb",
+      difficulty: "Hard",
+      instruction: "Choose the correct phrasal verb.",
+      questions: [
+        "He decided to ___ his bad habits.",
+        "Can you ___ the children while I cook?",
+        "I need to ___ more about the course.",
+        "The match was ___ due to bad weather.",
+        "She ___ three languages while travelling.",
+        "Government ___ new rules to cut pollution.",
+        "Don't ___ — the finish line is just ahead!",
+        "Please ___ your work — back in 5 minutes.",
+        "She ___ the oven before she left.",
+        "He ___ a cough from someone at office.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Mixed phrasal verbs in context",
+      difficulty: "Harder",
+      instruction: "Choose the correct phrasal verb.",
+      questions: [
+        "She ___ her dream of becoming a doctor.",
+        "Could you ___ my plants while on holiday?",
+        "Have you ___ where the party is yet?",
+        "The concert has been ___ until further notice.",
+        "She ___ a small business from her bedroom.",
+        "Despite difficulties, he ___ and finished.",
+        "The kids ___ some bad language at school.",
+        "Don't forget to ___ all the lights when leaving.",
+        "She ___ a charity to help homeless people.",
+        "I ___ that my flight had been cancelled.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Meanings", answers: ["quit / stop", "take care of", "discover", "postpone", "She quit smoking", "Takes care of them", "Discover the time", "They postponed it", "Don't stop trying", "Take care of it"] },
+    { exercise: 2, subtitle: "Meanings", answers: ["switch on", "learn informally", "continue", "establish", "switch off", "catch a cold", "continue working", "organise the event", "buy milk on the way", "activate the heating"] },
+    { exercise: 3, subtitle: "Phrasal verbs", answers: ["give up", "look after", "find out", "put off", "picked up", "set up", "give up", "carry on with", "turned off", "picked up"] },
+    { exercise: 4, subtitle: "Phrasal verbs", answers: ["gave up", "look after", "found out", "put off", "set up", "carried on", "picked up", "turn off", "set up", "found out"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Used to", href: "/grammar/b1/used-to", level: "B1", badge: "bg-violet-500", reason: "Phrasal verbs often appear in past-habit contexts" },
+  { title: "Would (Past Habits)", href: "/grammar/b1/would-past-habits", level: "B1", badge: "bg-violet-500" },
+  { title: "Defining Relative Clauses", href: "/grammar/b1/relative-clauses-defining", level: "B1", badge: "bg-violet-500" },
+];
 
 export default function PhrasalVerbsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -87,6 +210,12 @@ export default function PhrasalVerbsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -129,12 +258,19 @@ export default function PhrasalVerbsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-phrasal-verbs" subject="Phrasal Verbs" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -224,8 +360,22 @@ export default function PhrasalVerbsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-phrasal-verbs" subject="Phrasal Verbs" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-start gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

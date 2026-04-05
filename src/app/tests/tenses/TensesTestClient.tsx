@@ -138,7 +138,16 @@ export default function TensesTestClient() {
   const { save } = useProgress();
   const isPro = useIsPro();
   useEffect(() => {
-    if (submitted) save(undefined, score.percent, score.total);
+    if (submitted) {
+      const answerData = questions.map((q, i) => ({
+        questionIndex: i,
+        questionText: `[${q.tense}] ${q.prompt}`,
+        userAnswer: answers[q.id] !== undefined ? q.options[answers[q.id]] : "",
+        correctAnswer: q.options[q.correctIndex],
+        isCorrect: answers[q.id] === q.correctIndex,
+      }));
+      save(undefined, score.percent, score.total, answerData);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitted]);
 

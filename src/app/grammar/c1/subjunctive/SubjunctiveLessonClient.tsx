@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Inverted Conditionals", href: "/grammar/c1/inverted-conditionals", level: "C1", badge: "bg-sky-600", reason: "Both express hypothetical and non-factual conditions" },
+  { title: "Advanced Modals", href: "/grammar/c1/advanced-modals", level: "C1", badge: "bg-sky-600" },
+  { title: "Hedging Language", href: "/grammar/c1/hedging-language", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "The mandative subjunctive uses:", options: ["Bare infinitive (all persons)", "Past tense", "Present + -s", "Would + inf"], answer: 0 },
+  { q: "They insisted he ___ present.", options: ["be", "was", "is", "were"], answer: 0 },
+  { q: "She recommended he ___ the post.", options: ["apply for", "applies for", "applied for", "applying for"], answer: 0 },
+  { q: "It is essential that she ___ early.", options: ["leave", "leaves", "left", "leaving"], answer: 0 },
+  { q: "Were subjunctive uses:", options: ["Were (all persons)", "Was for 1st/3rd", "Depending on person", "Would + were"], answer: 0 },
+  { q: "If I ___ you, I'd apologise.", options: ["were", "was", "am", "be"], answer: 0 },
+  { q: "As if he ___ the boss. (not true)", options: ["were", "was", "is", "be"], answer: 0 },
+  { q: "I wish I ___ taller.", options: ["were", "was", "am", "be"], answer: 0 },
+  { q: "Mandative after 'suggest' + that:", options: ["bare inf", "past simple", "present simple", "would + inf"], answer: 0 },
+  { q: "It is vital that they ___ informed.", options: ["be", "are", "were", "being"], answer: 0 },
+  { q: "The committee proposed he ___ .", options: ["resign", "resigns", "resigned", "resigning"], answer: 0 },
+  { q: "She acted as though she ___ tired.", options: ["were", "was", "is", "be"], answer: 0 },
+  { q: "I demanded that he ___ us.", options: ["join", "joins", "joined", "joining"], answer: 0 },
+  { q: "Mandative subjunctive is common in:", options: ["American English", "British spoken", "Informal texts", "Commands only"], answer: 0 },
+  { q: "He looked as if he ___ a ghost.", options: ["had seen", "has seen", "saw", "sees"], answer: 0 },
+  { q: "It's important that she ___ on time.", options: ["arrive", "arrives", "arrived", "arriving"], answer: 0 },
+  { q: "Were it not for her, ___ .", options: ["we'd have failed", "we fail", "we'd fail", "we failing"], answer: 0 },
+  { q: "The suggestion that he ___ removed.", options: ["be", "is", "was", "were"], answer: 0 },
+  { q: "I wish she ___ here now.", options: ["were", "was", "is", "be"], answer: 0 },
+  { q: "It is crucial that they ___ told.", options: ["be", "are", "were", "being"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Subjunctive",
+  subtitle: "Mandative and were-subjunctive in formal English",
+  level: "C1",
+  keyRule: "Mandative uses bare inf; were-subjunctive for hypotheticals.",
+  exercises: [
+    {
+      number: 1,
+      title: "Mandative Subjunctive",
+      difficulty: "Easy",
+      instruction: "Choose the correct mandative subjunctive form.",
+      questions: [
+        "They insisted he ___ present.",
+        "It's vital that she ___ early.",
+        "The board required he ___ report.",
+        "She recommended he ___ the post.",
+        "It is essential that they ___ told.",
+        "The proposal that he ___ removed.",
+        "I demand that he ___ the meeting.",
+        "It is crucial they ___ informed.",
+        "She suggested the plan ___ changed.",
+        "They proposed she ___ the committee.",
+      ],
+      hint: "be / leave / submit / apply for",
+    },
+    {
+      number: 2,
+      title: "Were-Subjunctive",
+      difficulty: "Medium",
+      instruction: "Choose the correct were-subjunctive form.",
+      questions: [
+        "If I ___ you, I'd apologise.",
+        "As if he ___ the boss.",
+        "I wish I ___ taller.",
+        "She acted as though ___ tired.",
+        "If she ___ here, she'd help.",
+        "He talked as if he ___ an expert.",
+        "I wish she ___ here now.",
+        "Were it not for help, ___ failed.",
+        "If he ___ more careful, no problem.",
+        "She acts as though nothing ___.",
+      ],
+      hint: "were (all persons for hypotheticals)",
+    },
+    {
+      number: 3,
+      title: "Mixed Subjunctive Practice",
+      difficulty: "Hard",
+      instruction: "Choose subjunctive or indicative.",
+      questions: [
+        "It's important she ___ the truth.",
+        "They insisted it ___ done today.",
+        "I wish he ___ more reliable.",
+        "The fact that she ___ right is clear.",
+        "It was proposed the fee ___ waived.",
+        "She spoke as if she ___ in charge.",
+        "We demand that access ___ granted.",
+        "He acts as if he ___ never wrong.",
+        "It's vital the report ___ accurate.",
+        "I wish they ___ here to see this.",
+      ],
+      hint: "tell / be / were / is / were waived",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Subjunctive",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using the subjunctive mood.",
+      questions: [
+        "They said he must be there.",
+        "She wants to be taller.",
+        "He acts as though he's the boss.",
+        "They required him to resign.",
+        "I want her to attend the meeting.",
+        "The committee said he must leave.",
+        "She looked like she had seen ghost.",
+        "They proposed his removal.",
+        "I think she should be promoted.",
+        "If only he was more careful.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Mandative Subjunctive", answers: ["be", "leave", "submit", "apply for", "be", "be", "attend", "be", "be", "chair"] },
+    { exercise: 2, subtitle: "Were-Subjunctive", answers: ["were", "were", "were", "were", "were", "were", "were", "we'd have", "were", "had happened"] },
+    { exercise: 3, subtitle: "Mixed Subjunctive Practice", answers: ["tell", "be", "were", "is", "be waived", "were", "be granted", "were", "be", "were"] },
+    { exercise: 4, subtitle: "Rewrite Using Subjunctive", answers: ["They insisted that he be there.", "I wish I were taller.", "He acts as if he were the boss.", "They required that he resign.", "I insist that she attend the meeting.", "The committee demanded that he leave.", "She looked as if she had seen a ghost.", "They proposed that he be removed.", "I suggest she be promoted.", "If only he were more careful."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function SubjunctiveLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function SubjunctiveLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function SubjunctiveLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-subjunctive" subject="Subjunctive" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function SubjunctiveLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-subjunctive" subject="Subjunctive" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

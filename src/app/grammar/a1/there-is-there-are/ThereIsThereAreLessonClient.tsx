@@ -815,7 +815,7 @@ export default function ThereIsThereAreLessonClient() {
       </p>
 
       {/* Layout: left column + center content + right column */}
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">

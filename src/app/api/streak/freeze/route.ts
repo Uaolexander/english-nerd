@@ -7,8 +7,10 @@ export async function POST() {
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const isPro = await getIsPro(supabase, user.id);
-  const monthlyLimit = isPro ? 7 : 2;
+  if (!isPro) return Response.json({ error: "Streak freeze is a Pro feature" }, { status: 403 });
+  const monthlyLimit = 7;
 
+  const today = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   const dayBeforeYesterday = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
 
@@ -28,7 +30,7 @@ export async function POST() {
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id)
     .gte("completed_at", `${yesterday}T00:00:00Z`)
-    .lt("completed_at", `${yesterday}T23:59:59Z`);
+    .lt("completed_at", `${today}T00:00:00Z`);
   if ((activityYesterday ?? 0) > 0) {
     return Response.json({ error: "You already had activity yesterday" }, { status: 409 });
   }
@@ -39,7 +41,7 @@ export async function POST() {
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id)
     .gte("completed_at", `${dayBeforeYesterday}T00:00:00Z`)
-    .lt("completed_at", `${dayBeforeYesterday}T23:59:59Z`);
+    .lt("completed_at", `${yesterday}T00:00:00Z`);
   const { count: freezeDbY } = await supabase
     .from("streak_freezes")
     .select("*", { count: "exact", head: true })

@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Second conditional formula:", options: ["if + present → will + verb", "if + past → would + verb", "if + present → would + verb", "if + past → will + verb"], answer: 1 },
+  { q: "Second conditional is used for:", options: ["Real future situations", "Scientific facts", "Hypothetical/unreal situations", "Completed past actions"], answer: 2 },
+  { q: "'If I had more money, I ___ travel the world.'", options: ["will", "would", "should", "am going to"], answer: 1 },
+  { q: "'If she ___ harder, she'd get better results.'", options: ["works", "will work", "worked", "is working"], answer: 2 },
+  { q: "'If I were you, I ___ accept the offer.'", options: ["will", "am going to", "would", "might"], answer: 2 },
+  { q: "'If I ___ you, I'd apologise.' Correct form:", options: ["am", "will be", "was/were", "have been"], answer: 2 },
+  { q: "What does the past tense in the if-clause signal?", options: ["Past time", "Unreality / hypothetical", "Certainty", "Possibility"], answer: 1 },
+  { q: "Second conditional: 'If she were taller, she ___ be a model.'", options: ["will", "should", "would", "could not"], answer: 2 },
+  { q: "Which is a second conditional sentence?", options: ["If it rains, I'll stay home.", "If you heat water, it boils.", "If I spoke Japanese, I'd work in Tokyo.", "If she studies, she'll pass."], answer: 2 },
+  { q: "First or Second? 'If he arrives early, he'll help us.'", options: ["First — real future", "Second — hypothetical", "Zero — general truth", "Third — past regret"], answer: 0 },
+  { q: "First or Second? 'If I were a millionaire, I'd buy a yacht.'", options: ["First — real future", "Second — hypothetical", "Zero — general truth", "Third — past regret"], answer: 1 },
+  { q: "'I ___ be so nervous if I knew more people here.'", options: ["won't", "will", "wouldn't", "don't"], answer: 2 },
+  { q: "'What ___ you do if you lost your job?'", options: ["will", "do", "would", "can"], answer: 2 },
+  { q: "'If they trained properly, they ___ win more matches.'", options: ["will", "do", "would", "shall"], answer: 2 },
+  { q: "Which is WRONG second conditional?", options: ["If I had a car, I'd drive.", "If she worked harder, she'd succeed.", "If I would have money, I'd buy a car.", "If they lived closer, we'd see them."], answer: 2 },
+  { q: "'If I were in Paris, I ___ visit the Louvre.'", options: ["will", "would", "should", "am going to"], answer: 1 },
+  { q: "Second conditional negative: 'I ___ go if I were tired.'", options: ["wouldn't", "won't", "don't", "haven't"], answer: 0 },
+  { q: "Which uses 'were' correctly in 2nd conditional?", options: ["If I were you, I'd say sorry.", "If I were you, I will say sorry.", "If I was you, I would say sorry. (both OK)", "If I am you, I'd say sorry."], answer: 2 },
+  { q: "'If he ___ his phone, he'd call you.' (2nd conditional)", options: ["finds", "found", "will find", "has found"], answer: 1 },
+  { q: "What does 'If I were a bird, I'd fly away' express?", options: ["A real future plan", "An impossible/imaginary situation", "A general fact", "A past regret"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Second Conditional",
+  subtitle: "if + past simple → would + infinitive",
+  level: "B1",
+  keyRule: "Second Conditional = if + past simple, would + infinitive. Use for hypothetical/unreal situations.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct form",
+      difficulty: "Easy",
+      instruction: "Choose the correct form for second conditional.",
+      questions: [
+        "If I had more money, I ___ travel the world.",
+        "If she ___ harder, she'd get better results.",
+        "He'd buy a car if he ___ enough money.",
+        "If I were you, I ___ accept the offer.",
+        "They ___ win more if they trained properly.",
+        "If she ___ taller, she could be a model.",
+        "What ___ you do if you lost your job?",
+        "I ___ be so nervous if I knew more people.",
+        "If it ___ warmer, we'd go for a swim.",
+        "She'd speak better if she ___ more.",
+      ],
+    },
+    {
+      number: 2,
+      title: "First or Second Conditional?",
+      difficulty: "Medium",
+      instruction: "Choose the correct tense.",
+      questions: [
+        "If I ___ a million euros, I'd buy house. (unlikely)",
+        "If it ___ tomorrow, we'll cancel. (might rain)",
+        "I'd be happy if I ___ this job. (probably won't)",
+        "If she ___ now, she'll catch the bus. (possible)",
+        "What would you do if you ___ invisible? (impossible)",
+        "If he ___ early, he'll help us. (possible)",
+        "If I ___ you, I wouldn't worry. (advice)",
+        "If you ___ me, I'll give you a lift. (might ask)",
+        "She'd pass if she ___ more carefully. (probably won't)",
+        "If he ___ his phone, he'll call. (likely)",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write the correct form",
+      difficulty: "Hard",
+      instruction: "Write the correct second conditional form.",
+      questions: [
+        "If I ___ (be) taller, I'd play basketball.",
+        "She'd travel more if she ___ (have) free time.",
+        "If he ___ (not/be) so shy, he'd make friends.",
+        "What would you buy if you ___ (win) lottery?",
+        "I ___ (not/eat) there if I were you.",
+        "If they ___ (live) closer, we'd see them more.",
+        "She ___ (be) happier if she changed jobs.",
+        "If I ___ (speak) better French, I'd move to Paris.",
+        "He ___ (help) you if you asked him.",
+        "If the weather ___ (be) better, we'd go to beach.",
+      ],
+    },
+    {
+      number: 4,
+      title: "First or Second? Mixed challenge",
+      difficulty: "Harder",
+      instruction: "Choose first or second conditional form.",
+      questions: [
+        "It might rain. If it ___, I'll stay inside.",
+        "Dream: being a rock star. If I ___ a rock star…",
+        "Friend might lend bike. If she ___ me bike, I'll cycle.",
+        "Giving advice. If I ___ them, I would quit.",
+        "She plans to study tonight. If she ___, she'll pass.",
+        "Imagining superpower. If he ___ fly, he'd never bus.",
+        "70% chance of snow. If it ___, school is cancelled.",
+        "She dreams of speaking Japanese. If she ___ it…",
+        "Meeting might cancel. If it ___, we'll have more time.",
+        "Imagining perfect world. If everyone ___ each other…",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Second conditional", answers: ["would", "worked", "had", "would", "would", "was/were", "would", "wouldn't", "was/were", "practised"] },
+    { exercise: 2, subtitle: "1st or 2nd conditional", answers: ["won", "rains", "got", "leaves", "were", "arrives", "were", "ask", "read", "finds"] },
+    { exercise: 3, subtitle: "Written forms", answers: ["were", "had", "weren't", "won", "wouldn't eat", "lived", "would be", "spoke", "would help", "were"] },
+    { exercise: 4, subtitle: "1st or 2nd form", answers: ["rains", "were", "lends", "were", "studies", "could", "snows", "spoke", "is cancelled", "respected"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Zero & First Conditional", href: "/grammar/b1/zero-first-conditional", level: "B1", badge: "bg-violet-500", reason: "Compare all conditional structures together" },
+  { title: "All Conditionals", href: "/grammar/b1/all-conditionals", level: "B1", badge: "bg-violet-500" },
+  { title: "Wish + Past", href: "/grammar/b1/wish-past", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function SecondConditionalLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function SecondConditionalLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function SecondConditionalLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-second-conditional" subject="Second Conditional" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +405,22 @@ export default function SecondConditionalLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-second-conditional" subject="Second Conditional" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

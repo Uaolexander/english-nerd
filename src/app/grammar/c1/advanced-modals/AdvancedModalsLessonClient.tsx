@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Subjunctive", href: "/grammar/c1/subjunctive", level: "C1", badge: "bg-sky-600", reason: "Both deal with hypothetical and non-factual meanings" },
+  { title: "Inverted Conditionals", href: "/grammar/c1/inverted-conditionals", level: "C1", badge: "bg-sky-600" },
+  { title: "Hedging Language", href: "/grammar/c1/hedging-language", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "I'd rather she ___ come.", options: ["didn't", "doesn't", "hadn't", "won't"], answer: 0 },
+  { q: "It's time we ___ a decision.", options: ["made", "make", "have made", "will make"], answer: 0 },
+  { q: "You'd better ___ that email.", options: ["send", "to send", "sending", "have sent"], answer: 0 },
+  { q: "I'd sooner ___ than lie.", options: ["say nothing", "saying nothing", "to say nothing", "said nothing"], answer: 0 },
+  { q: "It's high time they ___ this.", options: ["rethought", "rethinks", "have rethought", "will rethink"], answer: 0 },
+  { q: "The train ___ arrive at 10:15.", options: ["is supposed to", "had better", "would rather", "may well"], answer: 0 },
+  { q: "She ___ have left by now.", options: ["may well", "is supposed to", "had better", "would rather"], answer: 0 },
+  { q: "had better + ___", options: ["bare infinitive", "to-infinitive", "gerund", "past participle"], answer: 0 },
+  { q: "would rather (same subj) + ___", options: ["bare infinitive", "past simple", "to-inf", "gerund"], answer: 0 },
+  { q: "would rather (diff subj) + ___", options: ["past simple", "bare inf", "to-inf", "gerund"], answer: 0 },
+  { q: "It's time + subject + ___", options: ["past simple", "bare inf", "to-inf", "present simple"], answer: 0 },
+  { q: "be supposed to = ___", options: ["expected/scheduled", "preference", "strong advice", "certainty"], answer: 0 },
+  { q: "may well = ___", options: ["quite likely", "scheduled", "strong advice", "preference"], answer: 0 },
+  { q: "had better not + ___", options: ["bare infinitive", "not bare inf", "to-inf", "gerund"], answer: 0 },
+  { q: "be meant to = ___", options: ["designed/intended", "expected late", "strong advice", "preference"], answer: 0 },
+  { q: "I'd rather ___ home tonight.", options: ["stay", "to stay", "staying", "stayed"], answer: 0 },
+  { q: "You'd better ___ be late.", options: ["not", "not to", "don't", "no"], answer: 0 },
+  { q: "It's about time they ___ it.", options: ["fixed", "fix", "have fixed", "will fix"], answer: 0 },
+  { q: "This ___ open the settings.", options: ["is meant to", "had better", "would rather", "may well"], answer: 0 },
+  { q: "You'd better ___ terms carefully.", options: ["read", "to read", "reading", "have read"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Modals",
+  subtitle: "would rather, it's time, had better, be supposed to",
+  level: "C1",
+  keyRule: "These expressions use past tense forms for present/future meaning.",
+  exercises: [
+    {
+      number: 1,
+      title: "would rather / it's time / had better",
+      difficulty: "Easy",
+      instruction: "Choose the correct modal form.",
+      questions: [
+        "I'd rather you ___ me earlier.",
+        "It's time we ___ a decision.",
+        "You'd better ___ that email.",
+        "I'd rather she ___ come.",
+        "It's high time they ___ approach.",
+        "You'd better ___ be late again.",
+        "I'd rather ___ home tonight.",
+        "It's about time they ___ the road.",
+        "You'd better ___ terms carefully.",
+        "I'd sooner ___ than lie to her.",
+      ],
+      hint: "told / made / send / didn't / rethought",
+    },
+    {
+      number: 2,
+      title: "be supposed to / may well",
+      difficulty: "Medium",
+      instruction: "Choose the correct expression.",
+      questions: [
+        "Train ___ arrive at 10:15. Late.",
+        "Button ___ open the menu.",
+        "She ___ left by now.",
+        "He ___ submit report by Friday.",
+        "Plan ___ work: logic is sound.",
+        "You ___ not leave early.",
+        "This ___ be the final answer.",
+        "They ___ already know results.",
+        "He ___ be at the office now.",
+        "It ___ rain later today.",
+      ],
+      hint: "is supposed to / may well / had better",
+    },
+    {
+      number: 3,
+      title: "Mixed Advanced Modals",
+      difficulty: "Hard",
+      instruction: "Complete with the correct modal expression.",
+      questions: [
+        "I wish I ___ tell you the truth.",
+        "It's time the law ___ changed.",
+        "I'd rather you ___ anything.",
+        "We'd better ___ or be late.",
+        "She ___ quit if not promoted.",
+        "They ___ have sent the report.",
+        "He ___ be more careful next time.",
+        "I'd sooner ___ than compromise.",
+        "It's high time this ___ resolved.",
+        "We ___ reconsider our strategy.",
+      ],
+      hint: "could / were / didn't say / leave",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Modal Expression",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using the word(s) given.",
+      questions: [
+        "Prefer you don't come. (rather)",
+        "Overdue: make a decision. (time)",
+        "Strong advice: send email. (better)",
+        "Scheduled: arrive at 9. (supposed)",
+        "Likely she already left. (may well)",
+        "Prefer to stay home. (sooner)",
+        "Overdue: fix the road. (about time)",
+        "Warning: don't be late. (better not)",
+        "Intended: open settings. (meant to)",
+        "Prefer say nothing. (sooner)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "would rather / it's time / had better", answers: ["told", "made", "send", "didn't", "rethought", "not", "stay", "fixed", "read", "say nothing"] },
+    { exercise: 2, subtitle: "be supposed to / may well", answers: ["is supposed to", "is supposed to", "may well", "is supposed to submit", "might well", "had better", "may well", "may well", "is supposed to", "may well"] },
+    { exercise: 3, subtitle: "Mixed Advanced Modals", answers: ["could", "were", "didn't say", "leave", "may well", "should have", "had better", "resign", "was", "had better"] },
+    { exercise: 4, subtitle: "Rewrite Using Modal Expression", answers: ["I'd rather you didn't come", "It's time we made a decision", "You'd better send the email", "The train is supposed to arrive at 9", "She may well have already left", "I'd sooner stay home", "It's about time they fixed the road", "You'd better not be late", "This button is meant to open settings", "I'd sooner say nothing"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function AdvancedModalsLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function AdvancedModalsLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function AdvancedModalsLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-advanced-modals" subject="Advanced Modals" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function AdvancedModalsLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-advanced-modals" subject="Advanced Modals" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

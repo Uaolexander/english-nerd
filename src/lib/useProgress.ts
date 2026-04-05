@@ -25,7 +25,18 @@ export type SaveResult = {
  */
 export function useProgress() {
   const save = useCallback(
-    async (exerciseNo: number | undefined, score: number, questionsTotal: number): Promise<SaveResult> => {
+    async (
+      exerciseNo: number | undefined,
+      score: number,
+      questionsTotal: number,
+      answers?: Array<{
+        questionIndex: number;
+        questionText?: string;
+        userAnswer?: string;
+        correctAnswer?: string;
+        isCorrect: boolean;
+      }>
+    ): Promise<SaveResult> => {
       if (typeof window === "undefined") return { ok: false, saved: false, isBest: false };
 
       const parts = window.location.pathname.split("/").filter(Boolean);
@@ -57,7 +68,7 @@ export function useProgress() {
         const res = await fetch("/api/progress/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ category, level, slug, exerciseNo, score, questionsTotal }),
+          body: JSON.stringify({ category, level, slug, exerciseNo, score, questionsTotal, answers }),
         });
         if (!res.ok) return { ok: false, saved: false, isBest: false };
         const result = await res.json() as SaveResult;

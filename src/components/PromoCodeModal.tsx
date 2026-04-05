@@ -7,18 +7,20 @@ import ProWelcomeModal from "@/components/ProWelcomeModal";
 function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-16 sm:pt-24"
+      className="fixed inset-0 z-[9998] flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/72 backdrop-blur-[4px]" />
+      {/* Card */}
       <div
-        className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-2xl"
+        className="relative w-full max-w-[400px] overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20]" />
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/50 transition hover:bg-white/15"
+          className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/50 transition hover:bg-white/15"
           aria-label="Close"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

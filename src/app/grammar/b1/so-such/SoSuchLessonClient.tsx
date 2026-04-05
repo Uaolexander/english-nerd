@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "so + ___", options: ["noun", "adjective/adverb", "article + noun", "infinitive"], answer: 1 },
+  { q: "such + ___", options: ["adjective alone", "adverb", "noun phrase", "infinitive"], answer: 2 },
+  { q: "'The film was ___ boring.' (so or such?)", options: ["such", "such a", "so", "such an"], answer: 2 },
+  { q: "'It was ___ a great film.' (so or such?)", options: ["so", "such", "very", "too"], answer: 1 },
+  { q: "'She speaks ___ fast.' (so or such?)", options: ["such", "such a", "so", "such an"], answer: 2 },
+  { q: "'They are ___ lovely children.' Choose correct:", options: ["so", "such a", "so a", "such"], answer: 3 },
+  { q: "'I've never met ___ interesting person.'", options: ["so", "such", "such a", "so a"], answer: 2 },
+  { q: "such + uncountable noun: 'We had ___ fun!'", options: ["so", "such a", "such", "so a"], answer: 2 },
+  { q: "'It was ___ good news!' (uncountable)", options: ["so", "such a", "such", "very a"], answer: 2 },
+  { q: "'He was ___ tired that he fell asleep.'", options: ["such", "such a", "so", "very"], answer: 2 },
+  { q: "'There was ___ bad weather.' (uncountable)", options: ["so", "such a", "such", "so a"], answer: 2 },
+  { q: "so/such + that: What does 'that' introduce?", options: ["The cause", "The result", "The condition", "The contrast"], answer: 1 },
+  { q: "'She was ___ an inspiring teacher!'", options: ["so", "such", "very", "too"], answer: 1 },
+  { q: "Which is CORRECT?", options: ["She's so a kind person.", "She's such kind person.", "She's such a kind person.", "She's so kind person."], answer: 2 },
+  { q: "Which is CORRECT?", options: ["It was such cold!", "It was so a cold day!", "It was such a cold day!", "It was so cold day!"], answer: 2 },
+  { q: "'___ long hair she has!' (noun phrase)", options: ["So", "Such a", "Such", "So a"], answer: 2 },
+  { q: "'The music was ___ loud!' (adjective alone)", options: ["such", "such a", "so", "so a"], answer: 2 },
+  { q: "such + plural noun (no article):", options: ["such a books", "so books", "such books", "so a books"], answer: 2 },
+  { q: "so + adjective + that → expresses:", options: ["Time", "Result/consequence", "Condition", "Contrast"], answer: 1 },
+  { q: "'He worked ___ hard that he got promoted.'", options: ["such", "such a", "so", "such an"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "so / such",
+  subtitle: "so + adj/adv | such (a) + noun phrase",
+  level: "B1",
+  keyRule: "so + adjective/adverb | such + (a) + noun phrase. Both can be followed by 'that' to show result.",
+  exercises: [
+    {
+      number: 1,
+      title: "so or such?",
+      difficulty: "Easy",
+      instruction: "Choose so or such to complete the sentence.",
+      questions: [
+        "The film was ___ boring I fell asleep.",
+        "It was ___ a beautiful day.",
+        "She speaks ___ quickly.",
+        "He's ___ a kind person.",
+        "The food was ___ good we ordered again.",
+        "They were ___ rude people.",
+        "I was ___ tired I went to bed early.",
+        "It was ___ terrible weather.",
+        "He ran ___ fast he broke the record.",
+        "She has ___ long hair!",
+      ],
+    },
+    {
+      number: 2,
+      title: "so, such, or such a?",
+      difficulty: "Medium",
+      instruction: "Choose the correct option.",
+      questions: [
+        "It was ___ long film we left early.",
+        "The music was ___ loud the neighbours complained.",
+        "They are ___ lovely children!",
+        "I've never met ___ interesting person.",
+        "She was ___ angry she slammed the door.",
+        "We had ___ fun at the party!",
+        "He's ___ an amazing singer.",
+        "It was ___ bad weather.",
+        "She is ___ clever.",
+        "He told ___ funny jokes!",
+      ],
+    },
+    {
+      number: 3,
+      title: "Complete with so or such (a/an)",
+      difficulty: "Hard",
+      instruction: "Write so / such / such a / such an.",
+      questions: [
+        "The test was ___ difficult.",
+        "It was ___ easy question.",
+        "They made ___ noise.",
+        "She's ___ talented musician.",
+        "The soup was ___ hot I burned my tongue.",
+        "He gave ___ good advice.",
+        "We had ___ a great holiday.",
+        "The book was ___ long it took me a month.",
+        "It was ___ awful experience.",
+        "She's ___ warm-hearted person.",
+      ],
+    },
+    {
+      number: 4,
+      title: "so/such + that: complete",
+      difficulty: "Harder",
+      instruction: "Complete using so/such that the result makes sense.",
+      questions: [
+        "He was tired ___ he went straight to bed.",
+        "It was ___ cold day we cancelled.",
+        "She spoke ___ fast no one understood.",
+        "There was ___ traffic ___ we were late.",
+        "The bag was ___ heavy I couldn't lift it.",
+        "They made ___ mess ___ we had to clean.",
+        "It was ___ good film everyone clapped.",
+        "He is ___ a fast runner ___ he always wins.",
+        "I was ___ surprised I said nothing.",
+        "It was ___ noise ___ I couldn't sleep.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "so or such", answers: ["so", "such", "so", "such", "so", "such", "so", "such", "so", "such"] },
+    { exercise: 2, subtitle: "so/such/such a", answers: ["such a", "so", "such", "such an", "so", "such", "such", "such", "so", "such"] },
+    { exercise: 3, subtitle: "Complete", answers: ["so", "such an", "such", "such a", "so", "such", "such", "so", "such an", "such a"] },
+    { exercise: 4, subtitle: "so/such that", answers: ["so", "such a", "so", "such / that", "so", "such / that", "such a", "such / that", "so", "such / that"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Too / Enough", href: "/grammar/b1/too-enough", level: "B1", badge: "bg-violet-500", reason: "Another degree and result structure" },
+  { title: "As...as Comparison", href: "/grammar/b1/as-as-comparison", level: "B1", badge: "bg-violet-500" },
+  { title: "Would (Past Habits)", href: "/grammar/b1/would-past-habits", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function SoSuchLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,11 @@ export default function SoSuchLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +270,19 @@ export default function SoSuchLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-so-such" subject="So and Such" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -268,8 +403,22 @@ export default function SoSuchLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-so-such" subject="So and Such" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

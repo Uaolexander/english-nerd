@@ -13,6 +13,14 @@ export async function POST(req: Request) {
     exerciseNo?: number;
     score: number;
     questionsTotal?: number;
+    /** Optional: per-question breakdown for teacher analytics */
+    answers?: Array<{
+      questionIndex: number;
+      questionText?: string;
+      userAnswer?: string;
+      correctAnswer?: string;
+      isCorrect: boolean;
+    }>;
   };
 
   const level = body.level ?? null;
@@ -71,6 +79,43 @@ export async function POST(req: Request) {
     });
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  // Save detailed per-question answers if provided
+  if (body.answers && body.answers.length > 0) {
+    // Get the progress row id for the foreign key
+    let progressId: string | null = null;
+    let idQuery = supabase
+      .from("user_progress")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("category", body.category)
+      .eq("slug", body.slug);
+    idQuery = level !== null ? idQuery.eq("level", level) : idQuery.is("level", null);
+    idQuery = exerciseNo !== null ? idQuery.eq("exercise_no", exerciseNo) : idQuery.is("exercise_no", null);
+    const { data: progressRow } = await idQuery.maybeSingle();
+    progressId = progressRow?.id ?? null;
+
+    // Delete old answers for this exercise (keep only latest attempt)
+    if (progressId) {
+      await supabase.from("exercise_answers").delete().eq("progress_id", progressId);
+    }
+
+    const answerRows = body.answers.map((a) => ({
+      progress_id: progressId,
+      user_id: user.id,
+      category: body.category,
+      level,
+      slug: body.slug,
+      exercise_no: exerciseNo,
+      question_index: a.questionIndex,
+      question_text: a.questionText ?? null,
+      user_answer: a.userAnswer ?? null,
+      correct_answer: a.correctAnswer ?? null,
+      is_correct: a.isCorrect,
+    }));
+
+    await supabase.from("exercise_answers").insert(answerRows);
   }
 
   return NextResponse.json({ ok: true, saved: true, isBest: true });

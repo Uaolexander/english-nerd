@@ -46,6 +46,14 @@ function ProGate({ children, isPro }: { children: React.ReactNode; isPro: boolea
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export type WeakTopic = {
+  category: string;
+  level: string | null;
+  slug: string;
+  bestScore: number;
+  href: string;
+};
+
 export type DashboardTabProps = {
   streak: number;
   totalCompleted: number;
@@ -67,6 +75,7 @@ export type DashboardTabProps = {
   recs: TopicRec[];
   freezeCount: number;
   canUseFreeze: boolean;
+  weakTopics: WeakTopic[];
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -333,6 +342,8 @@ function StreakCard({
       if (res.ok) {
         setFreezeUsed(true);
         setLocalFreezeCount((n) => Math.max(0, n - 1));
+        // Reload to recalculate streak with the new freeze date
+        setTimeout(() => window.location.reload(), 800);
       }
     } finally {
       setFreezeLoading(false);
@@ -432,34 +443,47 @@ function StreakCard({
           </div>
         </div>
 
-        {/* Streak Freeze */}
-        {streak > 0 && (
-          <div className="mt-4 flex items-center justify-between rounded-xl border border-dashed border-sky-200 bg-sky-50/60 px-4 py-3">
+        {/* Streak Freeze — show when streak is active OR when PRO can restore a lost streak */}
+        {(streak > 0 || canUseFreeze || isPro) && (
+          <div className={`mt-4 flex items-center justify-between rounded-xl border border-dashed px-4 py-3 ${canUseFreeze && !freezeUsed ? "border-amber-300 bg-amber-50/60" : "border-sky-200 bg-sky-50/60"}`}>
             <div className="flex items-center gap-2.5">
-              <span className="text-xl">🛡️</span>
+              <span className="text-xl">{canUseFreeze && !freezeUsed ? "🔥" : "🛡️"}</span>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black text-sky-700">Streak Freeze</span>
+                  <span className={`text-xs font-black ${canUseFreeze && !freezeUsed ? "text-amber-700" : "text-sky-700"}`}>
+                    {canUseFreeze && !freezeUsed ? "Streak at risk!" : "Streak Freeze"}
+                  </span>
                   {!isPro && (
                     <span className="rounded-full bg-[#F5DA20]/30 px-1.5 py-0.5 text-[9px] font-black text-amber-700">
-                      ×7 with Pro
+                      Pro feature
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-sky-500">
-                  {localFreezeCount > 0
-                    ? `${localFreezeCount} of ${isPro ? 7 : 1} available this month`
-                    : "Used up this month"}
+                <div className={`text-[10px] ${canUseFreeze && !freezeUsed ? "text-amber-600" : "text-sky-500"}`}>
+                  {!isPro
+                    ? "Protect your streak when you miss a day"
+                    : canUseFreeze && !freezeUsed
+                      ? `You missed yesterday — use a freeze to restore your streak`
+                      : localFreezeCount > 0
+                        ? `${localFreezeCount} of 7 available this month`
+                        : "Used up this month"}
                 </div>
               </div>
             </div>
-            {canUseFreeze && !freezeUsed && localFreezeCount > 0 ? (
+            {!isPro ? (
+              <a
+                href="/pro"
+                className="rounded-xl bg-[#F5DA20] px-3.5 py-2 text-xs font-black text-black transition hover:bg-[#e8cf00]"
+              >
+                Upgrade
+              </a>
+            ) : canUseFreeze && !freezeUsed && localFreezeCount > 0 ? (
               <button
                 onClick={handleUseFreeze}
                 disabled={freezeLoading}
-                className="rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-black text-white transition hover:bg-sky-600 disabled:opacity-50"
+                className="rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-black text-white transition hover:bg-amber-600 disabled:opacity-50"
               >
-                {freezeLoading ? "…" : "Activate"}
+                {freezeLoading ? "…" : "Restore"}
               </button>
             ) : freezeUsed ? (
               <span className="rounded-xl bg-sky-100 border border-sky-200 px-3 py-1.5 text-[10px] font-black text-sky-600">
@@ -479,12 +503,40 @@ function StreakCard({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+const LS_KEY = "eng_dismissed_weak";
+
 export default function DashboardTab({
-  streak, totalCompleted, avgScore, topicsMastered,
+  streak, totalCompleted, avgScore,
   overallPct, currentLevel, byLevel,
   weekly, maxWeekly, recentActivity, isPro,
-  freezeCount, canUseFreeze,
+  freezeCount, canUseFreeze, weakTopics,
 }: DashboardTabProps) {
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem(LS_KEY) ?? "[]");
+      setDismissed(new Set(saved));
+    } catch { /* ignore */ }
+  }, []);
+
+  function dismissTopic(key: string) {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      try { localStorage.setItem(LS_KEY, JSON.stringify(Array.from(next))); } catch { /* ignore */ }
+      return next;
+    });
+  }
+
+  function restoreAll() {
+    setDismissed(new Set());
+    try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
+  }
+
+  const visibleWeak = weakTopics.filter((t) => !dismissed.has(`${t.category}:${t.level ?? ""}:${t.slug}`));
+  const hiddenCount = weakTopics.length - visibleWeak.length;
+
   return (
     <div className="space-y-4">
 
@@ -523,19 +575,102 @@ export default function DashboardTab({
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-violet-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.03]">
-          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">⭐</div>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-violet-600">Mastered</div>
+        <div className="relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.03]">
+          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">🎯</div>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-rose-500">To Improve</div>
           <div className="mt-2 text-4xl font-black text-slate-900 leading-none">
-            <AnimatedNumber value={topicsMastered} />
+            <AnimatedNumber value={visibleWeak.length} />
           </div>
-          <div className="mt-1 text-xs text-slate-400">topics ≥ 80%</div>
+          <div className="mt-1 text-xs text-slate-400">topics &lt; 70%</div>
           <div className="mt-3 h-1 w-full rounded-full bg-slate-100">
-            <div className="h-1 rounded-full bg-violet-400 transition-all duration-700" style={{ width: `${Math.min(topicsMastered * 2, 100)}%` }} />
+            <div className="h-1 rounded-full bg-rose-400 transition-all duration-700"
+              style={{ width: visibleWeak.length > 0 ? "100%" : "0%" }} />
           </div>
         </div>
 
       </div>
+
+      {/* ── Weak Topics panel ─────────────────────────────────────────────── */}
+      {(visibleWeak.length > 0 || hiddenCount > 0) && (
+        <div className="rounded-2xl border border-rose-100 bg-white shadow-sm ring-1 ring-black/[0.03] overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-rose-50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50">
+                <svg className="h-4 w-4 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-black text-slate-900">Areas to Strengthen</p>
+                <p className="text-[11px] text-slate-400">{visibleWeak.length} topic{visibleWeak.length !== 1 ? "s" : ""} below 70% — practice to improve</p>
+              </div>
+            </div>
+            {hiddenCount > 0 && (
+              <button onClick={restoreAll} className="text-[11px] font-semibold text-slate-400 hover:text-violet-600 transition shrink-0">
+                {hiddenCount} hidden · Restore
+              </button>
+            )}
+          </div>
+
+          {visibleWeak.length > 0 && (
+            <div className="divide-y divide-slate-50">
+              {visibleWeak.map((t) => {
+                const key = `${t.category}:${t.level ?? ""}:${t.slug}`;
+                const catColor: Record<string, string> = {
+                  grammar: "bg-violet-500",
+                  tenses: "bg-sky-500",
+                  vocabulary: "bg-amber-500",
+                  reading: "bg-emerald-500",
+                  listening: "bg-pink-500",
+                };
+                const scoreColor = t.bestScore < 40 ? "text-rose-600 bg-rose-50 border-rose-200"
+                  : t.bestScore < 60 ? "text-amber-600 bg-amber-50 border-amber-200"
+                  : "text-orange-600 bg-orange-50 border-orange-200";
+
+                return (
+                  <div key={key} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors group">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${catColor[t.category] ?? "bg-slate-400"}`} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-800">{slugToTitle(t.slug)}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {t.category}{t.level ? ` · ${t.level.toUpperCase()}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`rounded-lg border px-2.5 py-0.5 text-xs font-black ${scoreColor}`}>
+                        {t.bestScore}%
+                      </span>
+                      <a
+                        href={t.href}
+                        className="flex items-center gap-1 rounded-xl bg-rose-500 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-600 shadow-sm"
+                      >
+                        Practice
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </a>
+                      <button
+                        onClick={() => dismissTopic(key)}
+                        title="Hide this topic"
+                        className="opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="border-t border-rose-50 px-5 py-3 bg-rose-50/40">
+            <p className="text-[11px] text-rose-400 font-semibold">
+              Tip: aim for 80%+ to master a topic. Regular practice on weak areas builds fluency fast.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Level progress + weekly chart ────────────────────────────────── */}
       <ProGate isPro={isPro}>

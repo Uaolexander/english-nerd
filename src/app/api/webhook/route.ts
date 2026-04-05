@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendProGainedEmail, sendProExpiredEmail } from "@/lib/email";
 
 // Required: Node.js runtime for crypto and Supabase admin API
 export const runtime = "nodejs";
@@ -319,6 +320,31 @@ export async function POST(req: Request) {
         console.error("[webhook] Failed to update user metadata:", metaError);
       }
     }
+  }
+
+  // ── Send PRO status emails (fire-and-forget) ─────────────────────────────
+  if (userId && customerEmail) {
+    void (async () => {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", userId)
+          .maybeSingle();
+        const name = (profile?.full_name as string | null) ?? null;
+
+        const gainEvents = new Set(["subscription_created", "subscription_resumed", "subscription_payment_recovered"]);
+        const loseEvents = new Set(["subscription_expired", "subscription_payment_refunded"]);
+
+        if (isPro && gainEvents.has(eventName)) {
+          await sendProGainedEmail(customerEmail, name, endsAt ?? renewsAt);
+        } else if (!isPro && loseEvents.has(eventName)) {
+          await sendProExpiredEmail(customerEmail, name);
+        }
+      } catch (e) {
+        console.error("[webhook] email error:", e);
+      }
+    })();
   }
 
   console.log(

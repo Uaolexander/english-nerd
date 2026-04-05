@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import AdUnit from "@/components/AdUnit";
 
 const WORD_BANK = ["fruit", "flowers", "money", "open", "people", "buy", "cold", "favourite"];
 
@@ -378,6 +379,9 @@ export default function AtTheMarketClient() {
           )}
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </div>
   );

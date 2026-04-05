@@ -1,0 +1,74 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { getTeacherStatus } from "@/lib/getTeacherStatus";
+
+export async function POST(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+
+  const teacher = await getTeacherStatus(supabase, user.id);
+  if (!teacher.isTeacher) {
+    return NextResponse.json({ ok: false, error: "Not a teacher account" }, { status: 403 });
+  }
+
+  const { email } = await req.json() as { email: string };
+  if (!email || !email.includes("@")) {
+    return NextResponse.json({ ok: false, error: "Invalid email" }, { status: 400 });
+  }
+
+  // Check student limit
+  if (teacher.activeStudentCount >= teacher.studentLimit) {
+    return NextResponse.json({
+      ok: false,
+      error: `Student limit reached (${teacher.studentLimit} for your plan)`,
+    }, { status: 403 });
+  }
+
+  // Check if already invited or active
+  const { data: existing } = await supabase
+    .from("teacher_students")
+    .select("id, status")
+    .eq("teacher_id", user.id)
+    .eq("invite_email", email.toLowerCase())
+    .neq("status", "removed")
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json({
+      ok: false,
+      error: existing.status === "active" ? "This student is already in your list" : "Invite already sent",
+    }, { status: 409 });
+  }
+
+  // Try to resolve student_id from email (uses existing get_user_id_by_email RPC)
+  const serviceSupabase = (await import("@/lib/supabase/service")).createServiceClient();
+  const { data: studentIdRow } = await serviceSupabase.rpc("get_user_id_by_email", {
+    lookup_email: email.toLowerCase(),
+  });
+  const studentId = studentIdRow ?? null;
+
+  // Generate invite token
+  const token = crypto.randomUUID();
+
+  // If student has an account, set status to pending_student so they must confirm
+  const newStatus = studentId ? "pending_student" : "pending";
+
+  const { error } = await supabase.from("teacher_students").insert({
+    teacher_id: user.id,
+    student_id: studentId,
+    invite_email: email.toLowerCase(),
+    invite_token: token,
+    status: newStatus,
+    joined_at: null,
+  });
+
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+
+  return NextResponse.json({
+    ok: true,
+    status: newStatus,
+    inviteToken: token,
+    inviteUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/teacher/join?token=${token}`,
+  });
+}

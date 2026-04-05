@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Inversion", href: "/grammar/c1/advanced-inversion", level: "C1", badge: "bg-sky-600", reason: "Both use word-order manipulation for stylistic emphasis" },
+  { title: "Extraposition", href: "/grammar/c1/extraposition", level: "C1", badge: "bg-sky-600" },
+  { title: "Inverted Conditionals", href: "/grammar/c1/inverted-conditionals", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Fronting means placing ___ first.", options: ["Non-subject element", "The subject", "The verb", "An adverb"], answer: 0 },
+  { q: "Cleft: ___ was John who called.", options: ["It", "That", "This", "He"], answer: 0 },
+  { q: "Pseudo-cleft: ___ she did was leave.", options: ["What", "That", "Which", "How"], answer: 0 },
+  { q: "Fronting an adverb: ___ they ran.", options: ["Out of the door", "Run out door", "They ran out", "Ran out door"], answer: 0 },
+  { q: "It is ___ that I admire most.", options: ["her honesty", "she honest", "honest she", "of her honest"], answer: 0 },
+  { q: "What she wants ___ is respect.", options: ["most", "mostly", "more", "most of all"], answer: 0 },
+  { q: "Fronting creates ___.", options: ["Emphasis/contrast", "Questions", "Negation", "Passive voice"], answer: 0 },
+  { q: "Cleft splits a sentence into ___.", options: ["Two clauses", "Three clauses", "A phrase", "A question"], answer: 0 },
+  { q: "It was in London ___ they met.", options: ["that", "where", "which", "when"], answer: 0 },
+  { q: "'What I need is sleep' = ___", options: ["Pseudo-cleft", "It-cleft", "Fronting", "Inversion"], answer: 0 },
+  { q: "On the table ___ his keys.", options: ["were", "was", "is", "had"], answer: 0 },
+  { q: "It-cleft emphasises:", options: ["One specific element", "The whole sentence", "The verb only", "The subject always"], answer: 0 },
+  { q: "Rarely ___ such enthusiasm.", options: ["have I seen", "I have seen", "I saw", "seen I have"], answer: 0 },
+  { q: "What ___ is beyond me.", options: ["she sees in him", "she see him", "see she him", "her see him"], answer: 0 },
+  { q: "It is ___ that solved the problem.", options: ["the new approach", "new approach", "approach new", "that new approach"], answer: 0 },
+  { q: "Fronting an object: ___ I can't stand.", options: ["That noise", "Noise that", "That I noise", "The noise that"], answer: 0 },
+  { q: "What ___ is how he treated her.", options: ["bothered me most", "most bothered", "me bothered", "bothers most me"], answer: 0 },
+  { q: "It was in 1969 ___ landed on moon.", options: ["that they", "when they", "which they", "where they"], answer: 0 },
+  { q: "Fronting a complement: ___ he is.", options: ["Brilliant", "Brilliantly", "Brilliance", "Brilliantness"], answer: 0 },
+  { q: "All ___ is rest.", options: ["she needs", "she need", "needs she", "need she"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Fronting and Emphasis",
+  subtitle: "Fronting, it-clefts, pseudo-clefts for emphasis",
+  level: "C1",
+  keyRule: "Fronting moves elements first; clefts split sentences for focus.",
+  exercises: [
+    {
+      number: 1,
+      title: "It-Cleft Sentences",
+      difficulty: "Easy",
+      instruction: "Choose the correct it-cleft form.",
+      questions: [
+        "___ John who called me.",
+        "___ her honesty I admire most.",
+        "___ London they met first.",
+        "___ 1969 that they landed.",
+        "___ new approach that worked.",
+        "___ Ann who won the prize.",
+        "___ money she wanted, not fame.",
+        "___ his speech that moved us.",
+        "___ my boss who told me.",
+        "___ here that it all started.",
+      ],
+      hint: "It was / It is",
+    },
+    {
+      number: 2,
+      title: "Pseudo-Cleft (What-Cleft)",
+      difficulty: "Medium",
+      instruction: "Complete the pseudo-cleft sentence.",
+      questions: [
+        "___ she did was leave quickly.",
+        "___ I need is more time.",
+        "___ bothered me was his tone.",
+        "___ she wants is respect.",
+        "___ he did was apologise.",
+        "___ surprises me is attitude.",
+        "___ we need is better plan.",
+        "___ he said shocked everyone.",
+        "___ they want is honesty.",
+        "___ she sees in him is unclear.",
+      ],
+      hint: "What / All",
+    },
+    {
+      number: 3,
+      title: "Fronting for Emphasis",
+      difficulty: "Hard",
+      instruction: "Choose the correct fronted form.",
+      questions: [
+        "Fronted object: ___ I can't stand.",
+        "Fronted complement: ___ he is.",
+        "Fronted adverb: ___ they ran.",
+        "Fronted participle: ___ the crowd.",
+        "Fronted prepositional: ___ a dog.",
+        "Fronted predicate adj: ___ she was.",
+        "Fronted negative: ___ did she lie.",
+        "Fronted condition: ___ I would help.",
+        "Fronted concessive: ___ she tried.",
+        "Fronted time: ___ did he leave.",
+      ],
+      hint: "That noise / Brilliant / Out of the door",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Fronting/Cleft",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using the technique given.",
+      questions: [
+        "John called me. (it-cleft)",
+        "I admire her honesty. (it-cleft)",
+        "She just wanted to leave. (what)",
+        "His attitude bothered me. (what)",
+        "They met in London. (it-cleft)",
+        "I can't stand that noise. (front)",
+        "She is absolutely brilliant. (front)",
+        "He really needs rest. (all)",
+        "They landed in 1969. (it-cleft)",
+        "His tone surprised me. (what)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "It-Cleft Sentences", answers: ["It was", "It is", "It was in", "It was in", "It was the", "It was", "It was", "It was", "It was", "It was"] },
+    { exercise: 2, subtitle: "Pseudo-Cleft (What-Cleft)", answers: ["What", "What", "What", "What", "What", "What", "What", "What", "What", "What"] },
+    { exercise: 3, subtitle: "Fronting for Emphasis", answers: ["That noise, I can't stand.", "Brilliant, he is.", "Out of the door they ran.", "Cheering the crowd, she raised her arms.", "Under the bed lay a dog.", "Furious, she was.", "Never did she lie.", "Had I known, I would have helped.", "Hard as she tried, she failed.", "Only then did he leave."] },
+    { exercise: 4, subtitle: "Rewrite Using Fronting/Cleft", answers: ["It was John who called me.", "It is her honesty that I admire most.", "What she wanted was to leave.", "What bothered me was his attitude.", "It was in London that they met.", "That noise, I can't stand.", "Brilliant, she is.", "All he needs is rest.", "It was in 1969 that they landed.", "What surprised me was his tone."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function FrontingEmphasisLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function FrontingEmphasisLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function FrontingEmphasisLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-fronting-emphasis" subject="Fronting and Emphasis" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function FrontingEmphasisLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-fronting-emphasis" subject="Fronting and Emphasis" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

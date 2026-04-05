@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Use as…as when two things are:", options: ["equal", "different", "opposite", "unknown"], answer: 0 },
+  { q: "'She is ___ tall ___ her brother.' (equal)", options: ["as / as", "not as / as", "more / than", "so / as"], answer: 0 },
+  { q: "Use 'not as…as' when:", options: ["things are equal", "one is less than other", "things are the same", "comparing 3+ things"], answer: 1 },
+  { q: "'My car isn't ___ fast ___ yours.' (mine is slower)", options: ["as / as", "not as / as", "more / than", "so / as"], answer: 0 },
+  { q: "Which is correct?", options: ["She's not as fast than me.", "She's not as fast as me.", "She's more fast as me.", "She's as fast than me."], answer: 1 },
+  { q: "'He earns twice ___ much ___ her.'", options: ["as / as", "so / as", "more / than", "not / as"], answer: 0 },
+  { q: "Twice as…as means:", options: ["half the amount", "double the amount", "three times as much", "equal amounts"], answer: 1 },
+  { q: "'This test is ___ difficult ___ the last.' (equal)", options: ["as / as", "not as / as", "more / than", "so / as"], answer: 0 },
+  { q: "Which is WRONG?", options: ["as tall as", "not as tall as", "not as tall than", "twice as tall as"], answer: 2 },
+  { q: "'I'm not ___ tired ___ yesterday.' Correct?", options: ["as / as", "so / than", "more / than", "as / than"], answer: 0 },
+  { q: "'That building is twice ___ tall ___ this one.'", options: ["as / as", "so / as", "more / than", "as / than"], answer: 0 },
+  { q: "Tom: 180cm, Paul: 180cm. Which is correct?", options: ["Tom is taller than Paul.", "Tom is as tall as Paul.", "Tom is not as tall as Paul.", "Paul is taller than Tom."], answer: 1 },
+  { q: "'My score 70%, hers 90%.' Correct:", options: ["I did as well as her.", "I didn't do as well as her.", "I did better than her.", "I did worse as her."], answer: 1 },
+  { q: "Half as…as means:", options: ["double", "triple", "50% of the amount", "equal"], answer: 2 },
+  { q: "'He works ___ hard ___ she does.' (same hours)", options: ["as / as", "not as / as", "more / than", "so / as"], answer: 0 },
+  { q: "City A: 4M people. City B: 2M. Correct:", options: ["City A has as many as City B.", "City A has twice as many as City B.", "City B has twice as many as City A.", "They have as many as each other."], answer: 1 },
+  { q: "Which sentence uses as…as correctly?", options: ["She runs as fast than him.", "She runs as fast as him.", "She runs more fast as him.", "She runs faster as him."], answer: 1 },
+  { q: "Which multiplier is correct?", options: ["His salary is twice as much as hers.", "His salary is as twice much as hers.", "His salary is much twice as hers.", "His salary is twice more than hers."], answer: 0 },
+  { q: "'This phone isn't ___ expensive ___ that one.'", options: ["as / as", "not / as", "so / than", "more / as"], answer: 0 },
+  { q: "'She's not ___ calm ___ usual.' Today she's angry.", options: ["as / as", "so / as", "more / than", "not / as"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "As…as Comparisons",
+  subtitle: "Equal and unequal comparisons",
+  level: "B1",
+  keyRule: "Equal: as + adj + as | Unequal: not as + adj + as | Multiplier: twice as + adj + as",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose as…as or not as…as",
+      difficulty: "Easy",
+      instruction: "Choose the correct comparison.",
+      questions: [
+        "Tom 180cm, Paul 180cm: Tom is ___ tall ___ Paul.",
+        "My car slow, yours fast: My car is ___ fast ___ yours.",
+        "Both tests easy: This test was ___ hard ___ last.",
+        "She earns £2K, he £3K: She doesn't earn ___ much ___.",
+        "Both cities 1M: City A is ___ big ___ City B.",
+        "Her new flat is smaller: new flat ___ spacious ___ old.",
+        "Film + book both great: film was ___ good ___ book.",
+        "I run 10km/h, she 12: I don't run ___ fast ___ her.",
+        "Both phones £500: this phone ___ expensive ___ that.",
+        "He's less calm today: He's ___ calm ___ usual.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write as old as / not as hot as etc.",
+      difficulty: "Medium",
+      instruction: "Write the comparison phrase.",
+      questions: [
+        "My sister 25, I'm 25: I'm ___ (old) ___ my sister.",
+        "Her phone £300, mine £200: mine isn't ___ (exp.) ___.",
+        "She + he speak Spanish well: She speaks ___ (well) ___.",
+        "This summer 28°C, last 32°C: wasn't ___ (hot) ___.",
+        "Journey 3h both times: took ___ (long) ___ before.",
+        "He 80kg, brother 90kg: He isn't ___ (heavy) ___.",
+        "I play piano as well: I play ___ (well) ___ she does.",
+        "New model £500, old £800: new isn't ___ (exp.) ___.",
+        "Both tests equal: second was ___ (difficult) ___ first.",
+        "We both arrived at 9: I arrived ___ (early) ___ she did.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Fix the mistake",
+      difficulty: "Hard",
+      instruction: "Correct the error in each sentence.",
+      questions: [
+        "She's not as fast than me.",
+        "He earns as twice much as her.",
+        "This film isn't as good than the book.",
+        "She's more tall as her brother.",
+        "I arrived as early than she did.",
+        "That building is twice as tall than this.",
+        "He doesn't earn as much than her.",
+        "My car is as more expensive as yours.",
+        "She plays as well than he does.",
+        "This is not as cold as than before.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Write the multiplier comparison",
+      difficulty: "Harder",
+      instruction: "Write twice/half/three times as…as.",
+      questions: [
+        "His salary £60K, hers £30K: He earns ___ much.",
+        "Building A 100m, B 200m: B is ___ tall as A.",
+        "Journey A 1h, B 3h: B takes ___ long as A.",
+        "She earns €1K, he €500: He earns ___ much as her.",
+        "Car £20K, bike £10K: Car is ___ expensive as bike.",
+        "City A 4M, City B 2M: A has ___ many people.",
+        "Package A 5kg, B 5kg: A is ___ heavy as B.",
+        "Room A 20m², B 20m²: A is ___ big as B.",
+        "She works 8h, he 4h: She works ___ many hours.",
+        "Box 30kg, bag 10kg: Box is ___ heavy as bag.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "as/not as", answers: ["as tall as", "not as fast as", "as difficult as", "as much as", "as big as", "not as spacious as", "as good as", "as fast as", "as expensive as", "not as calm as"] },
+    { exercise: 2, subtitle: "Comparison phrases", answers: ["as old as", "as expensive as", "as well as", "as hot as", "as long as", "as heavy as", "as well as", "as expensive as", "as difficult as", "as early as"] },
+    { exercise: 3, subtitle: "Corrected errors", answers: ["as fast as me", "twice as much as", "as good as", "as tall as", "as early as", "as tall as this", "as much as", "as expensive as", "as well as", "as cold as before"] },
+    { exercise: 4, subtitle: "Multiplier answers", answers: ["twice as much as her", "twice as tall as A", "three times as long as A", "half as much as her", "twice as expensive as the bike", "twice as many people as City B", "as heavy as B", "as big as B", "twice as many hours as he does", "three times as heavy as the bag"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "So / Such", href: "/grammar/b1/so-such", level: "B1", badge: "bg-violet-500", reason: "Another intensifier structure to compare" },
+  { title: "Too / Enough", href: "/grammar/b1/too-enough", level: "B1", badge: "bg-violet-500" },
+  { title: "Modal Verbs: Possibility", href: "/grammar/b1/modal-possibility", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function AsAsComparisonLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function AsAsComparisonLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function AsAsComparisonLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-as-as-comparison" subject="As…as Comparison" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -268,8 +404,22 @@ export default function AsAsComparisonLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-as-as-comparison" subject="As…as Comparison" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

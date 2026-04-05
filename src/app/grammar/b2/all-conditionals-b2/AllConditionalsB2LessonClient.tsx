@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Zero conditional uses which tense?", options: ["Past simple", "Present simple", "Future simple", "Past perfect"], answer: 1 },
+  { q: "First conditional: real or imaginary?", options: ["Imaginary past", "Real future", "Hypothetical present", "General truth"], answer: 1 },
+  { q: "Second conditional if-clause verb form?", options: ["Past perfect", "Present simple", "Past simple / were", "will + verb"], answer: 2 },
+  { q: "Third conditional result clause?", options: ["would + verb", "would have + pp", "had + pp", "will have + pp"], answer: 1 },
+  { q: "Mixed A: past condition → present result uses?", options: ["would have + pp", "would + verb", "had + pp", "will + verb"], answer: 1 },
+  { q: "Mixed B: present condition → past result uses?", options: ["would + verb", "would have + pp", "will have + pp", "had + pp"], answer: 1 },
+  { q: "'If I were rich' is which conditional?", options: ["Zero", "First", "Second", "Third"], answer: 2 },
+  { q: "'If it rains, I will stay in' is?", options: ["Zero", "First", "Second", "Mixed"], answer: 1 },
+  { q: "Which conditional uses Past Perfect in if-clause?", options: ["Zero", "First", "Second", "Third"], answer: 3 },
+  { q: "Zero conditional describes?", options: ["Imaginary future", "General truths/facts", "Past regrets", "Present wishes"], answer: 1 },
+  { q: "'If she hadn't left, she would be here now' is?", options: ["Second", "Third", "Mixed A", "Mixed B"], answer: 2 },
+  { q: "'If he were calmer, he'd have passed' is?", options: ["Third", "Mixed A", "Mixed B", "Second"], answer: 2 },
+  { q: "First conditional if-clause uses?", options: ["Past simple", "Present simple", "Past perfect", "would + verb"], answer: 1 },
+  { q: "'If you heat ice, it melts' = which type?", options: ["First", "Zero", "Second", "Mixed"], answer: 1 },
+  { q: "Which is correct 2nd conditional?", options: ["If I will win", "If I won", "If I had won", "If I win"], answer: 1 },
+  { q: "Which is correct 3rd conditional result?", options: ["would win", "would have won", "had won", "will have won"], answer: 1 },
+  { q: "Second conditional refers to?", options: ["Real future event", "Hypothetical present/future", "Past fact", "General truth"], answer: 1 },
+  { q: "'Were' in 2nd conditional replaces?", options: ["was/were", "only was", "only were", "had been"], answer: 0 },
+  { q: "Mixed A has past condition + which result?", options: ["Past result", "Present result", "Future result", "No result"], answer: 1 },
+  { q: "Which modal is NOT used in conditional results?", options: ["would", "could", "might", "will (3rd)"], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "All Conditionals (0–3 + Mixed)",
+  subtitle: "Zero, first, second, third and mixed conditionals",
+  level: "B2",
+  keyRule: "Match if-clause tense to result clause tense based on time and reality.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the conditional type",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct conditional form.",
+      questions: [
+        "If you heat water, it ___. (zero)",
+        "If it rains, we ___ inside. (1st)",
+        "If I ___ rich, I'd travel. (2nd)",
+        "If they'd left, they ___ it. (3rd)",
+        "Metals ___ when heated.",
+        "If I ___ time, I'd learn. (2nd)",
+        "If she weren't busy, she ___.",
+        "If you ___ now, you'll miss it.",
+        "If I had saved more, I ___ now.",
+        "Plants die if they ___ water.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the verb form",
+      difficulty: "medium" as const,
+      instruction: "Complete with the correct form.",
+      questions: [
+        "If you (mix) ___ red+blue = purple.",
+        "If she (study) ___, she'd pass.",
+        "If he (call) ___, I'll tell you.",
+        "She (not/be) ___ stressed now.",
+        "If hired more staff, (not/miss) ___.",
+        "If he (be) ___ confident, he'd spoke.",
+        "If apple in air, it (turn) ___ brown.",
+        "If I (win) ___ lottery, I'd buy house.",
+        "If they (warn) ___ us, we'd be ready.",
+        "She (speak) ___ French if she'd taken.",
+      ],
+    },
+    {
+      number: 3,
+      title: "All types in context",
+      difficulty: "hard" as const,
+      instruction: "Choose the best option for the context.",
+      questions: [
+        "You ___ sunburnt without sunscreen.",
+        "If I spoke Mandarin, I ___ that deal.",
+        "If alarm hadn't gone, I ___ the meeting.",
+        "Plants die if they ___ enough water.",
+        "If she'd taken medicine, she ___ better.",
+        "I ___ you if I were in that situation.",
+        "If bridge ___ in 1990, lives were saved.",
+        "If you press this button, machine ___.",
+        "She ___ lonely if she'd kept in touch.",
+        "If government doesn't act, situation ___.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full mixed practice",
+      difficulty: "hard" as const,
+      instruction: "Write correct forms of BOTH verbs.",
+      questions: [
+        "If water (reach) 100°C, it (boil) ___.",
+        "If not organised, she (not/forget) ___.",
+        "If I (know) ___, I (tell) ___ you.",
+        "If invested 10 yrs ago, (be) ___ now.",
+        "If (not/break) leg, (play) ___ final.",
+        "If (add) too much salt, it (taste) ___.",
+        "If more savings, I (not/worry) ___ now.",
+        "If (be) confident, (apply) ___ last yr.",
+        "If (not/snow), roads (not/close) ___.",
+        "If he (speak) slowly, I (understand).",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Conditional forms", answers: ["boils", "will stay", "were", "would have met", "expand", "had", "wouldn't have made", "turn off", "would be", "don't get"] },
+    { exercise: 2, subtitle: "Verb forms", answers: ["mix", "studied", "calls", "wouldn't be", "wouldn't have missed", "were", "turns", "won", "had warned", "would speak"] },
+    { exercise: 3, subtitle: "Contextual choice", answers: ["will get", "would have got", "would be missing", "don't get", "would feel", "would forgive", "had been built", "starts", "wouldn't be", "will worsen"] },
+    { exercise: 4, subtitle: "Both verb forms", answers: ["reaches / boils", "weren't / wouldn't have forgotten", "knew / would tell", "had invested / would be", "hadn't broken / would have played", "add / tastes", "had had / wouldn't be worrying", "were / would have applied", "hadn't snowed / wouldn't have closed", "spoke / would understand"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500", reason: "Deep dive into one of the B2 conditionals" },
+  { title: "Mixed Conditionals", href: "/grammar/b2/mixed-conditionals", level: "B2", badge: "bg-orange-500", reason: "Combine past and present conditional time frames" },
+  { title: "Wish / Would", href: "/grammar/b2/wish-would", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function AllConditionalsB2LessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function AllConditionalsB2LessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function AllConditionalsB2LessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-all-conditionals-b2" subject="All Conditionals" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function AllConditionalsB2LessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-all-conditionals-b2" subject="All Conditionals" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

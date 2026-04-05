@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Present participle clause replaces?", options: ["A noun clause", "An active clause (subject doing action)", "A passive clause", "A conditional"], answer: 1 },
+  { q: "Past participle clause replaces?", options: ["An active clause", "A passive or completed action clause", "A future clause", "A question"], answer: 1 },
+  { q: "'Walking to school, I saw a fox' — type?", options: ["Past participle clause", "Present participle clause", "Passive clause", "Relative clause"], answer: 1 },
+  { q: "'Built in 1900, the bridge is old' — type?", options: ["Present participle clause", "Past participle clause", "Active clause", "Modal clause"], answer: 1 },
+  { q: "Participle clause subject must be?", options: ["Different from main clause", "Same as main clause", "The object", "Unspecified"], answer: 1 },
+  { q: "'Having finished the report, she left' — implies?", options: ["She finished after leaving", "She finished before leaving", "She left without finishing", "She was finishing when she left"], answer: 1 },
+  { q: "'Having + past participle' is used for?", options: ["Action at same time", "Action completed before main action", "Action after main action", "Passive voice"], answer: 1 },
+  { q: "Which is a correct participle clause?", options: ["Running to catch the bus, his bag fell", "Running to catch the bus, he dropped his bag", "Running to the bus, the bag dropped", "He running to bus, bag dropped"], answer: 1 },
+  { q: "Dangling participle error occurs when?", options: ["The clause is too long", "The implied subject doesn't match main clause", "The participle is in wrong tense", "The clause is passive"], answer: 1 },
+  { q: "Participle clauses are used to?", options: ["Add extra subjects", "Replace time/reason/result clauses", "Only show contrast", "Change tense"], answer: 1 },
+  { q: "'-ed' participle clause can show?", options: ["Active action", "Reason or passive meaning", "Future action", "Question"], answer: 1 },
+  { q: "'Exhausted after the race, she rested' — why?", options: ["She rested, then got exhausted", "Because she was exhausted", "Despite being exhausted", "While being exhausted"], answer: 1 },
+  { q: "Which is WRONG participle clause?", options: ["Turning left, you'll see the bank", "Having eaten, she went to bed", "Walking in, the room felt cold", "Opening the door, she saw him"], answer: 2 },
+  { q: "'Seeing him there, I waved' = ?", options: ["When I saw him, I waved", "I waved, then saw him", "Despite seeing him, I waved", "If I see him, I wave"], answer: 0 },
+  { q: "Past participle clause often replaces?", options: ["Because/since (active)", "When/if (future)", "Because/since (passive)", "Although (contrast)"], answer: 2 },
+  { q: "'Not knowing the answer, he guessed' — 'not' is placed?", options: ["After the participle", "Before the participle", "At end of clause", "Before the subject"], answer: 1 },
+  { q: "Participle clauses make sentences?", options: ["Longer and complex", "More concise and formal", "More informal", "Identical to originals"], answer: 1 },
+  { q: "Which sentence has correct participle clause?", options: ["Having lost, the trophy was given to us", "Having lost, we gave up the trophy", "Having the trophy, it was given away", "Given the trophy, it was lost"], answer: 1 },
+  { q: "'Broken beyond repair, the car was sold' = ?", options: ["Because it was broken, it was sold", "Although broken, it was sold", "After it was broken, it was sold", "If broken, sell it"], answer: 0 },
+  { q: "Participle clauses are most common in?", options: ["Casual speech", "Written and formal English", "Questions", "Negative sentences"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Participle Clauses",
+  subtitle: "Walking to school... / Built in 1900...",
+  level: "B2",
+  keyRule: "Use -ing (active) or -ed (passive) to replace when/because/after clauses.",
+  exercises: [
+    {
+      number: 1,
+      title: "Present or past participle?",
+      difficulty: "easy" as const,
+      instruction: "Choose the correct participle form.",
+      questions: [
+        "___ to work, she missed the meeting.",
+        "___ in 1850, the castle is beautiful.",
+        "___ the test, he felt relieved.",
+        "___ by the news, she sat down.",
+        "___ all night, she was exhausted.",
+        "___ at the top, we saw the city.",
+        "___ too far, the hike was tiring.",
+        "___ to music, he fell asleep.",
+        "___ in glass, the building reflected.",
+        "___ his wallet, he couldn't pay.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Combine using participle clauses",
+      difficulty: "medium" as const,
+      instruction: "Rewrite using a participle clause.",
+      questions: [
+        "Because she was tired, she went to bed.",
+        "When he arrived, he noticed the damage.",
+        "After she had eaten, she went for a walk.",
+        "Because it was built in 1900, it is old.",
+        "Since I didn't know the answer, I guessed.",
+        "After he had finished, he left the room.",
+        "When they entered, they saw the mess.",
+        "Because she was exhausted, she rested.",
+        "After it had been translated, it was published.",
+        "Since she hadn't studied, she failed.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Dangling participles",
+      difficulty: "hard" as const,
+      instruction: "Identify correct vs. incorrect participle clauses.",
+      questions: [
+        "Running for the bus, my bag fell. (correct?)",
+        "Running for the bus, I dropped my bag.",
+        "Exhausted from work, the sofa was comfy.",
+        "Having eaten, she went for a walk.",
+        "Walking in, the room seemed cold.",
+        "Built in 1920, they still live in the house.",
+        "Opening the letter, she began to cry.",
+        "Not knowing the route, a map was needed.",
+        "Turning right, you'll see the post office.",
+        "Having arrived early, the seats were good.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full participle clause practice",
+      difficulty: "hard" as const,
+      instruction: "Rewrite or choose the best participle clause.",
+      questions: [
+        "She opened the door and saw him there.",
+        "After he had graduated, he moved abroad.",
+        "Because it was damaged, they returned it.",
+        "Not knowing what to say, she left.",
+        "Because she was trained as a doctor, she helped.",
+        "After they had argued, they fell silent.",
+        "When I entered, I noticed a strange smell.",
+        "Since he was injured, he couldn't compete.",
+        "After it had been rejected, the plan was revised.",
+        "Because she hadn't eaten, she felt faint.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Participle forms", answers: ["Walking/Driving/Running", "Built", "Having finished / Finishing", "Shocked/Surprised", "Working", "Standing/Arriving", "Being/Going", "Listening", "Covered/Wrapped", "Having lost / Losing"] },
+    { exercise: 2, subtitle: "Rewritten clauses", answers: ["Being tired, she went to bed", "Arriving, he noticed the damage", "Having eaten, she went for a walk", "Built in 1900, it is old", "Not knowing the answer, I guessed", "Having finished, he left the room", "Entering, they saw the mess", "Exhausted, she rested", "Having been translated, it was published", "Not having studied, she failed"] },
+    { exercise: 3, subtitle: "Correct/Incorrect", answers: ["Incorrect (dangling)", "Correct", "Incorrect (dangling)", "Correct", "Incorrect (dangling)", "Incorrect (dangling)", "Correct", "Incorrect (dangling)", "Correct", "Incorrect (dangling)"] },
+    { exercise: 4, subtitle: "Rewritten sentences", answers: ["Opening the door, she saw him", "Having graduated, he moved abroad", "Damaged, it was returned", "Not knowing what to say, she left", "Trained as a doctor, she helped", "Having argued, they fell silent", "Entering, I noticed a strange smell", "Injured, he couldn't compete", "Having been rejected, the plan was revised", "Not having eaten, she felt faint"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Relative Clauses", href: "/grammar/b2/relative-clauses-advanced", level: "B2", badge: "bg-orange-500", reason: "Participle clauses often replace relative clauses" },
+  { title: "Inversion", href: "/grammar/b2/inversion", level: "B2", badge: "bg-orange-500", reason: "Both are advanced structures used for style and emphasis" },
+  { title: "Cleft Sentences", href: "/grammar/b2/cleft-sentences", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function ParticipleClausesLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ParticipleClausesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ParticipleClausesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-participle-clauses" subject="Participle Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function ParticipleClausesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-participle-clauses" subject="Participle Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

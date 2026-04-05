@@ -5,6 +5,7 @@ import { useProgress } from "@/lib/useProgress";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
@@ -54,6 +55,12 @@ const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "The dog wagged ___ tail.", options: ["his","her","its","our"], answer: 2 },
   { q: "We packed ___ bags.", options: ["my","his","our","their"], answer: 2 },
   { q: "They forgot ___ tickets.", options: ["his","her","our","their"], answer: 3 },
+];
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Subject Pronouns", href: "/grammar/a1/subject-pronouns", img: "/topics/a1/subject-pronouns.jpg", level: "A1", badge: "bg-emerald-500", reason: "Pronouns come first" },
+  { title: "Verb to be (am/is/are)", href: "/grammar/a1/to-be-am-is-are", img: "/topics/a1/to-be-am-is-are.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Present Simple (I/you/we/they)", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 
 export default function PossessiveAdjectivesLessonClient() {
@@ -553,7 +560,7 @@ export default function PossessiveAdjectivesLessonClient() {
       </p>
 
       {/* Layout: left ad/game + center content + right ad/recommendations */}
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">
@@ -810,25 +817,7 @@ export default function PossessiveAdjectivesLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <aside className="sticky top-24 flex flex-col gap-3">
-            <div className="text-xs font-black uppercase tracking-widest text-slate-400">Recommended next</div>
-            {[
-              { title: "Subject Pronouns", href: "/grammar/a1/subject-pronouns", img: "/topics/a1/subject-pronouns.jpg", level: "A1", badge: "bg-emerald-500", reason: "Pronouns come first" },
-              { title: "Verb 'to be'", href: "/grammar/a1/to-be-am-is-are", img: "/topics/a1/to-be-am-is-are.jpg", level: "A1", badge: "bg-emerald-500" },
-              { title: "Present Simple", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
-            ].map((l) => (
-              <a key={l.href} href={l.href} className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 transition hover:border-[#F5DA20] hover:shadow-sm">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                  <img src={l.img} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  <span className={`absolute bottom-1 right-1 rounded-md px-1.5 py-0.5 text-[9px] font-black text-white ${l.badge}`}>{l.level}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="truncate text-sm font-black text-slate-900 group-hover:text-black">{l.title}</div>
-                  {l.reason && <div className="mt-0.5 text-xs text-slate-400">{l.reason}</div>}
-                </div>
-              </a>
-            ))}
-          </aside>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
           <div className="sticky top-24">
             <AdUnit variant="sidebar-dark" />

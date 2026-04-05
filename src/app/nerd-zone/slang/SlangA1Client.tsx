@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -449,7 +450,11 @@ export default function SlangA1Client({ isPro }: { isPro: boolean }) {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-8 xl:grid-cols-[1fr_340px]">
+        <div className="mt-8">
+          <AdUnit variant="inline-light" />
+        </div>
+
+        <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_340px]">
           <div>
             <div className="mb-6 flex items-center gap-3">
               <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-sm" />

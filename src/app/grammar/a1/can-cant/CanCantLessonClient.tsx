@@ -5,6 +5,7 @@ import { useProgress } from "@/lib/useProgress";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
 import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
@@ -54,6 +55,12 @@ const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "I ___ draw animals quite well, especially cats and birds.", options: ["can't","cannot","can","could not"], answer: 2 },
   { q: "We ___ play outside now because it is getting dark.", options: ["can","could","can't","might"], answer: 2 },
   { q: "___ your little sister count to twenty now?", options: ["Can't","Cannot","Could not","Can"], answer: 3 },
+];
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Have / Has Got", href: "/grammar/a1/have-has-got", img: "/topics/a1/have-has-got.jpg", level: "A1", badge: "bg-emerald-500", reason: "Another key modal-like verb" },
+  { title: "Present Simple (I/you/we/they)", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Wh- Questions", href: "/grammar/a1/wh-questions", img: "/topics/a1/wh-questions.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 
 export default function CanCantLessonClient() {
@@ -530,7 +537,7 @@ export default function CanCantLessonClient() {
       </p>
 
       {/* Layout: left sidebar + center content + right sidebar */}
-      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
           <div className="sticky top-24">
@@ -787,25 +794,7 @@ export default function CanCantLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
-              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recommended</div>
-              <div className="space-y-2">
-                <a href="/grammar/a1" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">📚</span>
-                  <div><div className="text-sm font-bold text-slate-900">All A1 Lessons</div><div className="text-xs text-slate-500">Complete the level</div></div>
-                </a>
-                <a href="/grammar/a2" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">🚀</span>
-                  <div><div className="text-sm font-bold text-slate-900">A2 Grammar</div><div className="text-xs text-slate-500">Next level up</div></div>
-                </a>
-                <a href="/tenses/present-simple" className="flex items-center gap-3 rounded-xl p-2 hover:bg-black/5 transition">
-                  <span className="text-lg">⏰</span>
-                  <div><div className="text-sm font-bold text-slate-900">Present Simple</div><div className="text-xs text-slate-500">Essential tense</div></div>
-                </a>
-              </div>
-            </div>
-          </div>
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/a1" allLabel="All A1 topics" />
         ) : (
           <div className="sticky top-24">
             <AdUnit variant="sidebar-light" />

@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Complex Noun Phrases", href: "/grammar/c1/complex-noun-phrases", level: "C1", badge: "bg-sky-600", reason: "Both involve postponing and rearranging sentence elements" },
+  { title: "Fronting & Emphasis", href: "/grammar/c1/fronting-emphasis", level: "C1", badge: "bg-sky-600" },
+  { title: "Nominalisation", href: "/grammar/c1/nominalisation", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Extraposition: 'it' acts as:", options: ["Dummy subject", "Real subject", "Object", "Verb"], answer: 0 },
+  { q: "___ is obvious that she's right.", options: ["It", "That", "This", "There"], answer: 0 },
+  { q: "___ seems that prices are rising.", options: ["It", "There", "This", "That"], answer: 0 },
+  { q: "It is said ___ he is talented.", options: ["that", "of", "which", "what"], answer: 0 },
+  { q: "It's no use ___ about the past.", options: ["worrying", "to worry", "worry", "worried"], answer: 0 },
+  { q: "It takes ___ to master a language.", options: ["time", "it", "that", "this"], answer: 0 },
+  { q: "___ a pity that he missed it.", options: ["It's", "That's", "This is", "There's"], answer: 0 },
+  { q: "It is believed ___ be true.", options: ["to", "that", "being", "of"], answer: 0 },
+  { q: "It is worth ___ the effort.", options: ["making", "to make", "make", "made"], answer: 0 },
+  { q: "Extraposition avoids:", options: ["Heavy subject at start", "Passive voice", "Inversion", "Negation"], answer: 0 },
+  { q: "It remains ___ be seen.", options: ["to", "that", "as", "being"], answer: 0 },
+  { q: "It's no good ___ to him.", options: ["talking", "to talk", "talk", "talked"], answer: 0 },
+  { q: "It transpired ___ funds were missing.", options: ["that", "which", "of", "being"], answer: 0 },
+  { q: "___ clear that she had lied.", options: ["It became", "That became", "She became", "This became"], answer: 0 },
+  { q: "It is alleged ___ he stole funds.", options: ["that", "of", "which", "being"], answer: 0 },
+  { q: "It goes without ___ that...", options: ["saying", "to say", "said", "say"], answer: 0 },
+  { q: "It is thought ___ have escaped.", options: ["to", "that", "of", "as"], answer: 0 },
+  { q: "It turned out ___ he was wrong.", options: ["that", "being", "of", "which"], answer: 0 },
+  { q: "It's important ___ you tell truth.", options: ["that", "of", "for", "to"], answer: 0 },
+  { q: "It stands ___ reason that she knew.", options: ["to", "in", "of", "with"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Extraposition (it + clause)",
+  subtitle: "Dummy it as subject, it-clauses, passive reporting",
+  level: "C1",
+  keyRule: "Extraposition uses 'it' as dummy subject to delay the real clause.",
+  exercises: [
+    {
+      number: 1,
+      title: "It + be + adjective + that/to",
+      difficulty: "Easy",
+      instruction: "Choose the correct extraposition form.",
+      questions: [
+        "___ obvious that she's right.",
+        "___ seems prices are rising.",
+        "___ a pity that he missed it.",
+        "___ important that you attend.",
+        "___ strange that she didn't call.",
+        "___ likely that it will rain.",
+        "___ unclear who was responsible.",
+        "___ hoped the plan would work.",
+        "___ agreed that action is needed.",
+        "___ certain that they will come.",
+      ],
+      hint: "It is / It seems / It's",
+    },
+    {
+      number: 2,
+      title: "It + no use/good/worth",
+      difficulty: "Medium",
+      instruction: "Choose the correct form after it expressions.",
+      questions: [
+        "It's no use ___ about the past.",
+        "It's no good ___ to him.",
+        "It's worth ___ the effort.",
+        "It's not worth ___ about it.",
+        "It goes without ___ that...",
+        "It's no use ___ to change now.",
+        "It takes ___ to master it.",
+        "It stands ___ reason she knew.",
+        "It remains ___ seen.",
+        "It's no good ___ at this stage.",
+      ],
+      hint: "worrying / talking / making / saying",
+    },
+    {
+      number: 3,
+      title: "Passive Reporting with It",
+      difficulty: "Hard",
+      instruction: "Choose the correct passive reporting structure.",
+      questions: [
+        "It is said ___ he is talented.",
+        "It is believed ___ be true.",
+        "It is thought ___ have escaped.",
+        "It is alleged ___ stole the funds.",
+        "It was reported ___ funds missing.",
+        "It is understood ___ deal failed.",
+        "It transpired ___ he was wrong.",
+        "It turned out ___ lied to all.",
+        "It is rumoured ___ resign soon.",
+        "It was claimed ___ he escaped.",
+      ],
+      hint: "that / to / to have",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Extraposition",
+      difficulty: "Very Hard",
+      instruction: "Rewrite beginning with 'It'.",
+      questions: [
+        "That she's right is obvious.",
+        "That prices rise seems likely.",
+        "That he missed it is a pity.",
+        "That the plan failed was clear.",
+        "Talking to him is no use.",
+        "That she lied became clear.",
+        "That he stole is alleged.",
+        "That they agree is important.",
+        "That they escaped is thought.",
+        "Making the effort is worth it.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "It + be + adjective + that/to", answers: ["It is", "It seems that", "It's", "It is", "It is", "It is", "It is", "It was", "It was", "It is"] },
+    { exercise: 2, subtitle: "It + no use/good/worth", answers: ["worrying", "talking", "making", "worrying", "saying", "trying", "time", "to", "to be", "complaining"] },
+    { exercise: 3, subtitle: "Passive Reporting with It", answers: ["that", "to be", "to have", "that he", "that", "that the", "that", "that she had", "that he will", "that"] },
+    { exercise: 4, subtitle: "Rewrite Using Extraposition", answers: ["It is obvious that she's right.", "It seems likely that prices will rise.", "It is a pity that he missed it.", "It became clear that the plan had failed.", "It is no use talking to him.", "It became clear that she had lied.", "It is alleged that he stole.", "It is important that they agree.", "It is thought that they escaped.", "It is worth making the effort."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function ExtrapositionLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function ExtrapositionLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -141,12 +273,19 @@ export default function ExtrapositionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-extraposition" subject="Extraposition" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -261,8 +400,22 @@ export default function ExtrapositionLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-extraposition" subject="Extraposition" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

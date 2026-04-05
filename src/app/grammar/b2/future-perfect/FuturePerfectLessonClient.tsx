@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Future Perfect structure is?", options: ["will be + -ing", "will have + pp", "would have + pp", "will + infinitive"], answer: 1 },
+  { q: "Future Perfect means action is?", options: ["Ongoing at future point", "Completed before future point", "Started in past", "General future truth"], answer: 1 },
+  { q: "'By Friday' signals which tense?", options: ["Future continuous", "Future perfect", "Past perfect", "Present perfect"], answer: 1 },
+  { q: "Which is correct Future Perfect?", options: ["will have finished", "will has finished", "would finished", "have will finished"], answer: 0 },
+  { q: "Future Perfect negative?", options: ["won't have finished", "will not finished", "won't finished", "will have not finished"], answer: 0 },
+  { q: "Future Perfect question?", options: ["Will she have arrived?", "She will have arrived?", "Has she will arrived?", "Will she arrived?"], answer: 0 },
+  { q: "'By the time you arrive, we ___ dinner' uses?", options: ["Future continuous", "Future perfect", "Past perfect", "Present perfect"], answer: 1 },
+  { q: "Duration completed before future point uses?", options: ["Future simple", "Future continuous", "Future perfect", "Present perfect"], answer: 2 },
+  { q: "'He will have been teaching for 10 years' is?", options: ["Future perfect", "Future perf. continuous", "Past perfect", "Future continuous"], answer: 1 },
+  { q: "'By then' is a signal for?", options: ["Past perfect", "Future continuous", "Future perfect", "Present perfect"], answer: 2 },
+  { q: "Future Perfect expresses certainty about?", options: ["A past action", "A completed future action", "An ongoing future action", "A hypothesis"], answer: 1 },
+  { q: "Which sentence uses Future Perfect correctly?", options: ["I will finish by 5pm", "I will have finished by 5pm", "I have finished by 5pm", "I had finished by 5pm"], answer: 1 },
+  { q: "Past participle in Future Perfect is?", options: ["Third form of verb", "Present participle", "-ing form", "Infinitive"], answer: 0 },
+  { q: "The deadline marker 'by' means?", options: ["After a time", "Before or at a time", "Exactly at a time", "During a time"], answer: 1 },
+  { q: "Future Perfect Continuous adds emphasis on?", options: ["Completion", "Duration leading to a point", "General truth", "Certainty"], answer: 1 },
+  { q: "'Before she leaves, he ___ the report' uses?", options: ["will finish", "will have finished", "finishes", "finished"], answer: 1 },
+  { q: "When is Future Perfect NOT used?", options: ["Actions complete before future", "Duration up to future point", "Actions in progress at future point", "Predictions of completion"], answer: 2 },
+  { q: "Which time expression fits Future Perfect?", options: ["at 5pm tomorrow", "by next month", "this time tomorrow", "right now"], answer: 1 },
+  { q: "Future Perfect passive of 'build the bridge'?", options: ["will have been built", "will be built", "would have built", "will have built"], answer: 0 },
+  { q: "'She will have lived here 20 years by June' expresses?", options: ["Ongoing action", "Completed duration", "Past regret", "General habit"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Future Perfect",
+  subtitle: "will have + past participle",
+  level: "B2",
+  keyRule: "will have + pp = action completed BEFORE a specific future point.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct Future Perfect form.",
+      questions: [
+        "By Friday, I ___ the report.",
+        "By the time you arrive, we ___ dinner.",
+        "She ___ English 10 yrs by graduation.",
+        "They ___ the project before the meeting.",
+        "He ___ all his work by 6pm.",
+        "By tomorrow morning, I ___ the book.",
+        "She ___ the exam three times by May.",
+        "They ___ for 5 hours when we join.",
+        "He ___ the report before you read it.",
+        "By the end of the year, we ___.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the Future Perfect",
+      difficulty: "medium" as const,
+      instruction: "Write the correct Future Perfect form.",
+      questions: [
+        "By 5pm (she/finish) the presentation.",
+        "By then (we/eat) already.",
+        "When you arrive, (he/leave) already.",
+        "(they/not/complete) the survey by noon.",
+        "(she/live) here 20 yrs by June.",
+        "By midnight (I/write) 2000 words.",
+        "(he/not/return) before I leave.",
+        "By next week (we/paint) the whole flat.",
+        "She (study) 5 years by the time she grad.",
+        "(they/already/decide) by then.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Future Perfect in context",
+      difficulty: "hard" as const,
+      instruction: "Choose the best tense for the context.",
+      questions: [
+        "She ___ three cups before noon. (drink)",
+        "By Saturday they ___ the album. (record)",
+        "I'll call you when I ___ the task.",
+        "The builders ___ the roof by winter.",
+        "___ he ___ all his lines by Friday?",
+        "She ___ the company for 30 years.",
+        "By the time I arrive, the show ___.",
+        "___ they ___ the budget by then?",
+        "He ___ English for a decade by 2030.",
+        "By the deadline (they/not/send) it.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full Future Perfect practice",
+      difficulty: "hard" as const,
+      instruction: "Write the complete Future Perfect sentence.",
+      questions: [
+        "finish project / by Monday",
+        "she / live here / for 10 years / by June",
+        "they / not / complete / the survey / by noon",
+        "he / read / the whole book / by tonight",
+        "we / travel / 500km / by the time we stop",
+        "she / not / arrive / before the meeting starts",
+        "the team / build / the app / by next quarter",
+        "I / sleep / 8 hours / by 7am",
+        "he / graduate / before she starts uni",
+        "they / win / five awards / by the ceremony",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Future Perfect forms", answers: ["will have finished", "will have eaten", "will have studied", "will have completed", "will have finished", "will have read", "will have taken", "will have been working", "will have submitted", "will have achieved our target"] },
+    { exercise: 2, subtitle: "Written forms", answers: ["she will have finished", "we will have already eaten", "he will have already left", "they won't have completed", "she will have lived", "I will have written", "he won't have returned", "we will have painted", "She will have studied", "they will have already decided"] },
+    { exercise: 3, subtitle: "Best tense choice", answers: ["will have drunk", "will have recorded", "have finished", "will have repaired", "Will / have learnt", "will have worked for", "will have ended", "Will / have approved", "will have studied", "they won't have sent it"] },
+    { exercise: 4, subtitle: "Full sentences", answers: ["I will have finished the project by Monday", "She will have lived here for 10 years by June", "They won't have completed the survey by noon", "He will have read the whole book by tonight", "We will have travelled 500km", "She won't have arrived before the meeting", "The team will have built the app", "I will have slept 8 hours by 7am", "He will have graduated before she starts", "They will have won five awards"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Future Continuous", href: "/grammar/b2/future-continuous", level: "B2", badge: "bg-orange-500", reason: "Future Continuous is the key companion to Future Perfect" },
+  { title: "Past Perfect Continuous", href: "/grammar/b2/past-perfect-continuous", level: "B2", badge: "bg-orange-500", reason: "Perfect continuous aspect across different time frames" },
+  { title: "Advanced Passive", href: "/grammar/b2/passive-advanced", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function FuturePerfectLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function FuturePerfectLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function FuturePerfectLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-future-perfect" subject="Future Perfect" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function FuturePerfectLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-future-perfect" subject="Future Perfect" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

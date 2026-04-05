@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -620,7 +621,11 @@ export default function IrregularVerbsClient({ isPro }: { isPro: boolean }) {
         </div>
 
         {/* ── Exercises + SpeedRound layout ─────────────────────────────── */}
-        <div className="mt-14 grid gap-8 xl:grid-cols-[1fr_340px]">
+        <div className="mt-8">
+          <AdUnit variant="inline-light" />
+        </div>
+
+        <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_340px]">
 
           {/* LEFT: Exercises */}
           <div>

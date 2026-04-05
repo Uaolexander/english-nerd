@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Past Perfect formula:", options: ["was/were + pp", "am/is/are + pp", "had + past participle", "would + pp"], answer: 2 },
+  { q: "'When I arrived, she ___ already left.'", options: ["has", "is", "had", "was"], answer: 2 },
+  { q: "Past Perfect is used for:", options: ["Two actions, the earlier one uses PP", "Future plans", "General facts", "Present states"], answer: 0 },
+  { q: "'He felt tired because he ___ worked all night.'", options: ["has", "have", "is", "had"], answer: 3 },
+  { q: "'I ___ never seen snow before that winter.'", options: ["have", "was", "am", "had"], answer: 3 },
+  { q: "'By the time we arrived, the film ___.'", options: ["started", "has started", "had started", "was starting"], answer: 2 },
+  { q: "Past Perfect negative form:", options: ["didn't have + pp", "hadn't + pp", "wasn't + pp", "haven't + pp"], answer: 1 },
+  { q: "'___ you ___ that film before?' Correct:", options: ["Have/seen", "Had/saw", "Had/seen", "Have/saw"], answer: 2 },
+  { q: "Which uses Past Perfect correctly?", options: ["She had finish her work.", "She had finished her work.", "She has finished her work.", "She finished her work had."], answer: 1 },
+  { q: "'I was late because I ___ missed the bus.'", options: ["has", "have", "am", "had"], answer: 3 },
+  { q: "Key word for Past Perfect:", options: ["tomorrow", "by the time", "right now", "every day"], answer: 1 },
+  { q: "'She ___ never tried sushi before that night.'", options: ["has", "is", "was", "had"], answer: 3 },
+  { q: "Two actions: A then B. Which tense for A?", options: ["Past Simple for A", "Past Perfect for A", "Present Perfect for A", "Future Simple for A"], answer: 1 },
+  { q: "'We arrived but the train ___ left.'", options: ["has", "was", "is", "had"], answer: 3 },
+  { q: "'She ___ already seen the film.' (before we asked)", options: ["has", "is", "was", "had"], answer: 3 },
+  { q: "Past Perfect or Past Simple? 'She wrote the letter, folded it...'", options: ["Past Perfect — sequential actions", "Past Simple — sequential actions", "Depends on context", "Past Perfect — cause and effect"], answer: 1 },
+  { q: "'I knew the answer because I ___ read the chapter.'", options: ["has", "is", "was", "had"], answer: 3 },
+  { q: "'They ___ been married for 20 years when divorced.'", options: ["has", "have", "was", "had"], answer: 3 },
+  { q: "'I ___ just finished when the phone rang.'", options: ["has just", "have just", "had just", "was just"], answer: 2 },
+  { q: "Which is WRONG?", options: ["She had left before I arrived.", "He hadn't eaten all day.", "By 9pm, we had finished.", "I had never been there."], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Past Perfect",
+  subtitle: "had + past participle",
+  level: "B1",
+  keyRule: "Past Perfect = had + past participle. Use for the EARLIER of two past actions.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct Past Perfect",
+      difficulty: "Easy",
+      instruction: "Choose the correct form.",
+      questions: [
+        "When I arrived, she ___ already left.",
+        "He felt tired because he ___ worked all night.",
+        "I ___ never seen snow before that winter.",
+        "By the time we arrived, the film ___.",
+        "She ___ finished homework before dinner.",
+        "They ___ never been to Japan before 2022.",
+        "I felt sick because I ___ eaten too much.",
+        "___ you ___ that film before?",
+        "He ___ met her before the party. (negative)",
+        "By 9pm, we ___ already finished dinner.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the Past Perfect form",
+      difficulty: "Medium",
+      instruction: "Write had + past participle.",
+      questions: [
+        "She (leave) ___ before I arrived.",
+        "He (never/try) ___ sushi before that night.",
+        "By the time we called, they (already/go) ___.",
+        "I (not/eat) ___ all day, so I was starving.",
+        "She felt nervous because she (not/prepare) ___.",
+        "He (live) ___ there 10 years before moving.",
+        "(you/ever/be) ___ to London before 2018?",
+        "I (just/finish) ___ when the phone rang.",
+        "They (never/meet) ___ before the conference.",
+        "She (already/see) ___ the film, so didn't come.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Past Perfect vs Past Simple",
+      difficulty: "Hard",
+      instruction: "Choose the correct tense.",
+      questions: [
+        "When he got home, family ___ to bed.",
+        "She ___ the letter, folded it, put in envelope.",
+        "Exhausted because I ___ slept for two days.",
+        "When police arrived, the thief ___.",
+        "I ___ the film before, so knew what'd happen.",
+        "We arrived at station but train ___.",
+        "He felt embarrassed because he ___ wrong name.",
+        "After she ___ exam, she went to celebrate.",
+        "She ___ home when I called — no answer.",
+        "He ___ never flown before, so was terrified.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Past Perfect or Past Simple?",
+      difficulty: "Harder",
+      instruction: "Write Past Perfect or Past Simple.",
+      questions: [
+        "Late because I (miss) ___ the bus.",
+        "She (study) ___ English 3 years before London.",
+        "By 2020, he (work) ___ there for a decade.",
+        "Meeting (start) ___ by time we arrived.",
+        "I (not/realise) ___ my mistake until she said.",
+        "She (never/drive) ___ manual car before that.",
+        "He (just/sit) ___ down when boss called.",
+        "They (be) ___ married 20 years when divorced.",
+        "Knew answer because I (read) ___ the chapter.",
+        "She (already/leave) ___ when I got there.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Past Perfect forms", answers: ["had", "had", "had", "had started", "had", "had", "had", "Had/seen", "hadn't", "had"] },
+    { exercise: 2, subtitle: "Written forms", answers: ["had left", "had never tried", "had already gone", "hadn't eaten", "hadn't prepared", "had lived", "had you ever been", "had just finished", "had never met", "had already seen"] },
+    { exercise: 3, subtitle: "Correct tenses", answers: ["had gone", "wrote (Past Simple)", "hadn't", "had escaped", "had seen", "had left", "had said", "had finished", "had already left", "had"] },
+    { exercise: 4, subtitle: "PP or Past Simple", answers: ["had missed", "had studied", "had worked", "had started", "hadn't realised", "had never driven", "had just sat", "had been", "had read", "had already left"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500", reason: "Often used together in storytelling" },
+  { title: "Present Perfect Continuous", href: "/grammar/b1/present-perfect-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "Past Passive", href: "/grammar/b1/passive-past", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function PastPerfectLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PastPerfectLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PastPerfectLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-past-perfect" subject="Past Perfect" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PastPerfectLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-past-perfect" subject="Past Perfect" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

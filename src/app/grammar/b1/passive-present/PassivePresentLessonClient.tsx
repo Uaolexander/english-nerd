@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Present Simple Passive formula:", options: ["was/were + pp", "am/is/are + pp", "had + pp", "will + pp"], answer: 1 },
+  { q: "'English ___ spoken in many countries.'", options: ["am", "are", "is", "was"], answer: 2 },
+  { q: "'These cars ___ made in Germany.' (plural)", options: ["is", "am", "was", "are"], answer: 3 },
+  { q: "'I ___ paid at end of month.'", options: ["are", "is", "am", "was"], answer: 2 },
+  { q: "'The letters ___ delivered every morning.'", options: ["is", "am", "was", "are"], answer: 3 },
+  { q: "'The website ___ updated regularly.'", options: ["are", "am", "were", "is"], answer: 3 },
+  { q: "'Rice ___ grown in many Asian countries.'", options: ["am", "are", "were", "is"], answer: 3 },
+  { q: "'Coffee ___ (grow) in Brazil.' Passive form:", options: ["grows", "grew", "is grown", "are grown"], answer: 2 },
+  { q: "'People speak French in Quebec.' → Passive:", options: ["French is spoken.", "French are spoken.", "French was spoken.", "French were spoken."], answer: 0 },
+  { q: "'The data ___ stored on secure server.'", options: ["am", "are", "were", "is"], answer: 3 },
+  { q: "'New employees ___ trained by manager.' (plural)", options: ["is", "am", "was", "are"], answer: 3 },
+  { q: "'Mistakes ___ made sometimes.' Correct:", options: ["is made", "was made", "am made", "are made"], answer: 3 },
+  { q: "When to use 'is' in passive:", options: ["plural subject", "I", "singular subject", "they"], answer: 2 },
+  { q: "'The factory produces 500 cars.' → Passive:", options: ["500 cars is produced.", "500 cars are produced.", "500 cars was produced.", "500 cars were produced."], answer: 1 },
+  { q: "'The dog ___ looked after by my neighbour.'", options: ["looks", "look", "is looked", "are looked"], answer: 2 },
+  { q: "'You ___ not allowed to park here.'", options: ["am", "is", "was", "are"], answer: 3 },
+  { q: "'Tea ___ grown in India and China.' Passive:", options: ["is grown", "are grown", "was grown", "were grown"], answer: 0 },
+  { q: "Active: 'They clean office every night.' → Passive:", options: ["Office is cleaned.", "Office are cleaned.", "Office was cleaned.", "Office were cleaned."], answer: 0 },
+  { q: "'I ___ invite to all company events.' Correct:", options: ["am invited", "is invited", "are invited", "was invited"], answer: 0 },
+  { q: "Which is WRONG?", options: ["Rice is grown in Asia.", "Cars are made in Germany.", "English is spoken widely.", "Letters is delivered daily."], answer: 3 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Present Simple Passive",
+  subtitle: "am / is / are + past participle",
+  level: "B1",
+  keyRule: "Present Passive = am/is/are + past participle. Use 'is' for singular, 'are' for plural, 'am' for I.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose am / is / are",
+      difficulty: "Easy",
+      instruction: "Choose the correct form of 'be'.",
+      questions: [
+        "English ___ spoken in many countries.",
+        "These cars ___ made in Germany.",
+        "I ___ paid at end of month.",
+        "The letters ___ delivered every morning.",
+        "The meeting ___ held every Friday.",
+        "New employees ___ trained by manager.",
+        "The website ___ updated regularly.",
+        "The windows ___ cleaned every week.",
+        "Rice ___ grown in many Asian countries.",
+        "You ___ not allowed to park here.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the passive form",
+      difficulty: "Medium",
+      instruction: "Write am/is/are + past participle.",
+      questions: [
+        "Coffee ___ (grow) in Brazil and Colombia.",
+        "Reports ___ (write) by team every week.",
+        "I ___ (invite) to all company events.",
+        "These phones ___ (sell) all over world.",
+        "The data ___ (store) on secure server.",
+        "New students ___ (welcome) at orientation.",
+        "The film ___ (direct) by famous director.",
+        "Mistakes ___ (make) sometimes — that's normal.",
+        "The bill ___ (pay) by the company.",
+        "Languages ___ (teach) in all schools here.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Active or Present Passive?",
+      difficulty: "Hard",
+      instruction: "Choose active or passive form.",
+      questions: [
+        "This bridge ___ every year by council.",
+        "The manager ___ report every Monday.",
+        "Thousands of emails ___ every day.",
+        "She ___ three languages fluently.",
+        "The new rules ___ to all students.",
+        "My sister ___ yoga every morning.",
+        "Rice ___ in many Asian countries.",
+        "The dog ___ by my neighbour when I travel.",
+        "They ___ a new hospital in city centre.",
+        "Cheese ___ from milk.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Active to Passive",
+      difficulty: "Harder",
+      instruction: "Write passive verb phrase only.",
+      questions: [
+        "People speak French in Quebec. → French ___.",
+        "Someone delivers newspaper daily. → newspaper ___.",
+        "Factory produces 500 cars a day. → 500 cars ___.",
+        "People eat pizza in Italy. → Pizza ___.",
+        "Company employs 200 people. → 200 people ___.",
+        "Someone cleans office every night. → office ___.",
+        "People grow tea in India. → Tea ___.",
+        "They hold festival in July. → festival ___.",
+        "Bank charges a fee. → A fee ___.",
+        "People use this road daily. → This road ___.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "am/is/are", answers: ["is", "are", "am", "are", "is", "are", "is", "are", "is", "are"] },
+    { exercise: 2, subtitle: "Passive forms", answers: ["is grown", "are written", "am invited", "are sold", "is stored", "are welcomed", "is directed", "are made", "is paid", "are taught"] },
+    { exercise: 3, subtitle: "Active/Passive", answers: ["is inspected", "reviews (active)", "are sent", "speaks (active)", "are applied", "does (active)", "is grown", "is looked after", "build (active)", "is made"] },
+    { exercise: 4, subtitle: "Passive phrases", answers: ["is spoken", "is delivered", "are produced", "is eaten", "are employed", "is cleaned", "is grown", "is held", "is charged", "is used"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Past Passive", href: "/grammar/b1/passive-past", level: "B1", badge: "bg-violet-500", reason: "The past counterpart of this tense" },
+  { title: "Present Perfect Continuous", href: "/grammar/b1/present-perfect-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function PassivePresentLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PassivePresentLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PassivePresentLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-passive-present" subject="Present Passive" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PassivePresentLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-passive-present" subject="Present Passive" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import AdUnit from "@/components/AdUnit";
 
 type PenPal = {
   name: string;
@@ -404,6 +405,9 @@ export default function PenPalsClient() {
           </a>
         </div>
 
+      <div className="mt-10">
+        <AdUnit variant="inline-light" />
+      </div>
       </div>
     </main>
   );

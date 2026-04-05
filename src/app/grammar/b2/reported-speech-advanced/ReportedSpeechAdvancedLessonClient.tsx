@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Reported speech: 'I am tired' → ?", options: ["She said she am tired", "She said she was tired", "She said she is tired", "She said she been tired"], answer: 1 },
+  { q: "Tense backshift: present → ?", options: ["Future", "Past", "Present perfect", "No change"], answer: 1 },
+  { q: "'I have finished' → reported is?", options: ["She said she has finished", "She said she had finished", "She said she finished", "She said she would finish"], answer: 1 },
+  { q: "'I will help you' → reported is?", options: ["She said she will help me", "She said she would help me", "She said she helps me", "She said she helped me"], answer: 1 },
+  { q: "'Could you help me?' → reported question?", options: ["She asked could I help her", "She asked if I could help her", "She asked me could help her", "She asked whether help her"], answer: 1 },
+  { q: "Reporting a command: 'Leave!' → ?", options: ["He said to leave", "He told me leave", "He told me to leave", "He said leaving"], answer: 2 },
+  { q: "Reporting a request: 'Please wait' → ?", options: ["He told me to wait", "He asked me to wait", "He said me to wait", "He requested I waited"], answer: 1 },
+  { q: "Which verb reports a refusal?", options: ["asked", "denied", "refused", "wondered"], answer: 2 },
+  { q: "'I didn't do it' → reported denial?", options: ["She said she didn't do it", "She denied having done it", "She denied to do it", "She refused having done it"], answer: 1 },
+  { q: "Reporting a suggestion: 'Why don't we go?' → ?", options: ["She said why don't we go", "She suggested going", "She suggested to go", "She asked to go"], answer: 1 },
+  { q: "Tense backshift: 'was doing' → ?", options: ["had been doing", "was doing", "is doing", "would do"], answer: 0 },
+  { q: "Tense backshift: 'had done' → ?", options: ["has done", "had done (no change)", "did", "would have done"], answer: 1 },
+  { q: "'She told me ___' — what follows?", options: ["to do it (command)", "that she do it", "she does it", "do it"], answer: 0 },
+  { q: "Reporting 'I might go' → ?", options: ["He said he may go", "He said he might go (no change)", "He said he could go", "He said he went"], answer: 1 },
+  { q: "'Where do you live?' → reported question?", options: ["She asked where do I live", "She asked where I lived", "She asked where I live", "She asked where did I live"], answer: 1 },
+  { q: "Reporting a complaint: 'You never listen!' → ?", options: ["She said I always listen", "She complained that I never listened", "She complained I didn't listen never", "She said I never listened always"], answer: 1 },
+  { q: "When does tense NOT shift?", options: ["Always shifts", "When reporting general/still true facts", "When reporting questions", "When using 'told'"], answer: 1 },
+  { q: "Reporting 'Don't touch that' → ?", options: ["She said not touch that", "She told me not to touch that", "She asked not touching that", "She warned don't touch"], answer: 1 },
+  { q: "'Are you coming?' → reported?", options: ["She asked was I coming", "She asked if I was coming", "She asked am I coming", "She asked whether coming"], answer: 1 },
+  { q: "Which verb reports an accusation?", options: ["suggested", "admitted", "accused (someone of)", "denied"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Reported Speech",
+  subtitle: "Backshift, reporting verbs, questions",
+  level: "B2",
+  keyRule: "Shift tenses back; use correct reporting verb + infinitive or gerund.",
+  exercises: [
+    {
+      number: 1,
+      title: "Backshift the tense",
+      difficulty: "easy" as const,
+      instruction: "Report the statement using correct backshift.",
+      questions: [
+        "'I am tired.' She said she ___.",
+        "'I work here.' He said he ___.",
+        "'We have finished.' They said they ___.",
+        "'It will rain.' She said it ___.",
+        "'I was waiting.' He said he ___.",
+        "'I can help.' She said she ___.",
+        "'I didn't sleep.' He said he ___.",
+        "'She may leave.' He said she ___.",
+        "'We are going.' They said they ___.",
+        "'I have been working.' She said she ___.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Report the question",
+      difficulty: "medium" as const,
+      instruction: "Change the direct question to reported speech.",
+      questions: [
+        "'Where do you live?' She asked ___.",
+        "'Are you coming?' He asked ___.",
+        "'Have you eaten?' She wanted to know ___.",
+        "'What time did it start?' He asked ___.",
+        "'Did she call you?' She asked ___.",
+        "'Why are you crying?' He asked ___.",
+        "'Can you drive?' She asked ___.",
+        "'What will you do?' He asked ___.",
+        "'Who broke the window?' She asked ___.",
+        "'How long have you waited?' He asked ___.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Choose the reporting verb",
+      difficulty: "hard" as const,
+      instruction: "Choose the best reporting verb.",
+      questions: [
+        "'I'll do it later.' He ___ to do it later.",
+        "'Don't touch that!' She ___ me not to touch it.",
+        "'I didn't steal it.' He ___ stealing it.",
+        "'Why don't we go for a walk?' She ___ going.",
+        "'I'm sorry I was late.' She ___ being late.",
+        "'You never listen!' She ___ I never listened.",
+        "'Could you open the window?' He ___ me to open it.",
+        "'You lied to me!' She ___ him of lying.",
+        "'I'll definitely be there.' He ___ to be there.",
+        "'Let's start.' She ___ starting.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full reported speech practice",
+      difficulty: "hard" as const,
+      instruction: "Report the sentence fully.",
+      questions: [
+        "'I have never been to Rome.' She said ___.",
+        "'Leave immediately!' He told me ___.",
+        "'Are you free tomorrow?' She asked me ___.",
+        "'I might come to the party.' He said ___.",
+        "'We didn't know the answer.' They said ___.",
+        "'Please don't make noise.' She asked me ___.",
+        "'I was working all night.' He explained ___.",
+        "'Stop complaining!' She told him ___.",
+        "'Have you met her before?' He asked ___.",
+        "'I'll never do that again.' She promised ___.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Backshifted statements", answers: ["was tired", "worked there", "had finished", "would rain", "had been waiting", "could help", "hadn't slept", "might leave", "were going", "had been working"] },
+    { exercise: 2, subtitle: "Reported questions", answers: ["where I lived", "if/whether I was coming", "if/whether I had eaten", "what time it had started", "if/whether she had called me", "why I was crying", "if/whether I could drive", "what I would do", "who had broken the window", "how long I had waited"] },
+    { exercise: 3, subtitle: "Reporting verbs", answers: ["promised", "warned/told", "denied", "suggested", "apologised for", "complained that", "asked/requested", "accused", "promised", "suggested"] },
+    { exercise: 4, subtitle: "Full reported speech", answers: ["she had never been to Rome", "to leave immediately", "if/whether I was free the next day", "he might come to the party", "they hadn't known the answer", "not to make noise", "that he had been working all night", "to stop complaining", "if/whether I had met her before", "never to do that again"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Relative Clauses", href: "/grammar/b2/relative-clauses-advanced", level: "B2", badge: "bg-orange-500", reason: "Complex clause structures build on reported speech" },
+  { title: "Advanced Passive", href: "/grammar/b2/passive-advanced", level: "B2", badge: "bg-orange-500", reason: "Passive voice frequently appears in reported speech" },
+  { title: "Cleft Sentences", href: "/grammar/b2/cleft-sentences", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function ReportedSpeechAdvancedLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ReportedSpeechAdvancedLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ReportedSpeechAdvancedLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-reported-speech-advanced" subject="Advanced Reported Speech" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function ReportedSpeechAdvancedLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-reported-speech-advanced" subject="Advanced Reported Speech" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

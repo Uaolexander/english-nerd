@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'Few' vs 'a few' — difference?", options: ["No difference", "Few = negative (almost none), a few = some", "A few = negative, few = positive", "Both mean zero"], answer: 1 },
+  { q: "'Little' vs 'a little' — difference?", options: ["No difference", "Little = negative (almost none), a little = some", "Both mean many", "A little = negative"], answer: 1 },
+  { q: "'Few' is used with?", options: ["Uncountable nouns", "Countable plural nouns", "Singular nouns", "Adjectives only"], answer: 1 },
+  { q: "'Little' is used with?", options: ["Countable plural nouns", "Uncountable nouns", "Singular countable", "All nouns"], answer: 1 },
+  { q: "'Much' is used in?", options: ["Affirmative with countables", "Negative/questions with uncountables", "Affirmative with countables", "All contexts equally"], answer: 1 },
+  { q: "'Many' is used with?", options: ["Uncountable nouns", "Countable plural nouns", "Singular nouns", "All nouns"], answer: 1 },
+  { q: "'A great deal of' modifies?", options: ["Countable nouns", "Uncountable nouns", "Both equally", "Adjectives only"], answer: 1 },
+  { q: "'A large number of' modifies?", options: ["Uncountable nouns", "Countable plural nouns", "Singular nouns", "All nouns"], answer: 1 },
+  { q: "'Neither of' is used with?", options: ["Three or more items", "Exactly two items", "Uncountable nouns", "Singular nouns only"], answer: 1 },
+  { q: "'None of' is used with?", options: ["Exactly two items", "Three or more items (or all)", "Uncountable only", "Countable only"], answer: 1 },
+  { q: "'Plenty of' can be used with?", options: ["Countable nouns only", "Uncountable nouns only", "Both countable and uncountable", "Negative sentences only"], answer: 2 },
+  { q: "'Each' vs 'every' — key difference?", options: ["No difference", "Each = individual focus, every = collective", "Every = individual, each = collective", "Each is more informal"], answer: 1 },
+  { q: "'Either' means?", options: ["Neither of two", "One or both of two", "All of many", "None of two"], answer: 1 },
+  { q: "'The majority of' is followed by?", options: ["Singular noun only", "Plural or uncountable noun", "Only countable singular", "Only uncountable"], answer: 1 },
+  { q: "'Hardly any' is similar in meaning to?", options: ["A lot of", "Very little/few", "Some", "Several"], answer: 1 },
+  { q: "'A number of' takes which verb?", options: ["Singular verb", "Plural verb", "No verb", "Modal verb only"], answer: 1 },
+  { q: "'The number of' takes which verb?", options: ["Plural verb", "Singular verb", "No verb", "Modal verb"], answer: 1 },
+  { q: "'Both' is used with?", options: ["One item", "Exactly two items", "Three or more", "Uncountable nouns"], answer: 1 },
+  { q: "'Several' means?", options: ["Exactly 2", "More than two but not very many", "All of them", "None of them"], answer: 1 },
+  { q: "'The bulk of' is used with?", options: ["Very small amounts", "The largest part of something", "Individual items", "Negative contexts"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Quantifiers",
+  subtitle: "few/a few, little/a little, much/many, etc.",
+  level: "B2",
+  keyRule: "Match quantifier to noun type: few/many (countable), little/much (uncountable).",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose: few / a few / little / a little",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct quantifier.",
+      questions: [
+        "___ people came, so we cancelled it.",
+        "Can I have ___ sugar in my tea?",
+        "There are ___ tickets left — hurry!",
+        "She had ___ experience in this field.",
+        "___ students passed — the test was hard.",
+        "There's ___ milk left — enough for tea.",
+        "He made ___ mistakes — well done!",
+        "There was ___ noise from the street.",
+        "She has ___ good friends she trusts.",
+        "___ information was provided — not enough.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Choose: much / many / a lot of",
+      difficulty: "medium" as const,
+      instruction: "Pick the correct quantifier for the context.",
+      questions: [
+        "Did you spend ___ money at the market?",
+        "There are ___ options to choose from.",
+        "He doesn't have ___ free time.",
+        "She bought ___ books at the sale.",
+        "How ___ water do you drink daily?",
+        "___ people attended the conference.",
+        "She doesn't have ___ patience.",
+        "There was ___ traffic on the motorway.",
+        "How ___ students are in your class?",
+        "We have ___ work to finish today.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Choose: each / every / both / either / neither",
+      difficulty: "hard" as const,
+      instruction: "Pick the correct quantifier.",
+      questions: [
+        "___ student must submit the assignment.",
+        "___ of my parents are retired.",
+        "___ candidate was interviewed separately.",
+        "___ solution worked — we're stuck.",
+        "I liked ___ films — each one was great.",
+        "___ day brings new challenges.",
+        "___ option has advantages.",
+        "___ of them agreed to help us.",
+        "She visits ___ week without fail.",
+        "___ of us knew the answer.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Formal quantifiers practice",
+      difficulty: "hard" as const,
+      instruction: "Choose the best formal quantifier.",
+      questions: [
+        "___ research has been done on this topic.",
+        "___ candidates applied for the position.",
+        "___ the participants agreed with the findings.",
+        "He showed ___ concern for others' feelings.",
+        "There are ___ reasons to be optimistic.",
+        "___ the data has been collected.",
+        "___ of the students failed the exam.",
+        "___ evidence suggests he is guilty.",
+        "___ their work was completed on time.",
+        "We received ___ responses to the survey.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "few/a few/little/a little", answers: ["Few", "a little", "a few", "little", "Few", "a little", "few", "a little", "a few", "Little"] },
+    { exercise: 2, subtitle: "much/many/a lot of", answers: ["much", "many", "much", "many/a lot of", "much", "A lot of/Many", "much", "a lot of/much", "many", "a lot of"] },
+    { exercise: 3, subtitle: "each/every/both/either/neither", answers: ["Every/Each", "Both", "Each", "Neither", "both", "Every/Each", "Either", "Neither", "every", "None"] },
+    { exercise: 4, subtitle: "Formal quantifiers", answers: ["A great deal of", "A large number of", "The majority of", "little", "a number of", "The bulk of", "None", "A considerable amount of", "The majority of", "a large number of"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Linking Words", href: "/grammar/b2/linking-words", level: "B2", badge: "bg-orange-500", reason: "Quantifiers and linking words both shape the flow of complex sentences" },
+  { title: "Advanced Relative Clauses", href: "/grammar/b2/relative-clauses-advanced", level: "B2", badge: "bg-orange-500", reason: "Relative clauses help qualify quantifier expressions" },
+  { title: "Gerunds & Infinitives", href: "/grammar/b2/gerunds-infinitives", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function QuantifiersAdvancedLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function QuantifiersAdvancedLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function QuantifiersAdvancedLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-quantifiers-advanced" subject="Advanced Quantifiers" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function QuantifiersAdvancedLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-quantifiers-advanced" subject="Advanced Quantifiers" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

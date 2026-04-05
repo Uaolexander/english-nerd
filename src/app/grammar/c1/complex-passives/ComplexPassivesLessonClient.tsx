@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Passive Infinitives", href: "/grammar/c1/passive-infinitives", level: "C1", badge: "bg-sky-600", reason: "Closely related passive constructions at C1 level" },
+  { title: "Reported Speech C1", href: "/grammar/c1/reported-speech-c1", level: "C1", badge: "bg-sky-600" },
+  { title: "Nominalisation", href: "/grammar/c1/nominalisation", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "We need to ___ the boiler ___ .", options: ["have / checked", "have / check", "get / checking", "had / check"], answer: 0 },
+  { q: "She ___ her portrait ___ by artist.", options: ["had / painted", "got / paint", "has / painting", "had / paint"], answer: 0 },
+  { q: "Causative: have + object + ___", options: ["past participle", "bare infinitive", "gerund", "to-infinitive"], answer: 0 },
+  { q: "'get + object + pp' is ___.", options: ["Informal causative", "Formal causative", "Active voice", "Unnatural"], answer: 0 },
+  { q: "He ___ passport ___ stolen.", options: ["had / stolen", "got / steal", "has / stole", "had / steal"], answer: 0 },
+  { q: "In passive: 'make' needs ___.", options: ["to-infinitive", "bare infinitive", "gerund", "past participle"], answer: 0 },
+  { q: "She was seen ___ the building.", options: ["leaving", "leave", "to leave", "left"], answer: 0 },
+  { q: "They were heard ___ in corridor.", options: ["arguing", "to argue", "argue", "argued"], answer: 0 },
+  { q: "She was given ___ to study.", options: ["a scholarship", "with scholarship", "for scholarship", "scholarship for"], answer: 0 },
+  { q: "Two-object passive: which object can become subject?", options: ["Either object", "Only direct", "Only indirect", "Neither"], answer: 0 },
+  { q: "He gets his car ___ every 6 months.", options: ["serviced", "service", "servicing", "to service"], answer: 0 },
+  { q: "She's having a new kitchen ___.", options: ["installed", "install", "installing", "to install"], answer: 0 },
+  { q: "They were told ___ essays in.", options: ["to hand", "hand", "handing", "handed"], answer: 0 },
+  { q: "They were allowed ___ leave.", options: ["to", "not to", "for", "in order"], answer: 0 },
+  { q: "'have something done' meaning:", options: ["Arrange for someone else", "Do it yourself", "Passive voice", "Modal expression"], answer: 0 },
+  { q: "She was seen leaving = she ___.", options: ["Was seen as she left", "Left secretly", "Saw someone leaving", "Refused to leave"], answer: 0 },
+  { q: "He was made ___ report again.", options: ["to rewrite", "rewrite", "rewriting", "rewritten"], answer: 0 },
+  { q: "She was made ___ wait outside.", options: ["to", "for", "into", "about"], answer: 0 },
+  { q: "We're getting the office ___.", options: ["redecorated", "redecorate", "redecorating", "to redecorate"], answer: 0 },
+  { q: "CEO had resignation letter ___.", options: ["drafted", "draft", "drafting", "to draft"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Complex Passives",
+  subtitle: "Causative have/get, two-object passives, make/see/hear",
+  level: "C1",
+  keyRule: "have/get + object + past participle = causative passive.",
+  exercises: [
+    {
+      number: 1,
+      title: "Causative have/get",
+      difficulty: "Easy",
+      instruction: "Choose the correct causative form.",
+      questions: [
+        "Need to ___ boiler ___ soon.",
+        "She ___ portrait ___ by artist.",
+        "I'm going to ___ hair ___ today.",
+        "They ___ house ___ last month.",
+        "You should ___ documents ___.",
+        "He ___ car ___ every 6 months.",
+        "She's having kitchen ___.",
+        "We're ___ the office ___ this week.",
+        "CEO had resignation letter ___.",
+        "He ___ passport ___ stolen. (bad)",
+      ],
+      hint: "have / checked / had / painted / get / cut",
+    },
+    {
+      number: 2,
+      title: "Two-Object & Make/See/Hear",
+      difficulty: "Medium",
+      instruction: "Choose the correct passive form.",
+      questions: [
+        "I was made ___ report again.",
+        "She was seen ___ the building.",
+        "They were heard ___ in corridor.",
+        "Children not allowed ___.",
+        "Students told ___ essays in.",
+        "She was given ___ to study.",
+        "He was awarded ___ prize.",
+        "We were shown ___ to the room.",
+        "She was heard ___ loudly.",
+        "He was noticed ___ away.",
+      ],
+      hint: "to rewrite / leaving / arguing / to leave",
+    },
+    {
+      number: 3,
+      title: "Passive Reporting Structures",
+      difficulty: "Hard",
+      instruction: "Choose the correct passive reporting form.",
+      questions: [
+        "It is said ___ he is talented.",
+        "He is believed ___ be innocent.",
+        "They are known ___ left early.",
+        "It was reported ___ funds missing.",
+        "She is thought ___ be an expert.",
+        "He is alleged ___ commit fraud.",
+        "It is understood ___ talks fail.",
+        "They were expected ___ arrive.",
+        "It is claimed ___ he escaped.",
+        "She is considered ___ best.",
+      ],
+      hint: "that / to / to have / to be",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Complex Passive",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using the structure given.",
+      questions: [
+        "Someone checked the boiler. (have)",
+        "Someone painted portrait. (had)",
+        "They made him rewrite report.",
+        "Someone saw her leave building.",
+        "Someone gave her scholarship.",
+        "They told students hand in.",
+        "Someone stole his passport. (had)",
+        "Someone heard them arguing.",
+        "They showed us to the room.",
+        "Someone drafted the letter. (had)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Causative have/get", answers: ["have / checked", "had / painted", "get / cut", "had / valued", "have / scanned", "gets / serviced", "installed", "getting / redecorated", "drafted", "had / stolen"] },
+    { exercise: 2, subtitle: "Two-Object & Make/See/Hear", answers: ["to rewrite", "leaving", "arguing", "to leave", "to hand", "a scholarship", "a prize", "the way", "singing", "slipping"] },
+    { exercise: 3, subtitle: "Passive Reporting Structures", answers: ["that", "to be", "to have left", "that", "to be", "to have committed", "that", "to arrive", "that", "to be the"] },
+    { exercise: 4, subtitle: "Rewrite Using Complex Passive", answers: ["We had the boiler checked.", "She had her portrait painted.", "He was made to rewrite the report.", "She was seen leaving the building.", "She was given a scholarship.", "Students were told to hand in their essays.", "He had his passport stolen.", "They were heard arguing.", "We were shown to the room.", "He had his resignation letter drafted."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function ComplexPassivesLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function ComplexPassivesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function ComplexPassivesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-complex-passives" subject="Complex Passives" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function ComplexPassivesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-complex-passives" subject="Complex Passives" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

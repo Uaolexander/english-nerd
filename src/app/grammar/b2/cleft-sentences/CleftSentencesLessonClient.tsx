@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "It-cleft structure is?", options: ["What X is...", "It was X who/that...", "X is what...", "That X was..."], answer: 1 },
+  { q: "Wh-cleft structure is?", options: ["It was X that...", "What X does is...", "Where X is...", "That X did..."], answer: 1 },
+  { q: "'It was JOHN who called' is?", options: ["Wh-cleft", "It-cleft", "Pseudo-cleft", "None"], answer: 1 },
+  { q: "'What I need is time' is?", options: ["It-cleft", "Wh-cleft", "Inversion", "Passive"], answer: 1 },
+  { q: "It-cleft uses who for?", options: ["Things", "Places", "People", "Time"], answer: 2 },
+  { q: "It-cleft uses 'that' for?", options: ["Only people", "Things/places/time", "Only verbs", "Only reasons"], answer: 1 },
+  { q: "Wh-cleft emphasises?", options: ["A person", "An action or idea", "Only time", "Only places"], answer: 1 },
+  { q: "'What she did was resign' is?", options: ["It-cleft", "Wh-cleft", "Passive", "Inversion"], answer: 1 },
+  { q: "'It wasn't until she read it...' is?", options: ["Negative it-cleft", "Wh-cleft", "Passive cleft", "Question"], answer: 0 },
+  { q: "Both it-cleft and wh-cleft can?", options: ["Emphasise elements", "Only use past tense", "Only use 'that'", "Avoid emphasis"], answer: 0 },
+  { q: "Which is correct it-cleft?", options: ["It is John that called", "It is John which called", "It is John calling", "It is John he called"], answer: 0 },
+  { q: "Which is correct wh-cleft?", options: ["What I want is to rest", "What I want is rest to", "What do I want is rest", "What I want are rest"], answer: 0 },
+  { q: "Cleft sentences are used to?", options: ["Avoid emphasis", "Add emphasis/focus", "Make passive voice", "Change tense"], answer: 1 },
+  { q: "In 'It was in 1969 that...' what is emphasised?", options: ["The subject", "The time", "The action", "The reason"], answer: 1 },
+  { q: "'What caused the delay was X' — what is X?", options: ["The subject", "The object", "The reason", "The focused element"], answer: 3 },
+  { q: "Negative it-cleft: 'It was NOT the money that...' emphasises?", options: ["The money", "That money is NOT the reason", "Questions", "Passive"], answer: 1 },
+  { q: "Wh-cleft with action: 'What she did was ___?'", options: ["to sleep", "sleeping", "sleep (bare infinitive)", "slept"], answer: 2 },
+  { q: "Which cleft emphasises place best?", options: ["Wh-cleft", "It-cleft", "Both equally", "Neither"], answer: 1 },
+  { q: "'What we lack is X' — this is a?", options: ["It-cleft", "Wh-cleft", "Passive", "Inversion"], answer: 1 },
+  { q: "It-cleft can emphasise all EXCEPT?", options: ["Subject", "Object", "The whole sentence meaning", "Time/place/reason"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Cleft Sentences",
+  subtitle: "It was X who/that... and What X is...",
+  level: "B2",
+  keyRule: "It-cleft: It was X who/that... Wh-cleft: What X does is...",
+  exercises: [
+    {
+      number: 1,
+      title: "It-cleft or wh-cleft?",
+      difficulty: "easy" as const,
+      instruction: "Choose the correct cleft type.",
+      questions: [
+        "JOHN called me. (emphasise subject)",
+        "I need TIME. (emphasise object)",
+        "She left b/c NOISE. (emphasise reason)",
+        "I want you to LISTEN. (emphasise action)",
+        "She forgot to lock door.",
+        "He told HER, not me.",
+        "IN 1969 they landed on moon.",
+        "I find her HONESTY impressive.",
+        "NOISE woke me up.",
+        "She wants to TRAVEL the world.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Complete the cleft sentence",
+      difficulty: "medium" as const,
+      instruction: "Fill in the missing part.",
+      questions: [
+        "It was the director ___ made the decision.",
+        "What surprised me most ___ her reaction.",
+        "It ___ the salary that attracted her.",
+        "What we need ___ a complete overhaul.",
+        "It was ___ Paris that they fell in love.",
+        "What ___ me most was his indifference.",
+        "It was ___ that caused the accident.",
+        "What the company ___ is better comms.",
+        "It ___ until I read it that I understood.",
+        "What she ___ do was call the police.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Clefts in context",
+      difficulty: "hard" as const,
+      instruction: "Choose the most natural cleft sentence.",
+      questions: [
+        "They wanted to COMMUNICATE better.",
+        "The CEO signed the letter — nobody else.",
+        "It wasn't until she apologised it improved.",
+        "The SOLUTION is what we're missing.",
+        "He sent message to HER, not me.",
+        "She finally RESIGNED.",
+        "REPORT changed her mind.",
+        "He makes me feel UNDERSTOOD.",
+        "IN THE LIBRARY they found manuscript.",
+        "We need you to COMMIT.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Write the cleft sentence",
+      difficulty: "hard" as const,
+      instruction: "Rewrite as a cleft sentence (lowercase).",
+      questions: [
+        "John broke the window. (it-cleft — John)",
+        "I need more support. (wh-cleft)",
+        "She solved it by staying calm. (it-cleft)",
+        "They need to update software. (wh-cleft)",
+        "He realised in 2019. (it-cleft — 2019)",
+        "She didn't understand until she read it.",
+        "Budget cuts caused delay. (wh-cleft)",
+        "He wants to be taken seriously. (wh-cleft)",
+        "I first met her in Vienna. (it-cleft)",
+        "Her dedication impressed us. (wh-cleft)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Cleft types", answers: ["It was John who called me", "What I need is time", "It was because of the noise that she left", "What I want is for you to listen", "What she did was forget to lock the door", "It was her that he told", "It was in 1969 that they landed", "What I find most impressive is her honesty", "It was the noise that woke me up", "What she really wants is to travel"] },
+    { exercise: 2, subtitle: "Missing parts", answers: ["who", "was", "was not", "is", "in", "shocked", "his speeding", "lacks", "wasn't", "did"] },
+    { exercise: 3, subtitle: "Natural cleft sentences", answers: ["What they wanted was to communicate better", "It was the CEO who signed the letter", "It was not until she apologised that things improved", "What we are missing is a solution", "It was to her that he sent the message", "What she finally did was resign", "Both are correct", "What I appreciate is that he makes me feel understood", "It was in the library that they found it", "What we need is for you to commit"] },
+    { exercise: 4, subtitle: "Written cleft sentences", answers: ["it was john who broke the window", "what i need is more support", "it was by staying calm that she solved the problem", "what they really need to do is update the software", "it was in 2019 that he realised his mistake", "it wasn't until she read the contract that she understood", "what caused the delay was the budget cuts", "what he wants is to be taken seriously", "it was in vienna that i first met her", "what impressed us the most was her dedication"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Inversion", href: "/grammar/b2/inversion", level: "B2", badge: "bg-orange-500", reason: "Both inversion and cleft sentences are used for emphasis" },
+  { title: "Advanced Relative Clauses", href: "/grammar/b2/relative-clauses-advanced", level: "B2", badge: "bg-orange-500", reason: "Cleft sentences use relative clause structure (It is X that...)" },
+  { title: "Linking Words", href: "/grammar/b2/linking-words", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function CleftSentencesLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function CleftSentencesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function CleftSentencesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-cleft-sentences" subject="Cleft Sentences" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function CleftSentencesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-cleft-sentences" subject="Cleft Sentences" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

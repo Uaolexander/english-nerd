@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Use 'must' for deduction when you are:", options: ["uncertain", "almost certain it's true", "certain it's false", "guessing randomly"], answer: 1 },
+  { q: "Use 'can't' for deduction when you are:", options: ["almost certain it's true", "uncertain", "almost certain it's false", "completely sure"], answer: 2 },
+  { q: "She's been studying 10h. She ___ be exhausted.", options: ["can't", "must", "might not", "should not"], answer: 1 },
+  { q: "He just ate a huge meal. He ___ be hungry.", options: ["must", "can't", "might", "should"], answer: 1 },
+  { q: "The light is on. Someone ___ be at home.", options: ["can't", "might not", "must", "would"], answer: 2 },
+  { q: "She speaks 6 languages. She ___ be a native of all.", options: ["must", "can't", "might", "should"], answer: 1 },
+  { q: "It's July and 35°C. You ___ be cold.", options: ["must", "can't", "might", "could"], answer: 1 },
+  { q: "She earns millions. She ___ be poor.", options: ["must", "can't", "might", "should"], answer: 1 },
+  { q: "'Must' for deduction vs obligation: 'He must be tired' shows:", options: ["obligation", "deduction", "possibility", "request"], answer: 1 },
+  { q: "She's smiling at her phone. She ___ have received good news.", options: ["can't", "must", "might not", "wouldn't"], answer: 1 },
+  { q: "Past deduction (near certain): use", options: ["must + verb", "can't + verb", "must have + past participle", "can't + past participle"], answer: 2 },
+  { q: "Past deduction (impossible): use", options: ["must have + pp", "can't have + pp", "must + verb", "might + verb"], answer: 1 },
+  { q: "He won easily. He ___ trained very hard.", options: ["must be", "must have trained", "can't train", "might train"], answer: 1 },
+  { q: "That ___ be Tom — he's in Brazil this week.", options: ["must", "can't", "might", "should"], answer: 1 },
+  { q: "She's crying. Something ___ upset her.", options: ["must upset", "must have upset", "can't upset", "might not upset"], answer: 1 },
+  { q: "The fridge is empty. Someone ___ all the food.", options: ["must eat", "must have eaten", "can't eat", "might eat"], answer: 1 },
+  { q: "'He looks relaxed. He ___ be on holiday.' (present)", options: ["must have been", "must be", "can't have been", "might not be"], answer: 1 },
+  { q: "The baby ___ be hungry — she's crying again.", options: ["can't", "must", "might not", "wouldn't"], answer: 1 },
+  { q: "She ___ not have received email — no reply yet.", options: ["must", "might", "can't", "should"], answer: 1 },
+  { q: "They've been travelling 20h. They ___ be jet-lagged.", options: ["can't", "might not", "must", "wouldn't"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Modal Verbs for Deduction",
+  subtitle: "must / can't / might",
+  level: "B1",
+  keyRule: "must = almost certain true | can't = almost certain false | might = uncertain",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose must or can't",
+      difficulty: "Easy",
+      instruction: "Choose must or can't for deduction.",
+      questions: [
+        "She studied 10h. She ___ be exhausted.",
+        "He just ate. He ___ be hungry now.",
+        "The light is on. Someone ___ be home.",
+        "She speaks 6 languages. She ___ be native of all.",
+        "He worked all night. He ___ be tired.",
+        "She got 100% on every test. She ___ be smart.",
+        "It's 35°C. You ___ be cold.",
+        "The car is gone. He ___ have left.",
+        "She earns millions. She ___ be poor.",
+        "Travelling 20h. They ___ be jet-lagged.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Choose must, can't or might",
+      difficulty: "Medium",
+      instruction: "Choose the correct modal for certainty level.",
+      questions: [
+        "No answer — they ___ be out. (uncertain)",
+        "Wearing coat in summer: he ___ be cold-sensitive.",
+        "She checks forecast, so it ___ rain. (impossible)",
+        "Music upstairs: neighbours ___ be having party.",
+        "2 days without food: he ___ be starving.",
+        "I'm not sure, but she ___ know the answer.",
+        "He's just a child. He ___ drive a car.",
+        "She's smiling: she ___ have received good news.",
+        "No one knows: he ___ have gone anywhere.",
+        "36h awake: she ___ think straight. (impossible)",
+      ],
+    },
+    {
+      number: 3,
+      title: "Write must / can't / might + verb",
+      difficulty: "Hard",
+      instruction: "Write the deduction phrase.",
+      questions: [
+        "He knows everyone. He ___ (live) here years.",
+        "No sleep in days. She ___ (feel) terrible.",
+        "That ___ (be) Tom — he's in Brazil.",
+        "Passed all exams: He ___ (be) very gifted.",
+        "Not sure: she ___ (leave) already.",
+        "That's impossible! You ___ (be) serious!",
+        "Baby crying: she ___ (be) hungry.",
+        "No reply: he ___ (not/receive) the email.",
+        "Been to 40 countries: she ___ (love) travel.",
+        "Locked + lights off: they ___ (go) out.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Present or Past deduction?",
+      difficulty: "Harder",
+      instruction: "Choose present (must be) or past (must have + pp).",
+      questions: [
+        "She looks pale: She ___ feeling well now.",
+        "He won easily: He ___ trained very hard.",
+        "She's crying: Something ___ upset her.",
+        "Fridge empty: Someone ___ all the food.",
+        "He looks relaxed: He ___ on holiday now.",
+        "She knew every detail: She ___ read the report.",
+        "Unbelievable story: That ___ be true.",
+        "Not at party: She ___ the invitation.",
+        "He's smiling: He ___ good news.",
+        "T-shirt in freezing cold: She ___ be cold.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "must / can't", answers: ["must", "can't", "must", "can't", "must", "must", "can't", "must", "can't", "must"] },
+    { exercise: 2, subtitle: "must/can't/might", answers: ["might", "must", "can't", "must", "must", "might", "can't", "must", "might", "can't"] },
+    { exercise: 3, subtitle: "Deduction phrases", answers: ["must have lived", "must feel", "can't be", "must be", "might have left", "can't be", "must be", "might not have received", "must love", "must have gone"] },
+    { exercise: 4, subtitle: "Present/Past deduction", answers: ["must not be", "must have trained", "must have upset", "must have eaten", "must be", "must have read", "can't be", "can't have received", "must have heard", "must be"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Modal Verbs: Possibility", href: "/grammar/b1/modal-possibility", level: "B1", badge: "bg-violet-500", reason: "Closely related modal verb use" },
+  { title: "Reported Statements", href: "/grammar/b1/reported-statements", level: "B1", badge: "bg-violet-500" },
+  { title: "Defining Relative Clauses", href: "/grammar/b1/relative-clauses-defining", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function ModalDeductionLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ModalDeductionLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ModalDeductionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-modal-deduction" subject="Modal Deduction" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function ModalDeductionLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-modal-deduction" subject="Modal Deduction" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'must have + pp' expresses?", options: ["Obligation in past", "Certainty about past", "Possibility in past", "Regret"], answer: 1 },
+  { q: "'should have + pp' expresses?", options: ["Past certainty", "Past regret/criticism", "Past possibility", "Past permission"], answer: 1 },
+  { q: "'could have + pp' expresses?", options: ["Past obligation", "Past certainty", "Unrealised past ability/possibility", "Past regret"], answer: 2 },
+  { q: "'might have + pp' expresses?", options: ["Certainty about past", "Weak possibility in past", "Obligation in past", "Past regret"], answer: 1 },
+  { q: "'can't have + pp' expresses?", options: ["Weak past possibility", "Certainty it did NOT happen", "Past obligation", "Past regret"], answer: 1 },
+  { q: "'needn't have + pp' means?", options: ["It was necessary", "It was done but wasn't necessary", "It couldn't be done", "It should have been done"], answer: 1 },
+  { q: "'didn't need to' means?", options: ["Did it unnecessarily", "Knew it wasn't necessary so didn't do it", "Had to do it", "Regretted doing it"], answer: 1 },
+  { q: "'He must have forgotten' = ?", options: ["He definitely forgot", "He possibly forgot", "He should have forgotten", "He was able to forget"], answer: 0 },
+  { q: "'She can't have said that' = ?", options: ["She possibly said it", "It's impossible she said it", "She was unable to say it", "She should have said it"], answer: 1 },
+  { q: "'You should have called me' expresses?", options: ["Past permission", "Criticism of past inaction", "Past certainty", "Past ability"], answer: 1 },
+  { q: "'might have' vs 'must have' — key difference?", options: ["No difference", "must = certain, might = possible", "might = certain, must = possible", "Both express obligation"], answer: 1 },
+  { q: "'could have gone' means?", options: ["I went", "I was unable to go", "I had the option but didn't go", "I should go"], answer: 2 },
+  { q: "'They may have left already' expresses?", options: ["Certainty they left", "Possibility they left", "Obligation to leave", "Regret for leaving"], answer: 1 },
+  { q: "Modal perfect formula is?", options: ["modal + have + -ing", "modal + have + pp", "modal + pp", "modal + be + pp"], answer: 1 },
+  { q: "'ought to have' is similar to?", options: ["must have", "might have", "should have", "could have"], answer: 2 },
+  { q: "'He needn't have brought flowers' means?", options: ["He should bring flowers", "He brought them but it wasn't needed", "He forgot to bring flowers", "He was unable to bring flowers"], answer: 1 },
+  { q: "'would have + pp' is used for?", options: ["Present regret", "Past hypothetical (conditional)", "Future plan", "Ongoing past action"], answer: 1 },
+  { q: "'She must be tired' (present) vs 'She must have been tired' (past) — difference?", options: ["No difference", "Time reference: now vs then", "Certainty level differs", "Grammar structure differs"], answer: 1 },
+  { q: "Which is NOT a modal perfect?", options: ["should have done", "could have done", "might have done", "was having done"], answer: 3 },
+  { q: "'I could have helped you' implies?", options: ["I helped you", "I was unable to help", "I had the option but didn't", "I should help you"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Modal Perfect",
+  subtitle: "should have, must have, could have...",
+  level: "B2",
+  keyRule: "modal + have + past participle = deduction or regret about the past.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the modal perfect",
+      difficulty: "easy" as const,
+      instruction: "Pick the best modal perfect for the meaning.",
+      questions: [
+        "He's not here. He ___ left. (certainty)",
+        "She ___ warned us. (regret/criticism)",
+        "They ___ taken a shortcut. (possibility)",
+        "It ___ been him — he was abroad. (impossibility)",
+        "You ___ called — I was worried.",
+        "She ___ passed — she studied all night.",
+        "They ___ won but they gave up.",
+        "He ___ arrived yet — he just left.",
+        "I ___ helped you if you'd asked.",
+        "She ___ lost the key — she's looking.",
+      ],
+    },
+    {
+      number: 2,
+      title: "needn't have vs didn't need to",
+      difficulty: "medium" as const,
+      instruction: "Choose the correct form.",
+      questions: [
+        "I brought an umbrella but it didn't rain. I ___ it.",
+        "She knew the café was free so she ___ money.",
+        "He ___ dressed up — it was a casual event.",
+        "We ___ hurry — the train was delayed.",
+        "They ___ bring food — we had plenty.",
+        "She checked the map but ___ to — she knew the way.",
+        "He ___ stayed — the meeting was cancelled.",
+        "I knew she'd be late, so I ___ rush.",
+        "They ___ worried — everything was fine.",
+        "She ___ told him — he already knew.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Deduction and possibility",
+      difficulty: "hard" as const,
+      instruction: "Choose: must have / can't have / might have.",
+      questions: [
+        "No one answered. They ___ gone out.",
+        "She got 100%. She ___ studied hard!",
+        "His car is here. He ___ left already.",
+        "The window is broken. Someone ___ thrown something.",
+        "She's smiling. She ___ got good news.",
+        "It ___ been Mark — he was on holiday.",
+        "The cake is gone. The children ___ eaten it.",
+        "He looks pale. He ___ slept well.",
+        "The shop is dark. It ___ closed early.",
+        "She ___ heard about it — she's acting normally.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full modal perfect practice",
+      difficulty: "hard" as const,
+      instruction: "Write the correct modal perfect form.",
+      questions: [
+        "He was late. He ___ missed the bus.",
+        "You ___ told me sooner! (regret/criticism)",
+        "They ___ taken the wrong road. (possibility)",
+        "She ___ done it — she was with me all day.",
+        "I ___ helped but I didn't know.",
+        "He looks exhausted. He ___ worked all night.",
+        "She ___ come — the door was open.",
+        "We ___ booked earlier — it's full.",
+        "You ___ worried — it was nothing serious.",
+        "They ___ prepared better for the exam.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Modal perfect choice", answers: ["must have", "should have", "might have / could have", "can't have", "should have", "must have", "could have", "can't have", "could have", "must have"] },
+    { exercise: 2, subtitle: "needn't have vs didn't need to", answers: ["needn't have brought", "didn't need to bring", "needn't have dressed up", "didn't need to hurry", "needn't have brought", "didn't need to check", "needn't have stayed", "didn't need to rush", "needn't have worried", "needn't have told"] },
+    { exercise: 3, subtitle: "Deduction modals", answers: ["might have / could have", "must have", "can't have", "must have", "must have", "can't have", "must have", "can't have", "must have", "can't have"] },
+    { exercise: 4, subtitle: "Written modal perfects", answers: ["must have missed", "should have told", "might have / could have taken", "can't have done it", "could have helped", "must have worked", "could have come", "should have booked", "needn't have worried", "should have prepared"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Wish / Would", href: "/grammar/b2/wish-would", level: "B2", badge: "bg-orange-500", reason: "Both use modal-like structures to express hypothetical past" },
+  { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500", reason: "Third conditional and modal perfect share the same past form" },
+  { title: "Gerunds & Infinitives", href: "/grammar/b2/gerunds-infinitives", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function ModalPerfectLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function ModalPerfectLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function ModalPerfectLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-modal-perfect" subject="Modal Perfect" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function ModalPerfectLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-modal-perfect" subject="Modal Perfect" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

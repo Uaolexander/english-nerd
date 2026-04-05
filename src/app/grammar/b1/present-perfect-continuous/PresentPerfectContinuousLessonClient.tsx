@@ -3,6 +3,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +18,129 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Present Perfect Continuous formula:", options: ["had + been + -ing", "have/has been + -ing", "am/is/are + -ing", "was/were + -ing"], answer: 1 },
+  { q: "'She ___ all morning.' (looks exhausted)", options: ["worked", "is working", "has been working", "was working"], answer: 2 },
+  { q: "'I ___ here for two hours!' (still waiting)", options: ["waited", "am waiting", "have been waiting", "had waited"], answer: 2 },
+  { q: "PPC is used for:", options: ["Completed actions with a count", "Ongoing actions up to now", "General facts", "Single past events"], answer: 1 },
+  { q: "'How long ___ you ___ English?' Correct:", options: ["did/learn", "have/been learning", "are/learning", "had/learned"], answer: 1 },
+  { q: "Negative PPC form:", options: ["haven't been + -ing", "didn't been + -ing", "wasn't been + -ing", "hadn't been + -ing"], answer: 0 },
+  { q: "'She has been crying.' We know because:", options: ["She told us.", "Her eyes are red.", "She is asleep.", "She is laughing."], answer: 1 },
+  { q: "PPC focuses on:", options: ["The completed result", "The duration/activity itself", "Future plans", "General habits"], answer: 1 },
+  { q: "'I ___ three books this month.' (count) Use:", options: ["have been reading", "have read", "was reading", "had read"], answer: 1 },
+  { q: "'She ___ here for 10 years.' (still works there)", options: ["has worked", "is working", "was working", "has been working"], answer: 3 },
+  { q: "Which suggests a visible result?", options: ["I worked all day.", "I have been working all day.", "I was working all day.", "I had worked all day."], answer: 1 },
+  { q: "'It ___ all week — the garden is flooded.'", options: ["rained", "rains", "has been raining", "had rained"], answer: 2 },
+  { q: "'She ___ all afternoon — she's covered in paint.'", options: ["has painted", "painted", "has been painting", "is painting"], answer: 2 },
+  { q: "'She ___ three rooms so far.' (count) Use:", options: ["has been painting", "has painted", "was painting", "painted"], answer: 1 },
+  { q: "Which is more natural for duration?", options: ["I've worked here for 5 years.", "I've been working here for 5 years.", "I worked here for 5 years.", "I work here for 5 years."], answer: 1 },
+  { q: "'Have you been running?' We can see:", options: ["She is tired.", "You look hot and sweaty.", "He is sleeping.", "They are eating."], answer: 1 },
+  { q: "'I ___ all morning!' (repeated, no answer)", options: ["tried calling", "was trying to call", "had tried calling", "have been trying to call"], answer: 3 },
+  { q: "'It ___ — the roads are icy.' (recent)", options: ["has snowed", "snowed", "has been snowing", "was snowing"], answer: 2 },
+  { q: "PPC vs PPS: 'He has lost his keys.' Focuses on:", options: ["The activity of losing", "The present result (missing keys)", "How long he was looking", "When he lost them"], answer: 1 },
+  { q: "Which is WRONG?", options: ["She has been working all day.", "We have been waiting for hours.", "He has been finish the report.", "It has been raining since morning."], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Present Perfect Continuous",
+  subtitle: "have/has been + -ing",
+  level: "B1",
+  keyRule: "PPC = have/has been + -ing. Use for ongoing activities up to now, especially with visible results.",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct PPC form",
+      difficulty: "Easy",
+      instruction: "Choose the correct PPC form.",
+      questions: [
+        "She ___ all morning and looks exhausted.",
+        "I ___ here for two hours — where were you?",
+        "They ___ since 9am — they need a break.",
+        "He looks tired — he ___ all night.",
+        "How long ___ you ___ English?",
+        "We ___ about this for weeks.",
+        "She ___ — her eyes are red.",
+        "I ___ well lately — maybe getting sick.",
+        "It ___ all week — garden is flooded.",
+        "___ he ___ long? His coffee is cold.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the PPC form",
+      difficulty: "Medium",
+      instruction: "Write have/has been + -ing.",
+      questions: [
+        "She (work) ___ on this project for months.",
+        "I (wait) ___ for you for over an hour!",
+        "He (not/sleep) ___ well lately.",
+        "They (argue) ___ all evening.",
+        "How long (you/study) ___ English?",
+        "It (rain) ___ since yesterday morning.",
+        "She (learn) ___ to drive — lesson this morning.",
+        "I (think) ___ about your offer all week.",
+        "We (look) ___ for a flat for months.",
+        "(he/exercise) ___ recently? Looks great.",
+      ],
+    },
+    {
+      number: 3,
+      title: "PPC vs Present Perfect Simple",
+      difficulty: "Hard",
+      instruction: "Choose: activity focus (PPC) or result/count (PPS).",
+      questions: [
+        "I ___ this book — it's brilliant! (finished)",
+        "I ___ this book all week — not done yet.",
+        "She ___ all afternoon — covered in paint.",
+        "She ___ three rooms so far. (count)",
+        "They ___ about problem — no solution yet.",
+        "I ___ my keys! Has anyone seen them?",
+        "He ___ here for 10 years. (still works there)",
+        "You look hot — ___ you ___? (recent activity)",
+        "We ___ three meetings this week. (count)",
+        "I ___ all day — I need a break. (activity)",
+      ],
+    },
+    {
+      number: 4,
+      title: "Write PPC or PPS",
+      difficulty: "Harder",
+      instruction: "Write PPC or Present Perfect Simple.",
+      questions: [
+        "Kids (play) ___ outside — look how dirty!",
+        "She (feel) ___ unwell since Monday.",
+        "I (try) ___ to call you all morning!",
+        "How long (you/work) ___ here?",
+        "He (not/eat) ___ properly — lost weight.",
+        "I (read) ___ four books this month! (count)",
+        "They (renovate) ___ kitchen — not finished.",
+        "She (run) ___ every day this week.",
+        "It (snow) ___ — the roads are icy.",
+        "I (already/finish) ___ the report — send it.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "PPC forms", answers: ["has been working", "have been waiting", "have been studying", "has been driving", "have/been learning", "have been talking", "has been crying", "haven't been feeling", "has been raining", "Has/been waiting"] },
+    { exercise: 2, subtitle: "Written forms", answers: ["has been working", "have been waiting", "hasn't been sleeping", "have been arguing", "have you been studying", "has been raining", "has been learning", "have been thinking", "have been looking", "has he been exercising"] },
+    { exercise: 3, subtitle: "PPC or PPS", answers: ["have read (PPS)", "have been reading (PPC)", "has been painting (PPC)", "has painted (PPS)", "have been talking (PPC)", "have lost (PPS)", "has been working (PPC)", "Have/been running (PPC)", "have had (PPS)", "have been working (PPC)"] },
+    { exercise: 4, subtitle: "PPC or PPS", answers: ["have been playing", "has been feeling", "have been trying", "have you been working", "hasn't been eating", "have read", "have been renovating", "has been running", "has been snowing", "have already finished"] },
+  ],
+};
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Past Perfect", href: "/grammar/b1/past-perfect", level: "B1", badge: "bg-violet-500", reason: "Both focus on completed actions with present relevance" },
+  { title: "Past Continuous", href: "/grammar/b1/past-continuous", level: "B1", badge: "bg-violet-500" },
+  { title: "Present Passive", href: "/grammar/b1/passive-present", level: "B1", badge: "bg-violet-500" },
+];
+
 export default function PresentPerfectContinuousLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function PresentPerfectContinuousLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function PresentPerfectContinuousLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b1-present-perfect-continuous" subject="Present Perfect Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -270,8 +406,22 @@ export default function PresentPerfectContinuousLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b1" allLabel="All B1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b1-present-perfect-continuous" subject="Present Perfect Continuous" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B1 topics</a>

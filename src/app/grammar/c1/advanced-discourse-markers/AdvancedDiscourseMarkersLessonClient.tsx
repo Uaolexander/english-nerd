@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Concession & Contrast", href: "/grammar/c1/concession-contrast", level: "C1", badge: "bg-sky-600", reason: "Both involve linking ideas cohesively at C1 level" },
+  { title: "Hedging Language", href: "/grammar/c1/hedging-language", level: "C1", badge: "bg-sky-600" },
+  { title: "Ellipsis & Substitution", href: "/grammar/c1/ellipsis-substitution", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Which marker means 'as a result'?", options: ["Consequently", "Furthermore", "Nevertheless", "Admittedly"], answer: 0 },
+  { q: "Which marker ADDS a point of equal weight?", options: ["Furthermore", "However", "In contrast", "Albeit"], answer: 0 },
+  { q: "Which marker INTRODUCES an example?", options: ["For instance", "Therefore", "On the contrary", "Hence"], answer: 0 },
+  { q: "'Hence' expresses what relationship?", options: ["Result/reason", "Contrast", "Addition", "Concession"], answer: 0 },
+  { q: "Which marker REFORMULATES a point?", options: ["In other words", "Moreover", "Given", "Consequently"], answer: 0 },
+  { q: "'Albeit' is best described as:", options: ["Formal 'although'", "Addition marker", "Result marker", "Structuring marker"], answer: 0 },
+  { q: "'Admittedly' is used to:", options: ["Concede before contrasting", "Add a new point", "Summarise", "Introduce examples"], answer: 0 },
+  { q: "Which phrase OPENS a topic formally?", options: ["With regard to", "What is more", "In conclusion", "Namely"], answer: 0 },
+  { q: "'Namely' is used to:", options: ["Specify items mentioned", "Contrast two ideas", "Show a result", "Summarise"], answer: 0 },
+  { q: "Which marker CLOSES/SUMMARISES formally?", options: ["In conclusion", "Furthermore", "In other words", "Albeit"], answer: 0 },
+  { q: "'That said' introduces:", options: ["A contrasting point", "An example", "A result", "A definition"], answer: 0 },
+  { q: "'Above all' is used to:", options: ["Emphasise key point", "Add more info", "Show contrast", "Reformulate"], answer: 0 },
+  { q: "Which is a SEQUENCING marker?", options: ["Subsequently", "Nonetheless", "Namely", "Albeit"], answer: 0 },
+  { q: "'On the whole' signals:", options: ["Overall judgement", "Cause and effect", "Specific example", "Contrast"], answer: 0 },
+  { q: "'Given' introduces:", options: ["Background context", "A conclusion", "An addition", "A contrast"], answer: 0 },
+  { q: "Which two markers both mean 'despite this'?", options: ["Even so / Nonetheless", "Hence / Thus", "Namely / That is", "Turning to / Regarding"], answer: 0 },
+  { q: "'It should be noted' is used to:", options: ["Draw attention formally", "Introduce result", "Summarise", "Concede"], answer: 0 },
+  { q: "'What is more' implies the added point is:", options: ["Even more significant", "Contrasting", "A result", "An example"], answer: 0 },
+  { q: "Which marker means 'in the same way'?", options: ["Similarly", "Consequently", "Admittedly", "Hence"], answer: 0 },
+  { q: "'In the first instance' means:", options: ["As a first step", "For example", "In conclusion", "As a result"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Discourse Markers",
+  subtitle: "Markers for result, addition, structuring, reformulation, emphasis",
+  level: "C1",
+  keyRule: "Discourse markers organise formal writing by linking ideas logically.",
+  exercises: [
+    {
+      number: 1,
+      title: "Result & Addition Markers",
+      difficulty: "Easy",
+      instruction: "Choose the correct discourse marker.",
+      questions: [
+        "Demand fell. ___, costs rose. (result)",
+        "It was late. ___, it was cold.",
+        "Many failed. ___, John succeeded.",
+        "Costs rose. ___, output fell.",
+        "She won. ___, she set a record.",
+        "Data shows risk. ___, act now.",
+        "It rained. ___, they cancelled.",
+        "Slow progress. ___, poor morale.",
+        "Sales grew. ___, profits rose.",
+        "Plan failed. ___, find a new one.",
+      ],
+      hint: "Consequently / Furthermore / However",
+    },
+    {
+      number: 2,
+      title: "Structuring Markers",
+      difficulty: "Medium",
+      instruction: "Fill in the structuring marker.",
+      questions: [
+        "___ costs, the budget is tight.",
+        "___, establish the scope.",
+        "___ approved, then audited.",
+        "___, goals were not met.",
+        "___ funding, two options exist.",
+        "Good points. ___, weaknesses too.",
+        "___, evidence shows reform needed.",
+        "___ cost, option A wins.",
+        "___ context, result is expected.",
+        "Long study. ___, be cautious.",
+      ],
+      hint: "With regard to / In conclusion / That said",
+    },
+    {
+      number: 3,
+      title: "Reformulation & Emphasis",
+      difficulty: "Hard",
+      instruction: "Choose the best emphasis marker.",
+      questions: [
+        "Insignificant. ___, no firm conclusion.",
+        "Issues arise, ___ data privacy.",
+        "___ methodology has limits.",
+        "Flawed — ___, a false assumption.",
+        "Effective; ___, cost-efficient too.",
+        "___, consequences may be severe.",
+        "Approved, ___ after debate.",
+        "Broadly good. ___, failed in cities.",
+        "Risks noted, ___ cybersecurity.",
+        "___, approach has merit. But…",
+      ],
+      hint: "In other words / Above all / Admittedly",
+    },
+    {
+      number: 4,
+      title: "Write the Missing Marker",
+      difficulty: "Very Hard",
+      instruction: "Write one discourse marker per gap.",
+      questions: [
+        "Costs up 30%. ___, scaled back.",
+        "Faster. ___, far more reliable.",
+        "Complex. ___, many stakeholders.",
+        "Affected: ___ HR and Finance.",
+        "___ its flaws, good proposals.",
+        "___ economic benefits, costs too.",
+        "Positive, ___ far from conclusive.",
+        "Has merit. ___, overlooks issues.",
+        "___ evidence, not confirmed yet.",
+        "___, benefits outweigh the costs.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Result & Addition", answers: ["Consequently", "Furthermore", "However", "As a result", "What is more", "Hence", "As a result", "Moreover", "In addition", "Therefore"] },
+    { exercise: 2, subtitle: "Structuring Markers", answers: ["In terms of", "In the first instance", "Initially / subsequently", "In conclusion", "Turning to", "That said", "On the whole", "In terms of", "In light of", "Even so"] },
+    { exercise: 3, subtitle: "Reformulation & Emphasis", answers: ["In other words", "in particular", "It should be noted", "that is to say", "what is more", "Above all", "albeit", "That said", "notably", "Admittedly"] },
+    { exercise: 4, subtitle: "Write the Missing Marker", answers: ["consequently", "what is more", "that is to say", "namely", "for all", "with regard to", "albeit", "that said", "given", "on the whole"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function AdvancedDiscourseMarkersLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function AdvancedDiscourseMarkersLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function AdvancedDiscourseMarkersLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-advanced-discourse-markers" subject="Advanced Discourse Markers" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function AdvancedDiscourseMarkersLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-advanced-discourse-markers" subject="Advanced Discourse Markers" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

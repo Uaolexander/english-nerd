@@ -209,7 +209,17 @@ export default function VocabularyTestClient() {
   const { save } = useProgress();
   const isPro = useIsPro();
   useEffect(() => {
-    if (finished) save(undefined, Math.round((selectedCount / totalWords) * 100), totalWords);
+    if (finished) {
+      const allWords = steps.flatMap((s) => s.words);
+      const answerData = allWords.map((w, i) => ({
+        questionIndex: i,
+        questionText: w.word,
+        userAnswer: selected[w.id] ? "known" : "unknown",
+        correctAnswer: w.band,
+        isCorrect: selected[w.id] ?? false,
+      }));
+      save(undefined, Math.round((selectedCount / totalWords) * 100), totalWords, answerData);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 

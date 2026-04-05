@@ -3,6 +3,131 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Advanced Relative Clauses", href: "/grammar/c1/advanced-relative-clauses", level: "C1", badge: "bg-sky-600", reason: "Both extend clause complexity and embedding" },
+  { title: "Complex Noun Phrases", href: "/grammar/c1/complex-noun-phrases", level: "C1", badge: "bg-sky-600" },
+  { title: "Nominalisation", href: "/grammar/c1/nominalisation", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "___ the report, she submitted it.", options: ["Having written", "Writing", "Being written", "Written"], answer: 0 },
+  { q: "___ of wrongdoing, he returned.", options: ["Having been cleared", "Clearing", "Having cleared", "Cleared"], answer: 0 },
+  { q: "Having + pp shows:", options: ["Prior completed action", "Simultaneous action", "Passive action", "Future action"], answer: 0 },
+  { q: "Having been + pp shows:", options: ["Passive + prior action", "Active prior action", "Ongoing action", "Future plan"], answer: 0 },
+  { q: "___ twice, he gave up applying.", options: ["Having been rejected", "Being rejected", "Having rejected", "Rejecting"], answer: 0 },
+  { q: "Absolute construction has:", options: ["Its own subject", "No subject", "Main clause subject", "Implied subject"], answer: 0 },
+  { q: "She stood, ___ crossed.", options: ["with her arms", "her arms were", "having her arms", "arms being"], answer: 0 },
+  { q: "'With + obj + pp' describes:", options: ["Accompanying circumstance", "Cause", "Prior action", "Result"], answer: 0 },
+  { q: "___ complete, talks resumed.", options: ["The dispute having been resolved", "Having resolved", "Being resolved", "Resolved"], answer: 0 },
+  { q: "He sat, ___ buried in phone.", options: ["with his eyes", "eyes were", "having eyes", "his eyes being"], answer: 0 },
+  { q: "___ to English since childhood...", options: ["Having been taught", "Having taught", "Being taught", "Taught"], answer: 0 },
+  { q: "Perfect continuous participle:", options: ["Having been working", "Having worked", "Being worked", "Working"], answer: 0 },
+  { q: "___ with a choice, she thought.", options: ["Having been faced", "Facing", "Having faced", "Being faced"], answer: 0 },
+  { q: "Dangling participle error occurs when:", options: ["Subject doesn't match", "Tense is wrong", "Verb is passive", "Clause is absolute"], answer: 0 },
+  { q: "The work ___, we went home.", options: ["done", "being done", "having done", "to do"], answer: 0 },
+  { q: "Entering the room, ___ smiled.", options: ["she", "her", "having she", "being she"], answer: 0 },
+  { q: "___ the data, findings published.", options: ["Having analysed", "Analysing", "Being analysed", "Analyse"], answer: 0 },
+  { q: "___ all night, team was tired.", options: ["Having been working", "Having worked", "Working", "Being worked"], answer: 0 },
+  { q: "With + obj + present participle shows:", options: ["Ongoing circumstance", "Completed action", "Passive prior", "Future plan"], answer: 0 },
+  { q: "'The assessment being complete' is:", options: ["Absolute construction", "Dangling participle", "With-clause", "Passive clause"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Advanced Participle Clauses",
+  subtitle: "Perfect, passive, absolute, and with-clauses",
+  level: "C1",
+  keyRule: "Having + pp = prior action; with + obj + pp = circumstance.",
+  exercises: [
+    {
+      number: 1,
+      title: "Perfect & Passive Participles",
+      difficulty: "Easy",
+      instruction: "Choose the correct participle form.",
+      questions: [
+        "___ the report, she submitted it.",
+        "___ of wrongdoing, he returned.",
+        "___ on the island three years...",
+        "___ twice, he gave up applying.",
+        "___ the opportunity, she seized it.",
+        "___ his mistake, he apologised.",
+        "___ to English since childhood...",
+        "___ all night, rescuers tired.",
+        "___ the data, they published.",
+        "___ with a choice, she thought.",
+      ],
+      hint: "Having written / Having been cleared",
+    },
+    {
+      number: 2,
+      title: "Absolute & With-Clauses",
+      difficulty: "Medium",
+      instruction: "Choose the correct construction.",
+      questions: [
+        "___ resolved, talks could resume.",
+        "She stood, ___ crossed.",
+        "___ complete, moved to next phase.",
+        "He sat, ___ buried in phone.",
+        "___ done, nothing left to discuss.",
+        "She entered, ___ trembling.",
+        "___ sold, shares dropped.",
+        "He spoke, ___ folded.",
+        "___ approved, work began.",
+        "She left, ___ raining outside.",
+      ],
+      hint: "The dispute having been / with her arms",
+    },
+    {
+      number: 3,
+      title: "Dangling & Mixed Participles",
+      difficulty: "Hard",
+      instruction: "Choose the grammatically correct sentence.",
+      questions: [
+        "Correct use of perfect participle?",
+        "Correct absolute construction?",
+        "Correct 'with' clause use?",
+        "Correct passive participle?",
+        "Correct perfect continuous?",
+        "No dangling participle?",
+        "Correct past participle phrase?",
+        "Correct absolute with 'being'?",
+        "Correct reduced relative?",
+        "Correct concessive participle?",
+      ],
+      hint: "Subject must match the participle",
+    },
+    {
+      number: 4,
+      title: "Rewrite Using Participle Clauses",
+      difficulty: "Very Hard",
+      instruction: "Rewrite using a participle clause.",
+      questions: [
+        "After she finished, she left.",
+        "Because he was trained, he knew.",
+        "When the deal was signed, talks ended.",
+        "After it was built, the bridge opened.",
+        "Because she had worked all day...",
+        "While her arms were crossed...",
+        "After the data was collected...",
+        "Because he was rejected twice...",
+        "When the problem was resolved...",
+        "After he realised the mistake...",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Perfect & Passive Participles", answers: ["Having written", "Having been cleared", "Having lived", "Having been rejected", "Having been presented with", "Both are correct", "Having been taught", "Having been working", "Having analysed", "Having been faced"] },
+    { exercise: 2, subtitle: "Absolute & With-Clauses", answers: ["The dispute having been resolved", "with her arms", "The assessment being complete", "with his eyes", "That being done", "with her hands", "The company having been sold", "with his arms", "The plan having been approved", "with rain falling"] },
+    { exercise: 3, subtitle: "Dangling & Mixed Participles", answers: ["Having finished the report, she submitted it.", "The work done, they left.", "She sat with her arms crossed.", "Having been trained, he knew what to do.", "Having been working all night, the team was tired.", "Entering the room, she smiled.", "Written in haste, the letter had errors.", "The terms being unclear, they asked for help.", "The man sitting by the window is my boss.", "Having admitted defeat, he stepped down."] },
+    { exercise: 4, subtitle: "Rewrite Using Participle Clauses", answers: ["Having finished, she left.", "Having been trained, he knew.", "The deal having been signed, talks ended.", "Having been built, the bridge opened.", "Having worked all day, she was tired.", "With her arms crossed, she listened.", "The data having been collected, they published.", "Having been rejected twice, he gave up.", "The problem having been resolved, talks resumed.", "Having realised the mistake, he apologised."] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +143,7 @@ export default function AdvancedParticipleClausesLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +219,12 @@ export default function AdvancedParticipleClausesLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +274,19 @@ export default function AdvancedParticipleClausesLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-advanced-participle-clauses" subject="Advanced Participle Clauses" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +401,22 @@ export default function AdvancedParticipleClausesLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-advanced-participle-clauses" subject="Advanced Participle Clauses" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'I wish I knew' expresses a wish about?", options: ["Past regret", "Present hypothetical wish", "Future desire", "General truth"], answer: 1 },
+  { q: "'I wish I had known' expresses?", options: ["Present wish", "Past regret", "Future desire", "General truth"], answer: 1 },
+  { q: "'Wish' + present wish uses which verb form?", options: ["Present simple", "Past simple/were", "Past perfect", "would + verb"], answer: 1 },
+  { q: "'Wish' + past regret uses which verb form?", options: ["Past simple", "Past perfect", "Present perfect", "would + verb"], answer: 1 },
+  { q: "'I wish you would stop' expresses?", options: ["Past regret", "Present hypothetical", "Irritation about someone's behaviour", "Future certainty"], answer: 2 },
+  { q: "'If only' is similar to?", options: ["Although", "Wish (but more emphatic)", "Even if", "Unless"], answer: 1 },
+  { q: "'I wish I were taller' — 'were' is?", options: ["Past simple error", "Subjunctive/hypothetical form", "Present simple", "Future form"], answer: 1 },
+  { q: "'I wish I had studied harder' means?", options: ["I'm going to study harder", "I regret not studying harder", "I always study hard", "I will study harder"], answer: 1 },
+  { q: "'Wish + would' is used for?", options: ["Personal regrets", "Wishing others to change behaviour", "Past habits", "Future plans"], answer: 1 },
+  { q: "'If only it would stop raining!' expresses?", options: ["Certainty it will stop", "Wish/irritation about current situation", "Past regret", "A condition"], answer: 1 },
+  { q: "Can 'wish' + 'would' be used for self?", options: ["Yes, always", "No, it expresses irritation about others", "Yes, but only in past", "No difference"], answer: 1 },
+  { q: "'I'd rather he didn't come' uses?", options: ["would rather + past simple", "would rather + present simple", "would rather + infinitive", "would rather + past perfect"], answer: 0 },
+  { q: "'Would rather' expresses?", options: ["Obligation", "Preference", "Past regret", "Future certainty"], answer: 1 },
+  { q: "'It's time we left' means?", options: ["We left already", "We should leave now", "We will leave soon", "We used to leave"], answer: 1 },
+  { q: "'It's time' + past simple means?", options: ["Action already done", "Action should happen now", "Action will happen later", "Action is happening"], answer: 1 },
+  { q: "'I wish I could fly' — what form follows wish?", options: ["Past perfect", "Modal past (could)", "Present simple", "would + verb"], answer: 1 },
+  { q: "'If only she had listened' = ?", options: ["She listened", "She didn't listen (regret)", "She will listen", "She should listen"], answer: 1 },
+  { q: "Which is correct?", options: ["I wish I have more money", "I wish I had more money", "I wish I would have money", "I wish I am richer"], answer: 1 },
+  { q: "Which expresses irritation about someone else?", options: ["I wish I were taller", "I wish you would stop talking", "I wish I had studied", "I wish it were summer"], answer: 1 },
+  { q: "Which is NOT used after 'wish'?", options: ["past simple", "past perfect", "present simple (direct)", "would + verb"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Wish / Would / If Only",
+  subtitle: "Wishes, regrets, and irritation",
+  level: "B2",
+  keyRule: "wish + past simple (present wish), wish + past perfect (past regret), wish + would (irritation).",
+  exercises: [
+    {
+      number: 1,
+      title: "Choose the correct wish form",
+      difficulty: "easy" as const,
+      instruction: "Pick the correct form after 'wish'.",
+      questions: [
+        "I wish I ___ taller. (present wish)",
+        "I wish I ___ harder. (past regret)",
+        "I wish he ___ stop interrupting.",
+        "She wishes she ___ the truth then.",
+        "I wish it ___ summer all year long.",
+        "He wishes he ___ a better decision.",
+        "I wish you ___ help me more often.",
+        "She wishes she ___ to the party.",
+        "I wish I ___ that. (regret — said it)",
+        "If only he ___ earlier!",
+      ],
+    },
+    {
+      number: 2,
+      title: "Write the wish sentence",
+      difficulty: "medium" as const,
+      instruction: "Write a wish sentence for each situation.",
+      questions: [
+        "I can't swim. (I wish...)",
+        "I didn't apologise. (I wish...)",
+        "She talks too much. (I wish...)",
+        "He didn't take the job. (He wishes...)",
+        "It's raining. (If only...)",
+        "We didn't book early. (We wish...)",
+        "She doesn't listen to me. (I wish...)",
+        "I forgot her birthday. (I wish...)",
+        "He's always late. (I wish...)",
+        "I didn't study medicine. (If only...)",
+      ],
+    },
+    {
+      number: 3,
+      title: "Would rather and It's time",
+      difficulty: "hard" as const,
+      instruction: "Choose the correct form.",
+      questions: [
+        "I'd rather he ___ at the meeting. (come)",
+        "It's time we ___ — it's midnight.",
+        "She'd rather you ___ now.",
+        "It's high time he ___ a decision.",
+        "I'd rather ___ at home tonight. (stay)",
+        "It's time she ___ herself. (respect)",
+        "Would you rather I ___? (not come)",
+        "It's about time they ___ the truth.",
+        "I'd rather she ___ the letter.",
+        "It's high time you ___ this up.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Full wish/if only/would practice",
+      difficulty: "hard" as const,
+      instruction: "Write the complete sentence.",
+      questions: [
+        "regret: not take the opportunity",
+        "present wish: speak Italian",
+        "irritation: always make noise",
+        "if only: study harder",
+        "regret: say those words",
+        "wish for change: stop lying",
+        "present wish: live by the sea",
+        "if only: not miss the flight",
+        "irritation: never listen",
+        "regret: not meet her earlier",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Wish forms", answers: ["were", "had studied", "would", "had told", "were", "had made", "would", "had gone", "hadn't said", "had arrived"] },
+    { exercise: 2, subtitle: "Written wish sentences", answers: ["I wish I could swim", "I wish I had apologised", "I wish she would talk less", "He wishes he had taken the job", "If only it would stop raining", "We wish we had booked early", "I wish she would listen to me", "I wish I hadn't forgotten her birthday", "I wish he weren't always late", "If only I had studied medicine"] },
+    { exercise: 3, subtitle: "Would rather + it's time", answers: ["came", "left", "left", "made", "stay", "respected", "didn't come", "told", "hadn't written", "sorted"] },
+    { exercise: 4, subtitle: "Full sentences", answers: ["I wish I had taken the opportunity", "I wish I could speak Italian", "I wish you would stop making noise", "If only I had studied harder", "I wish I hadn't said those words", "I wish you would stop lying", "I wish I lived by the sea", "If only I hadn't missed the flight", "I wish he would listen", "I wish I had met her earlier"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500", reason: "Hypothetical past — closely linked to wish + past perfect" },
+  { title: "Mixed Conditionals", href: "/grammar/b2/mixed-conditionals", level: "B2", badge: "bg-orange-500", reason: "Combine conditional and wish structures" },
+  { title: "Modal Perfect", href: "/grammar/b2/modal-perfect", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function WishWouldLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function WishWouldLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -142,12 +271,19 @@ export default function WishWouldLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-wish-would" subject="Wish / Would" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -262,8 +398,22 @@ export default function WishWouldLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-wish-would" subject="Wish / Would" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>

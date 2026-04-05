@@ -97,7 +97,7 @@ function Hero() {
         <div className="mx-auto mt-16 grid max-w-xl grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
           <Stat value="100+" label="Lessons" />
           <Stat value="A1–C1" label="All Levels" />
-          <Stat value="Free" label="Always" />
+          <Stat value="PRO" label="Available" />
         </div>
       </div>
     </section>

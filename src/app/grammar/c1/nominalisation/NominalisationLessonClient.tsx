@@ -3,6 +3,132 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Word Formation", href: "/grammar/c1/word-formation", level: "C1", badge: "bg-sky-600", reason: "Word formation underpins the ability to nominalise effectively" },
+  { title: "Complex Noun Phrases", href: "/grammar/c1/complex-noun-phrases", level: "C1", badge: "bg-sky-600" },
+  { title: "Advanced Participle Clauses", href: "/grammar/c1/advanced-participle-clauses", level: "C1", badge: "bg-sky-600" },
+];
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Nominalisation converts ___ to nouns.", options: ["Verbs/adjectives", "Nouns to verbs", "Pronouns", "Adverbs"], answer: 0 },
+  { q: "'decide' → nominalisation:", options: ["decision", "decidement", "deciding", "decided"], answer: 0 },
+  { q: "'analyse' → nominalisation:", options: ["analysis", "analyzation", "analysement", "analysing"], answer: 0 },
+  { q: "'develop' → nominalisation:", options: ["development", "developerment", "develoption", "developed"], answer: 0 },
+  { q: "'investigate' → nominalisation:", options: ["investigation", "investigatement", "investigatism", "investigating"], answer: 0 },
+  { q: "'achieve' → nominalisation:", options: ["achievement", "achievation", "achievery", "achieving"], answer: 0 },
+  { q: "Nominalisation is common in:", options: ["Academic/formal writing", "Everyday conversation", "Commands", "Questions"], answer: 0 },
+  { q: "'The company grew' → nominal:", options: ["the growth of the company", "the company growing", "the grown company", "company grewth"], answer: 0 },
+  { q: "'They agreed' → nominal:", options: ["their agreement", "the agreeing", "agreement they", "their agree"], answer: 0 },
+  { q: "Nominalisation makes writing ___.", options: ["More concise and formal", "Less formal", "Easier to read", "More personal"], answer: 0 },
+  { q: "'assess' → nominalisation:", options: ["assessment", "assessation", "assessing", "assessed"], answer: 0 },
+  { q: "'improve' → nominalisation:", options: ["improvement", "improvation", "improval", "improving"], answer: 0 },
+  { q: "'significant' → nominalisation:", options: ["significance", "significancy", "significantness", "signify"], answer: 0 },
+  { q: "'reduce' → nominalisation:", options: ["reduction", "reduceness", "reducation", "reducing"], answer: 0 },
+  { q: "'She succeeded' → nominal:", options: ["her success", "the succeeding of her", "her succeed", "success of her"], answer: 0 },
+  { q: "'implement' → nominalisation:", options: ["implementation", "implementment", "implemention", "implementing"], answer: 0 },
+  { q: "Verb + -tion suffix example:", options: ["production", "productness", "productity", "produces"], answer: 0 },
+  { q: "Verb + -ment suffix example:", options: ["announcement", "announceness", "announcation", "announcing"], answer: 0 },
+  { q: "Adj + -ness suffix example:", options: ["effectiveness", "effectivation", "effectivity", "effective"], answer: 0 },
+  { q: "Deverbative noun from 'fail':", options: ["failure", "failment", "failism", "failed"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Nominalisation",
+  subtitle: "Converting verbs and adjectives into nouns",
+  level: "C1",
+  keyRule: "Nominalisation creates nouns from verbs/adjectives for formal style.",
+  exercises: [
+    {
+      number: 1,
+      title: "Form the Noun (-tion / -ment / -ance)",
+      difficulty: "Easy",
+      instruction: "Write the nominalised form of each word.",
+      questions: [
+        "decide → ___",
+        "investigate → ___",
+        "achieve → ___",
+        "develop → ___",
+        "implement → ___",
+        "assess → ___",
+        "announce → ___",
+        "reduce → ___",
+        "improve → ___",
+        "analyse → ___",
+      ],
+      hint: "decision / investigation / achievement",
+    },
+    {
+      number: 2,
+      title: "Form the Noun (-ness / -ity / -ism)",
+      difficulty: "Medium",
+      instruction: "Write the nominalised form of each word.",
+      questions: [
+        "significant → ___",
+        "effective → ___",
+        "complex → ___",
+        "creative → ___",
+        "stable → ___",
+        "flexible → ___",
+        "accurate → ___",
+        "productive → ___",
+        "competitive → ___",
+        "innovative → ___",
+      ],
+      hint: "significance / effectiveness / complexity",
+    },
+    {
+      number: 3,
+      title: "Rewrite Using Nominalisation",
+      difficulty: "Hard",
+      instruction: "Rewrite the sentence using a noun phrase.",
+      questions: [
+        "They agreed on the terms.",
+        "She succeeded in her career.",
+        "The company grew rapidly.",
+        "They failed to meet targets.",
+        "He solved the problem quickly.",
+        "The team achieved its goals.",
+        "They investigated the issue.",
+        "She managed the project well.",
+        "They reduced the costs.",
+        "The situation improved.",
+      ],
+      hint: "their agreement / her success / rapid growth",
+    },
+    {
+      number: 4,
+      title: "Choose the Correct Nominalisation",
+      difficulty: "Very Hard",
+      instruction: "Choose the correct noun form in context.",
+      questions: [
+        "The ___ of prices was unexpected.",
+        "Her ___ to the role was impressive.",
+        "Their ___ of the proposal surprised.",
+        "The ___ in technology was rapid.",
+        "His ___ of the issue was poor.",
+        "The ___ of costs was necessary.",
+        "Her ___ of the project was key.",
+        "Their ___ to work was clear.",
+        "The ___ of data took weeks.",
+        "His ___ to lead was questioned.",
+      ],
+      hint: "increase / commitment / rejection / advance",
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Form the Noun (-tion / -ment)", answers: ["decision", "investigation", "achievement", "development", "implementation", "assessment", "announcement", "reduction", "improvement", "analysis"] },
+    { exercise: 2, subtitle: "Form the Noun (-ness / -ity)", answers: ["significance", "effectiveness", "complexity", "creativity", "stability", "flexibility", "accuracy", "productivity", "competitiveness", "innovation"] },
+    { exercise: 3, subtitle: "Rewrite Using Nominalisation", answers: ["their agreement on the terms", "her success in her career", "the rapid growth of the company", "their failure to meet targets", "his quick solution to the problem", "the team's achievement of its goals", "their investigation of the issue", "her effective management of the project", "the reduction of costs", "the improvement of the situation"] },
+    { exercise: 4, subtitle: "Choose the Correct Nominalisation", answers: ["increase", "commitment", "rejection", "advancement", "understanding", "reduction", "management", "commitment", "collection", "ability"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -18,6 +144,7 @@ export default function NominalisationLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +220,12 @@ export default function NominalisationLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -141,12 +274,19 @@ export default function NominalisationLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-c1-nominalisation" subject="Nominalisation" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -261,8 +401,22 @@ export default function NominalisationLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/c1" allLabel="All C1 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-c1-nominalisation" subject="Nominalisation" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/c1" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All C1 topics</a>

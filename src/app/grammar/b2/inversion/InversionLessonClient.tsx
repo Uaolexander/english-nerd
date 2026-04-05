@@ -3,6 +3,122 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF, type LessonPDFConfig } from "@/lib/generateLessonPDF";
+import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "'Never have I seen...' is?", options: ["Normal word order", "Formal inversion", "Passive voice", "Reported speech"], answer: 1 },
+  { q: "Inversion is triggered by?", options: ["Adjectives at start", "Negative adverbials at start", "Questions only", "Prepositions"], answer: 1 },
+  { q: "'Rarely does she go out' — word order?", options: ["Rarely + subject + verb", "Rarely + auxiliary + subject + infinitive", "Rarely + she goes", "Rarely + verb + subject"], answer: 1 },
+  { q: "'No sooner had we arrived than...' structure?", options: ["No sooner + subject + verb + than", "No sooner + had + subject + pp + than", "No sooner + pp + subject + than", "No sooner + we had + pp + than"], answer: 1 },
+  { q: "'Hardly had she left when...' means?", options: ["She left eventually", "She had just left when", "She left because", "She didn't leave"], answer: 1 },
+  { q: "Which begins formal inversion?", options: ["Always", "Never", "Often", "Sometimes"], answer: 1 },
+  { q: "'Not only did he lie...' continues with?", options: ["but also he stole", "but also stole", "and also stole", "but he also stole"], answer: 1 },
+  { q: "'Under no circumstances ___ you...?'", options: ["do", "you", "are you to", "should"], answer: 2 },
+  { q: "Inversion word order is like?", options: ["Statement", "Question", "Passive", "Conditional"], answer: 1 },
+  { q: "'Seldom do we see...' — register is?", options: ["Informal/casual", "Formal/literary", "Neutral", "Spoken slang"], answer: 1 },
+  { q: "'Only after she arrived did he...' — 'did he' is?", options: ["A question", "Inverted auxiliary", "Passive form", "Past perfect"], answer: 1 },
+  { q: "'Little did I know...' means?", options: ["I knew everything", "I knew almost nothing about it", "I told him little", "I had little time"], answer: 1 },
+  { q: "Which phrase requires inversion?", options: ["Yesterday I saw", "Not until midnight did I see", "Yesterday, I saw", "I never saw"], answer: 1 },
+  { q: "'Barely had I sat down when...' uses which tense?", options: ["Past simple", "Past perfect", "Present perfect", "Future perfect"], answer: 1 },
+  { q: "'On no account ___ you do that'?", options: ["should", "you should", "are you to", "do"], answer: 2 },
+  { q: "Inversion after 'so + adjective' is?", options: ["So tired I was", "So tired was I", "So tired am I", "I was so tired"], answer: 1 },
+  { q: "'Not only did she win but...' — tone is?", options: ["Casual", "Emphatic/formal", "Passive", "Reported"], answer: 1 },
+  { q: "'Scarcely had they left when...' = ?", options: ["They left after a long time", "They had just left when", "They left because", "They didn't leave"], answer: 1 },
+  { q: "Which adverbial does NOT trigger inversion?", options: ["Never", "Rarely", "Always", "Seldom"], answer: 2 },
+  { q: "Formal inversion is common in?", options: ["Casual conversation", "Written and formal English", "Questions only", "Requests"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Formal Inversion",
+  subtitle: "Never have I... / Rarely does she...",
+  level: "B2",
+  keyRule: "Negative adverbial at start → auxiliary + subject (question word order).",
+  exercises: [
+    {
+      number: 1,
+      title: "Identify the inverted structure",
+      difficulty: "easy" as const,
+      instruction: "Choose the correct inverted sentence.",
+      questions: [
+        "I have never seen such a sunset.",
+        "She rarely goes out on weeknights.",
+        "No sooner arrived than argument started.",
+        "He had hardly left when she arrived.",
+        "Not only did he lie — he also stole.",
+        "Little did I know what would happen.",
+        "Under no circ. should you tell anyone.",
+        "Only then did she understand.",
+        "Scarcely had they eaten when it ended.",
+        "Seldom do we witness such bravery.",
+      ],
+    },
+    {
+      number: 2,
+      title: "Complete the inversion",
+      difficulty: "medium" as const,
+      instruction: "Fill in the correct auxiliary/structure.",
+      questions: [
+        "Never ___ I seen such a thing.",
+        "Rarely ___ she arrive late.",
+        "No sooner ___ he sat down than...",
+        "Hardly ___ she spoken when...",
+        "Not only ___ they win but also...",
+        "Little ___ we realise how serious it was.",
+        "Under no circumstances ___ you leave.",
+        "Only after the meeting ___ she tell him.",
+        "Seldom ___ he admit he's wrong.",
+        "Scarcely ___ they left when it started.",
+      ],
+    },
+    {
+      number: 3,
+      title: "Inversions in context",
+      difficulty: "hard" as const,
+      instruction: "Choose the most natural inversion.",
+      questions: [
+        "I've never met anyone so talented.",
+        "He had no sooner agreed, it changed.",
+        "She hardly ever complains.",
+        "They didn't realise until later.",
+        "He not only wrote it but directed it.",
+        "You should not tell anyone under any circ.",
+        "She had barely arrived when it started.",
+        "I knew little of what lay ahead.",
+        "We seldom encounter such dedication.",
+        "Only when she read it did she understand.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Write the inversion",
+      difficulty: "hard" as const,
+      instruction: "Rewrite using formal inversion (lowercase).",
+      questions: [
+        "I have never tasted such food. (Never...)",
+        "She rarely makes mistakes. (Rarely...)",
+        "He'd no sooner left than she arrived.",
+        "She had barely sat down when it rang.",
+        "Not only did he break it, he denied it.",
+        "Under no circ. should you agree to this.",
+        "I knew little of the plan. (Little...)",
+        "Only then did we know the truth.",
+        "Scarcely had I slept when alarm went off.",
+        "So impressive was the result that...",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Inverted structures", answers: ["Never have I seen", "Rarely does she go", "No sooner had we arrived than", "Hardly had he left when", "Not only did he lie but also stole", "Little did I know", "Under no circumstances should you", "Only then did she understand", "Scarcely had they eaten when", "Seldom do we witness"] },
+    { exercise: 2, subtitle: "Auxiliaries", answers: ["have", "does", "had", "had", "did", "did", "should/are you to", "did", "does", "had"] },
+    { exercise: 3, subtitle: "Natural inversions", answers: ["Never have I met anyone so talented", "No sooner had he agreed than it changed", "Hardly ever does she complain", "Not until later did they realise", "Not only did he write it but also directed it", "Under no circumstances should you tell anyone", "Barely had she arrived when it started", "Little did I know what lay ahead", "Seldom do we encounter such dedication", "Only when she read it did she understand"] },
+    { exercise: 4, subtitle: "Written inversions", answers: ["never have i tasted such food", "rarely does she make mistakes", "no sooner had he left than she arrived", "barely had she sat down when it rang", "not only did he break it but also denied it", "under no circumstances should you agree", "little did i know of the plan", "only then did we know the truth", "scarcely had i slept when the alarm went off", "so impressive was the result that"] },
+  ],
+};
 
 type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
@@ -12,12 +128,19 @@ type ExerciseSet =
 
 function normalize(s: string) { return s.trim().toLowerCase(); }
 
+const RECOMMENDATIONS: GrammarRec[] = [
+  { title: "Cleft Sentences", href: "/grammar/b2/cleft-sentences", level: "B2", badge: "bg-orange-500", reason: "Another B2 emphasis structure to master alongside inversion" },
+  { title: "Participle Clauses", href: "/grammar/b2/participle-clauses", level: "B2", badge: "bg-orange-500", reason: "Advanced structures for formal and written English" },
+  { title: "Linking Words", href: "/grammar/b2/linking-words", level: "B2", badge: "bg-orange-500" },
+];
+
 export default function InversionLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
@@ -93,6 +216,12 @@ export default function InversionLessonClient() {
   const current = sets[exNo];
 
   const { save } = useProgress();
+  const isPro = useIsPro();
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } catch (e) { console.error(e); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -141,12 +270,19 @@ export default function InversionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <AdUnit variant="sidebar-dark" />
+        <div className="sticky top-24">
+          {isPro ? (
+            <SpeedRound gameId="grammar-b2-inversion" subject="Formal Inversion" questions={SPEED_QUESTIONS} variant="sidebar" />
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
+        </div>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
           <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3">
             <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
             <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+            <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
               {([1, 2, 3, 4] as const).map((n) => (
@@ -261,8 +397,22 @@ export default function InversionLessonClient() {
           </div>
         </section>
 
-        <AdUnit variant="sidebar-dark" />
+        {isPro ? (
+          <GrammarRecommended recommendations={RECOMMENDATIONS} allHref="/grammar/b2" allLabel="All B2 topics" />
+        ) : (
+          <div className="sticky top-24">
+            <AdUnit variant="sidebar-dark" />
+          </div>
+        )}
       </div>
+
+      {!isPro && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+          <div className="hidden lg:block" />
+          <SpeedRound gameId="grammar-b2-inversion" subject="Formal Inversion" questions={SPEED_QUESTIONS} />
+          <div className="hidden lg:block" />
+        </div>
+      )}
 
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
         <a href="/grammar/b2" className="flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-black/5 transition">← All B2 topics</a>
