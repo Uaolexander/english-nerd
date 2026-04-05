@@ -1,3 +1,4 @@
+import AdUnit from "@/components/AdUnit";
 import type { Metadata } from "next";
 import ImageWithFallback from "@/components/ImageWithFallback";
 
@@ -192,23 +193,9 @@ export default function ReadingA2Page() {
               </div>
 
               {/* Mobile ad placeholder */}
-              <div className="mt-8 lg:hidden rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                <div className="mt-3 h-[250px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                  Ad
-                </div>
-              </div>
+              <AdUnit variant="mobile-dark" />
             </section>
-
-            {/* Sidebar ad (300x600) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4 will-change-transform">
-                <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                <div className="mt-3 h-[600px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                  Ad
-                </div>
-              </div>
-            </aside>
+            <AdUnit variant="sidebar-dark" />
           </div>
 
         </div>

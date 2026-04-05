@@ -167,14 +167,7 @@ export default function FuturePerfectPage() {
         </div>
         <div className="mt-14 flex flex-col gap-14">
           <CardGroup label="Exercises" sublabel="Practice Future Perfect with different task types" dotColor="bg-orange-400" exercises={EXERCISES} basePath="/tenses/future-perfect" />
-
-          {/* Ad */}
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/20">Advertisement</p>
-            <div className="flex h-[90px] items-center justify-center rounded-xl border border-white/6 bg-black/20 text-xs text-white/20">
-              728 × 90
-            </div>
-          </div>
+          <AdUnit variant="inline-light" />
           <ProRelatedTopics exercises={RELATED} basePath="/tenses/future-perfect" />
         </div>
       </div>

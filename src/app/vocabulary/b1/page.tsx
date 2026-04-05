@@ -1,3 +1,4 @@
+import AdUnit from "@/components/AdUnit";
 import type { Metadata } from "next";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import { createClient } from "@/lib/supabase/server";
@@ -139,14 +140,7 @@ export default async function VocabularyB1Page() {
             <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
 
               {/* Left ad */}
-              <aside className="hidden lg:block">
-                <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-semibold text-white/30">ADVERTISEMENT</p>
-                  <div className="mt-3 flex h-[600px] items-center justify-center rounded-xl border border-white/8 bg-black/30 text-sm text-white/20">
-                    300 × 600
-                  </div>
-                </div>
-              </aside>
+              <AdUnit variant="sidebar-dark" />
 
               {/* Exercise cards */}
               <section>

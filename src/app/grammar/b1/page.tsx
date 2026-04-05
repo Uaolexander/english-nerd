@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import AdUnit from "@/components/AdUnit";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 
@@ -205,15 +206,7 @@ export default async function GrammarB1Page() {
           {!isPro ? (
             <div className="mt-10 grid gap-8 lg:grid-cols-[320px_1fr]">
 
-              {/* Left ad */}
-              <aside className="hidden lg:block">
-                <div className="sticky top-24 rounded-2xl border border-white/10 bg-white/5 p-4 will-change-transform">
-                  <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                  <div className="mt-3 h-[600px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                    Ad
-                  </div>
-                </div>
-              </aside>
+              <AdUnit variant="sidebar-dark" />
 
               {/* Cards */}
               <section>
@@ -259,13 +252,7 @@ export default async function GrammarB1Page() {
                   ))}
                 </div>
 
-                {/* Mobile ad */}
-                <div className="mt-8 lg:hidden rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs font-semibold text-white/50">ADVERTISEMENT</div>
-                  <div className="mt-3 h-[250px] rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-white/20 text-sm">
-                    Ad
-                  </div>
-                </div>
+                <AdUnit variant="mobile-dark" />
 
                 {/* More coming soon */}
                 <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">

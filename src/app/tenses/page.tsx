@@ -1,4 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
   title: "English Tenses — English Nerd",
@@ -288,8 +289,13 @@ export default function TensesPage() {
           />
         </div>
 
+        {/* Ad */}
+        <div className="mt-14">
+          <AdUnit variant="inline-light" />
+        </div>
+
         {/* Quick-reference card */}
-        <div className="mt-16 rounded-3xl border border-white/8 bg-white/[0.02] p-8">
+        <div className="mt-10 rounded-3xl border border-white/8 bg-white/[0.02] p-8">
           <h2 className="text-lg font-black text-white">Quick reference</h2>
           <p className="mt-1 text-sm text-white/35">All 12 tenses at a glance — structure only.</p>
 

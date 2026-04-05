@@ -273,7 +273,7 @@ export default function ExtrapositionLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <div className="sticky top-24">
+        <div className="sticky top-24 self-start">
           {isPro ? (
             <SpeedRound gameId="grammar-c1-extraposition" subject="Extraposition" questions={SPEED_QUESTIONS} variant="sidebar" />
           ) : (

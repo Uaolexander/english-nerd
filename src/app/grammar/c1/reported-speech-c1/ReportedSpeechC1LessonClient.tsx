@@ -274,7 +274,7 @@ export default function ReportedSpeechC1LessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <div className="sticky top-24">
+        <div className="sticky top-24 self-start">
           {isPro ? (
             <SpeedRound gameId="grammar-c1-reported-speech-c1" subject="C1 Reported Speech" questions={SPEED_QUESTIONS} variant="sidebar" />
           ) : (

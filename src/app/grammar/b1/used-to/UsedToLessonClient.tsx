@@ -270,7 +270,7 @@ export default function UsedToLessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <div className="sticky top-24">
+        <div className="sticky top-24 self-start">
           {isPro ? (
             <SpeedRound gameId="grammar-b1-used-to" subject="Used To" questions={SPEED_QUESTIONS} variant="sidebar" />
           ) : (

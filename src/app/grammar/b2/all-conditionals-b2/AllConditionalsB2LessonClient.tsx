@@ -271,7 +271,7 @@ export default function AllConditionalsB2LessonClient() {
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-        <div className="sticky top-24">
+        <div className="sticky top-24 self-start">
           {isPro ? (
             <SpeedRound gameId="grammar-b2-all-conditionals-b2" subject="All Conditionals" questions={SPEED_QUESTIONS} variant="sidebar" />
           ) : (
