@@ -1,5 +1,6 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ProRelatedTopics from "@/components/ProRelatedTopics";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
   title: "Past Simple Exercises — Practice English Grammar | English Nerd",
