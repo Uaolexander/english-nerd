@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   // Look up the code
   const { data: promoCode, error: codeErr } = await service
     .from("promo_codes")
-    .select("id, campaign, duration_days, max_uses, used_count, is_active")
+    .select("id, campaign, duration_days, max_uses, used_count, is_active, valid_from, valid_until")
     .eq("code", code)
     .maybeSingle();
 
@@ -109,8 +109,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "This promo code is invalid or has expired." }, { status: 400 });
   }
 
+  // Check date validity
+  const now = new Date();
+  if (promoCode.valid_from && now < new Date(promoCode.valid_from)) {
+    return NextResponse.json({ ok: false, error: "This promo code is not active yet." }, { status: 400 });
+  }
+  if (promoCode.valid_until && now > new Date(promoCode.valid_until)) {
+    return NextResponse.json({ ok: false, error: "This promo code has expired." }, { status: 400 });
+  }
+
   if (promoCode.used_count >= promoCode.max_uses) {
-    return NextResponse.json({ ok: false, error: "This promo code has already been used." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "This promo code has already reached its limit." }, { status: 400 });
   }
 
   // Check if this user already used this code
