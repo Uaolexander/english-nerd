@@ -5098,12 +5098,18 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-    // Cache in localStorage before updateUser (which may trigger remount)
-    try { localStorage.setItem("avatar_url_cache", urlData.publicUrl); } catch { /* ignore */ }
     setAvatar(urlData.publicUrl);
     setAvatarPreview(urlData.publicUrl);
-    const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: urlData.publicUrl } });
-    if (updateError) { setProfileMsg({ type: "err", text: updateError.message }); } else {
+    // Use server-side API to avoid USER_UPDATED auth event (which triggers remount)
+    const updateRes = await fetch("/api/account/update-avatar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ avatarUrl: urlData.publicUrl }),
+    });
+    if (!updateRes.ok) {
+      const err = await updateRes.json().catch(() => ({}));
+      setProfileMsg({ type: "err", text: err.error ?? "Failed to save photo." });
+    } else {
       setProfileMsg({ type: "ok", text: "Photo updated." });
     }
     setAvatarUploading(false);
