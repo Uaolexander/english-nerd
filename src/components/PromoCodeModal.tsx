@@ -1,35 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
 
 function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9998] overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/72 backdrop-blur-[4px]" />
-      {/* Card */}
-      <div
-        className="relative w-full max-w-[400px] overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20]" />
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/50 transition hover:bg-white/15"
-          aria-label="Close"
+      {/* Centering wrapper */}
+      <div className="relative flex min-h-full items-center justify-center p-4">
+        {/* Card */}
+        <div
+          className="w-full max-w-[400px] overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
         >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-        {children}
+          <div className="h-1.5 w-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20]" />
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/50 transition hover:bg-white/15"
+            aria-label="Close"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function ProExpiredModal({ userKey }: { userKey: string }) {
   const [show, setShow] = useState(false);
@@ -21,17 +22,18 @@ export default function ProExpiredModal({ userKey }: { userKey: string }) {
 
   if (!show) return null;
 
-  return (
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-14 sm:pt-20"
+      className="fixed inset-0 z-[9999] overflow-y-auto"
       onClick={dismiss}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
+      <div className="relative flex min-h-full items-center justify-center p-4">
       {/* Modal */}
       <div
-        className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top accent */}
@@ -111,6 +113,8 @@ export default function ProExpiredModal({ userKey }: { userKey: string }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }

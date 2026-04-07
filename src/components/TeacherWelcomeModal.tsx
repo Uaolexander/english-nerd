@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 
 const COLORS = ["#8B5CF6", "#A78BFA", "#F5DA20", "#34D399", "#60A5FA", "#F97316", "#EC4899"];
 const SHAPES = ["square", "circle", "triangle"] as const;
@@ -58,8 +59,8 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [visibleItems]);
 
-  return (
-    <>
+  if (typeof document === "undefined") return null;
+  return createPortal(<>
       <style>{`
         @keyframes confetti-fall {
           0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
@@ -87,10 +88,10 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
 
       {pieces.map((p) => <ConfettiPiece key={p.id} p={p} />)}
 
-      <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-10 sm:pt-16" onClick={onClose}>
+      <div className="fixed inset-0 z-[9999] overflow-y-auto" onClick={onClose}>
         <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
-
-        <div className="modal-card-t relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="relative flex min-h-full items-center justify-center p-4">
+        <div className="modal-card-t w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
           {/* Violet top bar */}
           <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-purple-400 to-violet-500" />
 
@@ -147,7 +148,7 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </>
-  );
+    </>, document.body);
 }

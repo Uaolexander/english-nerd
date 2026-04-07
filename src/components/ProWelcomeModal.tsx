@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 
 /* ─── Confetti ───────────────────────────────────────────────────────────── */
 
@@ -91,8 +92,8 @@ export default function ProWelcomeModal({ onClose }: { onClose: () => void }) {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [visibleItems]);
 
-  return (
-    <>
+  if (typeof document === "undefined") return null;
+  return createPortal(<>
       {/* Confetti keyframes injected once */}
       <style>{`
         @keyframes confetti-fall {
@@ -130,14 +131,14 @@ export default function ProWelcomeModal({ onClose }: { onClose: () => void }) {
 
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-10 sm:pt-16"
+        className="fixed inset-0 z-[9999] overflow-y-auto"
         onClick={onClose}
       >
         <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
-
+        <div className="relative flex min-h-full items-center justify-center p-4">
         {/* Card */}
         <div
-          className="modal-card relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl"
+          className="modal-card w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Gold top bar */}
@@ -220,7 +221,7 @@ export default function ProWelcomeModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </>
-  );
+    </>, document.body);
 }
