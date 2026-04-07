@@ -32,9 +32,53 @@ function ConfettiPiece({ p }: { p: Piece }) {
   return <div style={style} />;
 }
 
-const UNLOCKED = [
+const PLAN_CONFIG = {
+  starter: {
+    studentLimit: 5,
+    label: "Starter",
+    topBar: "from-sky-500 via-sky-400 to-sky-500",
+    heroBg: "from-sky-50 to-white",
+    ringOuter: "bg-sky-400/30",
+    ringInner: "bg-sky-400/15",
+    iconGradient: "from-sky-500 to-sky-700",
+    iconShadow: "shadow-sky-400/40",
+    subtitle: "text-sky-600",
+    itemBg: "bg-sky-100",
+    ctaGradient: "from-sky-600 to-sky-500",
+    ctaShadow: "shadow-sky-400/30",
+  },
+  solo: {
+    studentLimit: 15,
+    label: "Solo",
+    topBar: "from-[#F5DA20] via-amber-400 to-[#F5DA20]",
+    heroBg: "from-amber-50 to-white",
+    ringOuter: "bg-amber-400/30",
+    ringInner: "bg-amber-400/15",
+    iconGradient: "from-amber-400 to-amber-600",
+    iconShadow: "shadow-amber-400/40",
+    subtitle: "text-amber-600",
+    itemBg: "bg-amber-100",
+    ctaGradient: "from-[#F5DA20] to-amber-400",
+    ctaShadow: "shadow-amber-400/30",
+  },
+  plus: {
+    studentLimit: 40,
+    label: "Plus",
+    topBar: "from-violet-500 via-purple-400 to-violet-500",
+    heroBg: "from-violet-50 to-white",
+    ringOuter: "bg-violet-400/30",
+    ringInner: "bg-violet-400/15",
+    iconGradient: "from-violet-500 to-violet-700",
+    iconShadow: "shadow-violet-400/40",
+    subtitle: "text-violet-600",
+    itemBg: "bg-violet-100",
+    ctaGradient: "from-violet-600 to-violet-500",
+    ctaShadow: "shadow-violet-400/30",
+  },
+} as const;
+
+const BASE_FEATURES = [
   { icon: "👩‍🏫", label: "Teacher Dashboard access" },
-  { icon: "👥", label: "Up to 30 students" },
   { icon: "📊", label: "Full student progress analytics" },
   { icon: "📋", label: "Assign exercises with deadlines" },
   { icon: "🏫", label: "Create classes and groups" },
@@ -43,10 +87,16 @@ const UNLOCKED = [
 ];
 
 export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => void; plan?: "starter" | "solo" | "plus" }) {
+  const cfg = PLAN_CONFIG[plan ?? "solo"];
   const [pieces] = useState(() => makeConfetti(80));
   const [visibleItems, setVisibleItems] = useState(0);
   const [iconPopped, setIconPopped] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const UNLOCKED = [
+    { icon: "👥", label: `Up to ${cfg.studentLimit} students` },
+    ...BASE_FEATURES,
+  ];
 
   useEffect(() => {
     const t = setTimeout(() => setIconPopped(true), 150);
@@ -92,8 +142,9 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
         <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
         <div className="relative flex min-h-full items-center justify-center p-4">
         <div className="modal-card-t w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          {/* Violet top bar */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-purple-400 to-violet-500" />
+
+          {/* Top bar — plan colour */}
+          <div className={`h-1.5 w-full bg-gradient-to-r ${cfg.topBar}`} />
 
           <button onClick={onClose} className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-slate-400 transition hover:bg-black/10">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -102,11 +153,11 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
           </button>
 
           {/* Hero */}
-          <div className="flex flex-col items-center bg-gradient-to-b from-violet-50 to-white px-7 pb-6 pt-10">
+          <div className={`flex flex-col items-center bg-gradient-to-b ${cfg.heroBg} px-7 pb-6 pt-10`}>
             <div className="relative flex h-24 w-24 items-center justify-center">
-              <div className="shine-ring-v absolute inset-0 rounded-full bg-violet-400/30" />
-              <div className="shine-ring-v absolute inset-2 rounded-full bg-violet-400/15" style={{ animationDelay: "0.4s" }} />
-              <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-700 shadow-xl shadow-violet-400/40 ${iconPopped ? "icon-pop" : "opacity-0"}`}>
+              <div className={`shine-ring-v absolute inset-0 rounded-full ${cfg.ringOuter}`} />
+              <div className={`shine-ring-v absolute inset-2 rounded-full ${cfg.ringInner}`} style={{ animationDelay: "0.4s" }} />
+              <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${cfg.iconGradient} shadow-xl ${cfg.iconShadow} ${iconPopped ? "icon-pop" : "opacity-0"}`}>
                 <svg className="h-9 w-9 text-white" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
                 </svg>
@@ -114,9 +165,9 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
             </div>
 
             <h2 className="mt-5 text-center text-2xl font-black text-slate-900">Teacher Access Activated! 🎓</h2>
-            <p className="mt-1.5 text-center text-sm text-violet-600 font-semibold">You now have a Teacher {plan === "plus" ? "Plus" : plan === "starter" ? "Starter" : "Solo"} account</p>
+            <p className={`mt-1.5 text-center text-sm font-semibold ${cfg.subtitle}`}>You now have a Teacher {cfg.label} account</p>
             <p className="mt-2 text-center text-sm text-slate-500 leading-relaxed">
-              Your Teacher Dashboard is ready. Here's everything you can now do:
+              Your Teacher Dashboard is ready. Here&apos;s everything you can now do:
             </p>
           </div>
 
@@ -125,7 +176,7 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
             <ul className="space-y-2.5">
               {UNLOCKED.map((item, i) => (
                 <li key={item.label} className={`item-in-t flex items-center gap-3 ${i < visibleItems ? "opacity-100" : "opacity-0"}`} style={{ animationDelay: `${i * 0.16 + 0.7}s` }}>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-base">{item.icon}</span>
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${cfg.itemBg} text-base`}>{item.icon}</span>
                   <span className="text-sm font-semibold text-slate-700">{item.label}</span>
                   <svg className="ml-auto h-4 w-4 shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
@@ -137,7 +188,7 @@ export default function TeacherWelcomeModal({ onClose, plan }: { onClose: () => 
 
           {/* CTA */}
           <div className="px-7 pb-8 pt-6">
-            <a href="/account" onClick={onClose} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-violet-400/30 transition hover:opacity-90">
+            <a href="/account" onClick={onClose} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cfg.ctaGradient} px-5 py-3.5 text-sm font-black ${plan === "solo" ? "text-black" : "text-white"} shadow-lg ${cfg.ctaShadow} transition hover:opacity-90`}>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
               </svg>
