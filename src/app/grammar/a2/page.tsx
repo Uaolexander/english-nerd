@@ -196,69 +196,11 @@ export default async function GrammarA2Page() {
             ))}
           </div>
 
-          {/* Layout */}
-          {!isPro ? (
-            <div className="mt-10 grid gap-8 lg:grid-cols-[320px_1fr]">
+{/* Layout: sidebar ad (non-PRO) + topic cards */}
+          <div className={`mt-10 ${!isPro ? "grid gap-8 lg:grid-cols-[320px_1fr]" : ""}`}>
+            {!isPro && <AdUnit variant="sidebar-dark" />}
 
-              <AdUnit variant="sidebar-dark" />
-
-              {/* Cards */}
-              <section>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
-                  {TOPICS_A2.map((t) => (
-                    <article
-                      key={t.slug}
-                      className="group relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"
-                    >
-                      <div className="relative aspect-square w-full overflow-hidden border-b border-white/10 bg-black/30">
-                        <ImageWithFallback
-                          src={t.image}
-                          alt={t.title}
-                          className="h-full w-full object-cover"
-                        />
-                        <div className="absolute top-3 right-3 rounded-full bg-emerald-400 px-3 py-1 text-xs font-black text-black shadow-lg">
-                          A2
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <h2 className="text-xl font-black leading-snug transition group-hover:text-white">
-                          {t.title}
-                        </h2>
-                        <p className="mt-2 text-sm text-white/70">{t.description}</p>
-
-                        <div className="mt-4 flex items-center justify-between">
-                          <a
-                            href={`/grammar/a2/${t.slug}`}
-                            className="absolute inset-0 z-10"
-                            aria-label={t.title}
-                          />
-                          <a href={`/grammar/a2/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
-                              Start
-                            </a>
-                          <span className="relative z-20 text-xs text-white/45">A2</span>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-
-                <AdUnit variant="mobile-dark" />
-
-                {/* More coming soon */}
-                <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white/40">
-                    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white/60">More exercises coming soon</p>
-                    <p className="text-xs text-white/30 mt-0.5">New topics are added regularly — check back soon.</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-          ) : (
-            <section className="mt-10">
+            <section>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
                 {TOPICS_A2.map((t) => (
                   <article
@@ -289,14 +231,16 @@ export default async function GrammarA2Page() {
                           aria-label={t.title}
                         />
                         <a href={`/grammar/a2/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
-                              Start
-                            </a>
+                          Start
+                        </a>
                         <span className="relative z-20 text-xs text-white/45">A2</span>
                       </div>
                     </div>
                   </article>
                 ))}
               </div>
+
+              {!isPro && <AdUnit variant="mobile-dark" />}
 
               {/* More coming soon */}
               <div className="mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4">
@@ -309,7 +253,7 @@ export default async function GrammarA2Page() {
                 </div>
               </div>
             </section>
-          )}
+          </div>
         </div>
       </div>
     </main>

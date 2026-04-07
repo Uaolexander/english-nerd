@@ -195,7 +195,7 @@ export default function LoginClient() {
           {/* Divider */}
           <div className="my-6 flex items-center gap-4">
             <div className="h-px flex-1 bg-white/8" />
-            <span className="text-xs font-semibold text-white/20 uppercase tracking-widest">or</span>
+            <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">or</span>
             <div className="h-px flex-1 bg-white/8" />
           </div>
 

@@ -154,12 +154,12 @@ function TenseCard({ tense }: { tense: Tense }) {
           <code className="relative z-20 mb-3 block rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-mono text-white/50 sm:rounded-lg sm:px-2.5 sm:text-[11px]">
             {tense.structure}
           </code>
-          <button
+          <a
+            href={`/tenses/${tense.slug}`}
             className="relative z-20 inline-flex items-center justify-center rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
-            type="button"
           >
             Start
-          </button>
+          </a>
         </div>
       </div>
     </article>
@@ -211,7 +211,7 @@ export default function TensesPage() {
         {/* Breadcrumb */}
         <div className="text-sm text-white/40">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/20">/</span>
+          <span className="mx-2 text-white/35">/</span>
           <span className="text-white/70">Tenses</span>
         </div>
 

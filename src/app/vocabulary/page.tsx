@@ -92,12 +92,12 @@ function LevelCard({ lvl }: { lvl: Level }) {
           <p className="relative z-20 mb-3 text-[10px] text-white/30 sm:text-[11px]">
             {lvl.topics} topics
           </p>
-          <button
+          <a
+            href={`/vocabulary/${lvl.lvl.toLowerCase()}`}
             className={`relative z-20 inline-flex items-center justify-center rounded-lg ${lvl.color} px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm`}
-            type="button"
           >
             Start
-          </button>
+          </a>
         </div>
       </div>
     </article>
@@ -119,7 +119,7 @@ export default function VocabularyPage() {
         {/* Breadcrumb */}
         <div className="text-sm text-white/40">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/20">/</span>
+          <span className="mx-2 text-white/35">/</span>
           <span className="text-white/70">Vocabulary</span>
         </div>
 

@@ -81,7 +81,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-8 border-t border-white/6 pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <span className="text-xs text-white/20">© 2026 English Nerd. All rights reserved.</span>
+          <span className="text-xs text-white/35">© 2026 English Nerd. All rights reserved.</span>
 
           {/* Social icons */}
           <div className="flex items-center gap-3">

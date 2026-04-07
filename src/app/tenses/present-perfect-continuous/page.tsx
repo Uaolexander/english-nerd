@@ -169,9 +169,9 @@ export default function PresentPerfectContinuousPage() {
 
         <div className="text-sm text-white/40">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/20">/</span>
+          <span className="mx-2 text-white/35">/</span>
           <a href="/tenses" className="hover:text-white transition">Tenses</a>
-          <span className="mx-2 text-white/20">/</span>
+          <span className="mx-2 text-white/35">/</span>
           <span className="text-white/70">Present Perfect Continuous</span>
         </div>
 

@@ -79,7 +79,7 @@ export default function LetterboxSection() {
                   rows={4}
                   className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#F5DA20]/40 focus:bg-white/8 transition"
                 />
-                <div className="mt-1 text-right text-xs text-white/20">{message.length}/1000</div>
+                <div className="mt-1 text-right text-xs text-white/35">{message.length}/1000</div>
                 <div className="mt-3 flex justify-center">
                   <button
                     type="submit"

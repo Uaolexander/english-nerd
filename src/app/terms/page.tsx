@@ -12,7 +12,7 @@ export default function TermsPage() {
         {/* Breadcrumb */}
         <div className="mb-8 text-sm text-white/40">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/20">/</span>
+          <span className="mx-2 text-white/35">/</span>
           <span className="text-white/70">Terms of Service</span>
         </div>
 

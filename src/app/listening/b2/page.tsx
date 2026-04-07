@@ -178,7 +178,7 @@ export default async function ListeningB2Page() {
                   <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-2xl">🎙️</div>
                     <p className="text-sm font-bold text-white/30">More exercises coming soon</p>
-                    <p className="text-xs text-white/20">New dialogues and talks added regularly</p>
+                    <p className="text-xs text-white/35">New dialogues and talks added regularly</p>
                   </div>
                 </div>
               </section>
@@ -250,7 +250,7 @@ export default async function ListeningB2Page() {
                 <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-2xl">🎙️</div>
                   <p className="text-sm font-bold text-white/30">More exercises coming soon</p>
-                  <p className="text-xs text-white/20">New dialogues and talks added regularly</p>
+                  <p className="text-xs text-white/35">New dialogues and talks added regularly</p>
                 </div>
               </div>
             </section>

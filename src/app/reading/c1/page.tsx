@@ -178,12 +178,12 @@ export default function ReadingC1Page() {
                           aria-label={`Start ${ex.title}`}
                         />
 
-                        <button
-                          type="button"
+                        <a
+                          href={`/reading/c1/${ex.slug}`}
                           className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90 transition"
                         >
                           Start Exercise
-                        </button>
+                        </a>
 
                         <span className="relative z-20 text-xs text-white/40">
                           {ex.questions} questions
