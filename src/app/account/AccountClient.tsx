@@ -4959,12 +4959,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   // Profile
   const [name, setName] = useState(fullName);
-  const [avatar, setAvatar] = useState(() => {
-    try { return localStorage.getItem("avatar_url_cache") || avatarUrl; } catch { return avatarUrl; }
-  });
-  const [avatarPreview, setAvatarPreview] = useState(() => {
-    try { return localStorage.getItem("avatar_url_cache") || avatarUrl; } catch { return avatarUrl; }
-  });
+  const [avatar, setAvatar] = useState(avatarUrl);
+  const [avatarPreview, setAvatarPreview] = useState(avatarUrl);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -5126,6 +5122,11 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       setProfileMsg({ type: "err", text: err.error ?? "Failed to save photo." });
     } else {
       setProfileMsg({ type: "ok", text: "Photo updated." });
+      // Silently refresh session after 2s so AuthButton (header) picks up new avatar_url
+      // Delay avoids the USER_UPDATED-triggered remount race condition
+      setTimeout(() => {
+        createClient().auth.refreshSession().catch(() => {});
+      }, 2000);
     }
     setAvatarUploading(false);
   }
