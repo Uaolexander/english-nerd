@@ -5422,13 +5422,15 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 isStudent ? "ring-4 ring-[#F5DA20] pro-avatar-ring" :
                 "ring-4 ring-[#F5DA20]/30"
               }`}>
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setAvatarPreview("")} />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
+                {/* Initials always rendered; image overlays on top if it loads */}
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
                     {userInitials}
                   </div>
-                )}
+                  {avatarPreview && (
+                    <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  )}
+                </div>
               </div>
               {isTeacher ? (
                 <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-violet-700 ring-2 ring-white shadow-sm">
@@ -5647,10 +5649,10 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <label className="mb-2 block text-xs font-semibold text-slate-600">Profile photo</label>
                   <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-                      {avatarPreview
-                        ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setAvatarPreview("")} />
-                        : <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
-                      }
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
+                      {avatarPreview && (
+                        <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      )}
                       {avatarUploading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
                           <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>

@@ -49,6 +49,7 @@ export default function FeedbackWidget({ email, plan }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -111,10 +112,8 @@ export default function FeedbackWidget({ email, plan }: Props) {
     return () => document.removeEventListener("keydown", handle);
   }, [open]);
 
-  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
+  async function handleImageFile(file: File) {
+    if (!file.type.startsWith("image/")) return;
     if (file.size > 8 * 1024 * 1024) { setSendError(true); setTimeout(() => setSendError(false), 3000); return; }
     setImageUploading(true);
     try {
@@ -131,6 +130,32 @@ export default function FeedbackWidget({ email, plan }: Props) {
       }
     } catch { /* ignore */ }
     setImageUploading(false);
+  }
+
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    handleImageFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    // Only clear if leaving the panel itself (not a child)
+    if (!panelRef.current?.contains(e.relatedTarget as Node)) setDragOver(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageFile(file);
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -192,13 +217,29 @@ export default function FeedbackWidget({ email, plan }: Props) {
 
       {open && (
         <div
-          className="w-[320px] max-w-[calc(100vw-32px)] overflow-hidden rounded-3xl"
+          className="relative w-[320px] max-w-[calc(100vw-32px)] overflow-hidden rounded-3xl"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           style={{
             animation: "fb-up 0.22s cubic-bezier(0.34,1.4,0.64,1) both",
             background: "#ffffff",
             boxShadow: "0 32px 80px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.15)",
+            outline: dragOver ? "2px dashed #F5DA20" : "none",
+            outlineOffset: "0px",
           }}
         >
+          {/* Drag overlay */}
+          {dragOver && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/90 backdrop-blur-sm pointer-events-none">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <rect x="2" y="6" width="28" height="20" rx="4" stroke="#F5DA20" strokeWidth="2"/>
+                <circle cx="11" cy="13" r="3" stroke="#F5DA20" strokeWidth="2"/>
+                <path d="M2 22l7-7 5 5 5-6 11 9" stroke="#F5DA20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className="text-[13px] font-bold text-gray-700">Drop image here</p>
+            </div>
+          )}
           {/* Header */}
           <div className="flex items-start justify-between px-5 pt-5 pb-3">
             <div>
