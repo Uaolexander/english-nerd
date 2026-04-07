@@ -5095,7 +5095,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: urlData.publicUrl } });
-    if (updateError) { setProfileMsg({ type: "err", text: updateError.message }); } else { setAvatar(urlData.publicUrl); setProfileMsg({ type: "ok", text: "Photo updated." }); }
+    if (updateError) { setProfileMsg({ type: "err", text: updateError.message }); } else {
+      setAvatar(urlData.publicUrl);
+      setAvatarPreview(urlData.publicUrl);
+      setProfileMsg({ type: "ok", text: "Photo updated." });
+      setTimeout(() => router.refresh(), 1200);
+    }
     setAvatarUploading(false);
   }
 
