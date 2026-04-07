@@ -5093,6 +5093,18 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     setAvatarUploading(true);
     setProfileMsg(null);
     const supabase = createClient();
+
+    // Delete old avatar from storage if it's a Supabase-hosted file
+    if (avatar) {
+      try {
+        const url = new URL(avatar);
+        const match = url.pathname.match(/\/object\/public\/avatars\/(.+)$/);
+        if (match) {
+          await supabase.storage.from("avatars").remove([match[1]]);
+        }
+      } catch { /* ignore — might be a Google/external avatar */ }
+    }
+
     const ext = file.name.split(".").pop();
     const path = `avatars/${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
