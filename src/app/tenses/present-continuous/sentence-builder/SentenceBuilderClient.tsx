@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AdUnit from "@/components/AdUnit";
+import PresentContinuousGameSection from "../PresentContinuousGameSection";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -358,6 +359,8 @@ export default function SentenceBuilderClient() {
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />
+
+        <PresentContinuousGameSection />
 
         {/* Bottom nav */}
         <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import PresentContinuousGameSection from "../PresentContinuousGameSection";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -365,6 +366,8 @@ export default function SpotTheMistakeClient() {
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />
+
+        <PresentContinuousGameSection />
 
         {/* Bottom nav */}
         <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">
