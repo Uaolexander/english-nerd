@@ -26,3 +26,21 @@ ON CONFLICT (code) DO UPDATE
   SET valid_from  = EXCLUDED.valid_from,
       valid_until = EXCLUDED.valid_until,
       is_active   = EXCLUDED.is_active;
+
+INSERT INTO public.teacher_vouchers
+  (code, allowed_email, plan, student_limit, duration_days, is_active, valid_from, valid_until)
+VALUES
+  (
+    'SOLO-APRIL26',     -- code
+    NULL,               -- no email restriction = multi-use
+    'solo',
+    15,                 -- Teacher Solo: up to 15 students
+    30,                 -- 1 month
+    true,
+    '2026-04-01 00:00:00+00',
+    '2026-04-30 23:59:59+00'
+  )
+ON CONFLICT (code) DO UPDATE
+  SET valid_from  = EXCLUDED.valid_from,
+      valid_until = EXCLUDED.valid_until,
+      is_active   = EXCLUDED.is_active;
