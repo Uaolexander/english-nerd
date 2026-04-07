@@ -833,7 +833,7 @@ function NewAssignmentModal({
                                       {s.studentAvatarUrl ? (
                                         <>
                                           <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                          <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                          <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                         </>
                                       ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                                     </div>
@@ -1002,7 +1002,7 @@ function NewAssignmentModal({
                               {s.studentAvatarUrl ? (
                                 <>
                                   <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                 </>
                               ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                             </div>
@@ -1154,7 +1154,7 @@ function NewAssignmentModal({
                               {s.studentAvatarUrl ? (
                                 <>
                                   <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                 </>
                               ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                             </div>
@@ -1264,7 +1264,7 @@ function NewAssignmentModal({
                               {s.studentAvatarUrl ? (
                                 <>
                                   <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                  <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                 </>
                               ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                             </div>
@@ -1581,7 +1581,7 @@ function StudentDetailPanel({
               {student.avatarUrl ? (
                 <>
                   <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-base font-black text-violet-600">{avatarInitials}</span>
-                  <img src={student.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <img src={student.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                 </>
               ) : avatarInitials}
             </div>
@@ -2151,7 +2151,7 @@ function StudentResultRow({
                 <span className="absolute inset-0 flex items-center justify-center rounded-full">
                   {(result.name ? result.name.split(" ").map((w) => w[0]).join("").slice(0, 2) : result.email.slice(0, 2)).toUpperCase()}
                 </span>
-                <img src={result.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <img src={result.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
               </>
             ) : (result.name ? result.name.split(" ").map((w) => w[0]).join("").slice(0, 2) : result.email.slice(0, 2)).toUpperCase()}
           </div>
@@ -2994,7 +2994,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                             <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-600">
                               {s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}
                             </span>
-                            <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                            <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                           </>
                         ) : (
                           s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()
@@ -3127,7 +3127,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                                   {s.studentAvatarUrl ? (
                                     <>
                                       <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-[10px] font-black text-violet-600">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                      <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                      <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                     </>
                                   ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                                 </div>
@@ -3155,7 +3155,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                                   {s.studentAvatarUrl ? (
                                     <>
                                       <span className="absolute inset-0 flex items-center justify-center rounded-full bg-slate-200 text-[10px] font-black text-slate-500">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
-                                      <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                      <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                                     </>
                                   ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
                                 </div>
@@ -3278,7 +3278,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                       <div className="relative h-8 w-8 shrink-0">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[11px] font-black text-slate-500 overflow-hidden">
                           {act.studentAvatar ? (
-                            <img src={act.studentAvatar} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                            <img src={act.studentAvatar} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                           ) : act.studentName.slice(0, 2).toUpperCase()}
                         </div>
                         <span className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full ring-2 ring-white text-white ${act.type === "exercise" ? "bg-emerald-500" : act.type === "essay_submitted" ? "bg-rose-500" : "bg-violet-500"}`}>
@@ -4643,7 +4643,7 @@ function StudentTab({
                   {pendingTeacherInvite.teacherAvatarUrl ? (
                     <>
                       <span className="absolute inset-0 flex items-center justify-center rounded-full">{initials(pendingTeacherInvite.teacherName, pendingTeacherInvite.teacherEmail)}</span>
-                      <img src={pendingTeacherInvite.teacherAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      <img src={pendingTeacherInvite.teacherAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                     </>
                   ) : initials(pendingTeacherInvite.teacherName, pendingTeacherInvite.teacherEmail)}
                 </div>
@@ -4679,7 +4679,7 @@ function StudentTab({
                 {teacherInfo.avatarUrl ? (
                   <>
                     <span className="absolute inset-0 flex items-center justify-center rounded-full bg-amber-200 text-sm font-black text-amber-800">{initials(teacherInfo.name, teacherInfo.email)}</span>
-                    <img src={teacherInfo.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <img src={teacherInfo.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                   </>
                 ) : initials(teacherInfo.name, teacherInfo.email)}
               </div>
@@ -5110,9 +5110,11 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    // Show blob URL immediately (guaranteed to work), then switch to CDN URL after save
     setAvatar(urlData.publicUrl);
-    // Keep objectUrl as preview — CDN may not be ready yet, and onError would clear it
-    // Use server-side API to avoid USER_UPDATED auth event (which triggers remount)
+    setAvatarPreview(objectUrl);
+
+    // Update via server API (avoids USER_UPDATED auth event that remounts component)
     const updateRes = await fetch("/api/account/update-avatar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -5123,8 +5125,13 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       setProfileMsg({ type: "err", text: err.error ?? "Failed to save photo." });
     } else {
       setProfileMsg({ type: "ok", text: "Photo updated." });
+      // Switch to real CDN URL — by now upload is done so CDN should have it
+      setAvatarPreview(urlData.publicUrl);
+      // Refresh session so header AuthButton gets updated avatar_url
+      supabase.auth.refreshSession().catch(() => {});
     }
     setAvatarUploading(false);
+    URL.revokeObjectURL(objectUrl);
   }
 
   async function handleProfileSave(e: React.FormEvent) {
@@ -5388,7 +5395,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 "ring-4 ring-[#F5DA20]/30"
               }`}>
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
                     {userInitials}
@@ -5613,7 +5620,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
                       {avatarPreview
-                        ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = ""; }} />
                         : <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
                       }
                       {avatarUploading && (
@@ -5841,7 +5848,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                       src={rec.img}
                       alt={rec.title}
                       className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                     <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>
