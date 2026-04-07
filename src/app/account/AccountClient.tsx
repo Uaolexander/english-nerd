@@ -5081,6 +5081,30 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     }
   }
 
+  async function compressImage(file: File): Promise<Blob> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const blobUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => resolve(blob ?? file), "image/webp", 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(file); };
+      img.src = blobUrl;
+    });
+  }
+
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -5089,6 +5113,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     setAvatarUploading(true);
     setProfileMsg(null);
     const supabase = createClient();
+    const compressed = await compressImage(file);
 
     // Delete old avatar from storage if it's a Supabase-hosted file
     if (avatar) {
@@ -5101,9 +5126,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       } catch { /* ignore — might be a Google/external avatar */ }
     }
 
-    const ext = file.name.split(".").pop();
-    const path = `${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    const path = `${Date.now()}.webp`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, compressed, { upsert: true, contentType: "image/webp" });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     // blob URL is guaranteed to work — keep as preview for whole session
