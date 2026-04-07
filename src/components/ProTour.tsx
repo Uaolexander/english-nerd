@@ -170,7 +170,7 @@ export default function ProTour({ userEmail, onDone }: Props) {
     const el = document.querySelector<HTMLElement>(`[data-tour="${step.target}"]`);
     if (!el) { measure(); return; }
     if (step.clickOnActivate) el.click();
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.scrollIntoView({ behavior: "instant", block: "center" });
     measure();
     return () => { if (measureTimer.current) clearTimeout(measureTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps

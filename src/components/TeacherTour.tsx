@@ -236,7 +236,7 @@ export default function TeacherTour({ plan, studentLimit, userEmail, onDone }: P
 
     if (step.clickOnActivate) el.click();
 
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.scrollIntoView({ behavior: "instant", block: "center" });
     measure();
 
     return () => { if (measureTimer.current) clearTimeout(measureTimer.current); };
