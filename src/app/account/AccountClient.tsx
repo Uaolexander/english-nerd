@@ -5111,7 +5111,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     setAvatar(urlData.publicUrl);
-    setAvatarPreview(urlData.publicUrl);
+    // Keep objectUrl as preview — CDN may not be ready yet, and onError would clear it
     // Use server-side API to avoid USER_UPDATED auth event (which triggers remount)
     const updateRes = await fetch("/api/account/update-avatar", {
       method: "POST",
@@ -5388,7 +5388,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 "ring-4 ring-[#F5DA20]/30"
               }`}>
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setAvatarPreview("")} />
+                  <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
                     {userInitials}
@@ -5613,7 +5613,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
                       {avatarPreview
-                        ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setAvatarPreview("")} />
+                        ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                         : <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
                       }
                       {avatarUploading && (
