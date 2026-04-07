@@ -2,6 +2,33 @@
 
 import { useState } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "She goes to school every day.  — word order check:",     options: ["She goes to school every day","She every day goes to school","Goes she to school every day","To school she goes every day"], answer: 0 },
+  { q: "He drinks coffee every morning. — correct sentence?",    options: ["He every morning coffee drinks","Coffee he drinks every morning","He drinks coffee every morning","Drinks he coffee every morning"], answer: 2 },
+  { q: "She doesn't watch TV in the morning. — correct?",       options: ["She watch doesn't TV in the morning","She doesn't TV watch in the morning","She doesn't watch TV in the morning","Doesn't she watch TV in the morning"], answer: 2 },
+  { q: "Do you like chocolate? — correct question form?",        options: ["You do like chocolate?","Like you chocolate?","You like chocolate?","Do you like chocolate?"], answer: 3 },
+  { q: "Does she work here? — correct question form?",           options: ["She does work here?","Work she here?","Does she work here?","Does she works here?"], answer: 2 },
+  { q: "I don't eat meat. — correct sentence?",                  options: ["I meat don't eat","I eat don't meat","Don't I eat meat","I don't eat meat"], answer: 3 },
+  { q: "They don't live near here. — correct?",                  options: ["They near don't live here","They don't live near here","Don't they live near here","They live don't near here"], answer: 1 },
+  { q: "Water boils at 100 degrees. — correct?",                 options: ["At 100 degrees water boils","Water 100 degrees boils at","Water boils at 100 degrees","Boils water at 100 degrees"], answer: 2 },
+  { q: "Do your parents live in the city? — correct?",           options: ["Your parents do live in the city?","Do your parents live in the city?","Does your parents live in the city?","Live your parents in the city?"], answer: 1 },
+  { q: "The sun rises in the east. — correct?",                  options: ["In the east rises the sun","The sun in the east rises","Rises the sun in the east","The sun rises in the east"], answer: 3 },
+  { q: "He doesn't like spicy food. — correct?",                 options: ["He like doesn't spicy food","He doesn't like spicy food","Doesn't he like spicy food","He doesn't likes spicy food"], answer: 1 },
+  { q: "Does it rain a lot in autumn? — correct?",               options: ["It does rain a lot in autumn?","Rain does it a lot in autumn?","Does it rain a lot in autumn?","Does it rains a lot in autumn?"], answer: 2 },
+  { q: "We don't have a car. — correct?",                        options: ["We a car don't have","Don't we have a car","We don't have a car","We doesn't have a car"], answer: 2 },
+  { q: "My sister lives in London. — correct?",                  options: ["My sister in London lives","Lives my sister in London","My sister live in London","My sister lives in London"], answer: 3 },
+  { q: "Does he drink coffee in the morning? — correct?",        options: ["Does he drinks coffee in the morning?","He does drink coffee in the morning?","Does he drink coffee in the morning?","Do he drink coffee in the morning?"], answer: 2 },
+  { q: "I don't need to shout. — correct?",                      options: ["Don't I need to shout","I need don't to shout","I doesn't need to shout","I don't need to shout"], answer: 3 },
+  { q: "Do we have a test today? — correct?",                    options: ["We do have a test today?","Have we a test today?","Do we have a test today?","Does we have a test today?"], answer: 2 },
+  { q: "She doesn't know the answer. — correct?",                options: ["She know doesn't the answer","She don't know the answer","Doesn't she knows the answer","She doesn't know the answer"], answer: 3 },
+  { q: "Do you study English every day? — correct?",             options: ["You do study English every day?","Do you study English every day?","Does you study English every day?","Study you English every day?"], answer: 1 },
+  { q: "He listens to music every evening. — correct?",          options: ["He every evening listens to music","He listen to music every evening","He listens to music every evening","Listens he to music every evening"], answer: 2 },
+];
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -132,10 +159,209 @@ export default function SentenceBuilderClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const completedCount = current.questions.filter((sq) => {
     const sqAns = answers[sq.id] ?? [];
     return checked[sq.id] && normalize(sqAns.map((i) => sq.words[i]).join(" ")) === normalize(sq.correct);
   }).length;
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = 210, H = 297, ml = 15, mr = 15;
+      const Y = "#F5DA20", BK = "#111111", GR = "#999999", LG = "#F2F2F2", MG = "#CCCCCC";
+
+      function pageHeader(pageNum: number, sub: string) {
+        pdf.setFillColor(Y); pdf.rect(0, 0, W, 2.5, "F");
+        pdf.setFillColor("#FAFAFA"); pdf.rect(0, 2.5, W, 13, "F");
+        pdf.setDrawColor("#EBEBEB"); pdf.setLineWidth(0.25); pdf.line(0, 15.5, W, 15.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+        pdf.text("English Nerd", ml, 10.5);
+        pdf.setFillColor(MG); pdf.circle(ml+27, 9.5, 0.7, "F");
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+        pdf.text(sub, ml+30, 10.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(GR);
+        pdf.text(`${pageNum} / 3`, W-mr, 10.5, { align: "right" });
+      }
+      function numCircle(x: number, y: number, n: number) {
+        pdf.setFillColor(BK); pdf.circle(x+3.5, y+3.5, 3.5, "F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor("#FFFFFF");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(String(n), x+3.5, y+3.5, { align:"center", baseline:"middle" } as any);
+      }
+      function pill(x: number, y: number, text: string, bg: string, fg: string) {
+        const w=20, h=5.5;
+        pdf.setFillColor(bg); pdf.roundedRect(x,y,w,h,1.2,1.2,"F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7); pdf.setTextColor(fg);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(text, x+w/2, y+h/2, { align:"center", baseline:"middle" } as any);
+      }
+
+      pageHeader(1, "Present Simple · Sentence Builder Worksheet");
+      pdf.setFillColor(BK); pdf.roundedRect(W-mr-22, 5, 22, 6, 1.5, 1.5, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(Y);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pdf.text("A1  LEVEL", W-mr-11, 8, { align:"center", baseline:"middle" } as any);
+      let y = 19;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 22, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(24); pdf.setTextColor(BK);
+      pdf.text("Sentence Builder", ml+5, y+11);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Put the words in the correct order to form sentences.", ml+5, y+18);
+      y += 27;
+
+      numCircle(ml, y, 1);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 1", ml+10, y+5);
+      const e1w = pdf.getTextWidth("Exercise 1");
+      pill(ml+10+e1w+3, y+0.5, "EASY", "#D1FAE5", "#065F46");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Affirmative & Negative — reorder the words.", ml+10+e1w+26, y+4.5);
+      y += 11;
+      const qH = 12;
+      const ex1 = [
+        "1. every / She / . / school / goes / to / day",
+        "2. morning / He / coffee / . / every / drinks",
+        "3. London / lives / . / My / in / sister",
+        "4. east / in / rises / . / the / sun / The",
+        "5. 100 / at / Water / . / degrees / boils",
+        "6. eat / . / I / meat / don't",
+        "7. TV / watch / morning / the / . / doesn't / in / She",
+        "8. food / He / like / . / doesn't / spicy",
+        "9. here / don't / near / . / They / live",
+        "10. have / . / We / car / don't / a",
+      ];
+      ex1.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9.5); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8); pdf.setTextColor(MG);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text("→ ______________________________", ml+2, y + i*qH + 5, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH, W-mr, y+(i+1)*qH);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("1 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 2
+      pdf.addPage();
+      pageHeader(2, "Present Simple · Sentence Builder Worksheet");
+      y = 20;
+      numCircle(ml, y, 2);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 2", ml+10, y+5);
+      const e2w = pdf.getTextWidth("Exercise 2");
+      pill(ml+10+e2w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Questions — put in the right order.", ml+10+e2w+26, y+4.5);
+      y += 11;
+      const ex2 = [
+        "1. chocolate / you / Do / ? / like",
+        "2. here / Does / ? / work / she",
+        "3. French / they / ? / Do / speak",
+        "4. the / Does / ? / play / guitar / he",
+        "5. in / Do / city / your / ? / the / live / parents",
+        "6. rain / Does / in / a / autumn / lot / ? / it",
+        "7. your / Does / ? / on / weekends / mother / work",
+        "8. a / Do / today / ? / we / test / have",
+        "9. the / Does / ? / in / coffee / morning / he / drink",
+        "10. English / Do / ? / every / study / you / day",
+      ];
+      ex2.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9.5); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8); pdf.setTextColor(MG);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text("→ ______________________________", ml+2, y + i*qH + 5, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH, W-mr, y+(i+1)*qH);
+      });
+      y += ex2.length * qH + 6;
+
+      numCircle(ml, y, 3);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 3", ml+10, y+5);
+      const e3w = pdf.getTextWidth("Exercise 3");
+      pill(ml+10+e3w+3, y+0.5, "HARD", "#FEE2E2", "#991B1B");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Mixed — affirmative, negative, question.", ml+10+e3w+26, y+4.5);
+      y += 11;
+      const ex3 = [
+        "1. Monday / She / every / gym / goes / the / to / .",
+        "2. cold / I / like / weather / don't / .",
+        "3. Do / a / ? / they / dog / have",
+        "4. on / He / weekends / . / work / doesn't",
+        "5. Does / cooking / ? / enjoy / she",
+      ];
+      ex3.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9.5); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8); pdf.setTextColor(MG);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text("→ ______________________________", ml+2, y + i*qH + 5, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH, W-mr, y+(i+1)*qH);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("2 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 3 — Answer Key
+      pdf.addPage();
+      pageHeader(3, "Present Simple · Sentence Builder — Answer Key");
+      y = 20;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 20, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(24); pdf.setTextColor(BK);
+      pdf.text("Answer Key", ml+5, y+10);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Check your sentences below", ml+5, y+17);
+      y += 26;
+
+      const answerSections = [
+        { lbl:"Exercise 1", sub:"Affirmative & Negative", ans:["She goes to school every day .","He drinks coffee every morning .","My sister lives in London .","The sun rises in the east .","Water boils at 100 degrees .","I don't eat meat .","She doesn't watch TV in the morning .","He doesn't like spicy food .","They don't live near here .","We don't have a car ."] },
+        { lbl:"Exercise 2", sub:"Questions", ans:["Do you like chocolate ?","Does she work here ?","Do they speak French ?","Does he play the guitar ?","Do your parents live in the city ?","Does it rain a lot in autumn ?","Does your mother work on weekends ?","Do we have a test today ?","Does he drink coffee in the morning ?","Do you study English every day ?"] },
+        { lbl:"Exercise 3", sub:"Mixed", ans:["She goes to the gym every Monday .","I don't like cold weather .","Do they have a dog ?","He doesn't work on weekends .","Does she enjoy cooking ?"] },
+      ];
+      answerSections.forEach(({ lbl, sub, ans }, si) => {
+        numCircle(ml, y, si+1);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(12); pdf.setTextColor(BK);
+        pdf.text(lbl, ml+10, y+5);
+        const lblW = pdf.getTextWidth(lbl);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor(GR);
+        pdf.text(sub, ml+10+lblW+4, y+4.5);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, y+9, W-mr, y+9);
+        y += 13;
+        ans.forEach((a, ai) => {
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor(MG);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(`${ai+1}.`, ml, y + ai*9 + 4, { baseline:"middle" } as any);
+          pdf.setFillColor(Y); pdf.roundedRect(ml+7, y + ai*9, 155, 7, 1.2, 1.2, "F");
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8.5); pdf.setTextColor(BK);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(a, ml+9, y + ai*9 + 3.5, { baseline:"middle" } as any);
+        });
+        y += ans.length * 9 + 6;
+      });
+
+      pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, H-12, W-mr, H-12);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc — Free English Grammar", ml, H-7);
+      pdf.text("Present Simple \u00B7 Sentence Builder \u00B7 A1 \u00B7 Free to print & share", W-mr, H-7, { align:"right" });
+
+      pdf.save("EnglishNerd_PresentSimple_SentenceBuilder_A1.pdf");
+    } catch(e) { console.error(e); }
+    finally { setPdfLoading(false); }
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -169,8 +395,14 @@ export default function SentenceBuilderClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className="sticky top-24">
+              <SpeedRound gameId="ps-sentence-builder" subject="Sentence Builder" questions={SPEED_QUESTIONS} variant="sidebar" />
+            </div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -179,6 +411,7 @@ export default function SentenceBuilderClient() {
             <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
               <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
               <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3] as const).map((n) => (
@@ -356,9 +589,45 @@ export default function SentenceBuilderClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <aside className="sticky top-24 flex flex-col gap-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {[
+                { title: "Quiz — Multiple Choice", href: "/tenses/present-simple/quiz", img: "/topics/exercises/quiz.jpg", level: "A1", badge: "bg-emerald-500", reason: "Test your knowledge" },
+                { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Write correct verb forms" },
+                { title: "Spot the Mistake", href: "/tenses/present-simple/spot-the-mistake", img: "/topics/exercises/spot-the-mistake.jpg", level: "A1–A2", badge: "bg-amber-500", reason: "Find & correct errors" },
+              ].map((rec) => (
+                <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                    <img src={rec.img} alt={rec.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>{rec.level}</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">{rec.title}</p>
+                    {rec.reason && <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">{rec.reason}</p>}
+                  </div>
+                </a>
+              ))}
+              <a href="/tenses/present-simple" className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+                All Present Simple
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </aside>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
         </div>
+
+        {/* SpeedRound for non-PRO */}
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="ps-sentence-builder" subject="Sentence Builder" questions={SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />

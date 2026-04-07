@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PossessiveAdjectivesLessonClient from "./PossessiveAdjectivesLessonClient";
 
 export const metadata: Metadata = {
-  title: "Possessive Adjectives (my, your, his...) — A1 Grammar — English Nerd",
+  title: "Possessive Adjectives Exercises with Answers for Beginners (A1)",
   description:
     "Learn English possessive adjectives: my, your, his, her, its, our, their. A1 lesson with rules, examples and 4 exercises to practise ownership.",
   alternates: { canonical: "/grammar/a1/possessive-adjectives" },

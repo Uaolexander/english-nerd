@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PresentSimpleHeSheItLessonClient from "./PresentSimpleHeSheItLessonClient";
 
 export const metadata: Metadata = {
-  title: "Present Simple: he/she/it (-s endings) — A1 Grammar — English Nerd",
+  title: "Present Simple (He, She, It) Exercises with Answers (A1)",
   description:
     "Learn Present Simple for he, she and it with -s endings and spelling rules. A1 grammar exercises covering works, watches, studies and more.",
   alternates: { canonical: "/grammar/a1/present-simple-he-she-it" },

@@ -1,5 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
-import ProRelatedTopics from "@/components/ProRelatedTopics";
+import RelatedTopics from "@/components/RelatedTopics";
 import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
@@ -233,7 +233,7 @@ export default function PresentSimplePage() {
             basePath="/tenses/present-simple"
           />
           <AdUnit variant="inline-light" />
-          <ProRelatedTopics exercises={RELATED} basePath="/tenses/present-simple" />
+          <RelatedTopics exercises={RELATED} basePath="/tenses/present-simple" />
         </div>
 
       </div>

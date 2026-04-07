@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CanCantLessonClient from "./CanCantLessonClient";
 
 export const metadata: Metadata = {
-  title: "Can / Can't (Ability & Permission) — A1 Grammar — English Nerd",
+  title: "Can / Can't Exercises with Answers for Beginners (A1)",
   description:
     "Learn to use can and can't in English for ability and permission. A1 grammar lesson with affirmative, negative and question forms plus exercises.",
   alternates: { canonical: "/grammar/a1/can-cant" },

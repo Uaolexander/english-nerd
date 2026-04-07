@@ -3,6 +3,33 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "He are a doctor.  — the mistake is:",           options: ["He","are","a","doctor"],            answer: 1 },
+  { q: "I are from Ukraine.  — the mistake is:",        options: ["I","are","from","Ukraine"],         answer: 1 },
+  { q: "They is busy right now.  — the mistake is:",    options: ["They","is","busy","right"],         answer: 1 },
+  { q: "She have a great idea.  — the mistake is:",     options: ["She","have","a","great"],           answer: 1 },
+  { q: "He have a brother in Canada.  — the mistake is:", options: ["He","have","brother","Canada"],  answer: 1 },
+  { q: "She do her homework after dinner.  — the mistake is:", options: ["She","do","homework","dinner"], answer: 1 },
+  { q: "The sun rise in the east every day.  — the mistake is:", options: ["sun","rise","east","every"], answer: 1 },
+  { q: "Water boil at 100 degrees.  — the mistake is:", options: ["Water","boil","at","degrees"],      answer: 1 },
+  { q: "She cans speak three languages.  — the mistake is:", options: ["She","cans","speak","languages"], answer: 1 },
+  { q: "He musts leave by six o'clock.  — the mistake is:", options: ["He","musts","leave","six"],     answer: 1 },
+  { q: "She doesn't works on Sundays.  — the mistake is:", options: ["She","doesn't","works","Sundays"], answer: 2 },
+  { q: "I doesn't eat breakfast.  — the mistake is:",   options: ["I","doesn't","eat","breakfast"],    answer: 1 },
+  { q: "They doesn't live near here.  — the mistake is:", options: ["They","doesn't","live","near"],  answer: 1 },
+  { q: "Does she works here?  — the mistake is:",       options: ["Does","she","works","here"],        answer: 2 },
+  { q: "Do he play football?  — the mistake is:",       options: ["Do","he","play","football"],        answer: 0 },
+  { q: "He go to the gym every day.  — the mistake is:", options: ["He","go","to","gym"],              answer: 1 },
+  { q: "She don't like horror films.  — the mistake is:", options: ["She","don't","like","films"],     answer: 1 },
+  { q: "We goes to school by bus.  — the mistake is:",  options: ["We","goes","to","school"],          answer: 1 },
+  { q: "Does your parents work in the city?  — the mistake is:", options: ["Does","your","parents","work"], answer: 0 },
+  { q: "He don't eat vegetables.  — the mistake is:",   options: ["He","don't","eat","vegetables"],    answer: 1 },
+];
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -144,6 +171,8 @@ function normSentence(s: string) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
 export default function SpotTheMistakeClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
 
@@ -215,6 +244,234 @@ export default function SpotTheMistakeClient() {
 
   const checkedCount = current.questions.filter((q) => checked[q.id]).length;
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = 210, H = 297, ml = 15, mr = 15;
+      const Y = "#F5DA20", BK = "#111111", GR = "#999999", LG = "#F2F2F2", MG = "#CCCCCC";
+
+      function pageHeader(pageNum: number, sub: string) {
+        pdf.setFillColor(Y); pdf.rect(0, 0, W, 2.5, "F");
+        pdf.setFillColor("#FAFAFA"); pdf.rect(0, 2.5, W, 13, "F");
+        pdf.setDrawColor("#EBEBEB"); pdf.setLineWidth(0.25); pdf.line(0, 15.5, W, 15.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+        pdf.text("English Nerd", ml, 10.5);
+        pdf.setFillColor(MG); pdf.circle(ml+27, 9.5, 0.7, "F");
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+        pdf.text(sub, ml+30, 10.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(GR);
+        pdf.text(`${pageNum} / 3`, W-mr, 10.5, { align: "right" });
+      }
+      function numCircle(x: number, y: number, n: number) {
+        pdf.setFillColor(BK); pdf.circle(x+3.5, y+3.5, 3.5, "F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor("#FFFFFF");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(String(n), x+3.5, y+3.5, { align:"center", baseline:"middle" } as any);
+      }
+      function pill(x: number, y: number, text: string, bg: string, fg: string) {
+        const w=20, h=5.5;
+        pdf.setFillColor(bg); pdf.roundedRect(x,y,w,h,1.2,1.2,"F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7); pdf.setTextColor(fg);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(text, x+w/2, y+h/2, { align:"center", baseline:"middle" } as any);
+      }
+
+      pageHeader(1, "Present Simple · Spot the Mistake Worksheet");
+      pdf.setFillColor(BK); pdf.roundedRect(W-mr-28, 5, 28, 6, 1.5, 1.5, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(Y);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pdf.text("A1–A2 LEVEL", W-mr-14, 8, { align:"center", baseline:"middle" } as any);
+      let y = 19;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 22, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(26); pdf.setTextColor(BK);
+      pdf.text("Spot the Mistake", ml+5, y+11);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Find the grammar error in each sentence and write the correction.", ml+5, y+18);
+      y += 27;
+
+      numCircle(ml, y, 1);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 1", ml+10, y+5);
+      const e1w = pdf.getTextWidth("Exercise 1");
+      pill(ml+10+e1w+3, y+0.5, "EASY", "#D1FAE5", "#065F46");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Underline the error and write the correction.", ml+10+e1w+26, y+4.5);
+      y += 11;
+      const qH = 11;
+      const ex1 = [
+        "1. He are a doctor.                                       → ___________",
+        "2. I are from Ukraine.                                    → ___________",
+        "3. They is busy right now.                                → ___________",
+        "4. She have a great idea.                                 → ___________",
+        "5. He have a brother in Canada.                           → ___________",
+        "6. She do her homework after dinner.                      → ___________",
+        "7. The sun rise in the east every day.                    → ___________",
+        "8. Water boil at 100 degrees Celsius.                     → ___________",
+        "9. She cans speak three languages.                        → ___________",
+        "10. He musts leave by six o'clock.                        → ___________",
+      ];
+      ex1.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex1.length * qH + 5;
+
+      numCircle(ml, y, 2);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 2", ml+10, y+5);
+      const e2w = pdf.getTextWidth("Exercise 2");
+      pill(ml+10+e2w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Negatives — find & correct the error.", ml+10+e2w+26, y+4.5);
+      y += 11;
+      const ex2 = [
+        "1. She doesn't works on Sundays.                          → ___________",
+        "2. I doesn't eat breakfast.                               → ___________",
+        "3. They doesn't live near here.                           → ___________",
+        "4. He don't like coffee.                                  → ___________",
+        "5. We doesn't have a car.                                 → ___________",
+        "6. She don't speak French.                                → ___________",
+        "7. It don't rain much in summer.                          → ___________",
+        "8. My dog doesn't eats vegetables.                        → ___________",
+        "9. You doesn't need to worry.                             → ___________",
+        "10. My parents doesn't speak English.                     → ___________",
+      ];
+      ex2.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("1 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 2
+      pdf.addPage();
+      pageHeader(2, "Present Simple · Spot the Mistake Worksheet");
+      y = 20;
+      numCircle(ml, y, 3);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 3", ml+10, y+5);
+      const e3w = pdf.getTextWidth("Exercise 3");
+      pill(ml+10+e3w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Questions — correct the error.", ml+10+e3w+26, y+4.5);
+      y += 11;
+      const ex3 = [
+        "1. Does she works here?                                   → ___________",
+        "2. Do he play football?                                   → ___________",
+        "3. Does they live in London?                              → ___________",
+        "4. Does your parents work in the city?                    → ___________",
+        "5. Do she like jazz?                                      → ___________",
+        "6. Does he drinks coffee?                                 → ___________",
+        "7. Do it rain a lot here?                                 → ___________",
+        "8. Does we need to bring anything?                        → ___________",
+        "9. Do the train leave at 8?                               → ___________",
+        "10. Does they speak French?                               → ___________",
+      ];
+      ex3.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex3.length * qH + 6;
+
+      numCircle(ml, y, 4);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 4", ml+10, y+5);
+      const e4w = pdf.getTextWidth("Exercise 4");
+      pill(ml+10+e4w+3, y+0.5, "HARD", "#FEE2E2", "#991B1B");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Mixed — rewrite the sentence correctly.", ml+10+e4w+26, y+4.5);
+      y += 11;
+      const ex4 = [
+        "1. He go to the gym every day.",
+        "2. She don't like horror films.",
+        "3. We goes to school by bus.",
+        "4. He don't eat vegetables.",
+        "5. Does she works late?",
+        "6. Do he speak Italian?",
+        "7. She cans drive a car.",
+        "8. My sister have a dog.",
+        "9. They doesn't live near here.",
+        "10. Does your sister like jazz?  (→ rewrite as negative)",
+      ];
+      ex4.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor(MG);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text("→ _________________________________", ml+2, y + i*qH + 5.5, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH+3, W-mr, y+(i+1)*qH+3);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("2 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 3 — Answer Key
+      pdf.addPage();
+      pageHeader(3, "Present Simple · Spot the Mistake — Answer Key");
+      y = 20;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 20, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(24); pdf.setTextColor(BK);
+      pdf.text("Answer Key", ml+5, y+10);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Check your corrections below", ml+5, y+17);
+      y += 26;
+
+      const answerSections = [
+        { lbl:"Exercise 1", sub:"to be, have/has, -s/-es, modals", ans:["is","am","are","has","has","does","rises","boils","can","must"] },
+        { lbl:"Exercise 2", sub:"Negatives — don't / doesn't", ans:["doesn't work","don't eat","don't live","doesn't like","don't have","doesn't speak","doesn't rain","doesn't eat","don't need","don't speak"] },
+        { lbl:"Exercise 3", sub:"Questions — Do / Does", ans:["Does she work","Does he play","Do they live","Do your parents","Does she like","Does he drink","Does it rain","Do we need","Does the train","Do they speak"] },
+        { lbl:"Exercise 4", sub:"Mixed rewrite", ans:["goes","doesn't like","go","doesn't eat","Does she work","Does he speak","can","has","don't live","Your sister doesn't like jazz."] },
+      ];
+      answerSections.forEach(({ lbl, sub, ans }, si) => {
+        numCircle(ml, y, si+1);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(12); pdf.setTextColor(BK);
+        pdf.text(lbl, ml+10, y+5);
+        const lblW = pdf.getTextWidth(lbl);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor(GR);
+        pdf.text(sub, ml+10+lblW+4, y+4.5);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, y+9, W-mr, y+9);
+        y += 13;
+        const chipW=30, chipH=7.5, chipStep=40;
+        ans.forEach((a, ai) => {
+          const col = ai % 5; const row = Math.floor(ai/5);
+          const cx = ml + col*chipStep; const cy = y + row*14;
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor(MG);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(`${ai+1}.`, cx, cy+chipH/2, { baseline:"middle" } as any);
+          pdf.setFillColor(Y); pdf.roundedRect(cx+6, cy, chipW, chipH, 1.5, 1.5, "F");
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(BK);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(a, cx+6+chipW/2, cy+chipH/2, { align:"center", baseline:"middle" } as any);
+        });
+        y += 2*14 + 8;
+      });
+
+      pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, H-12, W-mr, H-12);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc — Free English Grammar", ml, H-7);
+      pdf.text("Present Simple \u00B7 Spot the Mistake \u00B7 A1\u2013A2 \u00B7 Free to print & share", W-mr, H-7, { align:"right" });
+
+      pdf.save("EnglishNerd_PresentSimple_SpotTheMistake.pdf");
+    } catch(e) { console.error(e); }
+    finally { setPdfLoading(false); }
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -249,8 +506,14 @@ export default function SpotTheMistakeClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className="sticky top-24">
+              <SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} variant="sidebar" />
+            </div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -259,6 +522,7 @@ export default function SpotTheMistakeClient() {
             <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
               <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
               <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -370,9 +634,45 @@ export default function SpotTheMistakeClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <aside className="sticky top-24 flex flex-col gap-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {[
+                { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Write the correct form" },
+                { title: "Quiz — Multiple Choice", href: "/tenses/present-simple/quiz", img: "/topics/exercises/quiz.jpg", level: "A1", badge: "bg-emerald-500", reason: "Choose the right option" },
+                { title: "Simple vs Continuous", href: "/tenses/present-simple/ps-vs-pc", img: "/topics/exercises/ps-vs-pc.jpg", level: "A2", badge: "bg-blue-500", reason: "Distinguish tense usage" },
+              ].map((rec) => (
+                <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                    <img src={rec.img} alt={rec.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>{rec.level}</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">{rec.title}</p>
+                    {rec.reason && <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">{rec.reason}</p>}
+                  </div>
+                </a>
+              ))}
+              <a href="/tenses/present-simple" className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+                All Present Simple
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </aside>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
         </div>
+
+        {/* SpeedRound for non-PRO */}
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />

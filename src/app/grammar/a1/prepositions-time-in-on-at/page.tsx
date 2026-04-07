@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PrepositionsTimeInOnAtLessonClient from "./PrepositionsTimeInOnAtLessonClient";
 
 export const metadata: Metadata = {
-  title: "Prepositions of Time: in, on, at — A1 Grammar — English Nerd",
+  title: "Prepositions of Time (In, On, At) Exercises with Answers (A1)",
   description:
     "Learn when to use in, on and at for time in English. A1 grammar lesson: in June, on Monday, at 8 o'clock — rules and 4 interactive exercises.",
   alternates: { canonical: "/grammar/a1/prepositions-time-in-on-at" },

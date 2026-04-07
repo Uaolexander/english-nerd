@@ -3,6 +3,33 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What time ___ the train leave?",          options: ["do","does","is","are"],              answer: 1 },
+  { q: "Where ___ your parents live?",            options: ["does","do","are","is"],              answer: 1 },
+  { q: "___ often does she go to the gym?",       options: ["What","How","Which","Where"],        answer: 1 },
+  { q: "What ___ he do for a living?",            options: ["do","is","does","are"],              answer: 2 },
+  { q: "How much ___ this cost?",                 options: ["do","is","does","are"],              answer: 2 },
+  { q: "Why ___ she always late?",                options: ["do","does","is","are"],              answer: 2 },
+  { q: "She ___ coffee. (state verb: love)",      options: ["is loving","love","loves","loving"], answer: 2 },
+  { q: "I ___ what you mean. (state: understand)",options: ["am understanding","understand","understands","is understanding"], answer: 1 },
+  { q: "He ___ in Paris right now temporarily.", options: ["lives","live","is living","living"],  answer: 2 },
+  { q: "They ___ a new system this month.",       options: ["implement","is implementing","implements","are implementing"], answer: 3 },
+  { q: "This soup ___ great! (state: taste)",     options: ["is tasting","taste","tastes","tasting"], answer: 2 },
+  { q: "She ___ five languages.",                 options: ["is speaking","speak","speaks","speaking"], answer: 2 },
+  { q: "I ___ she is right. (state: think)",      options: ["am thinking","think","thinks","thinking"], answer: 1 },
+  { q: "He ___ the answer. (state: know)",        options: ["is knowing","know","knows","knowing"], answer: 2 },
+  { q: "She ___ her mum this evening. (plan)",    options: ["calls","call","is calling","called"], answer: 2 },
+  { q: "The museum ___ every Sunday.",            options: ["is closing","close","closes","closing"], answer: 2 },
+  { q: "We ___ for the bus right now.",           options: ["wait","waits","are waiting","waited"], answer: 2 },
+  { q: "He usually ___ by 6 AM.",                 options: ["is waking up","wake up","wakes up","woken up"], answer: 2 },
+  { q: "I ___ you've made the right choice.",     options: ["am thinking","think","thinks","am think"], answer: 1 },
+  { q: "She ___ her report — don't disturb her.", options: ["writes","write","is writing","written"], answer: 2 },
+];
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -389,6 +416,8 @@ function Ex({ en }: { en: string }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
 export default function AdvancedMixedClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -433,6 +462,231 @@ export default function AdvancedMixedClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = 210, H = 297, ml = 15, mr = 15;
+      const Y = "#F5DA20", BK = "#111111", GR = "#999999", LG = "#F2F2F2", MG = "#CCCCCC";
+
+      function pageHeader(pageNum: number, sub: string) {
+        pdf.setFillColor(Y); pdf.rect(0, 0, W, 2.5, "F");
+        pdf.setFillColor("#FAFAFA"); pdf.rect(0, 2.5, W, 13, "F");
+        pdf.setDrawColor("#EBEBEB"); pdf.setLineWidth(0.25); pdf.line(0, 15.5, W, 15.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+        pdf.text("English Nerd", ml, 10.5);
+        pdf.setFillColor(MG); pdf.circle(ml+27, 9.5, 0.7, "F");
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+        pdf.text(sub, ml+30, 10.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(GR);
+        pdf.text(`${pageNum} / 3`, W-mr, 10.5, { align: "right" });
+      }
+      function numCircle(x: number, y: number, n: number) {
+        pdf.setFillColor(BK); pdf.circle(x+3.5, y+3.5, 3.5, "F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor("#FFFFFF");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(String(n), x+3.5, y+3.5, { align:"center", baseline:"middle" } as any);
+      }
+      function pill(x: number, y: number, text: string, bg: string, fg: string) {
+        const w=20, h=5.5;
+        pdf.setFillColor(bg); pdf.roundedRect(x,y,w,h,1.2,1.2,"F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7); pdf.setTextColor(fg);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(text, x+w/2, y+h/2, { align:"center", baseline:"middle" } as any);
+      }
+
+      pageHeader(1, "Present Simple · Advanced Mixed Worksheet");
+      pdf.setFillColor(BK); pdf.roundedRect(W-mr-28, 5, 28, 6, 1.5, 1.5, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(Y);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pdf.text("A2+  LEVEL", W-mr-14, 8, { align:"center", baseline:"middle" } as any);
+      let y = 19;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 22, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(22); pdf.setTextColor(BK);
+      pdf.text("Advanced Mixed", ml+5, y+11);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Wh- questions \u00B7 State verbs \u00B7 Simple vs Continuous \u00B7 Mixed \u2014 4 exercises + answer key", ml+5, y+18);
+      y += 27;
+
+      const qH = 9;
+      numCircle(ml, y, 1);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 1", ml+10, y+5);
+      const e1w = pdf.getTextWidth("Exercise 1");
+      pill(ml+10+e1w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Wh- questions — choose the missing word.", ml+10+e1w+26, y+4.5);
+      y += 11;
+      const ex1 = [
+        "1. What time ___ the train leave?   a) do   b) does   c) is   d) are",
+        "2. Where ___ your parents live?   a) does   b) do   c) are   d) is",
+        "3. ___ often does she go to the gym?   a) What   b) How   c) Which   d) Where",
+        "4. What ___ he do for a living?   a) do   b) is   c) does   d) are",
+        "5. How much ___ this cost?   a) do   b) is   c) does   d) are",
+        "6. Why ___ she always late?   a) do   b) does   c) is   d) are",
+        "7. Where ___ they usually go on holiday?   a) does   b) do   c) are   d) is",
+        "8. What ___ your sister study?   a) do   b) is   c) does   d) are",
+        "9. How often ___ they visit their parents?   a) does   b) do   c) are   d) is",
+        "10. Which language ___ he speak at home?   a) do   b) is   c) are   d) does",
+      ];
+      ex1.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex1.length * qH + 5;
+
+      numCircle(ml, y, 2);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 2", ml+10, y+5);
+      const e2w = pdf.getTextWidth("Exercise 2");
+      pill(ml+10+e2w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("State verbs — choose simple or continuous.", ml+10+e2w+26, y+4.5);
+      y += 11;
+      const ex2 = [
+        "1. She ___ coffee. (love = state)   a) is loving   b) love   c) loves   d) loving",
+        "2. I ___ what you mean. (understand)   a) am understanding   b) understand   c) understands",
+        "3. He ___ the answer. (know = state)   a) is knowing   b) know   c) knows   d) knowing",
+        "4. This soup ___ great! (taste = state)   a) is tasting   b) taste   c) tastes   d) tasting",
+        "5. She ___ five languages. (speak = skill)   a) is speaking   b) speak   c) speaks",
+        "6. I ___ she is right. (think = believe)   a) am thinking   b) think   c) thinks",
+        "7. He ___ your address. (know = state)   a) is knowing   b) know   c) knows   d) known",
+        "8. They ___ the plan. (understand)   a) are understanding   b) understand   c) understands",
+        "9. It ___ too expensive. (seem = state)   a) is seeming   b) seem   c) seems   d) seeming",
+        "10. She ___ you've made the right choice. (think)   a) is thinking   b) think   c) thinks",
+      ];
+      ex2.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("1 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 2
+      pdf.addPage();
+      pageHeader(2, "Present Simple · Advanced Mixed Worksheet");
+      y = 20;
+      numCircle(ml, y, 3);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 3", ml+10, y+5);
+      const e3w = pdf.getTextWidth("Exercise 3");
+      pill(ml+10+e3w+3, y+0.5, "HARD", "#FEE2E2", "#991B1B");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Simple vs Continuous — mixed.", ml+10+e3w+26, y+4.5);
+      y += 11;
+      const ex3 = [
+        "1. He ___ in London temporarily.   a) lives   b) live   c) is living   d) living",
+        "2. They ___ a new system this month.   a) implement   b) implements   c) are implementing",
+        "3. She ___ her mum this evening. (plan)   a) calls   b) call   c) is calling   d) called",
+        "4. The museum ___ every Sunday.   a) is closing   b) close   c) closes   d) closing",
+        "5. We ___ for the bus right now.   a) wait   b) waits   c) are waiting   d) waited",
+        "6. He usually ___ by 6 AM.   a) is waking up   b) wake up   c) wakes up   d) woken up",
+        "7. She ___ her report right now — can't talk.   a) writes   b) write   c) is writing",
+        "8. He ___ to work every day. (routine)   a) is driving   b) drives   c) drive   d) driving",
+        "9. Hurry! The taxi ___ outside.   a) waits   b) wait   c) is waiting   d) has waited",
+        "10. I ___ a meeting right now.   a) have   b) am having   c) is having   d) has",
+      ];
+      ex3.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex3.length * qH + 6;
+
+      numCircle(ml, y, 4);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 4", ml+10, y+5);
+      const e4w = pdf.getTextWidth("Exercise 4");
+      pill(ml+10+e4w+3, y+0.5, "HARD", "#FEE2E2", "#991B1B");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Advanced challenge — all rules combined.", ml+10+e4w+26, y+4.5);
+      y += 11;
+      const ex4 = [
+        "1. She ___ at the library every Saturday. (routine)   a) studies   b) is studying   c) study",
+        "2. He ___ you — he saw you yesterday. (state: recognise)   a) is recognising   b) recognises",
+        "3. Listen! Someone ___ at the door. (in progress)   a) knocks   b) knock   c) is knocking",
+        "4. This company ___ products worldwide each year.   a) exports   b) is exporting   c) export",
+        "5. I ___ you've made the right choice. (state: think)   a) am thinking   b) thinks   c) think",
+        "6. She ___ maths at a local school. (job)   a) teaches   b) is teaching   c) teach",
+        "7. They ___ tennis — ask them later. (in progress)   a) play   b) plays   c) are playing",
+        "8. Water ___ at 100°C. (scientific fact)   a) is boiling   b) boil   c) boils   d) boiled",
+        "9. She ___ her grandmother this weekend. (plan)   a) visits   b) visit   c) is visiting",
+        "10. He ___ what you said. (state: not understand)   a) isn't understanding   b) doesn't understand",
+      ];
+      ex4.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("2 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 3 — Answer Key
+      pdf.addPage();
+      pageHeader(3, "Present Simple · Advanced Mixed — Answer Key");
+      y = 20;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 20, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(24); pdf.setTextColor(BK);
+      pdf.text("Answer Key", ml+5, y+10);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Check your answers below", ml+5, y+17);
+      y += 26;
+
+      const answerSections = [
+        { lbl:"Exercise 1", sub:"Wh- questions", ans:["b) does","b) do","b) How","c) does","c) does","c) is","b) do","c) does","b) do","d) does"] },
+        { lbl:"Exercise 2", sub:"State verbs", ans:["c) loves","b) understand","c) knows","c) tastes","c) speaks","b) think","c) knows","b) understand","c) seems","c) thinks"] },
+        { lbl:"Exercise 3", sub:"Simple vs Continuous", ans:["c) is living","c) are implementing","c) is calling","c) closes","c) are waiting","c) wakes up","c) is writing","b) drives","c) is waiting","b) am having"] },
+        { lbl:"Exercise 4", sub:"Advanced challenge", ans:["a) studies","b) recognises","c) is knocking","a) exports","c) think","a) teaches","c) are playing","c) boils","c) is visiting","b) doesn't understand"] },
+      ];
+      answerSections.forEach(({ lbl, sub, ans }, si) => {
+        numCircle(ml, y, si+1);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(12); pdf.setTextColor(BK);
+        pdf.text(lbl, ml+10, y+5);
+        const lblW = pdf.getTextWidth(lbl);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor(GR);
+        pdf.text(sub, ml+10+lblW+4, y+4.5);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, y+9, W-mr, y+9);
+        y += 13;
+        const chipW=28, chipH=7.5, chipStep=38;
+        ans.forEach((a, ai) => {
+          const col = ai % 5; const row = Math.floor(ai/5);
+          const cx = ml + col*chipStep; const cy = y + row*14;
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor(MG);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(`${ai+1}.`, cx, cy+chipH/2, { baseline:"middle" } as any);
+          pdf.setFillColor(Y); pdf.roundedRect(cx+6, cy, chipW, chipH, 1.5, 1.5, "F");
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(BK);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(a, cx+6+chipW/2, cy+chipH/2, { align:"center", baseline:"middle" } as any);
+        });
+        y += 2*14 + 8;
+      });
+
+      pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, H-12, W-mr, H-12);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc — Free English Grammar", ml, H-7);
+      pdf.text("Present Simple \u00B7 Advanced Mixed \u00B7 A2+ \u00B7 Free to print & share", W-mr, H-7, { align:"right" });
+
+      pdf.save("EnglishNerd_PresentSimple_AdvancedMixed_A2.pdf");
+    } catch(e) { console.error(e); }
+    finally { setPdfLoading(false); }
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -473,8 +727,14 @@ export default function AdvancedMixedClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className="sticky top-24">
+              <SpeedRound gameId="ps-pc-advanced" subject="Advanced Mixed" questions={SPEED_QUESTIONS} variant="sidebar" />
+            </div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -501,6 +761,7 @@ export default function AdvancedMixedClient() {
               >
                 Explanation
               </button>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -698,9 +959,45 @@ export default function AdvancedMixedClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <aside className="sticky top-24 flex flex-col gap-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {[
+                { title: "Simple vs Continuous", href: "/tenses/present-simple/ps-vs-pc", img: "/topics/exercises/ps-vs-pc.jpg", level: "A2", badge: "bg-blue-500", reason: "Reinforce tense differences" },
+                { title: "Spot the Mistake", href: "/tenses/present-simple/spot-the-mistake", img: "/topics/exercises/spot-the-mistake.jpg", level: "A1–A2", badge: "bg-amber-500", reason: "Find & fix errors" },
+                { title: "Quiz — Multiple Choice", href: "/tenses/present-simple/quiz", img: "/topics/exercises/quiz.jpg", level: "A1", badge: "bg-emerald-500", reason: "Core PS practice" },
+              ].map((rec) => (
+                <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                    <img src={rec.img} alt={rec.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>{rec.level}</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">{rec.title}</p>
+                    {rec.reason && <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">{rec.reason}</p>}
+                  </div>
+                </a>
+              ))}
+              <a href="/tenses/present-simple" className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+                All Present Simple
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </aside>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
         </div>
+
+        {/* SpeedRound for non-PRO */}
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="ps-pc-advanced" subject="Advanced Mixed" questions={SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />

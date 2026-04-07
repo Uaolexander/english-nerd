@@ -3,6 +3,33 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "___ she like jazz?",                    options: ["Do","Does","Is","Are"],              answer: 1 },
+  { q: "___ they live near here?",               options: ["Does","Do","Is","Are"],              answer: 1 },
+  { q: "___ he play football?",                  options: ["Do","Does","Is","Are"],              answer: 1 },
+  { q: "___ you speak French?",                  options: ["Does","Do","Is","Are"],              answer: 1 },
+  { q: "___ it rain a lot here?",                options: ["Do","Does","Is","Are"],              answer: 1 },
+  { q: "___ the train leave at 8?",              options: ["Do","Are","Does","Is"],              answer: 2 },
+  { q: "She ___ like spicy food.",               options: ["don't","doesn't","isn't","aren't"], answer: 1 },
+  { q: "I ___ eat breakfast every morning.",     options: ["doesn't","isn't","don't","aren't"], answer: 2 },
+  { q: "They ___ live near here.",               options: ["doesn't","don't","aren't","isn't"], answer: 1 },
+  { q: "He ___ watch TV much.",                  options: ["don't","doesn't","isn't","aren't"], answer: 1 },
+  { q: "We ___ have a car.",                     options: ["doesn't","isn't","aren't","don't"], answer: 3 },
+  { q: "My dog ___ eat vegetables.",             options: ["don't","doesn't","isn't","aren't"], answer: 1 },
+  { q: '"Do you like jazz?" — "Yes, I ___."',   options: ["does","is","am","do"],              answer: 3 },
+  { q: '"Does she work?" — "No, she ___."',      options: ["don't","isn't","doesn't","won't"],  answer: 2 },
+  { q: '"Do they live here?" — "Yes, they ___."',options: ["does","are","did","do"],            answer: 3 },
+  { q: "___ I need a ticket?",                   options: ["Does","Is","Are","Do"],             answer: 3 },
+  { q: "You ___ need to worry.",                 options: ["doesn't","isn't","aren't","don't"], answer: 3 },
+  { q: "It ___ snow here in summer.",            options: ["don't","isn't","aren't","doesn't"], answer: 3 },
+  { q: "She ___ know the answer.",               options: ["doesn't","don't","isn't","aren't"], answer: 0 },
+  { q: "My parents ___ speak English.",          options: ["doesn't","don't","isn't","aren't"], answer: 1 },
+];
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -142,6 +169,8 @@ function Ex({ en }: { en: string }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
 export default function DoDoesClient() {
+  const isPro = useIsPro();
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
@@ -186,6 +215,231 @@ export default function DoDoesClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = 210, H = 297, ml = 15, mr = 15;
+      const Y = "#F5DA20", BK = "#111111", GR = "#999999", LG = "#F2F2F2", MG = "#CCCCCC";
+
+      function pageHeader(pageNum: number, sub: string) {
+        pdf.setFillColor(Y); pdf.rect(0, 0, W, 2.5, "F");
+        pdf.setFillColor("#FAFAFA"); pdf.rect(0, 2.5, W, 13, "F");
+        pdf.setDrawColor("#EBEBEB"); pdf.setLineWidth(0.25); pdf.line(0, 15.5, W, 15.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+        pdf.text("English Nerd", ml, 10.5);
+        pdf.setFillColor(MG); pdf.circle(ml+27, 9.5, 0.7, "F");
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+        pdf.text(sub, ml+30, 10.5);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(GR);
+        pdf.text(`${pageNum} / 3`, W-mr, 10.5, { align: "right" });
+      }
+      function numCircle(x: number, y: number, n: number) {
+        pdf.setFillColor(BK); pdf.circle(x+3.5, y+3.5, 3.5, "F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor("#FFFFFF");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(String(n), x+3.5, y+3.5, { align:"center", baseline:"middle" } as any);
+      }
+      function pill(x: number, y: number, text: string, bg: string, fg: string) {
+        const w=20, h=5.5;
+        pdf.setFillColor(bg); pdf.roundedRect(x,y,w,h,1.2,1.2,"F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(7); pdf.setTextColor(fg);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(text, x+w/2, y+h/2, { align:"center", baseline:"middle" } as any);
+      }
+
+      pageHeader(1, "Present Simple · do / does / don't / doesn't Worksheet");
+      pdf.setFillColor(BK); pdf.roundedRect(W-mr-22, 5, 22, 6, 1.5, 1.5, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(7.5); pdf.setTextColor(Y);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pdf.text("A1  LEVEL", W-mr-11, 8, { align:"center", baseline:"middle" } as any);
+      let y = 19;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 22, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(22); pdf.setTextColor(BK);
+      pdf.text("do / does / don't / doesn't", ml+5, y+11);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Questions \u00B7 Negatives \u00B7 Short answers \u00B7 Mixed \u2014 4 exercises + answer key", ml+5, y+18);
+      y += 27;
+
+      const qH = 9;
+      numCircle(ml, y, 1);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 1", ml+10, y+5);
+      const e1w = pdf.getTextWidth("Exercise 1");
+      pill(ml+10+e1w+3, y+0.5, "EASY", "#D1FAE5", "#065F46");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Questions — choose Do or Does.", ml+10+e1w+26, y+4.5);
+      y += 11;
+      const ex1 = [
+        "1. ___ she like jazz?   a) Do   b) Does   c) Is   d) Are",
+        "2. ___ they live near here?   a) Does   b) Do   c) Is   d) Are",
+        "3. ___ he play football?   a) Do   b) Does   c) Is   d) Are",
+        "4. ___ you speak French?   a) Does   b) Do   c) Is   d) Are",
+        "5. ___ your parents work in the city?   a) Does   b) Is   c) Do   d) Are",
+        "6. ___ it rain a lot here?   a) Do   b) Does   c) Is   d) Are",
+        "7. ___ we need to bring anything?   a) Does   b) Is   c) Are   d) Do",
+        "8. ___ the train leave at 8?   a) Do   b) Are   c) Does   d) Is",
+        "9. ___ I need a ticket?   a) Does   b) Is   c) Are   d) Do",
+        "10. ___ she know the answer?   a) Do   b) Does   c) Is   d) Are",
+      ];
+      ex1.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex1.length * qH + 5;
+
+      numCircle(ml, y, 2);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 2", ml+10, y+5);
+      const e2w = pdf.getTextWidth("Exercise 2");
+      pill(ml+10+e2w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Negatives — choose don't or doesn't.", ml+10+e2w+26, y+4.5);
+      y += 11;
+      const ex2 = [
+        "1. She ___ like spicy food.   a) don't   b) doesn't   c) isn't   d) aren't",
+        "2. I ___ eat breakfast every morning.   a) doesn't   b) isn't   c) don't   d) aren't",
+        "3. They ___ live near here.   a) doesn't   b) don't   c) aren't   d) isn't",
+        "4. He ___ watch TV much.   a) don't   b) doesn't   c) isn't   d) aren't",
+        "5. We ___ have a car.   a) doesn't   b) isn't   c) aren't   d) don't",
+        "6. My dog ___ eat vegetables.   a) don't   b) doesn't   c) isn't   d) aren't",
+        "7. You ___ need to worry.   a) doesn't   b) isn't   c) aren't   d) don't",
+        "8. It ___ snow here in summer.   a) don't   b) isn't   c) aren't   d) doesn't",
+        "9. She ___ know the answer.   a) doesn't   b) don't   c) isn't   d) aren't",
+        "10. My parents ___ speak English.   a) doesn't   b) don't   c) isn't   d) aren't",
+      ];
+      ex2.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("1 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 2
+      pdf.addPage();
+      pageHeader(2, "Present Simple · do / does / don't / doesn't Worksheet");
+      y = 20;
+      numCircle(ml, y, 3);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 3", ml+10, y+5);
+      const e3w = pdf.getTextWidth("Exercise 3");
+      pill(ml+10+e3w+3, y+0.5, "MEDIUM", "#FEF3C7", "#92400E");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Short answers — choose the correct form.", ml+10+e3w+26, y+4.5);
+      y += 11;
+      const ex3 = [
+        '1. "Do you like chocolate?" — "Yes, I ___."   a) does   b) am   c) did   d) do',
+        '2. "Does she work here?" — "No, she ___."   a) don\'t   b) isn\'t   c) doesn\'t   d) not',
+        '3. "Do they live in Paris?" — "Yes, they ___."   a) does   b) are   c) did   d) do',
+        '4. "Does he drink coffee?" — "Yes, he ___."   a) do   b) does   c) is   d) plays',
+        '5. "Do you speak Spanish?" — "No, I ___."   a) doesn\'t   b) isn\'t   c) don\'t   d) not',
+        '6. "Does she like jazz?" — "No, she ___."   a) don\'t   b) isn\'t   c) doesn\'t   d) won\'t',
+        '7. "Do they have a dog?" — "Yes, they ___."   a) does   b) are   c) have   d) do',
+        '8. "Does it rain a lot?" — "No, it ___."   a) don\'t   b) isn\'t   c) doesn\'t   d) not',
+        '9. "Do we need tickets?" — "Yes, you ___."   a) does   b) are   c) do   d) need',
+        '10. "Does Mark play guitar?" — "Yes, he ___."   a) do   b) does   c) plays   d) is',
+      ];
+      ex3.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+      y += ex3.length * qH + 6;
+
+      numCircle(ml, y, 4);
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(11); pdf.setTextColor(BK);
+      pdf.text("Exercise 4", ml+10, y+5);
+      const e4w = pdf.getTextWidth("Exercise 4");
+      pill(ml+10+e4w+3, y+0.5, "HARD", "#FEE2E2", "#991B1B");
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(8.5); pdf.setTextColor(GR);
+      pdf.text("Mixed — all forms.", ml+10+e4w+26, y+4.5);
+      y += 11;
+      const ex4 = [
+        "1. ___ your sister speak Italian?   a) Do   b) Is   c) Are   d) Does",
+        "2. He ___ like horror films.   a) don't   b) doesn't   c) isn't   d) aren't",
+        "3. ___ they know the answer?   a) Does   b) Are   c) Do   d) Is",
+        "4. We ___ usually eat out on weekdays.   a) doesn't   b) don't   c) isn't   d) aren't",
+        '5. "Does she run every day?" — "Yes, she ___."   a) do   b) is   c) does   d) runs',
+        "6. She ___ eat breakfast at home.   a) don't   b) doesn't   c) isn't   d) aren't",
+        "7. ___ it get cold in winter here?   a) Do   b) Are   c) Is   d) Does",
+        '8. "Do you study French?" — "No, I ___."   a) doesn\'t   b) don\'t   c) isn\'t   d) not',
+        "9. My parents ___ live in the city.   a) doesn't   b) don't   c) isn't   d) aren't",
+        "10. ___ he know your address?   a) Do   b) Are   c) Is   d) Does",
+      ];
+      ex4.forEach((line, i) => {
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor("#222222");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pdf.text(line, ml+2, y + i*qH, { baseline:"top" } as any);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.2);
+        pdf.line(ml, y+(i+1)*qH-1, W-mr, y+(i+1)*qH-1);
+      });
+
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc", ml, H-7);
+      pdf.text("2 / 3", W-mr, H-7, { align:"right" });
+
+      // PAGE 3 — Answer Key
+      pdf.addPage();
+      pageHeader(3, "Present Simple · do / does — Answer Key");
+      y = 20;
+      pdf.setFillColor(Y); pdf.rect(ml, y, 2, 20, "F");
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(24); pdf.setTextColor(BK);
+      pdf.text("Answer Key", ml+5, y+10);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(10); pdf.setTextColor(GR);
+      pdf.text("Check your answers below", ml+5, y+17);
+      y += 26;
+
+      const answerSections = [
+        { lbl:"Exercise 1", sub:"Questions — Do / Does", ans:["b) Does","b) Do","b) Does","b) Do","c) Do","b) Does","d) Do","c) Does","d) Do","b) Does"] },
+        { lbl:"Exercise 2", sub:"Negatives — don't / doesn't", ans:["b) doesn't","c) don't","b) don't","b) doesn't","d) don't","b) doesn't","d) don't","d) doesn't","a) doesn't","b) don't"] },
+        { lbl:"Exercise 3", sub:"Short answers", ans:["d) do","c) doesn't","d) do","b) does","c) don't","c) doesn't","d) do","c) doesn't","c) do","b) does"] },
+        { lbl:"Exercise 4", sub:"Mixed", ans:["d) Does","b) doesn't","c) Do","b) don't","c) does","b) doesn't","d) Does","b) don't","b) don't","d) Does"] },
+      ];
+      answerSections.forEach(({ lbl, sub, ans }, si) => {
+        numCircle(ml, y, si+1);
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(12); pdf.setTextColor(BK);
+        pdf.text(lbl, ml+10, y+5);
+        const lblW = pdf.getTextWidth(lbl);
+        pdf.setFont("helvetica","normal"); pdf.setFontSize(9); pdf.setTextColor(GR);
+        pdf.text(sub, ml+10+lblW+4, y+4.5);
+        pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, y+9, W-mr, y+9);
+        y += 13;
+        const chipW=24, chipH=7.5, chipStep=36;
+        ans.forEach((a, ai) => {
+          const col = ai % 5; const row = Math.floor(ai/5);
+          const cx = ml + col*chipStep; const cy = y + row*14;
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor(MG);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(`${ai+1}.`, cx, cy+chipH/2, { baseline:"middle" } as any);
+          pdf.setFillColor(Y); pdf.roundedRect(cx+6, cy, chipW, chipH, 1.5, 1.5, "F");
+          pdf.setFont("helvetica","bold"); pdf.setFontSize(8); pdf.setTextColor(BK);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pdf.text(a, cx+6+chipW/2, cy+chipH/2, { align:"center", baseline:"middle" } as any);
+        });
+        y += 2*14 + 8;
+      });
+
+      pdf.setDrawColor(LG); pdf.setLineWidth(0.3); pdf.line(ml, H-12, W-mr, H-12);
+      pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(MG);
+      pdf.text("englishnerd.cc — Free English Grammar", ml, H-7);
+      pdf.text("Present Simple \u00B7 do / does \u00B7 A1 \u00B7 Free to print & share", W-mr, H-7, { align:"right" });
+
+      pdf.save("EnglishNerd_PresentSimple_DoDoesClient_A1.pdf");
+    } catch(e) { console.error(e); }
+    finally { setPdfLoading(false); }
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -220,8 +474,14 @@ export default function DoDoesClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className="sticky top-24">
+              <SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} variant="sidebar" />
+            </div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -240,6 +500,7 @@ export default function DoDoesClient() {
               >
                 Explanation
               </button>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -430,9 +691,45 @@ export default function DoDoesClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <aside className="sticky top-24 flex flex-col gap-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {[
+                { title: "am / is / are", href: "/tenses/present-simple/to-be", img: "/topics/exercises/to-be.jpg", level: "A1", badge: "bg-emerald-500", reason: "Practise to be forms" },
+                { title: "Quiz — Multiple Choice", href: "/tenses/present-simple/quiz", img: "/topics/exercises/quiz.jpg", level: "A1", badge: "bg-emerald-500", reason: "Test all PS forms" },
+                { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Write the correct form" },
+              ].map((rec) => (
+                <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                    <img src={rec.img} alt={rec.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>{rec.level}</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">{rec.title}</p>
+                    {rec.reason && <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">{rec.reason}</p>}
+                  </div>
+                </a>
+              ))}
+              <a href="/tenses/present-simple" className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+                All Present Simple
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </aside>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
         </div>
+
+        {/* SpeedRound for non-PRO */}
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />

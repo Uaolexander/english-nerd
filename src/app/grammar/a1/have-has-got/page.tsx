@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import HaveHasGotLessonClient from "./HaveHasGotLessonClient";
 
 export const metadata: Metadata = {
-  title: "Have got / Has got (Possession) — A1 Grammar — English Nerd",
+  title: "Have Got / Has Got Exercises with Answers (A1 Beginner Grammar)",
   description:
     "Learn have got and has got for possession in English. A1 grammar lesson covering I've got, she's got, negatives and questions with 4 exercises.",
   alternates: { canonical: "/grammar/a1/have-has-got" },

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PresentSimpleNegativeLessonClient from "./PresentSimpleNegativeLessonClient";
 
 export const metadata: Metadata = {
-  title: "Present Simple: Negative (don't / doesn't) — A1 Grammar — English Nerd",
+  title: "Present Simple Negative (Don't / Doesn't) Exercises with Answers for Beginners (A1)",
   description:
     "Learn to form Present Simple negatives with don't and doesn't. A1 grammar lesson with rules, examples and 4 exercises for all subject pronouns.",
   alternates: { canonical: "/grammar/a1/present-simple-negative" },

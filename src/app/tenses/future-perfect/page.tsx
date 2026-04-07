@@ -1,5 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
-import ProRelatedTopics from "@/components/ProRelatedTopics";
+import RelatedTopics from "@/components/RelatedTopics";
 import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
@@ -169,7 +169,7 @@ export default function FuturePerfectPage() {
         <div className="mt-14 flex flex-col gap-14">
           <CardGroup label="Exercises" sublabel="Practice Future Perfect with different task types" dotColor="bg-orange-400" exercises={EXERCISES} basePath="/tenses/future-perfect" />
           <AdUnit variant="inline-light" />
-          <ProRelatedTopics exercises={RELATED} basePath="/tenses/future-perfect" />
+          <RelatedTopics exercises={RELATED} basePath="/tenses/future-perfect" />
         </div>
       </div>
     </main>

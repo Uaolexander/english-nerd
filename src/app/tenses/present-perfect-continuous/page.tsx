@@ -1,5 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
-import ProRelatedTopics from "@/components/ProRelatedTopics";
+import RelatedTopics from "@/components/RelatedTopics";
 import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
@@ -210,7 +210,7 @@ export default function PresentPerfectContinuousPage() {
             basePath="/tenses/present-perfect-continuous"
           />
           <AdUnit variant="inline-light" />
-          <ProRelatedTopics exercises={RELATED} basePath="/tenses/present-perfect-continuous" />
+          <RelatedTopics exercises={RELATED} basePath="/tenses/present-perfect-continuous" />
         </div>
 
       </div>

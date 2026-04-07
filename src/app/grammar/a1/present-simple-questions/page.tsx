@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PresentSimpleQuestionsLessonClient from "./PresentSimpleQuestionsLessonClient";
 
 export const metadata: Metadata = {
-  title: "Present Simple: Questions (Do/Does) — A1 Grammar — English Nerd",
+  title: "Present Simple Questions (Do / Does) Exercises with Answers for Beginners (A1)",
   description:
     "Learn to ask Present Simple questions with Do and Does. A1 grammar exercises covering yes/no questions, short answers and common mistakes.",
   alternates: { canonical: "/grammar/a1/present-simple-questions" },

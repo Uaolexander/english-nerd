@@ -1,5 +1,5 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
-import ProRelatedTopics from "@/components/ProRelatedTopics";
+import RelatedTopics from "@/components/RelatedTopics";
 import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
@@ -197,7 +197,7 @@ export default function PastPerfectPage() {
         <div className="mt-14 flex flex-col gap-14">
           <CardGroup label="Exercises" sublabel="Practice Past Perfect with different task types" dotColor="bg-violet-400" exercises={EXERCISES} basePath="/tenses/past-perfect" />
           <AdUnit variant="inline-light" />
-          <ProRelatedTopics exercises={RELATED} basePath="/tenses/past-perfect" />
+          <RelatedTopics exercises={RELATED} basePath="/tenses/past-perfect" />
         </div>
       </div>
     </main>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import WhQuestionsLessonClient from "./Wh-QuestionsLessonClient";
 
 export const metadata: Metadata = {
-  title: "Wh-Questions (What, Where, When...) — A1 Grammar — English Nerd",
+  title: "Questions (What, Where, When, Why, Who, How) Exercises with Answers for Beginners (A1)",
   description:
     "Learn to ask Wh-questions in English: What, Where, When, Why, Who and How. A1 grammar lesson with 4 exercises and real-life question examples.",
   alternates: { canonical: "/grammar/a1/wh-questions" },
