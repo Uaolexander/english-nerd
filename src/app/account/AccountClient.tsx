@@ -4966,6 +4966,17 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
+  // Fallback: if server didn't provide avatar (JWT stale), load from client-side auth
+  useEffect(() => {
+    if (avatarPreview) return;
+    createClient().auth.getUser().then(({ data }) => {
+      const m = data.user?.user_metadata;
+      const url = m?.custom_avatar_url || m?.avatar_url || m?.picture || "";
+      if (url) { setAvatar(url); setAvatarPreview(url); }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Security
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -4996,23 +5007,30 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [showStudentTour, setShowStudentTour] = useState(false);
   const [showProTour, setShowProTour] = useState(false);
 
-  // Show tour once per status — flags stored in Supabase user_metadata
+  // Show tour once per status.
+  // Double-checked: Supabase user_metadata (server, cross-device) + localStorage (guard against router.refresh race).
   useEffect(() => {
-    if (!isTeacher || !teacherData || toursDone.teacher) return;
+    const lsKey = `teacher_tour_done_${email}`;
+    if (!isTeacher || !teacherData || toursDone.teacher || localStorage.getItem(lsKey)) return;
+    localStorage.setItem(lsKey, "1");
     setShowOnboarding(true);
     fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "teacher" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!isStudent || isTeacher || toursDone.student) return;
+    const lsKey = `student_tour_done_${email}`;
+    if (!isStudent || isTeacher || toursDone.student || localStorage.getItem(lsKey)) return;
+    localStorage.setItem(lsKey, "1");
     setShowStudentTour(true);
     fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "student" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!isPro || isTeacher || isStudent || toursDone.pro) return;
+    const lsKey = `pro_tour_done_${email}`;
+    if (!isPro || isTeacher || isStudent || toursDone.pro || localStorage.getItem(lsKey)) return;
+    localStorage.setItem(lsKey, "1");
     setShowProTour(true);
     fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "pro" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -5087,7 +5105,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         canvas.height = height;
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => resolve(blob ?? file), "image/webp", 0.85);
+        canvas.toBlob((blob) => resolve(blob ?? file), "image/jpeg", 0.88);
       };
       img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(file); };
       img.src = blobUrl;
@@ -5115,8 +5133,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       } catch { /* ignore — might be a Google/external avatar */ }
     }
 
-    const path = `${Date.now()}.webp`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, compressed, { upsert: true, contentType: "image/webp" });
+    const path = `${Date.now()}.jpg`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     // blob URL is guaranteed to work — keep as preview for whole session
@@ -5475,7 +5493,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+              className="shrink-0 flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-500 transition hover:border-red-300 hover:bg-red-100 active:scale-95 disabled:opacity-40"
             >
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>

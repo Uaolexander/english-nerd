@@ -23,7 +23,7 @@ export default function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6">
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))' }}>
       <div className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-[#111114] shadow-2xl shadow-black/60 backdrop-blur p-5 sm:flex sm:items-center sm:gap-6">
 
         {/* Text */}

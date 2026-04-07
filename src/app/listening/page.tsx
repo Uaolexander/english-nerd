@@ -60,7 +60,7 @@ const LEVELS: Level[] = [
 
 function LevelCard({ lvl }: { lvl: Level }) {
   return (
-    <article className={`group relative w-[200px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 sm:w-full sm:shrink ${lvl.comingSoon ? "opacity-60" : "hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"}`}>
+    <article className={`group relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 ${lvl.comingSoon ? "opacity-60" : "hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"}`}>
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden border-b border-white/10 bg-black/30">
         <ImageWithFallback
@@ -187,12 +187,10 @@ export default function ListeningPage() {
           </div>
         </div>
 
-        {/* Level cards — mobile: horizontal carousel | desktop: grid */}
-        <div className="mt-14 flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-3">
+        {/* Level cards — grid on all screens */}
+        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {LEVELS.map((lvl) => (
-            <div key={lvl.lvl} className="snap-start">
-              <LevelCard lvl={lvl} />
-            </div>
+            <LevelCard key={lvl.lvl} lvl={lvl} />
           ))}
         </div>
 

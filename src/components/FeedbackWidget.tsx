@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Message = {
   id: string;
   content: string;
+  image_url: string | null;
   is_owner_reply: boolean;
   is_read: boolean;
   created_at: string;
@@ -15,6 +17,28 @@ type Props = {
   plan: "PRO" | "Teacher" | "Student" | "Free";
 };
 
+async function compressToJpeg(file: File): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const blobUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+        else { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => resolve(blob ?? file), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(file); };
+    img.src = blobUrl;
+  });
+}
+
 export default function FeedbackWidget({ email, plan }: Props) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -23,13 +47,15 @@ export default function FeedbackWidget({ email, plan }: Props) {
   const [unread, setUnread] = useState(0);
   const [sendError, setSendError] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Track scroll position for mobile back-to-top mode
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 400);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -85,27 +111,63 @@ export default function FeedbackWidget({ email, plan }: Props) {
     return () => document.removeEventListener("keydown", handle);
   }, [open]);
 
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    if (file.size > 8 * 1024 * 1024) { setSendError(true); setTimeout(() => setSendError(false), 3000); return; }
+    setImageUploading(true);
+    try {
+      const compressed = await compressToJpeg(file);
+      const supabase = createClient();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+      const { error } = await supabase.storage.from("feedback-images").upload(path, compressed, {
+        contentType: "image/jpeg",
+        upsert: false,
+      });
+      if (!error) {
+        const { data } = supabase.storage.from("feedback-images").getPublicUrl(path);
+        setPendingImage(data.publicUrl);
+      }
+    } catch { /* ignore */ }
+    setImageUploading(false);
+  }
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || sending) return;
+    const hasText = !!input.trim();
+    const hasImage = !!pendingImage;
+    if (!hasText && !hasImage) return;
+    if (sending) return;
+
     const content = input.trim();
+    const imageUrl = pendingImage;
     setInput("");
+    setPendingImage(null);
     setSending(true);
     setSendError(false);
 
     const tempId = `temp-${Date.now()}`;
-    setMessages((prev) => [...prev, { id: tempId, content, is_owner_reply: false, is_read: true, created_at: new Date().toISOString() }]);
+    setMessages((prev) => [...prev, {
+      id: tempId,
+      content,
+      image_url: imageUrl,
+      is_owner_reply: false,
+      is_read: true,
+      created_at: new Date().toISOString(),
+    }]);
 
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content, plan, page: window.location.pathname }),
+        body: JSON.stringify({ message: content, plan, page: window.location.pathname, imageUrl }),
       });
       if (!res.ok) {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         setSendError(true);
         setInput(content);
+        setPendingImage(imageUrl);
         setTimeout(() => setSendError(false), 3000);
       } else {
         await fetchMessages();
@@ -114,6 +176,7 @@ export default function FeedbackWidget({ email, plan }: Props) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setSendError(true);
       setInput(content);
+      setPendingImage(imageUrl);
       setTimeout(() => setSendError(false), 3000);
     } finally {
       setSending(false);
@@ -137,14 +200,14 @@ export default function FeedbackWidget({ email, plan }: Props) {
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4">
+          <div className="flex items-start justify-between px-5 pt-5 pb-3">
             <div>
-              <p className="text-[15px] font-black text-gray-900 tracking-tight">Feedback</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{email}</p>
+              <p className="text-[15px] font-black text-gray-900 tracking-tight">Send feedback</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">We reply within 1–3 days</p>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition mt-0.5"
               aria-label="Close"
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -153,116 +216,172 @@ export default function FeedbackWidget({ email, plan }: Props) {
             </button>
           </div>
 
-          {/* Messages */}
-          <div
-            className="overflow-y-auto px-4 space-y-2"
-            style={{ maxHeight: 240, minHeight: messages.length ? 80 : 0 }}
-          >
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-5 text-center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F5DA20]">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M2 2.5h14a.5.5 0 01.5.5v9a.5.5 0 01-.5.5H5.5L2 15.5V3a.5.5 0 010-1z" stroke="#000" strokeWidth="1.5" strokeLinejoin="round"/>
-                    <path d="M5.5 7h7M5.5 10h4.5" stroke="#000" strokeWidth="1.3" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <p className="text-[13px] font-semibold text-gray-700">Got something to say?</p>
-                <p className="text-[11px] text-gray-400 leading-relaxed max-w-[180px]">Bug, idea, or just a hi — we read everything.</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.is_owner_reply ? "justify-start" : "justify-end"}`}>
-                  <div
-                    className="max-w-[220px] px-3.5 py-2.5 text-[12.5px] leading-relaxed break-words"
-                    style={msg.is_owner_reply
-                      ? { background: "#f3f4f6", color: "#111827", borderRadius: "18px 18px 18px 4px" }
-                      : { background: "#F5DA20", color: "#000", borderRadius: "18px 18px 4px 18px" }}
-                  >
-                    {msg.is_owner_reply && (
-                      <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">English Nerd</p>
+          {/* Messages thread */}
+          {messages.length > 0 && (
+            <div className="overflow-y-auto px-4 space-y-3 pb-1" style={{ maxHeight: 240 }}>
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5">
+                    {msg.is_owner_reply ? (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-violet-500">English Nerd</span>
+                    ) : (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">You</span>
                     )}
-                    {msg.content}
-                    <p className={`mt-1 text-[9px] ${msg.is_owner_reply ? "text-gray-400" : "text-black/40"}`}>
-                      {formatTime(msg.created_at)}
-                    </p>
+                    <span className="text-[9px] text-gray-300">·</span>
+                    <span className="text-[9px] text-gray-300">{formatTime(msg.created_at)}</span>
+                  </div>
+                  <div className={`rounded-xl overflow-hidden ${msg.is_owner_reply ? "bg-violet-50" : "bg-gray-50"}`}>
+                    {msg.image_url && (
+                      <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={msg.image_url}
+                          alt="Image"
+                          className="w-full max-h-[180px] object-cover"
+                        />
+                      </a>
+                    )}
+                    {msg.content && (
+                      <p className={`text-[12.5px] leading-relaxed break-words px-3 py-2 ${msg.is_owner_reply ? "text-gray-800" : "text-gray-700"}`}>
+                        {msg.content}
+                      </p>
+                    )}
                   </div>
                 </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+
+          {/* Empty state */}
+          {messages.length === 0 && (
+            <div className="px-5 pb-1">
+              <p className="text-[12px] text-gray-400 leading-relaxed">
+                Bug, idea, or just a hi — write anything. We read everything and reply personally.
+              </p>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="mx-4 my-3 border-t border-gray-100" />
+
+          {/* Image preview */}
+          {(pendingImage || imageUploading) && (
+            <div className="px-4 pb-2">
+              <div className="relative inline-block">
+                {imageUploading ? (
+                  <div className="h-16 w-16 rounded-xl bg-gray-100 flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                  </div>
+                ) : pendingImage ? (
+                  <>
+                    <img src={pendingImage} alt="" className="h-16 w-16 rounded-xl object-cover border border-gray-200" />
+                    <button
+                      onClick={() => setPendingImage(null)}
+                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900 transition"
+                      aria-label="Remove image"
+                    >
+                      <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                        <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          )}
 
           {/* Input area */}
-          <div className="px-4 pb-4 pt-3">
-            {sendError && <p className="mb-2 text-center text-[11px] text-red-500">Failed to send. Try again.</p>}
-            <form onSubmit={handleSend} className="flex items-end gap-2">
+          <div className="px-4 pb-4">
+            {sendError && <p className="mb-2 text-[11px] text-red-500">Failed to send. Try again.</p>}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageSelect}
+            />
+            <form onSubmit={handleSend} className="flex flex-col gap-2">
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(e); } }}
-                placeholder="Write a message…"
+                placeholder={pendingImage ? "Add a caption… (optional)" : "Write your message…"}
                 maxLength={1000}
-                rows={1}
+                rows={3}
                 disabled={sending}
-                className="fb-input flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[12.5px] text-gray-900 placeholder-gray-400 outline-none transition focus:border-[#F5DA20] focus:bg-white focus:ring-2 focus:ring-[#F5DA20]/20 disabled:opacity-50"
-                style={{ maxHeight: 80 }}
+                className="fb-input w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[12.5px] text-gray-900 placeholder-gray-400 outline-none transition focus:border-[#F5DA20] focus:bg-white focus:ring-2 focus:ring-[#F5DA20]/20 disabled:opacity-50"
               />
-              <button
-                type="submit"
-                disabled={!input.trim() || sending}
-                className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#F5DA20] transition hover:bg-[#e8cf1a] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-                aria-label="Send"
-              >
-                {sending ? (
-                  <svg className="animate-spin" width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <circle cx="6.5" cy="6.5" r="5" stroke="#000" strokeWidth="1.6" strokeDasharray="15.7" strokeDashoffset="7.85" strokeLinecap="round"/>
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={sending || imageUploading}
+                  className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition disabled:opacity-30"
+                  aria-label="Attach image"
+                  title="Attach image"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+                    <circle cx="5.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <path d="M1 11l3.5-3.5L7 10l3-3 5 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M12.5 1.5L6.5 7.5M12.5 1.5L8.5 12.5L6.5 7.5M12.5 1.5L1.5 5.5L6.5 7.5" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </button>
+                </button>
+                <button
+                  type="submit"
+                  disabled={(!input.trim() && !pendingImage) || sending || imageUploading}
+                  className="flex items-center gap-1.5 rounded-xl bg-[#F5DA20] px-3.5 py-1.5 text-[12px] font-bold text-black transition hover:bg-[#e8cf1a] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Send"
+                >
+                  {sending ? (
+                    <svg className="animate-spin" width="11" height="11" viewBox="0 0 13 13" fill="none">
+                      <circle cx="6.5" cy="6.5" r="5" stroke="#000" strokeWidth="1.6" strokeDasharray="15.7" strokeDashoffset="7.85" strokeLinecap="round"/>
+                    </svg>
+                  ) : (
+                    <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                      <path d="M12.5 1.5L6.5 7.5M12.5 1.5L8.5 12.5L6.5 7.5M12.5 1.5L1.5 5.5L6.5 7.5" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  Send
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Trigger — on mobile + scrolled: back-to-top; otherwise: open chat */}
+      {/* Trigger button */}
       <button
         onClick={() => {
-          if (scrolled && !open && window.innerWidth < 1024) {
+          if (scrolled && !open) {
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             setOpen((v) => !v);
           }
         }}
         aria-label={scrolled && !open ? "Back to top" : "Open feedback"}
+        title={scrolled && !open ? "Back to top" : "Send feedback"}
         className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#F5DA20] transition-all duration-200 hover:scale-105 active:scale-95"
         style={{ boxShadow: "0 4px 20px rgba(245,218,32,0.5), 0 2px 8px rgba(0,0,0,0.2)" }}
       >
-        <span
-          className="absolute inset-0 flex items-center justify-center transition-all duration-200"
-          style={{ opacity: open ? 1 : 0, transform: open ? "scale(1)" : "scale(0.7)" }}
-        >
+        <span className="absolute inset-0 flex items-center justify-center transition-all duration-200"
+          style={{ opacity: open ? 1 : 0, transform: open ? "scale(1)" : "scale(0.6)" }}>
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
             <path d="M2 2l11 11M13 2L2 13" stroke="#000" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
         </span>
-        <span
-          className="absolute inset-0 items-center justify-center transition-all duration-200 lg:flex"
-          style={{ opacity: !open && !scrolled ? 1 : 0, transform: !open && !scrolled ? "scale(1)" : "scale(0.7)", display: !open && !scrolled ? "flex" : "none" }}
-        >
+        <span className="absolute inset-0 flex items-center justify-center transition-all duration-200"
+          style={{ opacity: !open && !scrolled ? 1 : 0, transform: !open && !scrolled ? "scale(1)" : "scale(0.6)" }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M2 2.5h14a.5.5 0 01.5.5v9a.5.5 0 01-.5.5H5.5L2 15.5V3a.5.5 0 010-1z" stroke="#000" strokeWidth="1.5" strokeLinejoin="round"/>
             <path d="M5.5 7h7M5.5 10h4.5" stroke="#000" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
         </span>
-        <span
-          className="absolute inset-0 flex items-center justify-center transition-all duration-200 lg:hidden"
-          style={{ opacity: !open && scrolled ? 1 : 0, transform: !open && scrolled ? "scale(1)" : "scale(0.7)" }}
-        >
+        <span className="absolute inset-0 flex items-center justify-center transition-all duration-200"
+          style={{ opacity: !open && scrolled ? 1 : 0, transform: !open && scrolled ? "scale(1)" : "scale(0.6)" }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M8 13V3M3 8l5-5 5 5" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

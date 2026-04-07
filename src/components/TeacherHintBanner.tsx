@@ -237,8 +237,8 @@ export default function TeacherHintBanner() {
   if (isMobile) {
     return createPortal(
       <div
-        className="pointer-events-auto fixed bottom-0 left-0 right-0 z-[9970] px-3 pb-4"
-        style={{ animation: "teacher-hint-slide 0.4s cubic-bezier(.22,1,.36,1) both" }}
+        className="pointer-events-auto fixed bottom-0 left-0 right-0 z-[9970] px-3 pt-0"
+        style={{ animation: "teacher-hint-slide 0.4s cubic-bezier(.22,1,.36,1) both", paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))' }}
       >
         <style>{`
           @keyframes teacher-hint-slide {

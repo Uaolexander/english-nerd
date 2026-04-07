@@ -21,7 +21,8 @@ export default function MobileProBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-[35] lg:hidden">
       <a
         href="/pro"
-        className="flex items-center gap-3 border-t border-white/8 bg-[#0B0B0D]/95 px-4 py-3 backdrop-blur-sm"
+        className="flex items-center gap-3 border-t border-white/8 bg-[#0B0B0D]/95 px-4 pt-3 backdrop-blur-sm"
+        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#F5DA20] text-sm">
           👑

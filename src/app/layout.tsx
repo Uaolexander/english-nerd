@@ -4,7 +4,6 @@ import "./globals.css";
 import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
 import CookieBanner from "@/components/CookieBanner";
 import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
@@ -17,6 +16,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import MobileProBanner from "@/components/MobileProBanner";
 import TeacherHintBanner from "@/components/TeacherHintBanner";
 import FeedbackWidget from "@/components/FeedbackWidget";
+import BackToTop from "@/components/BackToTop";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -86,17 +86,18 @@ export default async function RootLayout({
               <Suspense><AssignmentBanner /></Suspense>
               {children}
               <Footer />
-              <BackToTop />
               <CookieBanner />
               <SessionGuard />
               <ProgressToast />
               <MobileProBanner />
               <TeacherHintBanner />
-              {user && (
+              {user ? (
                 <FeedbackWidget
                   email={user.email ?? ""}
                   plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
                 />
+              ) : (
+                <BackToTop />
               )}
             </TeacherProvider>
           </StudentProvider>

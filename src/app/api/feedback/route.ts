@@ -45,7 +45,7 @@ export async function GET() {
 
   const { data: messages } = await service
     .from("feedback_messages")
-    .select("id, content, is_owner_reply, is_read, created_at")
+    .select("id, content, image_url, is_owner_reply, is_read, created_at")
     .eq("thread_id", thread.id)
     .order("created_at", { ascending: true });
 
@@ -92,12 +92,15 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { message, plan, page } = body;
+  const { message, plan, page, imageUrl } = body;
 
-  if (!message || typeof message !== "string" || !message.trim()) {
-    return NextResponse.json({ error: "Message is required." }, { status: 400 });
+  const hasText = message && typeof message === "string" && message.trim().length > 0;
+  const hasImage = imageUrl && typeof imageUrl === "string" && imageUrl.startsWith("https://");
+
+  if (!hasText && !hasImage) {
+    return NextResponse.json({ error: "Message or image is required." }, { status: 400 });
   }
-  if (message.trim().length > 1000) {
+  if (hasText && message.trim().length > 1000) {
     return NextResponse.json({ error: "Message too long." }, { status: 400 });
   }
 
@@ -127,9 +130,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Save to DB
+  const content = hasText ? message.trim() : "";
   const { error: msgError } = await service
     .from("feedback_messages")
-    .insert({ thread_id: thread.id, content: message.trim(), is_owner_reply: false });
+    .insert({
+      thread_id: thread.id,
+      content,
+      image_url: hasImage ? imageUrl : null,
+      is_owner_reply: false,
+    });
 
   if (msgError) return NextResponse.json({ error: "DB error." }, { status: 500 });
 
@@ -139,21 +148,30 @@ export async function POST(req: NextRequest) {
 
   if (token && chatId) {
     const pageLine = page ? `\n🔗 ${page}` : "";
-    // 🔑 marks the thread ID — used by webhook to find the thread
-    const text = `💬 Feedback — English Nerd\n🔑 ${thread.id}\n\n${message.trim()}\n\n👤 ${email} · ${plan ?? "Free"}${pageLine}`;
+    const meta = `\n\n👤 ${email} · ${plan ?? "Free"}${pageLine}`;
+    const threadMark = `💬 Feedback — English Nerd\n🔑 ${thread.id}`;
+    const replyOpts = thread.telegram_message_id
+      ? { reply_to_message_id: thread.telegram_message_id }
+      : {};
 
-    const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: undefined,
-        ...(thread.telegram_message_id
-          ? { reply_to_message_id: thread.telegram_message_id }
-          : {}),
-      }),
-    });
+    let tgRes: Response;
+    if (hasImage) {
+      // Send as photo with optional caption
+      const caption = `${threadMark}${content ? `\n\n${content}` : ""}${meta}`;
+      tgRes = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, photo: imageUrl, caption, ...replyOpts }),
+      });
+    } else {
+      // Text-only message
+      const text = `${threadMark}\n\n${content}${meta}`;
+      tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, ...replyOpts }),
+      });
+    }
 
     if (tgRes.ok && !thread.telegram_message_id) {
       const tgData = await tgRes.json();
