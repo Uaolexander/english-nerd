@@ -9,6 +9,7 @@ import AdUnit from "@/components/AdUnit";
 import ProExpiredModal from "@/components/ProExpiredModal";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
 import TeacherWelcomeModal from "@/components/TeacherWelcomeModal";
+import TeacherOnboarding from "@/components/TeacherOnboarding";
 import DashboardTab from "./DashboardTab";
 import type { WeakTopic } from "./DashboardTab";
 import type { TopicRec } from "@/lib/getRecommendations";
@@ -4889,6 +4890,17 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTeacherWelcome, setShowTeacherWelcome] = useState(false);
   const [teacherWelcomePlan, setTeacherWelcomePlan] = useState<"starter" | "solo" | "plus">("solo");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Show onboarding once for new teachers
+  useEffect(() => {
+    if (!isTeacher || !teacherData) return;
+    const key = `teacher_onboarding_done_${email}`;
+    if (!localStorage.getItem(key)) {
+      setShowOnboarding(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeacher]);
 
   async function handlePromoRedeem(e: React.FormEvent) {
     e.preventDefault();
@@ -5027,6 +5039,14 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     {/* ── PRO welcome celebration modal ────────────────────────────────── */}
     {showWelcome && <ProWelcomeModal onClose={() => { setShowWelcome(false); router.refresh(); }} />}
     {showTeacherWelcome && <TeacherWelcomeModal plan={teacherWelcomePlan} onClose={() => { setShowTeacherWelcome(false); router.refresh(); }} />}
+    {showOnboarding && teacherData && !showTeacherWelcome && (
+      <TeacherOnboarding
+        plan={teacherData.plan}
+        studentLimit={teacherData.studentLimit}
+        userEmail={email}
+        onDone={() => setShowOnboarding(false)}
+      />
+    )}
 
     {/* ── New assignment notification ───────────────────────────────────── */}
     {newAssignmentPopup.length > 0 && (
