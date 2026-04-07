@@ -6,45 +6,31 @@ export type SearchItem = {
 };
 
 export const searchIndex: SearchItem[] = [
+
+  // ─── Quick Actions ────────────────────────────────────────────────────────
+  { title: "Enter Promo / Voucher Code", keywords: ["promo code", "voucher", "redeem", "code", "enter code", "activate", "coupon", "discount", "ввести", "промо"], href: "/pro", badge: "Action" },
+  { title: "Upgrade to PRO", keywords: ["pro", "upgrade", "premium", "subscription", "unlock", "buy", "plan", "paid"], href: "/pro", badge: "Action" },
+  { title: "Teacher Voucher — Activate Teacher Access", keywords: ["teacher voucher", "teacher code", "teacher access", "redeem teacher", "activate teacher", "вчитель"], href: "/pro", badge: "Action" },
+  { title: "My Account & Dashboard", keywords: ["account", "dashboard", "my account", "profile", "progress", "stats", "streak", "my page"], href: "/account", badge: "Action" },
+  { title: "Teacher Dashboard", keywords: ["teacher dashboard", "teacher", "students", "classes", "assignments", "teacher account", "invite students"], href: "/account", badge: "Action" },
+  { title: "Contact Us", keywords: ["contact", "support", "help", "email", "message", "feedback"], href: "/contact", badge: "Action" },
+  { title: "About English Nerd", keywords: ["about", "who we are", "english nerd", "team"], href: "/about", badge: "Action" },
+  { title: "Sign In / Log In", keywords: ["login", "sign in", "log in", "signin", "log", "enter account"], href: "/login", badge: "Action" },
+  { title: "Create Account / Register", keywords: ["register", "sign up", "create account", "signup", "new account"], href: "/register", badge: "Action" },
+
   // ─── Tests ────────────────────────────────────────────────────────────────
-  {
-    title: "Grammar Placement Test",
-    keywords: ["grammar test", "placement", "cefr", "level test", "grammar", "test"],
-    href: "/tests/grammar",
-    badge: "Test",
-  },
-  {
-    title: "Vocabulary Size Test",
-    keywords: ["vocabulary test", "vocab test", "words", "size test", "word knowledge", "test"],
-    href: "/tests/vocabulary",
-    badge: "Test",
-  },
-  {
-    title: "English Tenses Test",
-    keywords: ["tenses test", "tenses", "test", "12 tenses", "all tenses", "tense test"],
-    href: "/tests/tenses",
-    badge: "Test",
-  },
+  { title: "All Tests Overview", keywords: ["tests", "all tests", "placement", "level check"], href: "/tests", badge: "Test" },
+  { title: "Grammar Placement Test", keywords: ["grammar test", "placement", "cefr", "level test", "grammar", "test"], href: "/tests/grammar", badge: "Test" },
+  { title: "Vocabulary Size Test", keywords: ["vocabulary test", "vocab test", "words", "size test", "word knowledge", "test", "how many words"], href: "/tests/vocabulary", badge: "Test" },
+  { title: "English Tenses Test", keywords: ["tenses test", "tenses", "test", "12 tenses", "all tenses", "tense test"], href: "/tests/tenses", badge: "Test" },
 
   // ─── Grammar overview pages ───────────────────────────────────────────────
-  {
-    title: "Grammar A1 — Lessons & Exercises",
-    keywords: ["a1", "grammar", "beginner", "lessons", "exercises", "a1 grammar"],
-    href: "/grammar/a1",
-    badge: "A1",
-  },
-  {
-    title: "Grammar A2 — Lessons & Exercises",
-    keywords: ["a2", "grammar", "elementary", "lessons", "exercises", "a2 grammar"],
-    href: "/grammar/a2",
-    badge: "A2",
-  },
-  {
-    title: "Grammar B1 — Lessons & Exercises",
-    keywords: ["b1", "grammar", "intermediate", "lessons", "exercises", "b1 grammar"],
-    href: "/grammar/b1",
-    badge: "B1",
-  },
+  { title: "Grammar — All Levels", keywords: ["grammar", "overview", "all levels", "a1 a2 b1 b2 c1"], href: "/grammar", badge: "Grammar" },
+  { title: "Grammar A1 — Lessons & Exercises", keywords: ["a1", "grammar", "beginner", "lessons", "exercises", "a1 grammar"], href: "/grammar/a1", badge: "A1" },
+  { title: "Grammar A2 — Lessons & Exercises", keywords: ["a2", "grammar", "elementary", "lessons", "exercises", "a2 grammar"], href: "/grammar/a2", badge: "A2" },
+  { title: "Grammar B1 — Lessons & Exercises", keywords: ["b1", "grammar", "intermediate", "lessons", "exercises", "b1 grammar"], href: "/grammar/b1", badge: "B1" },
+  { title: "Grammar B2 — Lessons & Exercises", keywords: ["b2", "grammar", "upper intermediate", "lessons", "exercises", "b2 grammar"], href: "/grammar/b2", badge: "B2" },
+  { title: "Grammar C1 — Lessons & Exercises", keywords: ["c1", "grammar", "advanced", "lessons", "exercises", "c1 grammar"], href: "/grammar/c1", badge: "C1" },
 
   // ─── A1 Grammar ───────────────────────────────────────────────────────────
   { title: "To be (am / is / are)", keywords: ["to be", "am", "is", "are", "verb to be", "a1"], href: "/grammar/a1/to-be-am-is-are", badge: "A1" },
@@ -114,7 +100,6 @@ export const searchIndex: SearchItem[] = [
   { title: "Phrasal Verbs", keywords: ["phrasal verbs", "give up", "look after", "pick up", "carry on", "b1"], href: "/grammar/b1/phrasal-verbs", badge: "B1" },
 
   // ─── B2 Grammar ───────────────────────────────────────────────────────────
-  { title: "Grammar B2 — Lessons & Exercises", keywords: ["b2", "grammar", "upper intermediate", "lessons", "exercises", "b2 grammar"], href: "/grammar/b2", badge: "B2" },
   { title: "Past Perfect Continuous", keywords: ["past perfect continuous", "had been doing", "duration past", "b2"], href: "/grammar/b2/past-perfect-continuous", badge: "B2" },
   { title: "Future Continuous", keywords: ["future continuous", "will be doing", "in progress future", "b2"], href: "/grammar/b2/future-continuous", badge: "B2" },
   { title: "Future Perfect", keywords: ["future perfect", "will have done", "before future", "b2"], href: "/grammar/b2/future-perfect", badge: "B2" },
@@ -135,7 +120,6 @@ export const searchIndex: SearchItem[] = [
   { title: "Quantifiers: Advanced", keywords: ["quantifiers advanced", "each every", "either neither", "both", "b2"], href: "/grammar/b2/quantifiers-advanced", badge: "B2" },
 
   // ─── C1 Grammar ───────────────────────────────────────────────────────────
-  { title: "Grammar C1 — Lessons & Exercises", keywords: ["c1", "grammar", "advanced", "lessons", "exercises", "c1 grammar"], href: "/grammar/c1", badge: "C1" },
   { title: "Subjunctive Mood", keywords: ["subjunctive", "it's essential that", "i suggest she go", "formal", "c1"], href: "/grammar/c1/subjunctive", badge: "C1" },
   { title: "Inverted Conditionals", keywords: ["inverted conditionals", "were i to", "had she known", "should you need", "formal if", "c1"], href: "/grammar/c1/inverted-conditionals", badge: "C1" },
   { title: "Advanced Modal Expressions", keywords: ["advanced modals", "would rather", "it's time", "be supposed to", "had better", "c1"], href: "/grammar/c1/advanced-modals", badge: "C1" },
@@ -156,6 +140,7 @@ export const searchIndex: SearchItem[] = [
   { title: "Discourse Markers: Advanced", keywords: ["discourse markers advanced", "notwithstanding", "by the same token", "in so far as", "c1"], href: "/grammar/c1/advanced-discourse-markers", badge: "C1" },
 
   // ─── Tenses ───────────────────────────────────────────────────────────────
+  { title: "Tenses — All Topics", keywords: ["tenses", "all tenses", "overview", "12 tenses", "english tenses"], href: "/tenses", badge: "Tenses" },
   { title: "Present Simple", keywords: ["present simple", "tense", "a1 a2"], href: "/tenses/present-simple", badge: "A1–A2" },
   { title: "Present Continuous", keywords: ["present continuous", "tense", "a1 a2"], href: "/tenses/present-continuous", badge: "A1–A2" },
   { title: "Past Simple", keywords: ["past simple", "tense", "a2"], href: "/tenses/past-simple", badge: "A2" },
@@ -169,7 +154,15 @@ export const searchIndex: SearchItem[] = [
   { title: "Future Continuous", keywords: ["future continuous", "will be", "tense", "b2"], href: "/tenses/future-continuous", badge: "B2" },
   { title: "Future Perfect", keywords: ["future perfect", "will have", "tense", "b2 c1"], href: "/tenses/future-perfect", badge: "B2–C1" },
 
-  // ─── Vocabulary ───────────────────────────────────────────────────────────
+  // ─── Vocabulary overview pages ────────────────────────────────────────────
+  { title: "Vocabulary — All Topics", keywords: ["vocabulary", "all topics", "overview", "words", "vocab"], href: "/vocabulary", badge: "Vocab" },
+  { title: "Vocabulary A1 — Beginner", keywords: ["vocabulary a1", "beginner words", "a1 vocab"], href: "/vocabulary/a1", badge: "A1" },
+  { title: "Vocabulary A2 — Elementary", keywords: ["vocabulary a2", "elementary words", "a2 vocab"], href: "/vocabulary/a2", badge: "A2" },
+  { title: "Vocabulary B1 — Intermediate", keywords: ["vocabulary b1", "intermediate words", "b1 vocab"], href: "/vocabulary/b1", badge: "B1" },
+  { title: "Vocabulary B2 — Upper-Intermediate", keywords: ["vocabulary b2", "upper intermediate words", "b2 vocab"], href: "/vocabulary/b2", badge: "B2" },
+  { title: "Vocabulary C1 — Advanced", keywords: ["vocabulary c1", "advanced words", "c1 vocab"], href: "/vocabulary/c1", badge: "C1" },
+
+  // ─── Vocabulary Topics ────────────────────────────────────────────────────
   { title: "Animals", keywords: ["animals", "vocabulary", "a1"], href: "/vocabulary/a1/animals", badge: "A1" },
   { title: "At the Café", keywords: ["cafe", "coffee", "food", "vocabulary", "a1"], href: "/vocabulary/a1/at-the-cafe", badge: "A1" },
   { title: "My Body", keywords: ["body", "parts", "health", "vocabulary", "a1"], href: "/vocabulary/a1/my-body", badge: "A1" },
@@ -190,7 +183,68 @@ export const searchIndex: SearchItem[] = [
   { title: "Economic Challenges", keywords: ["economic", "economy", "finance", "vocabulary", "c1"], href: "/vocabulary/c1/economic-challenges", badge: "C1" },
   { title: "Formal English", keywords: ["formal", "professional", "writing", "vocabulary", "c1"], href: "/vocabulary/c1/formal-english", badge: "C1" },
   { title: "Idioms and Phrases", keywords: ["idioms", "phrases", "expressions", "vocabulary", "c1"], href: "/vocabulary/c1/idioms-and-phrases", badge: "C1" },
+
+  // ─── Reading ─────────────────────────────────────────────────────────────
+  { title: "Reading — All Levels", keywords: ["reading", "articles", "overview", "texts", "comprehension"], href: "/reading", badge: "Reading" },
+  { title: "Reading A1", keywords: ["reading a1", "beginner reading", "a1 texts", "simple stories"], href: "/reading/a1", badge: "A1" },
+  { title: "Reading A2", keywords: ["reading a2", "elementary reading", "a2 texts"], href: "/reading/a2", badge: "A2" },
+  { title: "Reading B1", keywords: ["reading b1", "intermediate reading", "b1 texts"], href: "/reading/b1", badge: "B1" },
+  { title: "Reading B2", keywords: ["reading b2", "upper intermediate reading", "b2 texts"], href: "/reading/b2", badge: "B2" },
+  { title: "Reading C1", keywords: ["reading c1", "advanced reading", "c1 texts"], href: "/reading/c1", badge: "C1" },
+  { title: "At the Market", keywords: ["reading", "market", "shopping", "a1", "story"], href: "/reading/a1/at-the-market", badge: "A1" },
+  { title: "Four Friends", keywords: ["reading", "friends", "story", "a1"], href: "/reading/a1/four-friends", badge: "A1" },
+  { title: "My School Day", keywords: ["reading", "school", "routine", "day", "a1"], href: "/reading/a1/my-school-day", badge: "A1" },
+  { title: "A Weekend Trip", keywords: ["reading", "weekend", "trip", "travel", "a2"], href: "/reading/a2/a-weekend-trip", badge: "A2" },
+  { title: "City or Country?", keywords: ["reading", "city", "country", "lifestyle", "comparison", "a2"], href: "/reading/a2/city-or-country", badge: "A2" },
+  { title: "Pen Pals", keywords: ["reading", "pen pals", "letters", "friends", "a2"], href: "/reading/a2/pen-pals", badge: "A2" },
+  { title: "Digital Lives", keywords: ["reading", "digital", "technology", "internet", "b1"], href: "/reading/b1/digital-lives", badge: "B1" },
+  { title: "The Slow Travel Movement", keywords: ["reading", "travel", "slow travel", "tourism", "b1"], href: "/reading/b1/the-slow-travel-movement", badge: "B1" },
+  { title: "Work From Home", keywords: ["reading", "work from home", "remote work", "wfh", "b1"], href: "/reading/b1/work-from-home", badge: "B1" },
+  { title: "Changing Cities", keywords: ["reading", "cities", "urban", "change", "development", "b2"], href: "/reading/b2/changing-cities", badge: "B2" },
+  { title: "The Gig Economy", keywords: ["reading", "gig economy", "jobs", "freelance", "work", "b2"], href: "/reading/b2/the-gig-economy", badge: "B2" },
+  { title: "The Psychology of Habits", keywords: ["reading", "habits", "psychology", "behaviour", "b2"], href: "/reading/b2/the-psychology-of-habits", badge: "B2" },
+  { title: "Language and Thought", keywords: ["reading", "language", "thought", "linguistics", "c1"], href: "/reading/c1/language-and-thought", badge: "C1" },
+  { title: "Rethinking Intelligence", keywords: ["reading", "intelligence", "iq", "mind", "c1"], href: "/reading/c1/rethinking-intelligence", badge: "C1" },
+  { title: "The Attention Economy", keywords: ["reading", "attention", "media", "technology", "focus", "c1"], href: "/reading/c1/the-attention-economy", badge: "C1" },
+
+  // ─── Listening ────────────────────────────────────────────────────────────
+  { title: "Listening — All Levels", keywords: ["listening", "audio", "overview", "comprehension", "exercises"], href: "/listening", badge: "Listening" },
+  { title: "Listening B2", keywords: ["listening b2", "upper intermediate listening", "b2 audio"], href: "/listening/b2", badge: "B2" },
+  { title: "Work-Life Balance (Listening)", keywords: ["listening", "work life balance", "b2", "audio", "podcast"], href: "/listening/b2/work-life-balance", badge: "B2" },
+
+  // ─── Nerd Zone ────────────────────────────────────────────────────────────
+  { title: "Nerd Zone — Bonus Content", keywords: ["nerd zone", "extras", "bonus", "pro content", "extra content"], href: "/nerd-zone", badge: "PRO" },
+  { title: "Irregular Verbs List", keywords: ["irregular verbs", "verb list", "go went gone", "irregular", "verb forms", "nerd zone"], href: "/nerd-zone/irregular-verbs", badge: "PRO" },
+  { title: "Phrasal Verbs (Nerd Zone)", keywords: ["phrasal verbs", "give up", "look after", "extra", "nerd zone"], href: "/nerd-zone/phrasal-verbs", badge: "PRO" },
+  { title: "Phrasal Verbs B1", keywords: ["phrasal verbs b1", "intermediate phrasal verbs"], href: "/nerd-zone/phrasal-verbs/b1", badge: "B1" },
+  { title: "Phrasal Verbs B2", keywords: ["phrasal verbs b2", "upper intermediate phrasal verbs"], href: "/nerd-zone/phrasal-verbs/b2", badge: "B2" },
+  { title: "Phrasal Verbs C1", keywords: ["phrasal verbs c1", "advanced phrasal verbs"], href: "/nerd-zone/phrasal-verbs/c1", badge: "C1" },
+  { title: "Live Phrases", keywords: ["live phrases", "natural phrases", "everyday english", "collocations", "nerd zone"], href: "/nerd-zone/live-phrases", badge: "PRO" },
+  { title: "Live Phrases B1", keywords: ["live phrases b1", "natural english b1"], href: "/nerd-zone/live-phrases/b1", badge: "B1" },
+  { title: "Live Phrases B2", keywords: ["live phrases b2", "natural english b2"], href: "/nerd-zone/live-phrases/b2", badge: "B2" },
+  { title: "Live Phrases C1", keywords: ["live phrases c1", "natural english c1"], href: "/nerd-zone/live-phrases/c1", badge: "C1" },
+  { title: "English Slang", keywords: ["slang", "informal english", "colloquial", "nerd zone"], href: "/nerd-zone/slang", badge: "PRO" },
+  { title: "Slang B1", keywords: ["slang b1", "informal b1", "colloquial b1"], href: "/nerd-zone/slang/b1", badge: "B1" },
+  { title: "Slang B2", keywords: ["slang b2", "informal b2", "colloquial b2"], href: "/nerd-zone/slang/b2", badge: "B2" },
+  { title: "Slang C1", keywords: ["slang c1", "informal c1", "colloquial c1"], href: "/nerd-zone/slang/c1", badge: "C1" },
+  { title: "Movie & TV Recommendations", keywords: ["recommendations", "movies", "tv shows", "series", "films", "watch", "english", "nerd zone"], href: "/nerd-zone/recommendations", badge: "PRO" },
+  { title: "Useful English Learning Sites", keywords: ["useful sites", "resources", "links", "websites", "english learning", "nerd zone"], href: "/nerd-zone/useful-sites", badge: "PRO" },
+  { title: "My Materials (Downloads)", keywords: ["my materials", "downloads", "pdf", "worksheets", "saved", "nerd zone"], href: "/nerd-zone/my-materials", badge: "PRO" },
 ];
+
+type Category = "test" | "grammar" | "tense" | "vocab" | "reading" | "listening" | "nerd" | "action" | "other";
+
+export function getSearchCategory(item: SearchItem): Category {
+  if (item.href.startsWith("/tests")) return "test";
+  if (item.href.startsWith("/tenses")) return "tense";
+  if (item.href.startsWith("/grammar")) return "grammar";
+  if (item.href.startsWith("/vocabulary")) return "vocab";
+  if (item.href.startsWith("/reading")) return "reading";
+  if (item.href.startsWith("/listening")) return "listening";
+  if (item.href.startsWith("/nerd-zone")) return "nerd";
+  if (item.badge === "Action" || item.href === "/pro" || item.href === "/account" || item.href === "/contact" || item.href === "/about" || item.href === "/login" || item.href === "/register") return "action";
+  return "other";
+}
 
 export function searchContent(query: string): SearchItem[] {
   const q = query.toLowerCase().trim();
@@ -207,6 +261,6 @@ export function searchContent(query: string): SearchItem[] {
     })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
+    .slice(0, 14)
     .map((x) => x.it);
 }
