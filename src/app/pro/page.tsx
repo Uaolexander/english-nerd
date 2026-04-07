@@ -268,8 +268,10 @@ export default function ProPage() {
 
           {/* Promo code block */}
           <div className="mt-6 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-5 py-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15 text-xl">
-              🎁
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15">
+              <svg className="h-5 w-5 text-[#F5DA20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-black text-white">Have a promo code?</p>

@@ -270,8 +270,10 @@ export default function TeacherPlans() {
 
       {/* Voucher */}
       <div className="mt-6 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-5 py-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15 text-xl">
-          🎟️
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15">
+          <svg className="h-5 w-5 text-[#F5DA20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><line x1="9" y1="12" x2="15" y2="12"/>
+          </svg>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-white">Have a teacher voucher?</p>
