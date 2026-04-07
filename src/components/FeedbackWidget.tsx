@@ -121,7 +121,7 @@ export default function FeedbackWidget({ email, plan }: Props) {
 
       {open && (
         <div
-          className="w-[320px] overflow-hidden rounded-3xl"
+          className="w-[320px] max-w-[calc(100vw-32px)] overflow-hidden rounded-3xl"
           style={{
             animation: "fb-up 0.22s cubic-bezier(0.34,1.4,0.64,1) both",
             background: "#ffffff",
