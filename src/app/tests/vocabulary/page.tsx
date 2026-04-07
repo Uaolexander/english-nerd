@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import VocabularyTestClient from "./VocabularyTestClient";
 
 export const metadata: Metadata = {
-  title: "English Vocabulary Size Test — How Many Words Do You Know? — English Nerd",
-  description: "Estimate your English vocabulary size with our free test. Check words across A1 to C2 levels and find out how many English words you know.",
-  keywords: ["English vocabulary test", "vocabulary size test", "how many words", "English word test", "vocabulary level"],
+  title: "Vocabulary Size Test (English) – How Many Words Do You Know? Free Online Test",
+  description: "Estimate your English vocabulary size with our free online test. Check words across A1 to C2 levels and find out how many English words you know.",
+  keywords: ["vocabulary size test", "how many words do you know", "English vocabulary test", "English word test", "vocabulary level", "free vocabulary test"],
   openGraph: {
-    title: "English Vocabulary Size Test — English Nerd",
-    description: "How many English words do you know? Take the free vocabulary size test and find out.",
+    title: "Vocabulary Size Test (English) – How Many Words Do You Know?",
+    description: "How many English words do you know? Take the free online vocabulary size test and find out.",
     type: "website",
   },
   alternates: {

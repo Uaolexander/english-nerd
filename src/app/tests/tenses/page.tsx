@@ -1,9 +1,9 @@
 import TensesTestClient from "./TensesTestClient";
 
 export const metadata = {
-  title: "English Tenses Test — Which Tenses Do You Know? | English Nerd",
+  title: "English Tenses Test (A1–B2) – Free Grammar Quiz with Answers",
   description:
-    "Free English tenses test — no registration required. Test all 12 tenses from Present Simple to Future Perfect Continuous and get an instant breakdown of which tenses you know.",
+    "Free English tenses quiz — no registration required. Test all 12 tenses from Present Simple to Future Perfect Continuous and get instant answers with a full breakdown.",
   keywords: [
     "english tenses test",
     "tenses quiz",
