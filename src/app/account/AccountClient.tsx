@@ -102,6 +102,7 @@ type Props = {
   weakTopics: WeakTopic[];
   proExpiresAt: string | null;
   siteUrl: string;
+  toursDone: { pro: boolean; teacher: boolean; student: boolean };
 };
 
 type Tab = "dashboard" | "teacher" | "student" | "profile" | "security";
@@ -4937,7 +4938,7 @@ function StudentTab({
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, proExpiresAt, siteUrl }: Props) {
+export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, proExpiresAt, siteUrl, toursDone }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -4995,39 +4996,27 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [showStudentTour, setShowStudentTour] = useState(false);
   const [showProTour, setShowProTour] = useState(false);
 
-  // Show tour once for new teachers
+  // Show tour once per status — flags stored in Supabase user_metadata
   useEffect(() => {
-    if (!isTeacher || !teacherData) return;
-    const key = `teacher_tour_done_${email}`;
-    const legacyKey = `teacher_onboarding_done_${email}`;
-    if (!localStorage.getItem(key) && !localStorage.getItem(legacyKey)) {
-      localStorage.setItem(key, "1");
-      setShowOnboarding(true);
-    }
+    if (!isTeacher || !teacherData || toursDone.teacher) return;
+    setShowOnboarding(true);
+    fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "teacher" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTeacher]);
+  }, []);
 
-  // Show tour once for new students
   useEffect(() => {
-    if (!isStudent || isTeacher) return;
-    const key = `student_tour_done_${email}`;
-    if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, "1");
-      setShowStudentTour(true);
-    }
+    if (!isStudent || isTeacher || toursDone.student) return;
+    setShowStudentTour(true);
+    fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "student" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isStudent]);
+  }, []);
 
-  // Show tour once for new PRO users
   useEffect(() => {
-    if (!isPro || isTeacher || isStudent) return;
-    const key = `pro_tour_done_${email}`;
-    if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, "1");
-      setShowProTour(true);
-    }
+    if (!isPro || isTeacher || isStudent || toursDone.pro) return;
+    setShowProTour(true);
+    fetch("/api/account/mark-tour-done", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: "pro" }) }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPro]);
+  }, []);
 
   async function handlePromoRedeem(e: React.FormEvent) {
     e.preventDefault();

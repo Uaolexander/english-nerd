@@ -401,6 +401,12 @@ export default async function AccountPage() {
     `${r.category}:${r.level ?? ""}:${r.slug}:${r.exercise_no ?? ""}`
   );
 
+  const toursDone = {
+    pro: !!user.user_metadata?.pro_tour_done,
+    teacher: !!user.user_metadata?.teacher_tour_done,
+    student: !!user.user_metadata?.student_tour_done,
+  };
+
   const avatarUrl =
     user.user_metadata?.custom_avatar_url ||
     user.user_metadata?.avatar_url ||
@@ -440,6 +446,7 @@ export default async function AccountPage() {
       weakTopics={weakTopics}
       proExpiresAt={expiresAt ?? null}
       siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? ""}
+      toursDone={toursDone}
     />
   );
 }
