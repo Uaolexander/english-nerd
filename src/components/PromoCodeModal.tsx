@@ -89,9 +89,9 @@ export default function PromoCodeModal() {
 
       <button
         onClick={() => { setOpen(true); setMsg(null); setCode(""); }}
-        className="text-sm font-semibold text-white/50 transition hover:text-white/80 underline underline-offset-4"
+        className="shrink-0 rounded-xl border border-[#F5DA20]/30 px-4 py-2 text-xs font-black text-[#F5DA20] transition hover:bg-[#F5DA20]/10"
       >
-        Or redeem a promo code →
+        Redeem →
       </button>
 
       {open && (

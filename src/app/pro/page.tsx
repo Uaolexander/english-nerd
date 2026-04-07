@@ -265,7 +265,16 @@ export default function ProPage() {
             <p className="mt-3 text-white/40">Everything included. No hidden fees.</p>
           </div>
           <ProPlans />
-          <div className="mt-8 flex justify-center">
+
+          {/* Promo code block */}
+          <div className="mt-6 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-5 py-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15 text-xl">
+              🎁
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-white">Have a promo code?</p>
+              <p className="text-xs text-white/40">Got a voucher from a teacher or contest? Redeem it for free PRO access.</p>
+            </div>
             <PromoCodeModal />
           </div>
         </div>
