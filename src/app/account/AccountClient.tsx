@@ -9,7 +9,7 @@ import AdUnit from "@/components/AdUnit";
 import ProExpiredModal from "@/components/ProExpiredModal";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
 import TeacherWelcomeModal from "@/components/TeacherWelcomeModal";
-import TeacherOnboarding from "@/components/TeacherOnboarding";
+import TeacherTour from "@/components/TeacherTour";
 import DashboardTab from "./DashboardTab";
 import type { WeakTopic } from "./DashboardTab";
 import type { TopicRec } from "@/lib/getRecommendations";
@@ -2872,9 +2872,9 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
       )}
 
       {/* Inner tabs */}
-      <div className="flex gap-1 rounded-2xl bg-slate-100 p-1">
+      <div data-tour="teacher-inner-tabs" className="flex gap-1 rounded-2xl bg-slate-100 p-1">
         {innerTabs.map((t) => (
-          <button key={t.id} onClick={() => setInnerTab(t.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold transition ${innerTab === t.id ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
+          <button key={t.id} data-tour={`teacher-${t.id}-tab-btn`} onClick={() => setInnerTab(t.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold transition ${innerTab === t.id ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
             {t.label}
             {t.count > 0 && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black ${innerTab === t.id ? "bg-violet-100 text-violet-700" : "bg-slate-200 text-slate-500"}`}>{t.count}</span>}
           </button>
@@ -2884,7 +2884,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
       {/* Students */}
       {innerTab === "students" && (
         <div className="space-y-4">
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/[0.04]">
+          <div data-tour="teacher-invite-form" className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/[0.04]">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-bold text-slate-800">Invite a Student</p>
               <span className="text-xs text-slate-400"><span className={`font-bold ${activeStudents.length >= teacherData.studentLimit ? "text-red-500" : "text-slate-700"}`}>{activeStudents.length}</span> / {teacherData.studentLimit}</span>
@@ -4892,10 +4892,10 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [teacherWelcomePlan, setTeacherWelcomePlan] = useState<"starter" | "solo" | "plus">("solo");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Show onboarding once for new teachers
+  // Show tour once for new teachers
   useEffect(() => {
     if (!isTeacher || !teacherData) return;
-    const key = `teacher_onboarding_done_${email}`;
+    const key = `teacher_tour_done_${email}`;
     if (!localStorage.getItem(key)) {
       setShowOnboarding(true);
     }
@@ -5040,7 +5040,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     {showWelcome && <ProWelcomeModal onClose={() => { setShowWelcome(false); router.refresh(); }} />}
     {showTeacherWelcome && <TeacherWelcomeModal plan={teacherWelcomePlan} onClose={() => { setShowTeacherWelcome(false); router.refresh(); }} />}
     {showOnboarding && teacherData && !showTeacherWelcome && (
-      <TeacherOnboarding
+      <TeacherTour
         plan={teacherData.plan}
         studentLimit={teacherData.studentLimit}
         userEmail={email}
@@ -5319,6 +5319,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
+              {...(t.key === "teacher" ? { "data-tour": "teacher-tab-btn" } : {})}
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
                 tab === t.key
                   ? t.key === "teacher"

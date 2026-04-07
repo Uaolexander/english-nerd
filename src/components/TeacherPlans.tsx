@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PromoCodeModal from "@/components/PromoCodeModal";
 
 function Check({ cls }: { cls?: string }) {
   return (
@@ -125,6 +126,7 @@ const PLANS: Plan[] = [
 export default function TeacherPlans() {
   // Default = annual — anchors on the best-value option immediately
   const [annual, setAnnual] = useState(true);
+
 
   return (
     <div>
@@ -266,13 +268,17 @@ export default function TeacherPlans() {
         })}
       </div>
 
-      <p className="mt-8 text-center text-sm text-white/25">
-        Teacher access is provided via voucher code.{" "}
-        <a href="/contact" className="text-white/40 underline underline-offset-2 hover:text-white/60 transition">
-          Contact us
-        </a>{" "}
-        to get started.
-      </p>
+      {/* Voucher */}
+      <div className="mt-6 flex items-center gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-5 py-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20]/15 text-xl">
+          🎟️
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-black text-white">Have a teacher voucher?</p>
+          <p className="text-xs text-white/40">Got a code from us? Redeem it to activate your Teacher account instantly.</p>
+        </div>
+        <PromoCodeModal />
+      </div>
     </div>
   );
 }

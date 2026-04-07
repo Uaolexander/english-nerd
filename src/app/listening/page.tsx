@@ -13,6 +13,7 @@ type Level = {
   description: string;
   topics: number;
   color: string;
+  comingSoon?: boolean;
 };
 
 const LEVELS: Level[] = [
@@ -22,6 +23,7 @@ const LEVELS: Level[] = [
     description: "Short, slow dialogues: introductions, numbers, simple questions and answers.",
     topics: 15,
     color: "bg-[#F5DA20]",
+    comingSoon: true,
   },
   {
     lvl: "A2",
@@ -29,6 +31,7 @@ const LEVELS: Level[] = [
     description: "Everyday situations: at a café, asking for directions, phone calls.",
     topics: 16,
     color: "bg-emerald-400",
+    comingSoon: true,
   },
   {
     lvl: "B1",
@@ -36,6 +39,7 @@ const LEVELS: Level[] = [
     description: "Natural-speed conversations, interviews, short podcasts and news summaries.",
     topics: 18,
     color: "bg-violet-400",
+    comingSoon: true,
   },
   {
     lvl: "B2",
@@ -50,22 +54,30 @@ const LEVELS: Level[] = [
     description: "Complex academic and professional audio with implicit meaning and fast speech.",
     topics: 14,
     color: "bg-sky-400",
+    comingSoon: true,
   },
 ];
 
 function LevelCard({ lvl }: { lvl: Level }) {
   return (
-    <article className="group relative w-[200px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40 sm:w-full sm:shrink">
+    <article className={`group relative w-[200px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#121216] transition duration-300 sm:w-full sm:shrink ${lvl.comingSoon ? "opacity-60" : "hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"}`}>
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden border-b border-white/10 bg-black/30">
         <ImageWithFallback
           src={`/topics/listening/${lvl.lvl.toLowerCase()}.jpg`}
           alt={`${lvl.lvl} Listening`}
-          className="h-full w-full object-cover"
+          className={`h-full w-full object-cover ${lvl.comingSoon ? "grayscale" : ""}`}
         />
-        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black shadow-lg sm:top-3 sm:right-3 sm:px-3 sm:py-1 sm:text-xs ${lvl.color}`}>
+        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black shadow-lg sm:top-3 sm:right-3 sm:px-3 sm:py-1 sm:text-xs ${lvl.comingSoon ? "bg-white/40" : lvl.color}`}>
           {lvl.lvl}
         </div>
+        {lvl.comingSoon && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded-xl bg-black/60 px-3 py-1.5 text-xs font-black text-white/80 backdrop-blur-sm">
+              Coming Soon
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -78,20 +90,28 @@ function LevelCard({ lvl }: { lvl: Level }) {
         </p>
 
         <div className="mt-3 sm:mt-4">
-          <a
-            href={`/listening/${lvl.lvl.toLowerCase()}`}
-            className="absolute inset-0 z-10"
-            aria-label={`${lvl.lvl} ${lvl.label} Listening`}
-          />
+          {!lvl.comingSoon && (
+            <a
+              href={`/listening/${lvl.lvl.toLowerCase()}`}
+              className="absolute inset-0 z-10"
+              aria-label={`${lvl.lvl} ${lvl.label} Listening`}
+            />
+          )}
           <p className="relative z-20 mb-3 text-[10px] text-white/30 sm:text-[11px]">
             {lvl.topics} exercises
           </p>
-          <a
-            href={`/listening/${lvl.lvl.toLowerCase()}`}
-            className={`relative z-20 inline-flex items-center justify-center rounded-lg ${lvl.color} px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm`}
-          >
-            Start
-          </a>
+          {lvl.comingSoon ? (
+            <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white/40 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm">
+              🔒 Coming Soon
+            </span>
+          ) : (
+            <a
+              href={`/listening/${lvl.lvl.toLowerCase()}`}
+              className={`relative z-20 inline-flex items-center justify-center rounded-lg ${lvl.color} px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm`}
+            >
+              Start
+            </a>
+          )}
         </div>
       </div>
     </article>

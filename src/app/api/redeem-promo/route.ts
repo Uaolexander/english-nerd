@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendProGainedEmail, sendTeacherWelcomeEmail } from "@/lib/email";
 
 // Simple in-memory rate limit: 5 attempts per user per 10 minutes
 const rateMap = new Map<string, { count: number; reset: number }>();
@@ -106,6 +107,12 @@ export async function POST(req: Request) {
       });
 
       const expiryLabel = new Date(expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+      // Send teacher welcome email (fire-and-forget)
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      const name = freshUser?.user_metadata?.full_name ?? freshUser?.user_metadata?.name ?? null;
+      void sendTeacherWelcomeEmail(user.email!, name, voucher.student_limit ?? 10);
+
       return NextResponse.json({
         ok: true,
         message: `🎓 Teacher access activated until ${expiryLabel}!`,
@@ -176,6 +183,11 @@ export async function POST(req: Request) {
   const expiryLabel = new Date(expiresAt).toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
   });
+
+  // Send PRO welcome email (fire-and-forget)
+  const { data: { user: freshUser } } = await supabase.auth.getUser();
+  const name = freshUser?.user_metadata?.full_name ?? freshUser?.user_metadata?.name ?? null;
+  void sendProGainedEmail(user.email!, name, expiresAt);
 
   return NextResponse.json({
     ok: true,
