@@ -5099,7 +5099,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       setAvatar(urlData.publicUrl);
       setAvatarPreview(urlData.publicUrl);
       setProfileMsg({ type: "ok", text: "Photo updated." });
-      setTimeout(() => router.refresh(), 1200);
     }
     setAvatarUploading(false);
   }
