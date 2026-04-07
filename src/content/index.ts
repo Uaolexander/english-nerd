@@ -8,9 +8,8 @@ export type SearchItem = {
 export const searchIndex: SearchItem[] = [
 
   // ─── Quick Actions ────────────────────────────────────────────────────────
-  { title: "Enter Promo / Voucher Code", keywords: ["promo code", "voucher", "redeem", "code", "enter code", "activate", "coupon", "discount", "ввести", "промо"], href: "/redeem", badge: "Action" },
+  { title: "Enter Promo / Voucher Code", keywords: ["promo code", "voucher", "redeem", "code", "enter code", "activate", "coupon", "discount", "ввести", "промо", "teacher voucher", "teacher code", "teacher access", "redeem teacher", "activate teacher", "вчитель", "ваучер", "промокод"], href: "/redeem", badge: "Action" },
   { title: "Upgrade to PRO", keywords: ["pro", "upgrade", "premium", "subscription", "unlock", "buy", "plan", "paid"], href: "/pro", badge: "Action" },
-  { title: "Teacher Voucher — Activate Teacher Access", keywords: ["teacher voucher", "teacher code", "teacher access", "redeem teacher", "activate teacher", "вчитель"], href: "/redeem", badge: "Action" },
   { title: "My Account & Dashboard", keywords: ["account", "dashboard", "my account", "profile", "progress", "stats", "streak", "my page"], href: "/account", badge: "Action" },
   { title: "Teacher Dashboard", keywords: ["teacher dashboard", "teacher", "students", "classes", "assignments", "teacher account", "invite students"], href: "/account", badge: "Action" },
   { title: "Contact Us", keywords: ["contact", "support", "help", "email", "message", "feedback"], href: "/contact", badge: "Action" },

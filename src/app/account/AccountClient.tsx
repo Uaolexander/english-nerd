@@ -10,6 +10,8 @@ import ProExpiredModal from "@/components/ProExpiredModal";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
 import TeacherWelcomeModal from "@/components/TeacherWelcomeModal";
 import TeacherTour from "@/components/TeacherTour";
+import StudentTour from "@/components/StudentTour";
+import ProTour from "@/components/ProTour";
 import DashboardTab from "./DashboardTab";
 import type { WeakTopic } from "./DashboardTab";
 import type { TopicRec } from "@/lib/getRecommendations";
@@ -4641,7 +4643,7 @@ function StudentTab({
         }).length;
         const pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
         return (
-          <div className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-black/[0.04]">
+          <div data-tour="student-assignments" className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-black/[0.04]">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-bold text-slate-700">Your assignments</p>
               <span className="text-sm font-black text-slate-800">{doneCount}<span className="font-normal text-slate-400"> / {totalCount}</span></span>
@@ -4891,16 +4893,42 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [showTeacherWelcome, setShowTeacherWelcome] = useState(false);
   const [teacherWelcomePlan, setTeacherWelcomePlan] = useState<"starter" | "solo" | "plus">("solo");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showStudentTour, setShowStudentTour] = useState(false);
+  const [showProTour, setShowProTour] = useState(false);
 
   // Show tour once for new teachers
   useEffect(() => {
     if (!isTeacher || !teacherData) return;
     const key = `teacher_tour_done_${email}`;
-    if (!localStorage.getItem(key)) {
+    const legacyKey = `teacher_onboarding_done_${email}`;
+    if (!localStorage.getItem(key) && !localStorage.getItem(legacyKey)) {
+      localStorage.setItem(key, "1");
       setShowOnboarding(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTeacher]);
+
+  // Show tour once for new students
+  useEffect(() => {
+    if (!isStudent || isTeacher) return;
+    const key = `student_tour_done_${email}`;
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, "1");
+      setShowStudentTour(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStudent]);
+
+  // Show tour once for new PRO users
+  useEffect(() => {
+    if (!isPro || isTeacher || isStudent) return;
+    const key = `pro_tour_done_${email}`;
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, "1");
+      setShowProTour(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPro]);
 
   async function handlePromoRedeem(e: React.FormEvent) {
     e.preventDefault();
@@ -5047,6 +5075,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         onDone={() => setShowOnboarding(false)}
       />
     )}
+    {showStudentTour && !showOnboarding && (
+      <StudentTour userEmail={email} onDone={() => setShowStudentTour(false)} />
+    )}
+    {showProTour && !showOnboarding && !showStudentTour && !showWelcome && (
+      <ProTour userEmail={email} onDone={() => setShowProTour(false)} />
+    )}
 
     {/* ── New assignment notification ───────────────────────────────────── */}
     {newAssignmentPopup.length > 0 && (
@@ -5192,7 +5226,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               </svg>
             </div>
           ) : isPro ? (
-            <div className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
+            <div data-tour="pro-banner" className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
               <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
               </svg>
@@ -5319,7 +5353,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              {...(t.key === "teacher" ? { "data-tour": "teacher-tab-btn" } : {})}
+              {...(t.key === "teacher" ? { "data-tour": "teacher-tab-btn" } : t.key === "dashboard" ? { "data-tour": "dashboard-tab-btn" } : t.key === "student" ? { "data-tour": "student-tab-btn" } : {})}
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
                 tab === t.key
                   ? t.key === "teacher"
@@ -5377,7 +5411,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           />
 
           {/* ── Certificates ────────────────────────────────────────── */}
-          <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
+          <div data-tour="certificates-section" className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">My Certificates</p>
