@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { searchContent } from "@/content";
@@ -126,7 +126,7 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
             Object.entries(grouped).map(([label, items]) => (
               <div key={label} className="mb-1">
                 <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/25">{label}</div>
-                {items.map((r, i) => {
+                {items.map((r) => {
                   const globalIdx = results.indexOf(r);
                   return (
                     <a key={r.href} href={r.href} onClick={onClose} onTouchEnd={onClose}
@@ -239,6 +239,14 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.play().catch(() => {});
+  }, []);
 
   function toggleSection(section: string) {
     setExpandedSection((prev) => (prev === section ? null : section));
@@ -282,11 +290,13 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-3" onClick={closeAll}>
             <div className="h-14 w-14 overflow-hidden rounded-2xl bg-[#F5DA20] p-1 shadow-lg">
               <video
+                ref={videoRef}
                 src="/logo.mp4"
                 autoPlay
                 loop
                 muted
                 playsInline
+                preload="auto"
                 className="h-full w-full object-cover rounded-xl"
               />
             </div>
