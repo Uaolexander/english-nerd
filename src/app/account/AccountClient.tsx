@@ -4959,8 +4959,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
   // Profile
   const [name, setName] = useState(fullName);
-  const [avatar, setAvatar] = useState(avatarUrl);
-  const [avatarPreview, setAvatarPreview] = useState(avatarUrl);
+  const [avatar, setAvatar] = useState(() => {
+    try { return localStorage.getItem("avatar_url_cache") || avatarUrl; } catch { return avatarUrl; }
+  });
+  const [avatarPreview, setAvatarPreview] = useState(() => {
+    try { return localStorage.getItem("avatar_url_cache") || avatarUrl; } catch { return avatarUrl; }
+  });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -5094,10 +5098,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    // Cache in localStorage before updateUser (which may trigger remount)
+    try { localStorage.setItem("avatar_url_cache", urlData.publicUrl); } catch { /* ignore */ }
+    setAvatar(urlData.publicUrl);
+    setAvatarPreview(urlData.publicUrl);
     const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: urlData.publicUrl } });
     if (updateError) { setProfileMsg({ type: "err", text: updateError.message }); } else {
-      setAvatar(urlData.publicUrl);
-      setAvatarPreview(urlData.publicUrl);
       setProfileMsg({ type: "ok", text: "Photo updated." });
     }
     setAvatarUploading(false);
