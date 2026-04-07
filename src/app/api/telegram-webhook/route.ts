@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     // Extract thread_id from the original message (marked with 🔑)
     const originalText: string = message.reply_to_message.text ?? "";
-    const match = originalText.match(/🔑\s([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/);
+    const match = originalText.match(/🔑\s*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/);
     if (!match) return NextResponse.json({ ok: true });
 
     const threadId = match[1];

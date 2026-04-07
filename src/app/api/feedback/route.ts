@@ -139,8 +139,8 @@ export async function POST(req: NextRequest) {
 
   if (token && chatId) {
     const pageLine = page ? `\n🔗 ${page}` : "";
-    // 🔑 marks the thread ID for webhook parsing
-    const text = `💬 *Feedback — English Nerd*\n🔑 \`${thread.id}\`\n\n${message.trim()}\n\n👤 ${email} · ${plan ?? "Free"}${pageLine}\n\n_Reply to respond on\\-site_`;
+    // 🔑 marks the thread ID — used by webhook to find the thread
+    const text = `💬 Feedback — English Nerd\n🔑 ${thread.id}\n\n${message.trim()}\n\n👤 ${email} · ${plan ?? "Free"}${pageLine}`;
 
     const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         chat_id: chatId,
         text,
-        parse_mode: "MarkdownV2",
+        parse_mode: undefined,
         ...(thread.telegram_message_id
           ? { reply_to_message_id: thread.telegram_message_id }
           : {}),
