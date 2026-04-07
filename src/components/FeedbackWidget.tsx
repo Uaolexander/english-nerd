@@ -22,11 +22,19 @@ export default function FeedbackWidget({ email, plan }: Props) {
   const [sending, setSending] = useState(false);
   const [unread, setUnread] = useState(0);
   const [sendError, setSendError] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Track scroll position for mobile back-to-top mode
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -221,25 +229,46 @@ export default function FeedbackWidget({ email, plan }: Props) {
         </div>
       )}
 
-      {/* Trigger */}
+      {/* Trigger — on mobile + scrolled: back-to-top; otherwise: open chat */}
       <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Open feedback"
+        onClick={() => {
+          if (scrolled && !open && window.innerWidth < 1024) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            setOpen((v) => !v);
+          }
+        }}
+        aria-label={scrolled && !open ? "Back to top" : "Open feedback"}
         className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#F5DA20] transition-all duration-200 hover:scale-105 active:scale-95"
         style={{ boxShadow: "0 4px 20px rgba(245,218,32,0.5), 0 2px 8px rgba(0,0,0,0.2)" }}
       >
-        {open ? (
+        <span
+          className="absolute inset-0 flex items-center justify-center transition-all duration-200"
+          style={{ opacity: open ? 1 : 0, transform: open ? "scale(1)" : "scale(0.7)" }}
+        >
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
             <path d="M2 2l11 11M13 2L2 13" stroke="#000" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
-        ) : (
+        </span>
+        <span
+          className="absolute inset-0 items-center justify-center transition-all duration-200 lg:flex"
+          style={{ opacity: !open && !scrolled ? 1 : 0, transform: !open && !scrolled ? "scale(1)" : "scale(0.7)", display: !open && !scrolled ? "flex" : "none" }}
+        >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M2 2.5h14a.5.5 0 01.5.5v9a.5.5 0 01-.5.5H5.5L2 15.5V3a.5.5 0 010-1z" stroke="#000" strokeWidth="1.5" strokeLinejoin="round"/>
             <path d="M5.5 7h7M5.5 10h4.5" stroke="#000" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
-        )}
+        </span>
+        <span
+          className="absolute inset-0 flex items-center justify-center transition-all duration-200 lg:hidden"
+          style={{ opacity: !open && scrolled ? 1 : 0, transform: !open && scrolled ? "scale(1)" : "scale(0.7)" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 13V3M3 8l5-5 5 5" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
 
-        {unread > 0 && !open && (
+        {unread > 0 && !open && !scrolled && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white" style={{ border: "2px solid #0B0B0D" }}>
             {unread > 9 ? "9+" : unread}
           </span>
