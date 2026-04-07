@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
+import TeacherWelcomeModal from "@/components/TeacherWelcomeModal";
 
 function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   if (typeof document === "undefined") return null;
@@ -42,6 +43,8 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 export default function PromoCodeModal() {
   const [open, setOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showTeacherWelcome, setShowTeacherWelcome] = useState(false);
+  const [teacherPlan, setTeacherPlan] = useState<"starter" | "solo" | "plus" | undefined>();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,11 +69,16 @@ export default function PromoCodeModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: code.trim() }),
       });
-      const data = await res.json() as { ok: boolean; message?: string; error?: string };
+      const data = await res.json() as { ok: boolean; message?: string; error?: string; isTeacher?: boolean; plan?: "starter" | "solo" | "plus" };
       if (data.ok) {
         setCode("");
         setOpen(false);
-        setShowWelcome(true);
+        if (data.isTeacher) {
+          setTeacherPlan(data.plan);
+          setShowTeacherWelcome(true);
+        } else {
+          setShowWelcome(true);
+        }
       } else {
         setMsg({ type: "err", text: data.error ?? "Invalid code. Please try again." });
       }
@@ -85,6 +93,9 @@ export default function PromoCodeModal() {
     <>
       {showWelcome && (
         <ProWelcomeModal onClose={() => { setShowWelcome(false); window.location.href = "/account"; }} />
+      )}
+      {showTeacherWelcome && (
+        <TeacherWelcomeModal plan={teacherPlan} onClose={() => { setShowTeacherWelcome(false); window.location.href = "/account"; }} />
       )}
 
       <button
@@ -104,8 +115,8 @@ export default function PromoCodeModal() {
               </svg>
             </div>
 
-            <h2 className="text-xl font-black text-white">Redeem Promo Code</h2>
-            <p className="mt-1 text-sm text-white/40">Activate PRO for free with a valid code</p>
+            <h2 className="text-xl font-black text-white">Redeem Code</h2>
+            <p className="mt-1 text-sm text-white/40">Activate PRO or Teacher access with a valid code</p>
 
             {loggedIn === null && (
               <div className="mt-6 flex justify-center">
