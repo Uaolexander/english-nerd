@@ -17,7 +17,7 @@ VALUES
     NULL,               -- no email restriction = multi-use
     'starter',
     5,                  -- Teacher Starter: up to 5 students
-    30,                 -- 1 month
+    90,                 -- 3 months
     true,
     '2026-04-01 00:00:00+00',
     '2026-04-30 23:59:59+00'
@@ -35,7 +35,7 @@ VALUES
     NULL,               -- no email restriction = multi-use
     'solo',
     15,                 -- Teacher Solo: up to 15 students
-    30,                 -- 1 month
+    90,                 -- 3 months
     true,
     '2026-04-01 00:00:00+00',
     '2026-04-30 23:59:59+00'
