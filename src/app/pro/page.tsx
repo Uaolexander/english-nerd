@@ -69,6 +69,16 @@ const FAQS = [
   { q: "Is there a student discount?", a: "Yes. We offer special promo codes for students. Reach out via the contact page and we'll take care of you." },
 ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((faq) => ({
+    "@type": "Question",
+    name: faq.q,
+    acceptedAnswer: { "@type": "Answer", text: faq.a },
+  })),
+};
+
 /* ─── Small SVG helpers ───────────────────────────────────────────────────── */
 
 function Check({ cls }: { cls?: string }) {
@@ -93,6 +103,7 @@ export default function ProPage() {
   return (
     <main className="min-h-screen bg-[#0B0B0D] text-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(proSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       {/* ── 1. HERO ───────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-6 pb-28 pt-24 text-center md:pb-36 md:pt-32">

@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TeacherJoinClient from "./TeacherJoinClient";
+
+export const metadata: Metadata = {
+  title: "Join Class — English Nerd",
+  description: "Accept your teacher's invitation and join your English class on English Nerd.",
+  robots: { index: false, follow: false },
+};
 
 export default async function TeacherJoinPage({
   searchParams,

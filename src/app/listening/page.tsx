@@ -86,12 +86,12 @@ function LevelCard({ lvl }: { lvl: Level }) {
           <p className="relative z-20 mb-3 text-[10px] text-white/30 sm:text-[11px]">
             {lvl.topics} exercises
           </p>
-          <button
+          <a
+            href={`/listening/${lvl.lvl.toLowerCase()}`}
             className={`relative z-20 inline-flex items-center justify-center rounded-lg ${lvl.color} px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm`}
-            type="button"
           >
             Start
-          </button>
+          </a>
         </div>
       </div>
     </article>

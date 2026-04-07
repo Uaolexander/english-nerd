@@ -222,7 +222,7 @@ function MobileAccordion({
 
 function DropdownShell({ width, children }: { width: string; children: React.ReactNode }) {
   return (
-    <div className={`pointer-events-none invisible absolute left-0 top-full ${width} translate-y-1 scale-[0.98] opacity-0 transition duration-200 ease-out group-hover:pointer-events-auto group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100`}>
+    <div className={`pointer-events-none invisible absolute left-0 top-full ${width} translate-y-1 scale-[0.98] opacity-0 transition duration-200 ease-out group-hover:pointer-events-auto group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100`}>
       <div className="relative pt-2 before:absolute before:left-0 before:top-0 before:h-2 before:w-full before:content-['']">
         <div className="rounded-2xl border border-white/10 bg-black/95 p-3 shadow-2xl backdrop-blur-xl">
           {children}

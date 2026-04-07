@@ -3,7 +3,8 @@ import RelatedTopics from "@/components/RelatedTopics";
 import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
-  title: "Future Continuous Exercises — Practice English Grammar | English Nerd",
+  alternates: { canonical: "/tenses/future-continuous" },
+  title: { absolute: "Future Continuous Exercises — Practice English Grammar | English Nerd" },
   description:
     "Practise the Future Continuous tense with multiple choice, fill-in-the-blank, spot-the-mistake, and sentence-builder exercises. Learn will be + -ing, actions in progress at a future moment, polite questions, and the difference between Future Simple and Future Continuous.",
   keywords: [
@@ -110,7 +111,12 @@ function ExerciseCard({ ex, basePath }: { ex: Exercise; basePath: string }) {
         <div className="mt-3 sm:mt-4">
           <a href={`${basePath}/${ex.slug}`} className="absolute inset-0 z-10" aria-label={ex.title} />
           <code className="relative z-20 mb-3 block rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-mono text-white/50 sm:rounded-lg sm:px-2.5 sm:text-[11px]">{ex.label}</code>
-          <button className="relative z-20 inline-flex items-center justify-center rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm" type="button">Start</button>
+          <a
+            href={`${basePath}/${ex.slug}`}
+            className="relative z-20 inline-flex items-center justify-center rounded-lg bg-[#F5DA20] px-3 py-1.5 text-xs font-bold text-black hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
+          >
+            Start
+          </a>
         </div>
       </div>
     </article>

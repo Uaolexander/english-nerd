@@ -151,11 +151,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
-  // Increment used_count atomically
+  // Increment used_count atomically — only if still within limit to prevent overflow
   await service
     .from("promo_codes")
     .update({ used_count: promoCode.used_count + 1 })
-    .eq("id", promoCode.id);
+    .eq("id", promoCode.id)
+    .lt("used_count", promoCode.max_uses);
 
   const months = promoCode.duration_days >= 365
     ? `${Math.round(promoCode.duration_days / 30)} months`

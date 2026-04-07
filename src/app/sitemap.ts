@@ -152,10 +152,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url("/reading/c1",      0.75, "monthly"),
     ...READING_ARTICLES.map((a) => url(`/reading/${a}`, 0.7, "monthly")),
 
-    // Listening hub + articles
+    // Listening hub + available content
     url("/listening",       0.8, "weekly"),
     url("/listening/b2",    0.7, "monthly"),
     url("/listening/b2/work-life-balance", 0.65, "monthly"),
+    // Note: A1, A2, B1, C1 listening pages redirect to /listening — not included
 
     // Tests hub + individual tests
     url("/tests",           0.85, "weekly"),

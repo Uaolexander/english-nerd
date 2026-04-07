@@ -83,7 +83,7 @@ export default function PromoCodeModal() {
 
       <button
         onClick={() => { setOpen(true); setMsg(null); setCode(""); }}
-        className="text-sm font-semibold text-white/35 transition hover:text-white/65 underline underline-offset-4"
+        className="text-sm font-semibold text-white/50 transition hover:text-white/80 underline underline-offset-4"
       >
         Or redeem a promo code →
       </button>
@@ -124,7 +124,7 @@ export default function PromoCodeModal() {
                   </a>
                   <button
                     onClick={() => setOpen(false)}
-                    className="text-sm text-white/30 transition hover:text-white/60"
+                    className="text-sm text-white/50 transition hover:text-white/80"
                   >
                     Cancel
                   </button>
@@ -134,7 +134,9 @@ export default function PromoCodeModal() {
 
             {loggedIn === true && (
               <form onSubmit={handleRedeem} className="mt-6">
+                <label htmlFor="promo-code-input" className="sr-only">Promo code</label>
                 <input
+                  id="promo-code-input"
                   type="text"
                   value={code}
                   onChange={(e) => { setCode(e.target.value.toUpperCase()); setMsg(null); }}

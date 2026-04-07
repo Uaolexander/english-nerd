@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Subscription Expired — English Nerd",
+  description: "Your Teacher subscription has expired. Renew to restore access.",
+  robots: { index: false, follow: false },
+};
 
 export default async function TeacherExpiredPage() {
   const supabase = await createClient();

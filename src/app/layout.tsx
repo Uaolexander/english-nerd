@@ -46,6 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "English Nerd",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "English Nerd — Free English Grammar Lessons & Exercises" }],
   },
   other: {
     "google-adsense-account": "ca-pub-2015658649191943",

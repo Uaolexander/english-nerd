@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /account
+Disallow: /account/
+Disallow: /api/
+Disallow: /teacher/
+
+Sitemap: https://englishnerd.cc/sitemap.xml
