@@ -239,12 +239,9 @@ export default async function GrammarB1Page() {
                             className="absolute inset-0 z-10"
                             aria-label={t.title}
                           />
-                          <button
-                            className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
-                            type="button"
-                          >
-                            Start
-                          </button>
+                          <a href={`/grammar/b1/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
+                              Start
+                            </a>
                           <span className="relative z-20 text-xs text-white/45">B1</span>
                         </div>
                       </div>
@@ -297,12 +294,9 @@ export default async function GrammarB1Page() {
                           className="absolute inset-0 z-10"
                           aria-label={t.title}
                         />
-                        <button
-                          className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
-                          type="button"
-                        >
-                          Start
-                        </button>
+                        <a href={`/grammar/b1/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
+                              Start
+                            </a>
                         <span className="relative z-20 text-xs text-white/45">B1</span>
                       </div>
                     </div>

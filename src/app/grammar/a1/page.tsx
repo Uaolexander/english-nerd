@@ -241,12 +241,9 @@ export const metadata = {
                               aria-label={t.title}
                             />
 
-                            <button
-                              className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
-                              type="button"
-                            >
+                            <a href={`/grammar/a1/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
                               Start
-                            </button>
+                            </a>
 
                             <span className="relative z-20 text-xs text-white/45">A1</span>
                           </div>
@@ -304,12 +301,9 @@ export const metadata = {
                             aria-label={t.title}
                           />
 
-                          <button
-                            className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90"
-                            type="button"
-                          >
-                            Start
-                          </button>
+                          <a href={`/grammar/a1/${t.slug}`} className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90">
+                              Start
+                            </a>
 
                           <span className="relative z-20 text-xs text-white/45">A1</span>
                         </div>

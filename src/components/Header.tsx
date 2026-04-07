@@ -240,12 +240,13 @@ export default function Header() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = true;
-    video.play().catch(() => {});
+    video.play().catch(() => setVideoFailed(true));
   }, []);
 
   function toggleSection(section: string) {
@@ -289,16 +290,23 @@ export default function Header() {
           {/* LEFT: video logo + brand */}
           <Link href="/" className="flex items-center gap-3" onClick={closeAll}>
             <div className="h-14 w-14 overflow-hidden rounded-2xl bg-[#F5DA20] p-1 shadow-lg">
-              <video
-                ref={videoRef}
-                src="/logo.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="h-full w-full object-cover rounded-xl"
-              />
+              {videoFailed ? (
+                <div className="h-full w-full rounded-xl bg-black flex items-center justify-center">
+                  <span className="text-[#F5DA20] text-base font-black">EN</span>
+                </div>
+              ) : (
+                <video
+                  ref={videoRef}
+                  src="/logo.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  onError={() => setVideoFailed(true)}
+                  className="h-full w-full object-cover rounded-xl"
+                />
+              )}
             </div>
             <div className="text-xl font-black tracking-tight text-white">
               English <span className="text-[#F5DA20]">Nerd</span>
