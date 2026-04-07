@@ -476,7 +476,7 @@ export default function DoDoesClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="sticky top-24">
+            <div className="top-24 lg:sticky">
               <SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (

@@ -727,7 +727,7 @@ export default function SimpleVsContinuousClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="sticky top-24">
+            <div className="top-24 lg:sticky">
               <SpeedRound gameId="ps-vs-pc" subject="Simple vs Continuous" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (

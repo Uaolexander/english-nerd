@@ -445,7 +445,7 @@ export default function FillInBlankClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="sticky top-24">
+            <div className="top-24 lg:sticky">
               <SpeedRound gameId="ps-fill-in-blank" subject="Present Simple Writing" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (

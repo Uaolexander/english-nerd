@@ -508,7 +508,7 @@ export default function SpotTheMistakeClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="sticky top-24">
+            <div className="top-24 lg:sticky">
               <SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (

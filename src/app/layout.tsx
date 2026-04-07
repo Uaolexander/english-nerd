@@ -14,6 +14,7 @@ import { ProProvider } from "@/lib/ProContext";
 import { StudentProvider } from "@/lib/StudentContext";
 import { TeacherProvider } from "@/lib/TeacherContext";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import MobileProBanner from "@/components/MobileProBanner";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -69,7 +70,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#0B0B0D] text-white antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#0B0B0D] text-white antialiased pb-[52px] lg:pb-0`}
       >
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2015658649191943"
@@ -87,6 +88,7 @@ export default async function RootLayout({
               <CookieBanner />
               <SessionGuard />
               <ProgressToast />
+              <MobileProBanner />
             </TeacherProvider>
           </StudentProvider>
         </ProProvider>

@@ -476,7 +476,7 @@ export default function AmIsAreClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="sticky top-24">
+            <div className="top-24 lg:sticky">
               <SpeedRound gameId="ps-to-be" subject="am / is / are" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (

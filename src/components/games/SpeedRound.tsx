@@ -420,34 +420,55 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
   return (
     <>
       {variant === "sidebar" ? (
-        /* Sidebar — vertical centered card, light theme */
-        <div className="relative overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#F5DA20]/20 blur-2xl" />
-          <div className="relative flex flex-col items-center px-5 pt-7 pb-5 text-center">
-            <div className="relative mb-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F5DA20] text-3xl shadow-sm">⚡</div>
-              <span className="absolute -right-1.5 -top-1.5 rounded-full bg-black px-1.5 py-px text-[8px] font-black text-[#F5DA20] leading-none">PRO</span>
-            </div>
-            <p className="text-base font-black text-slate-900">Speed Round</p>
-            {subject && <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{subject}</p>}
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">60 seconds · answer as many as you can</p>
-            {pb > 0 && (
-              <div className="mt-3 flex items-center gap-2 rounded-xl border border-black/8 bg-slate-50 px-3 py-1.5">
-                <span className="text-[10px] uppercase tracking-wider text-slate-400">Best</span>
-                <span className="text-lg font-black text-slate-900">{pb}</span>
+        <>
+          {/* Desktop sidebar — vertical white card, hidden on mobile */}
+          <div className="hidden lg:block relative overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#F5DA20]/20 blur-2xl" />
+            <div className="relative flex flex-col items-center px-5 pt-7 pb-5 text-center">
+              <div className="relative mb-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F5DA20] text-3xl shadow-sm">⚡</div>
+                <span className="absolute -right-1.5 -top-1.5 rounded-full bg-black px-1.5 py-px text-[8px] font-black text-[#F5DA20] leading-none">PRO</span>
               </div>
-            )}
+              <p className="text-base font-black text-slate-900">Speed Round</p>
+              {subject && <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{subject}</p>}
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">60 seconds · answer as many as you can</p>
+              {pb > 0 && (
+                <div className="mt-3 flex items-center gap-2 rounded-xl border border-black/8 bg-slate-50 px-3 py-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400">Best</span>
+                  <span className="text-lg font-black text-slate-900">{pb}</span>
+                </div>
+              )}
+            </div>
+            <div className="border-t border-black/6" />
+            <div className="p-4">
+              <button
+                onClick={startGame}
+                className="w-full rounded-xl bg-[#F5DA20] py-3 text-sm font-black text-black transition hover:bg-[#e8cf00] hover:shadow-[0_4px_16px_rgba(245,218,32,0.4)] active:scale-[0.97]"
+              >
+                Play
+              </button>
+            </div>
           </div>
-          <div className="border-t border-black/6" />
-          <div className="p-4">
-            <button
-              onClick={startGame}
-              className="w-full rounded-xl bg-[#F5DA20] py-3 text-sm font-black text-black transition hover:bg-[#e8cf00] hover:shadow-[0_4px_16px_rgba(245,218,32,0.4)] active:scale-[0.97]"
-            >
-              Play
-            </button>
+
+          {/* Mobile — compact horizontal pill, visible only on small screens */}
+          <div className="lg:hidden relative overflow-hidden rounded-2xl border border-white/10 bg-[#0F0F12]">
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] text-base">⚡</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-black text-white leading-tight">Speed Round</div>
+                <div className="text-[11px] text-white/40 leading-tight">
+                  60 sec{pb > 0 ? ` · Best: ${pb}` : " · beat your best"}
+                </div>
+              </div>
+              <button
+                onClick={startGame}
+                className="shrink-0 rounded-xl bg-[#F5DA20] px-4 py-2 text-xs font-black text-black active:scale-95 transition touch-manipulation"
+              >
+                Play ⚡
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         /* Default — horizontal row card */
         <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#0F0F12]">
@@ -479,14 +500,14 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
       {/* ─── MODAL (Portal → renders in document.body, outside any stacking context) ── */}
       {open && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(10px)" }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          style={{ background: "rgba(0,0,0,0.92)" }}
         >
           <div className="relative w-full max-w-lg">
-            {/* Close — just outside the right edge of the card */}
+            {/* Close — inside card on mobile, outside on desktop */}
             <button
               onClick={closeModal}
-              className="absolute -right-11 -top-1 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/8 text-white/50 transition hover:bg-white/15 hover:text-white"
+              className="absolute right-3 top-3 sm:-right-11 sm:-top-1 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/8 text-white/50 transition hover:bg-white/15 hover:text-white touch-manipulation"
             >
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M18 6 6 18M6 6l12 12"/>
