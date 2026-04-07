@@ -112,7 +112,7 @@ const QUICK_PICKS = [
     { title: "Conditionals", href: "/grammar/b1/zero-first-conditional", badge: "B1" },
   ]},
   { label: "Quick Actions", items: [
-    { title: "Enter Promo / Voucher Code", href: "/pro", badge: "Action" },
+    { title: "Enter Promo / Voucher Code", href: "/redeem", badge: "Action" },
     { title: "My Account & Dashboard", href: "/account", badge: "Action" },
   ]},
 ];
