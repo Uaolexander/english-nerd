@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export interface ProStatus {
   isPro: boolean;
   hadProBefore: boolean; // had PRO but it has now expired
+  expiresAt: string | null;
 }
 
 /**
@@ -21,18 +22,18 @@ export async function getProStatus(
     .limit(1)
     .maybeSingle();
 
-  if (activeSub) return { isPro: true, hadProBefore: false };
+  if (activeSub) return { isPro: true, hadProBefore: false, expiresAt: null };
 
   // 2. Active promo redemption
   const { data: activePromo } = await supabase
     .from("promo_redemptions")
-    .select("id")
+    .select("id, expires_at")
     .eq("user_id", userId)
     .gt("expires_at", new Date().toISOString())
     .limit(1)
     .maybeSingle();
 
-  if (activePromo) return { isPro: true, hadProBefore: false };
+  if (activePromo) return { isPro: true, hadProBefore: false, expiresAt: activePromo.expires_at as string };
 
   // ── Not currently PRO — check if they ever had PRO ──────────────────
 
@@ -56,5 +57,6 @@ export async function getProStatus(
   return {
     isPro: false,
     hadProBefore: anySub !== null || expiredPromo !== null,
+    expiresAt: null,
   };
 }

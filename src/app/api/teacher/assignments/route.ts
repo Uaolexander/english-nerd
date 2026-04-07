@@ -197,6 +197,34 @@ export async function POST(req: Request) {
   });
 }
 
+/** PATCH /api/teacher/assignments — update due date (and optionally title) */
+export async function PATCH(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+
+  const teacher = await getTeacherStatus(supabase, user.id);
+  if (!teacher.isTeacher) return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+
+  const body = await req.json() as { assignmentId: string; dueDate?: string | null; title?: string };
+  if (!body.assignmentId) return NextResponse.json({ ok: false, error: "assignmentId required" }, { status: 400 });
+
+  const updates: Record<string, unknown> = {};
+  if ("dueDate" in body) updates.due_date = body.dueDate ?? null;
+  if (body.title?.trim()) updates.title = body.title.trim();
+
+  if (Object.keys(updates).length === 0) return NextResponse.json({ ok: false, error: "Nothing to update" }, { status: 400 });
+
+  const { error } = await supabase
+    .from("teacher_assignments")
+    .update(updates)
+    .eq("id", body.assignmentId)
+    .eq("teacher_id", user.id);
+
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
 /** DELETE /api/teacher/assignments?assignmentId=xxx */
 export async function DELETE(req: Request) {
   const supabase = await createClient();

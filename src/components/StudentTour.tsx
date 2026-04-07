@@ -112,10 +112,10 @@ function computeTooltipPos(rect: Rect, hint: TourStep["tooltipSide"], pad: numbe
   return { top: vh / 2 - TOOLTIP_H / 2, left: vw / 2 - tw / 2, arrowSide: "none" };
 }
 
-interface Props { userEmail: string; onDone: () => void; }
+interface Props { userEmail: string; hasAssignments?: boolean; onDone: () => void; }
 
-export default function StudentTour({ userEmail, onDone }: Props) {
-  const steps = STEPS;
+export default function StudentTour({ userEmail, hasAssignments, onDone }: Props) {
+  const steps = hasAssignments ? STEPS : STEPS.filter(s => s.target !== "student-assignments");
   const total = steps.length;
 
   const [idx, setIdx]       = useState(0);

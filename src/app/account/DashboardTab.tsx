@@ -507,7 +507,7 @@ const LS_KEY = "eng_dismissed_weak";
 
 export default function DashboardTab({
   streak, totalCompleted, avgScore,
-  overallPct, currentLevel, byLevel,
+  topicsMastered, overallPct, currentLevel, byLevel,
   weekly, maxWeekly, recentActivity, isPro,
   freezeCount, canUseFreeze, weakTopics,
 }: DashboardTabProps) {
@@ -564,7 +564,7 @@ export default function DashboardTab({
         </div>
 
         <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.03]">
-          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">🎯</div>
+          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">📊</div>
           <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-600">Avg. Score</div>
           <div className="mt-2 text-4xl font-black text-slate-900 leading-none">
             <AnimatedNumber value={avgScore} suffix="%" />
@@ -575,16 +575,16 @@ export default function DashboardTab({
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.03]">
-          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">🎯</div>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-rose-500">To Improve</div>
+        <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.03]">
+          <div className="absolute -right-2 -top-2 text-5xl opacity-[0.07] select-none">⭐</div>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-amber-600">Mastered</div>
           <div className="mt-2 text-4xl font-black text-slate-900 leading-none">
-            <AnimatedNumber value={visibleWeak.length} />
+            <AnimatedNumber value={topicsMastered} />
           </div>
-          <div className="mt-1 text-xs text-slate-400">topics &lt; 70%</div>
+          <div className="mt-1 text-xs text-slate-400">topics ≥ 80%</div>
           <div className="mt-3 h-1 w-full rounded-full bg-slate-100">
-            <div className="h-1 rounded-full bg-rose-400 transition-all duration-700"
-              style={{ width: visibleWeak.length > 0 ? "100%" : "0%" }} />
+            <div className="h-1 rounded-full bg-amber-400 transition-all duration-700"
+              style={{ width: topicsMastered > 0 ? "100%" : "0%" }} />
           </div>
         </div>
 

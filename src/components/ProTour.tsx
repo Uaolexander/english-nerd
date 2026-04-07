@@ -29,11 +29,11 @@ const STEPS: TourStep[] = [
   },
   {
     id: "pro-banner",
-    target: "pro-banner",
+    target: "pro-header-card",
     title: "You're a PRO Member",
-    desc: "This golden bar marks your account as PRO. No ads, no limits — everything is unlocked for you.",
+    desc: "Your profile card shows your PRO status — no ads, no limits, and full access to all features including analytics, certificates, and streak freezes.",
     tooltipSide: "bottom",
-    padding: 4,
+    padding: 8,
   },
   {
     id: "dashboard-tab",

@@ -100,6 +100,7 @@ type Props = {
   freezeCount: number;
   canUseFreeze: boolean;
   weakTopics: WeakTopic[];
+  proExpiresAt: string | null;
   siteUrl: string;
 };
 
@@ -206,6 +207,7 @@ const BAND_BG_HEX: Record<string, string> = {
 
 function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete: () => void }) {
   const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
 
   const isVocab = cert.scoreTotal >= 1000;
 
@@ -312,6 +314,8 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
       pdf.save(fileName);
     } catch (e) {
       console.error(e);
+      setDownloadError(true);
+      setTimeout(() => setDownloadError(false), 4000);
     } finally {
       setDownloading(false);
     }
@@ -320,45 +324,48 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
   const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5">
-      {/* Level badge */}
-      <div className="shrink-0 flex flex-col items-center gap-0.5">
-        <span className={`rounded-xl px-3 py-1.5 text-base font-black ${CERT_LEVEL_COLORS[cert.level] ?? "bg-slate-100 text-slate-700"}`}>
-          {cert.level}
-        </span>
-        {isVocab && <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">vocab</span>}
+    <div>
+      <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5">
+        {/* Level badge */}
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <span className={`rounded-xl px-3 py-1.5 text-base font-black ${CERT_LEVEL_COLORS[cert.level] ?? "bg-slate-100 text-slate-700"}`}>
+            {cert.level}
+          </span>
+          {isVocab && <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">vocab</span>}
+        </div>
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-slate-900 truncate">{cert.holderName}</p>
+          {isVocab
+            ? <p className="text-xs text-slate-400">{issuedDate} · ~{cert.scoreCorrect.toLocaleString()} words</p>
+            : <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
+          }
+        </div>
+        {/* Download */}
+        <button
+          onClick={reDownload}
+          disabled={downloading}
+          className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-900 disabled:opacity-40"
+        >
+          {downloading ? (
+            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          ) : (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          )}
+          {downloading ? "…" : "PDF"}
+        </button>
+        {/* Delete */}
+        <button
+          onClick={onDelete}
+          title="Delete certificate"
+          className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-slate-900 truncate">{cert.holderName}</p>
-        {isVocab
-          ? <p className="text-xs text-slate-400">{issuedDate} · ~{cert.scoreCorrect.toLocaleString()} words</p>
-          : <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
-        }
-      </div>
-      {/* Download */}
-      <button
-        onClick={reDownload}
-        disabled={downloading}
-        className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-900 disabled:opacity-40"
-      >
-        {downloading ? (
-          <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-        ) : (
-          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        )}
-        {downloading ? "…" : "PDF"}
-      </button>
-      {/* Delete */}
-      <button
-        onClick={onDelete}
-        title="Delete certificate"
-        className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-      >
-        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-      </button>
+      {downloadError && <p className="mt-1.5 text-xs text-red-500 font-semibold">Download failed. Please try again.</p>}
     </div>
   );
 }
@@ -2360,6 +2367,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
   const [deletingClass, setDeletingClass] = useState(false);
   const [confirmDeleteAssignment, setConfirmDeleteAssignment] = useState<{ id: string; title: string } | null>(null);
   const [deletingAssignment, setDeletingAssignment] = useState(false);
+  const [editingDeadline, setEditingDeadline] = useState<{ id: string; dueDate: string } | null>(null);
+  const [savingDeadline, setSavingDeadline] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<{ linkId: string; label: string } | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string | null; email: string; avatarUrl: string | null } | null>(null);
@@ -2799,6 +2808,23 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
     setConfirmDeleteAssignment(null);
   }
 
+  async function handleEditDeadline(assignmentId: string, dueDate: string | null) {
+    setSavingDeadline(true);
+    try {
+      const res = await fetch("/api/teacher/assignments", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId, dueDate: dueDate || null }),
+      });
+      if ((await res.json()).ok) {
+        setAssignments((prev) => prev.map((a) => a.id === assignmentId ? { ...a, dueDate: dueDate || null } : a));
+        setEditingDeadline(null);
+      }
+    } finally {
+      setSavingDeadline(false);
+    }
+  }
+
   const innerTabs = [
     { id: "students" as const, label: "Students", count: activeStudents.length },
     { id: "classes" as const, label: "Classes", count: classes.length },
@@ -2868,15 +2894,21 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
       )}
 
       {teacherData.isInGracePeriod && teacherData.subscriptionExpiresAt && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800">
-          <strong>Subscription expired.</strong> Your data is safe — renew to restore full access. Grace period ends {new Date(new Date(teacherData.subscriptionExpiresAt).getTime() + 7 * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}.
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800 flex items-start justify-between gap-4">
+          <div>
+            <p className="font-black">Subscription expired</p>
+            <p className="mt-0.5 text-amber-700">Your data is safe. Grace period ends {new Date(new Date(teacherData.subscriptionExpiresAt).getTime() + 7 * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" })} — renew to restore full access.</p>
+          </div>
+          <a href="/pro" className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600 transition whitespace-nowrap">
+            Renew now →
+          </a>
         </div>
       )}
 
       {/* Inner tabs */}
       <div data-tour="teacher-inner-tabs" className="flex gap-1 rounded-2xl bg-slate-100 p-1">
         {innerTabs.map((t) => (
-          <button key={t.id} data-tour={`teacher-${t.id}-tab-btn`} onClick={() => setInnerTab(t.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold transition ${innerTab === t.id ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
+          <button key={t.id} data-tour={`teacher-${t.id}-tab-btn`} onClick={() => setInnerTab(t.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs sm:text-sm font-bold transition ${innerTab === t.id ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
             {t.label}
             {t.count > 0 && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black ${innerTab === t.id ? "bg-violet-100 text-violet-700" : "bg-slate-200 text-slate-500"}`}>{t.count}</span>}
           </button>
@@ -2899,6 +2931,12 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               <div className={`mt-2 rounded-xl p-2.5 text-sm ${inviteMsg.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
                 {inviteMsg.text}
                 {inviteMsg.url && <div className="mt-1 flex gap-2"><code className="flex-1 truncate rounded bg-white border border-emerald-200 px-2 py-0.5 text-xs">{inviteMsg.url}</code><button onClick={() => navigator.clipboard.writeText(inviteMsg.url!)} className="text-xs font-bold text-emerald-700">Copy</button></div>}
+              </div>
+            )}
+            {activeStudents.length >= teacherData.studentLimit && !inviteMsg && (
+              <div className="mt-2 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5 text-xs text-amber-700">
+                <svg className="h-3.5 w-3.5 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Student limit reached ({teacherData.studentLimit}/{teacherData.studentLimit}). <a href="/pro" className="font-bold underline hover:text-amber-900 transition">Upgrade your plan</a> to invite more.</span>
               </div>
             )}
           </div>
@@ -3390,7 +3428,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                         </svg>
                       </span>
                     </button>
-                    {/* Footer: copy + delete */}
+                    {/* Footer: copy + deadline + delete */}
                     <div className="flex items-center border-t border-slate-50 px-4 py-1.5">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleCopyAssignment(a); }}
@@ -3403,6 +3441,13 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         )}
                         {copyingAssignment === a.id ? "Copying…" : "Copy"}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingDeadline({ id: a.id, dueDate: a.dueDate ?? "" }); }}
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-300 hover:bg-sky-50 hover:text-sky-500 transition"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Deadline
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteAssignment({ id: a.id, title: a.title }); }}
@@ -3461,6 +3506,41 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
         onConfirm={() => doDeleteAssignment(confirmDeleteAssignment.id)}
         disabled={deletingAssignment}
       />
+    )}
+
+    {editingDeadline && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setEditingDeadline(null)}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        <div className="relative w-full max-w-xs overflow-hidden rounded-3xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="h-1.5 bg-gradient-to-r from-sky-400 to-sky-500" />
+          <div className="px-6 py-6">
+            <p className="text-base font-black text-slate-900 mb-1">Edit Deadline</p>
+            <p className="text-xs text-slate-400 mb-4">Set or clear the due date for this assignment.</p>
+            <input
+              type="date"
+              value={editingDeadline.dueDate}
+              onChange={(e) => setEditingDeadline((prev) => prev ? { ...prev, dueDate: e.target.value } : null)}
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEditDeadline(editingDeadline.id, null)}
+                disabled={savingDeadline}
+                className="flex-1 rounded-xl border border-slate-200 py-2 text-xs font-bold text-slate-400 hover:bg-slate-50 transition disabled:opacity-40"
+              >
+                Clear date
+              </button>
+              <button
+                onClick={() => handleEditDeadline(editingDeadline.id, editingDeadline.dueDate)}
+                disabled={savingDeadline || !editingDeadline.dueDate}
+                className="flex-[2] rounded-xl bg-sky-500 py-2 text-xs font-black text-white hover:bg-sky-600 transition disabled:opacity-40"
+              >
+                {savingDeadline ? "Saving…" : "Save deadline"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     )}
 
     {confirmInfoStudent && (
@@ -4683,11 +4763,30 @@ function StudentTab({
             </svg>
           </div>
           <p className="text-sm font-bold text-slate-600">No assignments yet</p>
-          <p className="mt-1 text-xs text-slate-400">Your teacher hasn&apos;t created any assignments for you.</p>
+          <p className="mt-1 text-xs text-slate-400 max-w-xs mx-auto">Your teacher hasn&apos;t set any assignments yet. In the meantime, practise on your own:</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <a href="/grammar" className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 transition">Grammar →</a>
+            <a href="/vocabulary" className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 transition">Vocabulary →</a>
+            <a href="/tests/grammar" className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 transition">Level Test →</a>
+          </div>
         </div>
       ) : (
         <div className="space-y-2">
-          {studentAssignments.filter((a) => {
+          {[...studentAssignments].sort((a, b) => {
+            const now = Date.now();
+            const getScore = (x: StudentAssignment) => {
+              const isDone = x.category === "essay" ? !!x.essayStatus
+                : x.category === "homework" || x.category === "quiz" ? !!x.essayStatus
+                : completedSet.has(`${x.category}:${x.level ?? ""}:${x.slug}:${x.exerciseNo ?? ""}`);
+              if (isDone) return 100;
+              if (!x.dueDate) return 50;
+              const diff = new Date(x.dueDate).getTime() - now;
+              if (diff < 0) return 0; // overdue
+              if (diff < 2 * 86_400_000) return 10; // due soon
+              return 30;
+            };
+            return getScore(a) - getScore(b);
+          }).filter((a) => {
             if (assignFilter === "all") return true;
             const isSelfSubmit = a.category === "essay" || a.category === "homework" || a.category === "quiz";
             const done = isSelfSubmit
@@ -4838,7 +4937,7 @@ function StudentTab({
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, siteUrl }: Props) {
+export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, proExpiresAt, siteUrl }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -5076,7 +5175,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       />
     )}
     {showStudentTour && !showOnboarding && (
-      <StudentTour userEmail={email} onDone={() => setShowStudentTour(false)} />
+      <StudentTour userEmail={email} hasAssignments={studentAssignments.length > 0} onDone={() => setShowStudentTour(false)} />
     )}
     {showProTour && !showOnboarding && !showStudentTour && !showWelcome && (
       <ProTour userEmail={email} onDone={() => setShowProTour(false)} />
@@ -5213,7 +5312,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           <div className="min-w-0 space-y-4">
 
         {/* ── Profile header card ─────────────────────────────────────── */}
-        <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+        <div data-tour="pro-header-card" className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
           {/* Top accent strip */}
           {isTeacher ? (
             <div className="teacher-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-violet-600 via-violet-500 to-violet-600">
@@ -5484,11 +5583,16 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 <div>
                   <label className="mb-2 block text-xs font-semibold text-slate-600">Profile photo</label>
                   <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
                       {avatarPreview
                         ? <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setAvatarPreview("")} />
                         : <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
                       }
+                      {avatarUploading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
+                          <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <button type="button" onClick={() => fileRef.current?.click()} disabled={avatarUploading}
@@ -5531,10 +5635,17 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 <p className="text-xs text-slate-400">Enter your promo code to unlock access</p>
               </div>
               {isPro && (
-                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900">
-                  <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
-                  PRO Active
-                </span>
+                <div className="ml-auto flex flex-col items-end">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900">
+                    <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
+                    PRO Active
+                  </span>
+                  {isPro && proExpiresAt && (
+                    <p className="mt-0.5 text-xs text-amber-700">
+                      Active until {new Date(proExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
             <form onSubmit={handlePromoRedeem} className="p-6 sm:p-7">

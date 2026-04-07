@@ -163,7 +163,7 @@ export default async function AccountPage() {
   });
 
   // Pro status
-  const { isPro, hadProBefore } = await getProStatus(supabase, user.id);
+  const { isPro, hadProBefore, expiresAt } = await getProStatus(supabase, user.id);
 
   // Streak freezes (PRO-only feature)
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
@@ -437,6 +437,7 @@ export default async function AccountPage() {
       freezeCount={freezeCount}
       canUseFreeze={canUseFreeze}
       weakTopics={weakTopics}
+      proExpiresAt={expiresAt ?? null}
       siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? ""}
     />
   );
