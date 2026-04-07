@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     // Not a Pro promo code — check if it's a teacher voucher
     const { data: voucher } = await service
       .from("teacher_vouchers")
-      .select("id, allowed_email, plan, student_limit, duration_days, is_active")
+      .select("id, allowed_email, plan, student_limit, duration_days, is_active, valid_from, valid_until")
       .eq("code", code)
       .maybeSingle();
 
@@ -57,6 +57,15 @@ export async function POST(req: Request) {
       // Personal voucher check
       if (voucher.allowed_email && user.email?.toLowerCase() !== voucher.allowed_email.toLowerCase()) {
         return NextResponse.json({ ok: false, error: "This voucher is not valid for your account." }, { status: 403 });
+      }
+
+      // Date validity check
+      const nowTs = new Date();
+      if (voucher.valid_from && nowTs < new Date(voucher.valid_from)) {
+        return NextResponse.json({ ok: false, error: "This voucher is not active yet." }, { status: 400 });
+      }
+      if (voucher.valid_until && nowTs > new Date(voucher.valid_until)) {
+        return NextResponse.json({ ok: false, error: "This voucher has expired." }, { status: 400 });
       }
 
       // Monthly reuse check
