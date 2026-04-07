@@ -15,6 +15,7 @@ export default function RegisterClient() {
 
   const [agreed, setAgreed] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [isLikelyTeacher, setIsLikelyTeacher] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const widgetRef = useRef<TurnstileInstance | null>(null);
 
@@ -83,6 +84,15 @@ export default function RegisterClient() {
       return;
     }
 
+    // Check if email domain suggests a teacher (school / edu)
+    const domain = email.split("@")[1]?.toLowerCase() ?? "";
+    const TEACHER_DOMAINS = ["sch", "school", "edu", "gymnasium", "lyceum", "college", "teacher", "npu", "dpu", "kpu", "university", "ac.uk", "k12"];
+    const likelyTeacher = TEACHER_DOMAINS.some((w) => domain.includes(w));
+    if (likelyTeacher) {
+      try { localStorage.setItem("likely_teacher", "1"); } catch { /* ignore */ }
+      setIsLikelyTeacher(true);
+    }
+
     setSuccess(true);
     setLoading(false);
   }
@@ -90,7 +100,7 @@ export default function RegisterClient() {
   if (success) {
     return (
       <main className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-16">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm flex flex-col gap-4">
           <div className="rounded-2xl border border-white/10 bg-[#121216] p-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/10 text-2xl">
               ✉️
@@ -107,6 +117,36 @@ export default function RegisterClient() {
               Back to login
             </a>
           </div>
+
+          {/* Teacher hint card — only shown when email domain suggests a teacher */}
+          {isLikelyTeacher && (
+            <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[#121216] p-5">
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-violet-700 to-purple-400" />
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-700 to-purple-500 text-white">
+                  <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="currentColor" style={{ height: 18, width: 18 }}>
+                    <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-widest text-violet-400">For Teachers</p>
+                  <h3 className="mt-0.5 text-sm font-black text-white">Are you an English teacher?</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-white/45">
+                    We noticed you might be a teacher. English Nerd has a special Teacher plan — assign exercises, track student progress, and generate certificates.
+                  </p>
+                  <a
+                    href="/pro#teacher"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-violet-700 px-4 py-2 text-xs font-black text-white transition hover:bg-violet-600"
+                  >
+                    See Teacher Plans
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     );

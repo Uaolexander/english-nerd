@@ -283,7 +283,7 @@ export default function ProPage() {
       </section>
 
       {/* ── 7. FOR TEACHERS ───────────────────────────────────────────────── */}
-      <section className="px-6 pb-28">
+      <section id="teacher" className="px-6 pb-28">
         <div className="mx-auto max-w-4xl">
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-sm font-black text-white/60">

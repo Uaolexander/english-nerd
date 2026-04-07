@@ -15,6 +15,7 @@ import { StudentProvider } from "@/lib/StudentContext";
 import { TeacherProvider } from "@/lib/TeacherContext";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import MobileProBanner from "@/components/MobileProBanner";
+import TeacherHintBanner from "@/components/TeacherHintBanner";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -89,6 +90,7 @@ export default async function RootLayout({
               <SessionGuard />
               <ProgressToast />
               <MobileProBanner />
+              <TeacherHintBanner />
             </TeacherProvider>
           </StudentProvider>
         </ProProvider>
