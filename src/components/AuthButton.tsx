@@ -81,7 +81,7 @@ export default function AuthButton({
   }
 
   if (user) {
-    const avatarUrl = (user.user_metadata?.avatar_url || user.user_metadata?.picture) as string | undefined;
+    const avatarUrl = (user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture) as string | undefined;
     const name = (user.user_metadata?.full_name as string) ?? "";
     const initials = userInitials(name, user.email ?? "");
 

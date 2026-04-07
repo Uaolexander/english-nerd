@@ -13,8 +13,9 @@ export async function POST(req: NextRequest) {
   }
 
   const service = createServiceClient();
+  // Use custom_avatar_url — Google OAuth overwrites avatar_url on each login
   const { error } = await service.auth.admin.updateUserById(user.id, {
-    user_metadata: { ...user.user_metadata, avatar_url: avatarUrl },
+    user_metadata: { ...user.user_metadata, custom_avatar_url: avatarUrl },
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

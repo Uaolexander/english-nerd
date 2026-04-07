@@ -402,6 +402,7 @@ export default async function AccountPage() {
   );
 
   const avatarUrl =
+    user.user_metadata?.custom_avatar_url ||
     user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     (user.identities ?? []).find((id) => id.provider === "google")?.identity_data?.avatar_url ||
