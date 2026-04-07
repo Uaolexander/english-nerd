@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Tests — English Nerd",
   description:
-    "Free English tests: vocabulary size test, grammar placement test, and tenses test. Find your level instantly.",
+    "Free English tests: vocabulary size test, grammar level test, and tenses test. Find your level instantly.",
   alternates: { canonical: "/tests" },
 };
 
@@ -112,7 +112,7 @@ export default function TestsPage() {
 
             {/* Content */}
             <div className="flex flex-1 flex-col p-6">
-              <h2 className="text-xl font-black leading-tight">Grammar Placement Test</h2>
+              <h2 className="text-xl font-black leading-tight">Grammar Level Test</h2>
               <p className="mt-2 text-sm text-white/50 leading-relaxed flex-1">
                 60 questions from beginner to advanced. See your CEFR level with a topic-by-topic breakdown.
               </p>

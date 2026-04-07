@@ -45,7 +45,7 @@ const FEATURES = [
 const CHECKLIST = [
   { free: true,  label: "All Grammar lessons A1–C1" },
   { free: true,  label: "Tenses: quiz, fill-in, sentence builder" },
-  { free: true,  label: "Vocabulary tests & placement test" },
+  { free: true,  label: "Vocabulary tests & level test" },
   { free: true,  label: "Reading & Listening sections" },
   { free: false, label: "SpeedRound game on every lesson" },
   { free: false, label: "PDF worksheets + answer keys" },

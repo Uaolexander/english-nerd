@@ -19,7 +19,7 @@ export const searchIndex: SearchItem[] = [
 
   // ─── Tests ────────────────────────────────────────────────────────────────
   { title: "All Tests Overview", keywords: ["tests", "all tests", "placement", "level check"], href: "/tests", badge: "Test" },
-  { title: "Grammar Placement Test", keywords: ["grammar test", "placement", "cefr", "level test", "grammar", "test"], href: "/tests/grammar", badge: "Test" },
+  { title: "Grammar Level Test", keywords: ["grammar test", "placement", "cefr", "level test", "grammar", "test", "placement test"], href: "/tests/grammar", badge: "Test" },
   { title: "Vocabulary Size Test", keywords: ["vocabulary test", "vocab test", "words", "size test", "word knowledge", "test", "how many words"], href: "/tests/vocabulary", badge: "Test" },
   { title: "English Tenses Test", keywords: ["tenses test", "tenses", "test", "12 tenses", "all tenses", "tense test"], href: "/tests/tenses", badge: "Test" },
 

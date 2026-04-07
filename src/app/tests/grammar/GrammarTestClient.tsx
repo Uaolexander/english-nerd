@@ -304,13 +304,13 @@ export default function GrammarTestClient() {
           <span className="mx-2 text-black/25">/</span>
           <a href="/tests" className="hover:text-black/75 transition-colors">Tests</a>
           <span className="mx-2 text-black/25">/</span>
-          <span className="text-black/65">Grammar Placement Test</span>
+          <span className="text-black/65">Grammar Level Test</span>
         </div>
 
         <h1 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
           Grammar{" "}
           <span className="rounded-lg bg-[#F5DA20] px-2 py-0.5 text-[#0F0F12]">
-            Placement Test
+            Level Test
           </span>
         </h1>
         <p className="mt-2 max-w-2xl text-black/50">

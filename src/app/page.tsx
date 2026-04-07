@@ -20,7 +20,7 @@ const websiteSchema = {
 
 export const metadata = {
   title: "English Nerd — Free English Grammar Lessons & Exercises",
-  description: "Practice English grammar, vocabulary, listening and reading — all levels A1 to C1. Free interactive exercises with instant feedback and placement tests.",
+  description: "Practice English grammar, vocabulary, listening and reading — all levels A1 to C1. Free interactive exercises with instant feedback and English level tests.",
   alternates: { canonical: "/" },
 };
 
@@ -247,7 +247,7 @@ function PlacementTest() {
               Not sure where to start?
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-white/40">
-              Take a quick placement test. We&apos;ll tell you your current level and suggest what to practice first.
+              Take a quick English level test. We&apos;ll tell you your current level and suggest what to practice first.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

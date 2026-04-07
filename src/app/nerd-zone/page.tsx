@@ -34,7 +34,7 @@ const faqSchema = {
       name: "What level should I start with for English grammar?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Take the free Placement Test to find your level instantly. English Nerd covers A1 to C1 across grammar, vocabulary, listening and reading.",
+        text: "Take the free English Level Test to find your level instantly. English Nerd covers A1 to C1 across grammar, vocabulary, listening and reading.",
       },
     },
     {
@@ -355,14 +355,14 @@ export default async function NerdZonePage() {
                   </div>
                   <div>
                     <p className="text-lg font-black text-white">You&apos;re PRO — earn your certificate!</p>
-                    <p className="mt-1 text-sm text-white/55 max-w-sm">Take the Placement Test to find your level. We&apos;ll generate a shareable PDF certificate you can download and keep.</p>
+                    <p className="mt-1 text-sm text-white/55 max-w-sm">Take the English Level Test to find your level. We&apos;ll generate a shareable PDF certificate you can download and keep.</p>
                   </div>
                 </div>
                 <a
                   href="/tests"
                   className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black shadow-md transition hover:bg-[#e8cf00] hover:shadow-[0_4px_20px_rgba(245,218,32,0.4)]"
                 >
-                  Take the Placement Test
+                  Take the English Level Test
                 </a>
               </div>
             </div>
@@ -408,7 +408,7 @@ export default async function NerdZonePage() {
                 </div>
                 <div className="text-center px-4">
                   <p className="text-lg font-black text-white">Earn your certificate</p>
-                  <p className="mt-1 text-sm text-white/55 max-w-xs">Complete the Placement Test and get a shareable PDF certificate to prove your English level. Pro members only.</p>
+                  <p className="mt-1 text-sm text-white/55 max-w-xs">Complete the English Level Test and get a shareable PDF certificate to prove your English level. Pro members only.</p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
                   <a

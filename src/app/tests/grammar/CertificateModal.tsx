@@ -235,7 +235,7 @@ export default function CertificateModal({ level, score, onClose, onSaved }: Pro
                 fontStyle: "italic",
                 textAlign: "center",
               }}>
-                has successfully completed the English Grammar Placement Test
+                has successfully completed the English Grammar Level Test
               </p>
 
               {/* Level badge */}

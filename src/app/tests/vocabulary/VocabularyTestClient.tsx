@@ -735,7 +735,7 @@ export default function VocabularyTestClient() {
                         className="flex items-center gap-3 rounded-xl border border-black/8 bg-slate-50 px-4 py-3 text-sm font-semibold text-black/60 hover:bg-black/5 transition"
                       >
                         <span className="text-base shrink-0">📝</span>
-                        Take grammar placement test →
+                        Take grammar level test →
                       </a>
                     </div>
                   </div>

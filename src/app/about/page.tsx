@@ -116,7 +116,7 @@ export default function AboutPage() {
               {[
                 { icon: "📝", title: "Grammar lessons", desc: "From the basics at A1 to advanced structures at C1, explained the way a teacher would." },
                 { icon: "📚", title: "Vocabulary exercises", desc: "Topic-based exercises for every level, because words matter as much as grammar." },
-                { icon: "✅", title: "Placement tests", desc: "Find your level in minutes. Grammar, vocabulary, tenses." },
+                { icon: "✅", title: "English level tests", desc: "Find your level in minutes. Grammar, vocabulary, tenses." },
                 { icon: "🎧", title: "Listening practice", desc: "Real audio, real comprehension questions. Train your ear at the right level." },
               ].map((item) => (
                 <div key={item.title} className="flex gap-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
@@ -136,7 +136,7 @@ export default function AboutPage() {
               href="/tests/grammar"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition"
             >
-              Take the placement test
+              Take the English level test
             </a>
             <a
               href="/contact"
