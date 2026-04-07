@@ -5098,7 +5098,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     if (avatar) {
       try {
         const url = new URL(avatar);
-        const match = url.pathname.match(/\/object\/public\/avatars\/(.+)$/);
+        const match = url.pathname.match(/\/storage\/v1\/object\/public\/avatars\/(.+)$/);
         if (match) {
           await supabase.storage.from("avatars").remove([match[1]]);
         }
@@ -5106,7 +5106,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     }
 
     const ext = file.name.split(".").pop();
-    const path = `avatars/${Date.now()}.${ext}`;
+    const path = `${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) { setProfileMsg({ type: "err", text: `Upload failed: ${uploadError.message}` }); setAvatarPreview(avatar); setAvatarUploading(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -5127,8 +5127,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       setProfileMsg({ type: "ok", text: "Photo updated." });
       // Switch to real CDN URL — by now upload is done so CDN should have it
       setAvatarPreview(urlData.publicUrl);
-      // Refresh session so header AuthButton gets updated avatar_url
-      supabase.auth.refreshSession().catch(() => {});
     }
     setAvatarUploading(false);
     URL.revokeObjectURL(objectUrl);
