@@ -119,6 +119,31 @@ function initials(name: string, email: string) {
   return email.slice(0, 2).toUpperCase();
 }
 
+function teacherPlanTheme(plan: "starter" | "solo" | "plus") {
+  if (plan === "starter") return {
+    banner: "from-sky-500 via-sky-400 to-sky-500",
+    badge: "from-sky-500 to-sky-600",
+    ring: "ring-sky-500",
+    badgeText: "text-white",
+    icon: "🎓",
+  };
+  if (plan === "solo") return {
+    banner: "from-amber-400 via-[#F5DA20] to-amber-400",
+    badge: "from-amber-400 to-[#F5DA20]",
+    ring: "ring-amber-400",
+    badgeText: "text-amber-900",
+    icon: "⭐",
+  };
+  // plus
+  return {
+    banner: "from-violet-600 via-violet-500 to-violet-600",
+    badge: "from-violet-500 to-violet-600",
+    ring: "ring-violet-500",
+    badgeText: "text-white",
+    icon: "🏆",
+  };
+}
+
 function memberSince(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
@@ -2906,6 +2931,23 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
         </div>
       )}
 
+      {!teacherData.isInGracePeriod && teacherData.subscriptionExpiresAt && (() => {
+        const daysLeft = Math.ceil((new Date(teacherData.subscriptionExpiresAt).getTime() - Date.now()) / 86400000);
+        if (daysLeft > 14 || daysLeft < 0) return null;
+        return (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <span className="text-xl">⏰</span>
+            <div className="flex-1">
+              <p className="text-sm font-black text-amber-800">
+                {daysLeft <= 1 ? "Subscription expires today!" : `Subscription expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`}
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">Renew your Teacher plan to keep your classroom running.</p>
+            </div>
+            <a href="/pro" className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-600">Renew →</a>
+          </div>
+        );
+      })()}
+
       {/* Inner tabs */}
       <div data-tour="teacher-inner-tabs" className="flex gap-1 rounded-2xl bg-slate-100 p-1">
         {innerTabs.map((t) => (
@@ -2926,7 +2968,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             </div>
             <form onSubmit={handleInvite} className="flex gap-2">
               <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="student@email.com" required className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
-              <button type="submit" disabled={inviting || activeStudents.length >= teacherData.studentLimit} className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-violet-700 disabled:opacity-50">{inviting ? "…" : "Invite"}</button>
+              <button type="submit" disabled={inviting || activeStudents.length >= teacherData.studentLimit} className={`rounded-xl px-4 py-2 text-sm font-bold transition disabled:opacity-50 bg-gradient-to-r ${teacherPlanTheme(teacherData.plan).badge} ${teacherPlanTheme(teacherData.plan).badgeText}`}>{inviting ? "…" : "Invite"}</button>
             </form>
             {inviteMsg && (
               <div className={`mt-2 rounded-xl p-2.5 text-sm ${inviteMsg.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
@@ -5382,7 +5424,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         <div data-tour="pro-header-card" className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
           {/* Top accent strip */}
           {isTeacher ? (
-            <div className="teacher-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-violet-600 via-violet-500 to-violet-600">
+            <div className={`teacher-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r ${teacherPlanTheme(teacherData?.plan ?? "plus").banner}`}>
               <svg aria-hidden="true" className="h-3.5 w-3.5 text-white/80" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
               </svg>
@@ -5392,15 +5434,33 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               </svg>
             </div>
           ) : isPro ? (
-            <div data-tour="pro-banner" className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
-              <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
-              </svg>
-              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-900">PRO Member</span>
-              <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
-              </svg>
-            </div>
+            <>
+              <div data-tour="pro-banner" className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
+                <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+                </svg>
+                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-900">PRO Member</span>
+                <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+                </svg>
+              </div>
+              {proExpiresAt && (() => {
+                const daysLeft = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / 86400000);
+                if (daysLeft > 14 || daysLeft < 0) return null;
+                return (
+                  <div className="mx-4 mb-3 mt-3 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5">
+                    <span className="text-lg">⚠️</span>
+                    <div className="flex-1">
+                      <p className="text-xs font-black text-amber-800">
+                        {daysLeft <= 1 ? "PRO expires today!" : `PRO expires in ${daysLeft} days`}
+                      </p>
+                      <p className="text-[11px] text-amber-600">Renew now to keep your access.</p>
+                    </div>
+                    <a href="/pro" className="shrink-0 rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-black text-amber-900 transition hover:bg-amber-500">Renew →</a>
+                  </div>
+                );
+              })()}
+            </>
           ) : isStudent ? (
             <div className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
               <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
@@ -5421,7 +5481,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             {/* Outer wrapper is relative (for badge), inner div is overflow-hidden (for image) */}
             <div className="relative shrink-0 h-16 w-16 sm:h-[76px] sm:w-[76px]">
               <div className={`h-full w-full overflow-hidden rounded-full shadow-md ${
-                isTeacher ? "ring-4 ring-violet-500" :
+                isTeacher ? `ring-4 ${teacherData ? teacherPlanTheme(teacherData.plan).ring : "ring-violet-500"}` :
                 isPro ? "ring-4 ring-[#F5DA20] pro-avatar-ring" :
                 isStudent ? "ring-4 ring-[#F5DA20] pro-avatar-ring" :
                 "ring-4 ring-[#F5DA20]/30"
@@ -5437,7 +5497,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 </div>
               </div>
               {isTeacher ? (
-                <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-violet-700 ring-2 ring-white shadow-sm">
+                <span className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br ${teacherData ? teacherPlanTheme(teacherData.plan).badge : "from-violet-500 to-violet-600"} ring-2 ring-white shadow-sm`}>
                   <svg aria-hidden="true" className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
                   </svg>
@@ -5468,7 +5528,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
                 </span>
                 {isTeacher ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-violet-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow-sm">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r ${teacherPlanTheme(teacherData?.plan ?? "plus").badge} px-3 py-1 text-[11px] font-black uppercase tracking-wide ${teacherPlanTheme(teacherData?.plan ?? "plus").badgeText} shadow-sm`}>
                     <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
                     </svg>
@@ -5709,11 +5769,17 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                     <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
                     PRO Active
                   </span>
-                  {isPro && proExpiresAt && (
-                    <p className="mt-0.5 text-xs text-amber-700">
-                      Active until {new Date(proExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </p>
-                  )}
+                  {isPro && proExpiresAt && (() => {
+                    const daysLeft = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / 86400000);
+                    const isExpiringSoon = daysLeft >= 0 && daysLeft <= 14;
+                    return (
+                      <p className={`mt-0.5 text-xs font-bold ${isExpiringSoon ? "text-red-600" : "text-amber-700"}`}>
+                        {isExpiringSoon
+                          ? (daysLeft <= 1 ? "Expires today!" : `Expires in ${daysLeft} days`)
+                          : `Active until ${new Date(proExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
             </div>
