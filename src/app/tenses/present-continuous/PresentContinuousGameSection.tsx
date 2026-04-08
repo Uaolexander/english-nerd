@@ -6,141 +6,9 @@
 
 import { useState } from "react";
 import SpeedRound from "@/components/games/SpeedRound";
-import type { SRQuestion } from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
-import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
-
-const SPEED_QUESTIONS: SRQuestion[] = [
-  { q: "Look! She ___ out of the window.", options: ["look", "looks", "is looking", "looked"], answer: 2 },
-  { q: "They ___ dinner right now.", options: ["have", "are having", "has", "is having"], answer: 1 },
-  { q: "I ___ for my keys at the moment.", options: ["look", "am looking", "looks", "looked"], answer: 1 },
-  { q: "The children ___ in the garden.", options: ["play", "plays", "is playing", "are playing"], answer: 3 },
-  { q: "He ___ to the radio right now.", options: ["listens", "listen", "is listening", "are listening"], answer: 2 },
-  { q: "___ you working from home today?", options: ["Do", "Are", "Is", "Have"], answer: 1 },
-  { q: "She ___ a letter to her friend.", options: ["writes", "is writing", "write", "wrote"], answer: 1 },
-  { q: "What ___ he doing?", options: ["do", "does", "is", "are"], answer: 2 },
-  { q: "We ___ a test right now.", options: ["do", "are doing", "does", "is doing"], answer: 1 },
-  { q: "It ___ outside. Take an umbrella!", options: ["rains", "rained", "rain", "is raining"], answer: 3 },
-  { q: "Why ___ she crying?", options: ["do", "does", "is", "are"], answer: 2 },
-  { q: "The cat ___ on the sofa.", options: ["sleeps", "is sleeping", "sleep", "are sleeping"], answer: 1 },
-  { q: "My parents ___ a film tonight.", options: ["watches", "is watching", "watch", "are watching"], answer: 3 },
-  { q: "I ___ not studying at the moment.", options: ["do", "am", "are", "is"], answer: 1 },
-  { q: "The dog ___ at the postman.", options: ["bark", "barks", "is barking", "are barking"], answer: 2 },
-  { q: "She isn't ___ a book now.", options: ["read", "reads", "reading", "to read"], answer: 2 },
-  { q: "We ___ to Madrid this summer.", options: ["travel", "are travelling", "travels", "is travelling"], answer: 1 },
-  { q: "He ___ on his report this week.", options: ["work", "works", "is working", "are working"], answer: 2 },
-  { q: "They ___ at the party right now.", options: ["dance", "dances", "is dancing", "are dancing"], answer: 3 },
-  { q: "___ the teacher explaining the rule now?", options: ["Do", "Does", "Is", "Are"], answer: 2 },
-];
-
-const PDF_CONFIG: LessonPDFConfig = {
-  title: "Present Continuous",
-  subtitle: "Actions happening now — 4 exercises + answer key",
-  level: "A1",
-  keyRule: "Subject + is/am/are + verb-ing  →  She is reading. / They are playing.",
-  exercises: [
-    {
-      number: 1,
-      title: "Exercise 1",
-      difficulty: "Easy",
-      instruction: "Choose the correct form.",
-      hint: "is/am/are + -ing",
-      questions: [
-        "She ___ TV now. (watch / is watching)",
-        "They ___ football at the moment. (play / are playing)",
-        "I ___ a book right now. (read / am reading)",
-        "He ___ right now. (sleep / is sleeping)",
-        "We ___ lunch. (have / are having)",
-        "Look! It ___ outside. (rain / is raining)",
-        "The baby ___. (cry / is crying)",
-        "She ___ for her exam. (study / is studying)",
-        "They ___ at the party. (dance / are dancing)",
-        "I ___ an email. (write / am writing)",
-      ],
-    },
-    {
-      number: 2,
-      title: "Exercise 2",
-      difficulty: "Medium",
-      instruction: "Fill in the blank. Use the Present Continuous form of the verb in brackets.",
-      questions: [
-        "She ___ (cook) dinner right now.",
-        "They ___ (run) in the park.",
-        "I ___ (sit) at my desk.",
-        "He ___ (drive) to work.",
-        "We ___ (watch) a film.",
-        "The cat ___ (sleep) on the sofa.",
-        "She ___ (not read) a book.",
-        "They ___ (play) chess.",
-        "I ___ (think) about the problem.",
-        "He ___ (work) from home today.",
-      ],
-    },
-    {
-      number: 3,
-      title: "Exercise 3",
-      difficulty: "Medium",
-      instruction: "Use the words to make a Present Continuous sentence.",
-      questions: [
-        "she / eat / an apple  →  ___",
-        "they / play / tennis  →  ___",
-        "I / not / sleep  →  ___",
-        "he / drive / fast  →  ___",
-        "we / have / a great time  →  ___",
-        "the dog / bark  →  ___",
-        "she / not / read  →  ___",
-        "you / listen / to music  →  ___",
-        "it / snow / outside  →  ___",
-        "they / not / dance  →  ___",
-      ],
-    },
-    {
-      number: 4,
-      title: "Exercise 4",
-      difficulty: "Hard",
-      instruction: "Present Simple or Present Continuous? Write the correct form.",
-      questions: [
-        "She always ___ (drink) coffee in the morning.",
-        "Right now, she ___ (drink) tea.",
-        "I usually ___ (walk) to work.",
-        "Look! He ___ (run) towards us!",
-        "They never ___ (watch) TV.",
-        "She ___ (read) a novel at the moment.",
-        "Water ___ (boil) at 100°C.",
-        "Be quiet! The baby ___ (sleep).",
-        "He ___ (work) every day.",
-        "I ___ (learn) French this year.",
-      ],
-    },
-  ],
-  answerKey: [
-    {
-      exercise: 1,
-      subtitle: "Easy — choose the correct form",
-      answers: ["is watching", "are playing", "am reading", "is sleeping", "are having", "is raining", "is crying", "is studying", "are dancing", "am writing"],
-    },
-    {
-      exercise: 2,
-      subtitle: "Medium — Present Continuous form",
-      answers: ["is cooking", "are running", "am sitting", "is driving", "are watching", "is sleeping", "isn't reading", "are playing", "am thinking", "is working"],
-    },
-    {
-      exercise: 3,
-      subtitle: "Medium — make sentences",
-      answers: [
-        "She is eating an apple.", "They are playing tennis.", "I am not sleeping.",
-        "He is driving fast.", "We are having a great time.", "The dog is barking.",
-        "She is not reading.", "You are listening to music.", "It is snowing outside.", "They are not dancing.",
-      ],
-    },
-    {
-      exercise: 4,
-      subtitle: "Hard — PS or PC?",
-      answers: ["drinks", "is drinking", "walk", "is running", "watch", "is reading", "boils", "is sleeping", "works", "am learning"],
-    },
-  ],
-};
+import { PC_SPEED_QUESTIONS, PC_PDF_CONFIG } from "./pcSharedData";
 
 export default function PresentContinuousGameSection() {
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -148,7 +16,7 @@ export default function PresentContinuousGameSection() {
   async function handlePDF() {
     setPdfLoading(true);
     try {
-      await generateLessonPDF(PDF_CONFIG);
+      await generateLessonPDF(PC_PDF_CONFIG);
     } finally {
       setPdfLoading(false);
     }
@@ -156,7 +24,7 @@ export default function PresentContinuousGameSection() {
 
   return (
     <div className="mt-12 space-y-10">
-      <SpeedRound questions={SPEED_QUESTIONS} gameId="present-continuous" subject="Present Continuous" />
+      <SpeedRound questions={PC_SPEED_QUESTIONS} gameId="present-continuous" subject="Present Continuous" />
       <div className="flex items-center gap-3">
         <PDFButton onDownload={handlePDF} loading={pdfLoading} />
         <span className="text-xs text-slate-400">Download worksheet + answer key (PDF)</span>

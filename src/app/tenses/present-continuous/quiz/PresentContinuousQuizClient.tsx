@@ -3,7 +3,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
-import PresentContinuousGameSection from "../PresentContinuousGameSection";
+import SpeedRound from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import { PC_SPEED_QUESTIONS, PC_PDF_CONFIG } from "../pcSharedData";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -113,10 +117,17 @@ export default function PresentContinuousQuizClient() {
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const isPro = useIsPro();
 
   const current = SETS[exNo];
 
   const { save } = useProgress();
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PC_PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -179,8 +190,14 @@ export default function PresentContinuousQuizClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className="top-24 lg:sticky">
+              <SpeedRound gameId="pc-quiz" subject="Present Continuous Quiz" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
+            </div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -189,6 +206,7 @@ export default function PresentContinuousQuizClient() {
             <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
               <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
               <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+              <PDFButton onDownload={handlePDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -300,14 +318,48 @@ export default function PresentContinuousQuizClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <aside className="sticky top-24 flex flex-col gap-3">
+              <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
+              {[
+                { title: "Fill in the Blank", href: "/tenses/present-continuous/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A2", badge: "bg-emerald-500", reason: "Type the correct form" },
+                { title: "Spot the Mistake", href: "/tenses/present-continuous/spot-the-mistake", img: "/topics/exercises/spot-the-mistake.jpg", level: "A2", badge: "bg-amber-500", reason: "Find & fix errors" },
+                { title: "Sentence Builder", href: "/tenses/present-continuous/sentence-builder", img: "/topics/exercises/sentence-builder-present-continuous.jpg", level: "A2", badge: "bg-emerald-500", reason: "Build sentences word by word" },
+              ].map((rec) => (
+                <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+                    <img src={rec.img} alt={rec.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>{rec.level}</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-bold leading-snug text-slate-800 transition group-hover:text-slate-900">{rec.title}</p>
+                    {rec.reason && <p className="mt-1 text-[11px] font-semibold leading-snug text-amber-600">{rec.reason}</p>}
+                  </div>
+                </a>
+              ))}
+              <a href="/tenses/present-continuous" className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+                All Present Continuous
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </aside>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
         </div>
+
+        {/* SpeedRound for non-PRO */}
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="pc-quiz" subject="Present Continuous Quiz" questions={PC_SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />
-
-        <PresentContinuousGameSection />
 
         {/* Bottom nav */}
         <div className="mt-10 flex items-center justify-between gap-4 border-t border-black/8 pt-8">

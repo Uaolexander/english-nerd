@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Band = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -93,12 +94,15 @@ export default function VocabCertificateModal({ band, estimatedVocabulary, onClo
 
   const accentColor = BAND_BG[band];
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm overflow-y-auto p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="w-full max-w-3xl rounded-2xl border border-black/10 bg-white shadow-2xl overflow-hidden my-auto" style={{ minHeight: 0 }}>
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div
+        className="flex min-h-full items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+      <div className="w-full max-w-3xl rounded-2xl border border-black/10 bg-white shadow-2xl overflow-hidden">
 
         {/* Modal header */}
         <div className="flex items-center justify-between border-b border-black/8 px-6 py-4">
@@ -368,6 +372,8 @@ export default function VocabCertificateModal({ band, estimatedVocabulary, onClo
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }
