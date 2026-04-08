@@ -133,7 +133,7 @@ export async function sendWelcomeEmail(to: string, name: string | null) {
       ${featureRow("🔥", "Streaks & progress tracking", "Your progress is saved automatically — never lose your work.")}
     </table>
 
-    ${btn(`${SITE}/grammar`, "Start Learning →")}
+    ${btn(`${SITE}/grammar/a1`, "Start Learning →")}
 
     <p style="margin:20px 0 0;font-size:13px;color:#9CA3AF;text-align:center;line-height:1.6;">
       Start from your level, go at your own pace.<br/>No pressure, just progress.
