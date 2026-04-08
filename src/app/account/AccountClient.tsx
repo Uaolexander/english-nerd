@@ -4967,18 +4967,18 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Always sync with client-side session — server JWT may have stale metadata
-  // (custom_avatar_url is preserved in DB but may not be in a freshly-issued token)
+  // Fallback: if server didn't provide avatar (JWT stale), load from client-side auth
   useEffect(() => {
+    if (avatarPreview) return;
     createClient().auth.getUser().then(({ data }) => {
       const m = data.user?.user_metadata;
       const url = m?.custom_avatar_url || m?.avatar_url || m?.picture || "";
-      if (url && url !== avatarPreview) { setAvatar(url); setAvatarPreview(url); }
+      if (url) { setAvatar(url); setAvatarPreview(url); }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset avatar error when URL changes (e.g. after upload or client-side sync)
+  // Reset avatar error state when URL changes (e.g. after upload)
   useEffect(() => { setAvatarImgError(false); }, [avatarPreview]);
 
   // Security
@@ -5882,7 +5882,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                       src={rec.img}
                       alt={rec.title}
                       className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      onError={() => setAvatarPreview("")}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                     <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>
