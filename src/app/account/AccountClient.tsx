@@ -126,6 +126,24 @@ function teacherPlanTheme(plan: "starter" | "solo" | "plus") {
     ring: "ring-sky-500",
     badgeText: "text-white",
     icon: "🎓",
+    btn: "bg-sky-600 hover:bg-sky-700 text-white",
+    btnSolid: "bg-sky-600",
+    selectedBg: "bg-sky-100",
+    selectedText: "text-sky-700",
+    selectedRing: "ring-sky-300",
+    selectedDot: "bg-sky-200 text-sky-700",
+    checkSvg: "text-sky-500",
+    borderActive: "border-sky-400",
+    bgActive: "bg-sky-50",
+    textActive: "text-sky-700",
+    spinner: "text-sky-400",
+    avatarBg: "bg-sky-100 text-sky-600",
+    tagBg: "bg-sky-100 text-sky-700",
+    infoBox: "border-sky-100 bg-sky-50",
+    infoIcon: "text-sky-400",
+    infoText: "text-sky-500",
+    countBadge: "bg-sky-100 text-sky-700",
+    gradBtn: "from-sky-500 to-sky-600",
   };
   if (plan === "solo") return {
     banner: "from-amber-400 via-[#F5DA20] to-amber-400",
@@ -133,6 +151,24 @@ function teacherPlanTheme(plan: "starter" | "solo" | "plus") {
     ring: "ring-amber-400",
     badgeText: "text-amber-900",
     icon: "⭐",
+    btn: "bg-amber-500 hover:bg-amber-600 text-white",
+    btnSolid: "bg-amber-500",
+    selectedBg: "bg-amber-100",
+    selectedText: "text-amber-700",
+    selectedRing: "ring-amber-300",
+    selectedDot: "bg-amber-200 text-amber-700",
+    checkSvg: "text-amber-500",
+    borderActive: "border-amber-400",
+    bgActive: "bg-amber-50",
+    textActive: "text-amber-700",
+    spinner: "text-amber-400",
+    avatarBg: "bg-amber-100 text-amber-600",
+    tagBg: "bg-amber-100 text-amber-700",
+    infoBox: "border-amber-100 bg-amber-50",
+    infoIcon: "text-amber-400",
+    infoText: "text-amber-500",
+    countBadge: "bg-amber-100 text-amber-700",
+    gradBtn: "from-amber-500 to-amber-600",
   };
   // plus
   return {
@@ -141,6 +177,24 @@ function teacherPlanTheme(plan: "starter" | "solo" | "plus") {
     ring: "ring-violet-500",
     badgeText: "text-white",
     icon: "🏆",
+    btn: "bg-violet-600 hover:bg-violet-700 text-white",
+    btnSolid: "bg-violet-600",
+    selectedBg: "bg-violet-100",
+    selectedText: "text-violet-700",
+    selectedRing: "ring-violet-300",
+    selectedDot: "bg-violet-200 text-violet-700",
+    checkSvg: "text-violet-500",
+    borderActive: "border-violet-400",
+    bgActive: "bg-violet-50",
+    textActive: "text-violet-700",
+    spinner: "text-violet-400",
+    avatarBg: "bg-violet-100 text-violet-600",
+    tagBg: "bg-violet-100 text-violet-700",
+    infoBox: "border-violet-100 bg-violet-50",
+    infoIcon: "text-violet-400",
+    infoText: "text-violet-500",
+    countBadge: "bg-violet-100 text-violet-700",
+    gradBtn: "from-violet-600 to-violet-700",
   };
 }
 
@@ -443,14 +497,16 @@ function getTopicsForLevel(category: string, level: string) {
 }
 
 function NewAssignmentModal({
-  students, classes: teacherClasses, onClose, onCreated, prefilledStudentId,
+  students, classes: teacherClasses, onClose, onCreated, prefilledStudentId, plan = "plus",
 }: {
   students: TeacherData["students"];
   classes: TeacherData["classes"];
   onClose: () => void;
   onCreated: (a: TeacherData["assignments"][0]) => void;
   prefilledStudentId?: string;
+  plan?: "starter" | "solo" | "plus";
 }) {
+  const tc = teacherPlanTheme(plan);
   const activeStudents = students.filter((s) => s.status === "active" && s.studentId);
 
   // Assignment type
@@ -715,7 +771,7 @@ function NewAssignmentModal({
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
                         placeholder="https://englishnerd.cc/grammar/b1/past-continuous"
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm outline-none focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100 transition"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100 transition"
                       />
                       {urlInput && (
                         <button type="button" onClick={() => setUrlInput("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
@@ -733,7 +789,7 @@ function NewAssignmentModal({
                       <div className="flex gap-1.5">
                         {(["grammar", "tenses", "vocabulary"] as const).map((cat) => (
                           <button key={cat} type="button" onClick={() => setBrowseCategory(cat)}
-                            className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${browseCategory === cat ? "bg-violet-600 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                            className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${browseCategory === cat ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
                             {cat}
                           </button>
                         ))}
@@ -745,7 +801,7 @@ function NewAssignmentModal({
                         <div className="flex gap-1.5">
                           {(["a1", "a2", "b1", "b2", "c1"] as const).map((l) => (
                             <button key={l} type="button" onClick={() => setBrowseLevel(l)}
-                              className={`flex-1 rounded-xl py-2 text-xs font-bold transition ${browseLevel === l ? "bg-violet-600 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                              className={`flex-1 rounded-xl py-2 text-xs font-bold transition ${browseLevel === l ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
                               {l.toUpperCase()}
                             </button>
                           ))}
@@ -755,7 +811,7 @@ function NewAssignmentModal({
                     <div>
                       <label className="mb-1 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Topic</label>
                       <select value={browseSlug} onChange={(e) => setBrowseSlug(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400">
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400">
                         <option value="">— Select a topic —</option>
                         {browseTopics.map((t) => {
                           const slug = t.href.split("/").at(-1) ?? "";
@@ -768,7 +824,7 @@ function NewAssignmentModal({
 
                 {/* Exercise preview card */}
                 {parsed && (
-                  <div className="mt-4 flex items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
+                  <div className={`mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3 ${tc.infoBox}`}>
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black text-white ${parsed.level ? (LEVEL_COLORS_ASSIGN[parsed.level] ?? "bg-slate-500") : (CATEGORY_COLORS[parsed.category] ?? "bg-slate-500")}`}>
                       {parsed.level ? parsed.level.toUpperCase() : parsed.category.slice(0, 2).toUpperCase()}
                     </div>
@@ -776,7 +832,7 @@ function NewAssignmentModal({
                       <p className="truncate text-sm font-bold text-slate-800">{parsed.title}</p>
                       <p className="text-xs text-slate-400 capitalize">{parsed.category}{parsed.level ? ` · ${parsed.level.toUpperCase()}` : ""}</p>
                     </div>
-                    <svg className="h-5 w-5 shrink-0 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className={`h-5 w-5 shrink-0 ${tc.infoIcon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   </div>
@@ -793,7 +849,7 @@ function NewAssignmentModal({
                       <div>
                         <label className="mb-1 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Title</label>
                         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={parsed.title}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition" />
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition" />
                       </div>
 
                       <div>
@@ -806,27 +862,27 @@ function NewAssignmentModal({
                             return (
                               <button key={n} type="button"
                                 onClick={() => setSelectedExercises((p) => checked ? p.filter((x) => x !== n) : [...p, n])}
-                                className={`flex-1 rounded-xl border py-2 text-xs font-bold transition ${checked ? "border-violet-400 bg-violet-50 text-violet-700" : "border-slate-200 bg-white text-slate-500 hover:border-violet-200 hover:text-violet-500"}`}>
+                                className={`flex-1 rounded-xl border py-2 text-xs font-bold transition ${checked ? `${tc.borderActive} ${tc.bgActive} ${tc.textActive}` : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}>
                                 Ex {n}
                               </button>
                             );
                           })}
                         </div>
                         {selectedExercises.length > 0 && selectedExercises.length < 4 && (
-                          <p className="mt-1.5 text-[11px] text-violet-500">Will create {selectedExercises.length} separate assignment{selectedExercises.length > 1 ? "s" : ""}</p>
+                          <p className={`mt-1.5 text-[11px] ${tc.infoText}`}>Will create {selectedExercises.length} separate assignment{selectedExercises.length > 1 ? "s" : ""}</p>
                         )}
                       </div>
 
                       <div>
                         <label className="mb-1 flex cursor-pointer items-center gap-2">
                           <input type="checkbox" checked={hasDueDate} onChange={(e) => setHasDueDate(e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 accent-violet-600" />
+                            className="h-4 w-4 rounded border-slate-300 accent-current" />
                           <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Set due date</span>
                         </label>
                         {hasDueDate && (
                           <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
                             min={new Date().toISOString().slice(0, 10)}
-                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400" />
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
                         )}
                       </div>
 
@@ -841,7 +897,7 @@ function NewAssignmentModal({
                             <button key={opt.id} type="button"
                               disabled={opt.disabled}
                               onClick={() => setAssignTo(opt.id)}
-                              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${assignTo === opt.id ? "bg-violet-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${assignTo === opt.id ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-600 hover:bg-slate-200"} disabled:opacity-40 disabled:cursor-not-allowed`}>
                               {opt.label}
                             </button>
                           ))}
@@ -853,9 +909,9 @@ function NewAssignmentModal({
                               const selected = targetStudentIds.includes(s.studentId!);
                               return (
                                 <button key={s.studentId} type="button" onClick={() => toggleStudent(s.studentId!)}
-                                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${selected ? "bg-violet-100 text-violet-700 ring-1 ring-violet-300" : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${selected ? `${tc.selectedBg} ${tc.selectedText} ring-1 ${tc.selectedRing}` : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
                                   <div className="relative h-6 w-6 shrink-0">
-                                    <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-black overflow-hidden ${selected ? "bg-violet-200 text-violet-700" : "bg-slate-200 text-slate-500"}`}>
+                                    <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-black overflow-hidden ${selected ? tc.selectedDot : "bg-slate-200 text-slate-500"}`}>
                                       {s.studentAvatarUrl ? (
                                         <>
                                           <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
@@ -865,7 +921,7 @@ function NewAssignmentModal({
                                     </div>
                                   </div>
                                   {s.studentName || s.email.split("@")[0]}
-                                  {selected && <svg className="h-3 w-3 text-violet-500 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                  {selected && <svg className={`h-3 w-3 ml-0.5 ${tc.checkSvg}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                 </button>
                               );
                             })}
@@ -878,11 +934,11 @@ function NewAssignmentModal({
                               const selected = targetClassIds.includes(c.id);
                               return (
                                 <button key={c.id} type="button" onClick={() => toggleClass(c.id)}
-                                  className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${selected ? "bg-violet-100 text-violet-700 ring-1 ring-violet-300" : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
+                                  className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${selected ? `${tc.selectedBg} ${tc.selectedText} ring-1 ${tc.selectedRing}` : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
                                   <span className="text-sm leading-none">{c.emoji}</span>
                                   {c.name}
                                   <span className="text-[10px] opacity-60">({c.memberIds.length})</span>
-                                  {selected && <svg className="h-3 w-3 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                  {selected && <svg className={`h-3 w-3 ${tc.checkSvg}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                 </button>
                               );
                             })}
@@ -1221,7 +1277,7 @@ function NewAssignmentModal({
                 </label>
                 <input value={essayTitle} onChange={(e) => setEssayTitle(e.target.value)}
                   placeholder="e.g. My favourite season"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition" />
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition" />
               </div>
 
               <div>
@@ -1230,20 +1286,20 @@ function NewAssignmentModal({
                 </label>
                 <textarea value={essayPrompt} onChange={(e) => setEssayPrompt(e.target.value)}
                   rows={3} placeholder="e.g. Describe your favourite season and explain why you like it."
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition" />
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition" />
               </div>
 
               <div>
                 <label className="mb-1 flex cursor-pointer items-center gap-2">
                   <input type="checkbox" checked={hasMinWords} onChange={(e) => setHasMinWords(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 accent-violet-600" />
+                    className="h-4 w-4 rounded border-slate-300" />
                   <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Minimum word count</span>
                 </label>
                 {hasMinWords && (
                   <div className="mt-2 flex items-center gap-2">
                     <input type="number" value={essayMinWords} onChange={(e) => setEssayMinWords(e.target.value)}
                       min="1" max="5000"
-                      className="w-28 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400" />
+                      className="w-28 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400" />
                     <span className="text-sm text-slate-400">words</span>
                   </div>
                 )}
@@ -1252,13 +1308,13 @@ function NewAssignmentModal({
               <div>
                 <label className="mb-1 flex cursor-pointer items-center gap-2">
                   <input type="checkbox" checked={hasDueDate} onChange={(e) => setHasDueDate(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 accent-violet-600" />
+                    className="h-4 w-4 rounded border-slate-300" />
                   <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Set due date</span>
                 </label>
                 {hasDueDate && (
                   <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
                     min={new Date().toISOString().slice(0, 10)}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-violet-400" />
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
                 )}
               </div>
 
@@ -1273,7 +1329,7 @@ function NewAssignmentModal({
                     <button key={opt.id} type="button"
                       disabled={opt.disabled}
                       onClick={() => setAssignTo(opt.id)}
-                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${assignTo === opt.id ? "bg-violet-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"} disabled:opacity-40 disabled:cursor-not-allowed`}>
+                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${assignTo === opt.id ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-600 hover:bg-slate-200"} disabled:opacity-40 disabled:cursor-not-allowed`}>
                       {opt.label}
                     </button>
                   ))}
@@ -1284,9 +1340,9 @@ function NewAssignmentModal({
                       const sel = targetStudentIds.includes(s.studentId!);
                       return (
                         <button key={s.studentId} type="button" onClick={() => toggleStudent(s.studentId!)}
-                          className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${sel ? "bg-violet-100 text-violet-700 ring-1 ring-violet-300" : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
+                          className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${sel ? `${tc.selectedBg} ${tc.selectedText} ring-1 ${tc.selectedRing}` : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
                           <div className="relative h-6 w-6 shrink-0">
-                            <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-black overflow-hidden ${sel ? "bg-violet-200 text-violet-700" : "bg-slate-200 text-slate-500"}`}>
+                            <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-black overflow-hidden ${sel ? tc.selectedDot : "bg-slate-200 text-slate-500"}`}>
                               {s.studentAvatarUrl ? (
                                 <>
                                   <span className="absolute inset-0 flex items-center justify-center rounded-full">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
@@ -1296,7 +1352,7 @@ function NewAssignmentModal({
                             </div>
                           </div>
                           {s.nickname || s.studentName || s.email.split("@")[0]}
-                          {sel && <svg className="h-3 w-3 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {sel && <svg className={`h-3 w-3 ${tc.checkSvg}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                         </button>
                       );
                     })}
@@ -1308,13 +1364,13 @@ function NewAssignmentModal({
                       const sel = targetClassIds.includes(c.id);
                       return (
                         <button key={c.id} type="button" onClick={() => toggleClass(c.id)}
-                          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${sel ? "bg-violet-100 text-violet-700 ring-1 ring-violet-300" : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
+                          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${sel ? `${tc.selectedBg} ${tc.selectedText} ring-1 ${tc.selectedRing}` : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"}`}>
                           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
                           </svg>
                           {c.name} <span className="opacity-60 text-[10px]">({c.memberIds.length})</span>
-                          {sel && <svg className="h-3 w-3 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {sel && <svg className={`h-3 w-3 ${tc.checkSvg}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                         </button>
                       );
                     })}
@@ -1338,7 +1394,7 @@ function NewAssignmentModal({
               Cancel
             </button>
             <button type="submit" disabled={!canSubmit || saving}
-              className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-black text-white shadow-md shadow-violet-200 transition hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed">
+              className={`flex-1 rounded-xl py-3 text-sm font-black shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed ${tc.btn}`}>
               {saving ? "Creating…" : "Create Assignment"}
             </button>
           </div>
@@ -1482,7 +1538,7 @@ const LEVEL_BADGE: Record<string, string> = {
 };
 
 function StudentDetailPanel({
-  student, assignments: allAssignments, classes: allClasses, onBack, onOpenAssignment, onNewAssignment, initialNotes, linkId,
+  student, assignments: allAssignments, classes: allClasses, onBack, onOpenAssignment, onNewAssignment, initialNotes, linkId, plan = "plus",
 }: {
   student: { id: string; name: string | null; email: string; avatarUrl: string | null };
   assignments: TeacherData["assignments"];
@@ -1492,7 +1548,9 @@ function StudentDetailPanel({
   onNewAssignment: () => void;
   initialNotes: string | null;
   linkId: string;
+  plan?: "starter" | "solo" | "plus";
 }) {
+  const tc = teacherPlanTheme(plan);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<StudentProgressRow[]>([]);
   const [answers, setAnswers] = useState<StudentAnswerRow[]>([]);
@@ -1595,7 +1653,7 @@ function StudentDetailPanel({
     <div className="space-y-4">
       {/* Back + student header */}
       <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/[0.04]">
-        <button onClick={onBack} className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-violet-600 transition">
+        <button onClick={onBack} className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-slate-700 transition">
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -1603,10 +1661,10 @@ function StudentDetailPanel({
         </button>
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-base font-black text-violet-600 overflow-hidden">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-full text-base font-black overflow-hidden ${tc.avatarBg}`}>
               {student.avatarUrl ? (
                 <>
-                  <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-base font-black text-violet-600">{avatarInitials}</span>
+                  <span className={`absolute inset-0 flex items-center justify-center rounded-full text-base font-black ${tc.avatarBg}`}>{avatarInitials}</span>
                   <img src={student.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                 </>
               ) : avatarInitials}
@@ -1698,7 +1756,7 @@ function StudentDetailPanel({
                       <span
                         role="button"
                         onClick={(e) => { e.stopPropagation(); restoreWeakTopics(); }}
-                        className="text-[11px] font-semibold text-slate-400 hover:text-violet-600 transition cursor-pointer"
+                        className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition cursor-pointer"
                       >
                         {hiddenCnt} hidden · Restore
                       </span>
@@ -1745,12 +1803,12 @@ function StudentDetailPanel({
           {progress.length > 0 && (
             <div className="flex flex-wrap gap-2">
               <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400">
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400">
                 <option value="all">All categories</option>
                 {categories.map((c) => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
               </select>
               <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400">
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400">
                 <option value="all">All levels</option>
                 {levels.map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
               </select>
@@ -1794,7 +1852,7 @@ function StudentDetailPanel({
                         </a>
                         {rowAnswers.length > 0 && (
                           <button onClick={() => setExpandedId(isExpanded ? null : row.id)}
-                            className="rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-xs font-semibold text-violet-600 hover:bg-violet-100 transition">
+                            className={`rounded-lg border px-2 py-1 text-xs font-semibold transition ${tc.infoBox} ${tc.textActive}`}>
                             {isExpanded ? "Hide" : "Details"}
                           </button>
                         )}
@@ -1847,7 +1905,7 @@ function StudentDetailPanel({
                   <p className="text-sm text-slate-400">No assignments for this student yet.</p>
                   <button
                     onClick={onNewAssignment}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white hover:bg-violet-700 transition"
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${tc.btn}`}
                   >
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Add Assignment
@@ -1864,7 +1922,7 @@ function StudentDetailPanel({
                 <div className="flex justify-end">
                   <button
                     onClick={onNewAssignment}
-                    className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-3.5 py-2 text-sm font-bold text-white hover:bg-violet-700 transition"
+                    className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-bold transition ${tc.btn}`}
                   >
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Add Assignment
@@ -1882,7 +1940,7 @@ function StudentDetailPanel({
                       key={a.id}
                       type="button"
                       onClick={() => onOpenAssignment(a)}
-                      className="group w-full flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/[0.04] text-left transition hover:ring-violet-200 hover:shadow-md"
+                      className="group w-full flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/[0.04] text-left transition hover:ring-slate-200 hover:shadow-md"
                     >
                       <div className={`flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-xl text-white ${isDone ? "bg-emerald-500" : catColor}`}>
                         {isDone ? (
@@ -1907,7 +1965,7 @@ function StudentDetailPanel({
                           {due && <><span className="text-slate-200">·</span><span className={isOverdue ? "text-red-500 font-semibold" : "text-slate-400"}>{isOverdue ? "Overdue" : "Due"} {due.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span></>}
                         </div>
                       </div>
-                      <span className="hidden shrink-0 items-center gap-1 text-xs font-semibold text-violet-500 group-hover:flex">
+                      <span className={`hidden shrink-0 items-center gap-1 text-xs font-semibold ${tc.infoText} group-hover:flex`}>
                         Results
                         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                       </span>
@@ -1942,12 +2000,14 @@ type AssignmentStudentResult = {
 };
 
 function AssignmentResultsModal({
-  assignment, students: teacherStudents, onClose,
+  assignment, students: teacherStudents, onClose, plan = "plus",
 }: {
   assignment: TeacherData["assignments"][0];
   students: TeacherData["students"];
   onClose: () => void;
+  plan?: "starter" | "solo" | "plus";
 }) {
+  const tc = teacherPlanTheme(plan);
   const [results, setResults] = useState<AssignmentStudentResult[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
@@ -2054,7 +2114,7 @@ function AssignmentResultsModal({
           {loading ? (
             <div className="flex h-full items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <svg className="h-8 w-8 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className={`h-8 w-8 animate-spin ${tc.spinner}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
                 <p className="text-sm text-slate-400">Loading results…</p>
@@ -2084,6 +2144,7 @@ function AssignmentResultsModal({
                       expanded={expandedStudent === s.studentId}
                       onToggle={() => setExpandedStudent(expandedStudent === s.studentId ? null : s.studentId)}
                       displayName={displayName(s)}
+                      plan={plan}
                     />
                   ))}
                 </>
@@ -2100,6 +2161,7 @@ function AssignmentResultsModal({
                       key={s.studentId} result={s} isEssay={isEssay}
                       expanded={false} onToggle={() => {}}
                       displayName={displayName(s)}
+                      plan={plan}
                     />
                   ))}
                 </>
@@ -2113,12 +2175,14 @@ function AssignmentResultsModal({
 }
 
 function StudentResultRow({
-  result, isEssay, expanded, onToggle, displayName, onFeedbackSaved,
+  result, isEssay, expanded, onToggle, displayName, onFeedbackSaved, plan = "plus",
 }: {
   result: AssignmentStudentResult; isEssay: boolean;
   expanded: boolean; onToggle: () => void; displayName: string;
   onFeedbackSaved?: (submissionId: string, feedback: string, grade: string) => void;
+  plan?: "starter" | "solo" | "plus";
 }) {
+  const tc = teacherPlanTheme(plan);
   const hasAnswers = result.answers.length > 0;
   const correct = hasAnswers
     ? result.answers.filter((a) => a.isCorrect).length
@@ -2171,7 +2235,7 @@ function StudentResultRow({
       >
         {/* Avatar */}
         <div className="relative h-9 w-9 shrink-0">
-          <div className={`flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-black overflow-hidden ${result.completed ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-400"}`}>
+          <div className={`flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-black overflow-hidden ${result.completed ? tc.countBadge : "bg-slate-100 text-slate-400"}`}>
             {result.avatarUrl ? (
               <>
                 <span className="absolute inset-0 flex items-center justify-center rounded-full">
@@ -2214,7 +2278,7 @@ function StudentResultRow({
         {result.completed && isEssay && (
           <div className="shrink-0 flex items-center gap-1.5">
             {result.essay?.teacherGrade && (
-              <span className="rounded-lg bg-violet-100 px-2.5 py-1 text-xs font-black text-violet-700">{result.essay.teacherGrade}</span>
+              <span className={`rounded-lg px-2.5 py-1 text-xs font-black ${tc.countBadge}`}>{result.essay.teacherGrade}</span>
             )}
             <span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${result.essay?.status === "reviewed" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"}`}>
               {result.essay?.status === "reviewed" ? "Reviewed" : "Submitted"}
@@ -2273,7 +2337,7 @@ function StudentResultRow({
               onChange={(e) => { setFeedbackText(e.target.value); setFeedbackSaved(false); setFeedbackError(false); }}
               rows={3}
               placeholder="Write your comments, corrections, suggestions…"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100 transition"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100 transition"
             />
             <div className="flex items-center gap-3">
               <div className="flex-1">
@@ -2281,13 +2345,13 @@ function StudentResultRow({
                   value={gradeText}
                   onChange={(e) => { setGradeText(e.target.value); setFeedbackSaved(false); setFeedbackError(false); }}
                   placeholder="Grade (e.g. A, B+, 85)"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100 transition"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100 transition"
                 />
               </div>
               <button
                 onClick={handleSaveFeedback}
                 disabled={savingFeedback || feedbackSaved || (!feedbackText.trim() && !gradeText.trim())}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-black text-white shadow-sm transition disabled:opacity-40 ${feedbackError ? "bg-red-500 hover:bg-red-600" : feedbackSaved ? "bg-emerald-500" : "bg-violet-600 hover:bg-violet-700"}`}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-black text-white shadow-sm transition disabled:opacity-40 ${feedbackError ? "bg-red-500 hover:bg-red-600" : feedbackSaved ? "bg-emerald-500" : tc.btnSolid}`}
               >
                 {savingFeedback ? (
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -2420,6 +2484,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
   const [copyingAssignment, setCopyingAssignment] = useState<string | null>(null);
   const [summaries, setSummaries] = useState<Record<string, { completedCount: number; unreviewedCount: number }>>({});
   const [seenAssignments, setSeenAssignments] = useState<Set<string>>(new Set());
+
+  const tc = teacherPlanTheme(teacherData.plan);
 
   useEffect(() => {
     fetch("/api/teacher/assignments/summaries")
@@ -2865,6 +2931,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             students={students}
             classes={classes}
             prefilledStudentId={prefilledStudentId}
+            plan={teacherData.plan}
             onClose={() => { setShowAssignModal(false); setPrefilledStudentId(undefined); }}
             onCreated={(a) => {
               setAssignments((p) => [a, ...p]);
@@ -2893,6 +2960,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
           student={selectedStudent}
           assignments={assignments}
           classes={classes}
+          plan={teacherData.plan}
           onBack={() => setSelectedStudent(null)}
           onOpenAssignment={(a) => { setSelectedStudent(null); setSelectedAssignment(a); markAssignmentSeen(a.id); }}
           onNewAssignment={() => { setPrefilledStudentId(selectedStudent.id); setShowAssignModal(true); }}
@@ -2953,7 +3021,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
         {innerTabs.map((t) => (
           <button key={t.id} data-tour={`teacher-${t.id}-tab-btn`} onClick={() => setInnerTab(t.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs sm:text-sm font-bold transition ${innerTab === t.id ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
             {t.label}
-            {t.count > 0 && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black ${innerTab === t.id ? "bg-violet-100 text-violet-700" : "bg-slate-200 text-slate-500"}`}>{t.count}</span>}
+            {t.count > 0 && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black ${innerTab === t.id ? `${tc.countBadge}` : "bg-slate-200 text-slate-500"}`}>{t.count}</span>}
           </button>
         ))}
       </div>
@@ -2967,7 +3035,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               <span className="text-xs text-slate-400"><span className={`font-bold ${activeStudents.length >= teacherData.studentLimit ? "text-red-500" : "text-slate-700"}`}>{activeStudents.length}</span> / {teacherData.studentLimit}</span>
             </div>
             <form onSubmit={handleInvite} className="flex gap-2">
-              <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="student@email.com" required className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+              <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="student@email.com" required className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100" />
               <button type="submit" disabled={inviting || activeStudents.length >= teacherData.studentLimit} className={`rounded-xl px-4 py-2 text-sm font-bold transition disabled:opacity-50 bg-gradient-to-r ${teacherPlanTheme(teacherData.plan).badge} ${teacherPlanTheme(teacherData.plan).badgeText}`}>{inviting ? "…" : "Invite"}</button>
             </form>
             {inviteMsg && (
@@ -2992,7 +3060,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   placeholder="Search students…"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
                 />
                 {studentSearch && (
                   <button onClick={() => setStudentSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -3006,7 +3074,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                   <span className="text-[11px] font-bold text-slate-400">Sort:</span>
                   {([["activity", "Active"], ["score", "Score"], ["name", "Name"]] as const).map(([val, label]) => (
                     <button key={val} onClick={() => setStudentSort(val)}
-                      className={`rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${studentSort === val ? "bg-violet-600 text-white" : "bg-white text-slate-500 ring-1 ring-black/[0.06] hover:ring-violet-300"}`}>
+                      className={`rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${studentSort === val ? `${tc.btnSolid} text-white` : "bg-white text-slate-500 ring-1 ring-black/[0.06] hover:ring-slate-300"}`}>
                       {label}
                     </button>
                   ))}
@@ -3031,10 +3099,10 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                 }).map((s) => (
                   <div key={s.linkId} className="flex items-center gap-3 px-5 py-4">
                     <div className="relative h-9 w-9 shrink-0">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-600 overflow-hidden">
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black overflow-hidden ${tc.avatarBg}`}>
                         {s.studentAvatarUrl ? (
                           <>
-                            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-600">
+                            <span className={`absolute inset-0 flex items-center justify-center rounded-full text-sm font-black ${tc.avatarBg}`}>
                               {s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}
                             </span>
                             <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
@@ -3052,17 +3120,17 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                             value={renamingStudent.value}
                             onChange={(e) => setRenamingStudent({ linkId: s.linkId, value: e.target.value })}
                             placeholder={s.studentName || s.email.split("@")[0]}
-                            className="w-36 rounded-lg border border-violet-300 bg-white px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-violet-100"
+                            className="w-36 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-slate-100"
                             disabled={renaming}
                           />
-                          <button type="submit" disabled={renaming} className="rounded-lg bg-violet-600 px-2 py-1 text-xs font-bold text-white hover:bg-violet-700 disabled:opacity-50">{renaming ? "…" : "Save"}</button>
+                          <button type="submit" disabled={renaming} className={`rounded-lg ${tc.btnSolid} px-2 py-1 text-xs font-bold text-white disabled:opacity-50`}>{renaming ? "…" : "Save"}</button>
                           <button type="button" onClick={() => setRenamingStudent(null)} className="rounded-lg px-1.5 py-1 text-xs text-slate-400 hover:text-slate-600">✕</button>
                         </form>
                       ) : (
                         <div className="flex items-center gap-1.5 min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-800">{s.nickname || s.studentName || s.email}</p>
                           {s.status === "active" && (
-                            <button type="button" onClick={() => setRenamingStudent({ linkId: s.linkId, value: s.nickname ?? "" })} title="Rename" className="shrink-0 text-slate-300 hover:text-violet-400 transition">
+                            <button type="button" onClick={() => setRenamingStudent({ linkId: s.linkId, value: s.nickname ?? "" })} title="Rename" className="shrink-0 text-slate-300 hover:text-slate-500 transition">
                               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                               </svg>
@@ -3072,7 +3140,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                       )}
                       {renamingStudent?.linkId !== s.linkId && (
                         <p className="truncate text-xs text-slate-400">
-                          {s.nickname ? <span className="text-violet-400 font-semibold mr-1">{s.studentName || s.email}</span> : (s.studentName && <>{s.email} · </>)}
+                          {s.nickname ? <span className={`${tc.infoText} font-semibold mr-1`}>{s.studentName || s.email}</span> : (s.studentName && <>{s.email} · </>)}
                           {s.status === "pending" ? <span className="text-amber-500 font-semibold">Pending</span>
                             : s.status === "pending_student" ? <span className="text-fuchsia-600 font-semibold">Waiting for student to confirm</span>
                             : <>Active · {timeAgo(s.lastActivity)}</>}
@@ -3086,8 +3154,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                       </div>
                     )}
                     <div className="flex gap-1.5">
-                      {s.status === "active" && s.studentId && <button onClick={() => setSelectedStudent({ id: s.studentId!, name: s.studentName, email: s.email, avatarUrl: s.studentAvatarUrl })} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200 transition">View</button>}
-                      {s.status === "pending" && <button onClick={() => { navigator.clipboard.writeText(`${siteUrl}/teacher/join?token=${s.inviteToken}`); setCopiedToken(s.inviteToken); setTimeout(() => setCopiedToken(null), 2000); }} className="rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-600 hover:bg-violet-100 transition">{copiedToken === s.inviteToken ? "Copied!" : "Copy link"}</button>}
+                      {s.status === "active" && s.studentId && <button onClick={() => setSelectedStudent({ id: s.studentId!, name: s.studentName, email: s.email, avatarUrl: s.studentAvatarUrl })} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition">View</button>}
+                      {s.status === "pending" && <button onClick={() => { navigator.clipboard.writeText(`${siteUrl}/teacher/join?token=${s.inviteToken}`); setCopiedToken(s.inviteToken); setTimeout(() => setCopiedToken(null), 2000); }} className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${tc.infoBox} ${tc.textActive}`}>{copiedToken === s.inviteToken ? "Copied!" : "Copy link"}</button>}
                       {s.status === "pending_student" && (
                         <button
                           title="How the student confirms"
@@ -3116,8 +3184,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
           <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/[0.04]">
             <p className="mb-3 text-sm font-bold text-slate-800">Create a Class</p>
             <form onSubmit={handleCreateClass} className="flex gap-2">
-              <input type="text" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} placeholder="e.g. Morning Group A" required className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
-              <button type="submit" disabled={creatingClass} className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-violet-700 disabled:opacity-50">{creatingClass ? "…" : "Create"}</button>
+              <input type="text" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} placeholder="e.g. Morning Group A" required className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100" />
+              <button type="submit" disabled={creatingClass} className={`rounded-xl ${tc.btn} px-4 py-2 text-sm font-bold transition disabled:opacity-50`}>{creatingClass ? "…" : "Create"}</button>
             </form>
           </div>
           {classes.length === 0 ? <div className="rounded-2xl bg-white p-10 text-center text-sm text-slate-400 shadow-sm">No classes yet.</div> : classes.map((cls) => {
@@ -3131,7 +3199,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                     <button
                       type="button"
                       onClick={() => setEmojiPickerFor(emojiPickerFor === cls.id ? null : cls.id)}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-xl hover:bg-violet-100 transition"
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl text-xl transition ${tc.bgActive}`}
                       title="Change icon"
                     >
                       {cls.emoji}
@@ -3141,7 +3209,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                         <div className="flex flex-wrap gap-1">
                           {CLASS_EMOJIS.map((e) => (
                             <button key={e} type="button" onClick={() => { handleUpdateEmoji(cls.id, e); setEmojiPickerFor(null); }}
-                              className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg transition hover:bg-violet-50 ${cls.emoji === e ? "bg-violet-100 ring-1 ring-violet-300" : ""}`}>
+                              className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg transition hover:bg-slate-100 ${cls.emoji === e ? `${tc.selectedBg} ring-1 ${tc.selectedRing}` : ""}`}>
                               {e}
                             </button>
                           ))}
@@ -3166,10 +3234,10 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                           return (
                             <div key={s.studentId} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2">
                               <div className="relative h-7 w-7 shrink-0">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-100 text-[10px] font-black text-violet-600 overflow-hidden">
+                                <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-black overflow-hidden ${tc.avatarBg}`}>
                                   {s.studentAvatarUrl ? (
                                     <>
-                                      <span className="absolute inset-0 flex items-center justify-center rounded-full bg-violet-100 text-[10px] font-black text-violet-600">{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
+                                      <span className={`absolute inset-0 flex items-center justify-center rounded-full text-[10px] font-black ${tc.avatarBg}`}>{s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase()}</span>
                                       <img src={s.studentAvatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover relative rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                                     </>
                                   ) : (s.studentName ? initials(s.studentName, s.email) : s.email.slice(0, 2).toUpperCase())}
@@ -3207,7 +3275,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                                 <p className="truncate text-sm font-semibold text-slate-600">{displayName}</p>
                                 {sub && <p className="truncate text-xs text-slate-400">{sub}</p>}
                               </div>
-                              <button onClick={() => handleAddToClass(cls.id, s.studentId!)} disabled={addingToClass === s.studentId} className="shrink-0 text-xs font-bold text-violet-600 hover:text-violet-800 transition disabled:opacity-40">{addingToClass === s.studentId ? "…" : "Add"}</button>
+                              <button onClick={() => handleAddToClass(cls.id, s.studentId!)} disabled={addingToClass === s.studentId} className={`shrink-0 text-xs font-bold transition disabled:opacity-40 ${tc.textActive}`}>{addingToClass === s.studentId ? "…" : "Add"}</button>
                             </div>
                           );
                         })}
@@ -3230,6 +3298,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               students={students}
               classes={classes}
               prefilledStudentId={prefilledStudentId}
+              plan={teacherData.plan}
               onClose={() => { setShowAssignModal(false); setPrefilledStudentId(undefined); }}
               onCreated={(a) => {
                 setAssignments((p) => [a, ...p]);
@@ -3242,7 +3311,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               <select
                 value={assignmentFilterStudent}
                 onChange={(e) => setAssignmentFilterStudent(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
               >
                 <option value="all">All students</option>
                 {activeStudents.map((s) => (
@@ -3263,12 +3332,12 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               {/* Activity feed toggle */}
               <button
                 onClick={() => showActivity ? setShowActivity(false) : loadActivity()}
-                className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition ${showActivity ? "border-violet-400 bg-violet-50 text-violet-700" : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition ${showActivity ? `${tc.borderActive} ${tc.bgActive} ${tc.textActive}` : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}
               >
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 Activity
               </button>
-              <button onClick={() => setShowAssignModal(true)} className="flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700 shadow-sm shadow-violet-200">
+              <button onClick={() => setShowAssignModal(true)} className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition shadow-sm ${tc.btn}`}>
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 New Assignment
               </button>
@@ -3282,7 +3351,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             return (
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "Assignments", value: activeCount, icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", color: "text-violet-600 bg-violet-50" },
+                  { label: "Assignments", value: activeCount, icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", color: `${tc.textActive} ${tc.bgActive}` },
                   { label: "Submissions", value: totalSubs, icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8", color: "text-emerald-600 bg-emerald-50" },
                   { label: "To review", value: toReview, icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10", color: toReview > 0 ? "text-amber-600 bg-amber-50" : "text-slate-400 bg-slate-50" },
                 ].map(({ label, value, icon, color }) => (
@@ -3302,7 +3371,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
           {showActivity && (
             <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
               <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
-                <svg className="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <svg className={`h-4 w-4 ${tc.infoText}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 <p className="text-sm font-black text-slate-700">Recent Activity</p>
                 <button onClick={() => setShowActivity(false)} className="ml-auto text-slate-300 hover:text-slate-500">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -3310,7 +3379,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               </div>
               {activityLoading ? (
                 <div className="flex items-center justify-center py-10">
-                  <svg className="h-5 w-5 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  <svg className={`h-5 w-5 animate-spin ${tc.spinner}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 </div>
               ) : activities.length === 0 ? (
                 <p className="px-5 py-8 text-center text-sm text-slate-400">No activity yet. Students haven&apos;t completed anything.</p>
@@ -3358,8 +3427,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
 
           {assignments.length === 0 ? (
             <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/[0.04]">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50">
-                <svg className="h-7 w-7 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${tc.bgActive}`}>
+                <svg className={`h-7 w-7 ${tc.spinner}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
               </div>
@@ -3402,7 +3471,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                 const statusAccent = hasNewEssays ? "border-l-4 border-l-amber-400" : completedCount > 0 ? "border-l-4 border-l-emerald-400" : "";
 
                 return (
-                  <div key={a.id} className={`group rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden transition hover:ring-violet-200 hover:shadow-md ${statusAccent}`}>
+                  <div key={a.id} className={`group rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden transition hover:ring-slate-200 hover:shadow-md ${statusAccent}`}>
                     <button
                       type="button"
                       onClick={() => { setSelectedAssignment(a); markAssignmentSeen(a.id); }}
@@ -3464,7 +3533,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                         </div>
                       </div>
                       {/* Results hint */}
-                      <span className="hidden shrink-0 items-center gap-1 text-xs font-semibold text-violet-500 group-hover:flex">
+                      <span className={`hidden shrink-0 items-center gap-1 text-xs font-semibold ${tc.infoText} group-hover:flex`}>
                         Results
                         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="9 18 15 12 9 6"/>
@@ -3476,7 +3545,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
                       <button
                         onClick={(e) => { e.stopPropagation(); handleCopyAssignment(a); }}
                         disabled={copyingAssignment === a.id}
-                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-300 hover:bg-violet-50 hover:text-violet-500 transition disabled:opacity-50"
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-300 hover:bg-slate-50 hover:text-slate-500 transition disabled:opacity-50"
                       >
                         {copyingAssignment === a.id ? (
                           <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -3518,6 +3587,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
       <AssignmentResultsModal
         assignment={selectedAssignment}
         students={students}
+        plan={teacherData.plan}
         onClose={() => {
           setSelectedAssignment(null);
           fetch("/api/teacher/assignments/summaries").then((r) => r.json()).then((d) => { if (d.ok) setSummaries(d.summaries); }).catch(() => {});
@@ -5585,7 +5655,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
                 tab === t.key
                   ? t.key === "teacher"
-                    ? "bg-violet-600 text-white shadow-sm"
+                    ? `${teacherData ? teacherPlanTheme(teacherData.plan).btnSolid : "bg-violet-600"} text-white shadow-sm`
                     : "bg-[#F5DA20] text-black shadow-sm"
                   : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
               }`}
