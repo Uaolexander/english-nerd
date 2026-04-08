@@ -36,7 +36,7 @@ function deriveImg(rec: GrammarRec): string {
 
 export default function GrammarRecommended({ recommendations, allHref, allLabel }: Props) {
   return (
-    <aside className="sticky top-24 flex flex-col gap-3">
+    <aside className="flex flex-col gap-3">
       <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">
         Recommended for you
       </p>

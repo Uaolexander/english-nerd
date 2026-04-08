@@ -535,11 +535,11 @@ export default function PastSimpleNegativeQuestionsLessonClient() {
 
         {/* Left sidebar */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a2-past-simple-negative-questions" subject="Past Simple Negatives & Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+          <div className=""><AdUnit variant="sidebar-dark" /></div>
         )}
 
         {/* Center */}

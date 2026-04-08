@@ -192,7 +192,7 @@ export default function PresentContinuousQuizClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="pc-quiz" subject="Present Continuous Quiz" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -320,7 +320,7 @@ export default function PresentContinuousQuizClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Fill in the Blank", href: "/tenses/present-continuous/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A2", badge: "bg-emerald-500", reason: "Type the correct form" },

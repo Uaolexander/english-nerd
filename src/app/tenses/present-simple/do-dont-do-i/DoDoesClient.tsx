@@ -476,7 +476,7 @@ export default function DoDoesClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -693,7 +693,7 @@ export default function DoDoesClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "am / is / are", href: "/tenses/present-simple/to-be", img: "/topics/exercises/to-be.jpg", level: "A1", badge: "bg-emerald-500", reason: "Practise to be forms" },

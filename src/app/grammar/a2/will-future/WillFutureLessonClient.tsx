@@ -326,11 +326,11 @@ export default function WillFutureLessonClient() {
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a2-will-future" subject="Will — Future" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+          <div className=""><AdUnit variant="sidebar-dark" /></div>
         )}
 
         <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">

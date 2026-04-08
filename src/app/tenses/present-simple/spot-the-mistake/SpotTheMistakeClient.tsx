@@ -508,7 +508,7 @@ export default function SpotTheMistakeClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -636,7 +636,7 @@ export default function SpotTheMistakeClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Write the correct form" },

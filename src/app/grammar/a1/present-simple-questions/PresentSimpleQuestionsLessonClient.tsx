@@ -589,7 +589,7 @@ export default function PresentSimpleQuestionsLessonClient() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a1-present-simple-questions" subject="Present Simple Questions" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (

@@ -183,7 +183,7 @@ export default function SentenceBuilderClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="pc-sentence-builder" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -373,7 +373,7 @@ export default function SentenceBuilderClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Multiple Choice", href: "/tenses/present-continuous/quiz", img: "/topics/exercises/quiz.jpg", level: "A2", badge: "bg-emerald-500", reason: "Multiple choice warmup" },

@@ -594,7 +594,7 @@ export default function AdverbFrequencyLessonClient() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a1-adverbs-frequency" subject="Adverbs of Frequency" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (

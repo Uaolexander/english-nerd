@@ -234,7 +234,7 @@ export default function StativeVerbsClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="pc-stative-verbs" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -451,7 +451,7 @@ export default function StativeVerbsClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "-ing Spelling Rules", href: "/tenses/present-continuous/ing-forms", img: "/topics/exercises/ing-forms.jpg", level: "A2", badge: "bg-sky-500", reason: "Master -ing spelling" },

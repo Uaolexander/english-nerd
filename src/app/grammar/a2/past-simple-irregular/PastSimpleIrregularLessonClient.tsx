@@ -491,7 +491,7 @@ export default function PastSimpleIrregularLessonClient() {
 
         {/* Left column */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a2-past-simple-irregular" subject="Past Simple Irregular" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (

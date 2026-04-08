@@ -818,7 +818,7 @@ export default function ThereIsThereAreLessonClient() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
         {/* Left column */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound
               gameId="grammar-a1-there-is"
               subject="There is / There are"
@@ -1075,7 +1075,7 @@ export default function ThereIsThereAreLessonClient() {
 
         {/* Right column */}
         {isPro ? (
-          <aside className="sticky top-24 flex flex-col gap-3">
+          <aside className="flex flex-col gap-3">
             <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
             {[
               {

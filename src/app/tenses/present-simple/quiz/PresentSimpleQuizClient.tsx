@@ -438,7 +438,7 @@ export default function PresentSimpleQuizClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="ps-quiz" subject="Present Simple Quiz" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -655,7 +655,7 @@ export default function PresentSimpleQuizClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Type the correct form" },

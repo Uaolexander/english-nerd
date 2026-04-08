@@ -445,7 +445,7 @@ export default function FillInBlankClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="ps-fill-in-blank" subject="Present Simple Writing" questions={SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -678,7 +678,7 @@ export default function FillInBlankClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Quiz — Multiple Choice", href: "/tenses/present-simple/quiz", img: "/topics/exercises/quiz.jpg", level: "A1", badge: "bg-emerald-500", reason: "Test what you know" },

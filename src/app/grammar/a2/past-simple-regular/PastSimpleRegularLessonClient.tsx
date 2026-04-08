@@ -534,11 +534,11 @@ export default function PastSimpleRegularLessonClient() {
 
         {/* Left sidebar */}
         {isPro ? (
-          <div className="sticky top-24">
+          <div className="">
             <SpeedRound gameId="grammar-a2-past-simple-regular" subject="Past Simple Regular Verbs" questions={SPEED_QUESTIONS} variant="sidebar" />
           </div>
         ) : (
-          <div className="sticky top-24"><AdUnit variant="sidebar-dark" /></div>
+          <div className=""><AdUnit variant="sidebar-dark" /></div>
         )}
 
         {/* Center */}

@@ -234,7 +234,7 @@ export default function AdvancedMixPcClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="pc-advanced" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -451,7 +451,7 @@ export default function AdvancedMixPcClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Simple vs Continuous", href: "/tenses/present-continuous/ps-vs-pc", img: "/topics/exercises/ps-vs-pc.jpg", level: "A2", badge: "bg-sky-500", reason: "Compare both tenses" },

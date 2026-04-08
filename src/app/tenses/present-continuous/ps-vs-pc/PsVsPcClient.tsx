@@ -234,7 +234,7 @@ export default function PsVsPcClient() {
 
           {/* Left column */}
           {isPro ? (
-            <div className="top-24 lg:sticky">
+            <div className="">
               <SpeedRound gameId="pc-ps-vs-pc" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
             </div>
           ) : (
@@ -451,7 +451,7 @@ export default function PsVsPcClient() {
 
           {/* Right column */}
           {isPro ? (
-            <aside className="sticky top-24 flex flex-col gap-3">
+            <aside className="flex flex-col gap-3">
               <p className="px-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">Recommended for you</p>
               {[
                 { title: "Stative Verbs", href: "/tenses/present-continuous/stative-verbs", img: "/topics/exercises/stative-verbs.jpg", level: "A2", badge: "bg-violet-500", reason: "Verbs that don't use -ing" },
