@@ -4962,20 +4962,24 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [name, setName] = useState(fullName);
   const [avatar, setAvatar] = useState(avatarUrl);
   const [avatarPreview, setAvatarPreview] = useState(avatarUrl);
+  const [avatarImgError, setAvatarImgError] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Fallback: if server didn't provide avatar (JWT stale), load from client-side auth
+  // Always sync with client-side session — server JWT may have stale metadata
+  // (custom_avatar_url is preserved in DB but may not be in a freshly-issued token)
   useEffect(() => {
-    if (avatarPreview) return;
     createClient().auth.getUser().then(({ data }) => {
       const m = data.user?.user_metadata;
       const url = m?.custom_avatar_url || m?.avatar_url || m?.picture || "";
-      if (url) { setAvatar(url); setAvatarPreview(url); }
+      if (url && url !== avatarPreview) { setAvatar(url); setAvatarPreview(url); }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reset avatar error when URL changes (e.g. after upload or client-side sync)
+  useEffect(() => { setAvatarImgError(false); }, [avatarPreview]);
 
   // Security
   const [newPassword, setNewPassword] = useState("");
@@ -5427,8 +5431,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-xl font-black text-white">
                     {userInitials}
                   </div>
-                  {avatarPreview && (
-                    <img src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  {avatarPreview && !avatarImgError && (
+                    <img key={avatarPreview} src={avatarPreview} alt="Avatar" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={() => setAvatarImgError(true)} />
                   )}
                 </div>
               </div>
@@ -5650,8 +5654,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-sm font-black text-white">{userInitials}</div>
-                      {avatarPreview && (
-                        <img src={avatarPreview} alt="" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      {avatarPreview && !avatarImgError && (
+                        <img key={avatarPreview} src={avatarPreview} alt="" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={() => setAvatarImgError(true)} />
                       )}
                       {avatarUploading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
