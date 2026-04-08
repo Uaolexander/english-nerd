@@ -23,9 +23,8 @@ const FEATURES = [
 /* ── Dark sidebar (grammar / tenses pages) ───────────────────────────────── */
 function SidebarDark() {
   return (
-    <aside className="hidden lg:block">
-      <div className="sticky top-24">
-        <a href="/pro" className="group block rounded-2xl overflow-hidden border border-[#F5DA20]/20 bg-gradient-to-b from-[#F5DA20]/10 to-[#0B0B0D] p-6 transition hover:border-[#F5DA20]/40">
+    <aside className="hidden lg:block sticky top-24 self-start">
+      <a href="/pro" className="group block rounded-2xl overflow-hidden border border-[#F5DA20]/20 bg-gradient-to-b from-[#F5DA20]/10 to-[#0B0B0D] p-6 transition hover:border-[#F5DA20]/40">
           {/* Top accent */}
           <div className="h-1 w-full rounded-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20] mb-5" />
 
@@ -65,7 +64,6 @@ function SidebarDark() {
 
           <p className="mt-3 text-center text-[10px] text-white/20">🛡 7-day money-back guarantee</p>
         </a>
-      </div>
     </aside>
   );
 }
@@ -73,9 +71,8 @@ function SidebarDark() {
 /* ── Light sidebar (vocabulary pages) ───────────────────────────────────── */
 function SidebarLight() {
   return (
-    <aside className="hidden lg:block">
-      <div className="sticky top-24">
-        <a href="/pro" className="group block rounded-2xl overflow-hidden border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 transition hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100">
+    <aside className="hidden lg:block sticky top-24 self-start">
+      <a href="/pro" className="group block rounded-2xl overflow-hidden border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 transition hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100">
           {/* Top accent */}
           <div className="h-1 w-full rounded-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20] mb-5" />
 
@@ -115,7 +112,6 @@ function SidebarLight() {
 
           <p className="mt-3 text-center text-[10px] text-slate-300">🛡 7-day money-back guarantee</p>
         </a>
-      </div>
     </aside>
   );
 }
@@ -123,9 +119,8 @@ function SidebarLight() {
 /* ── Account sidebar ─────────────────────────────────────────────────────── */
 function SidebarAccount() {
   return (
-    <aside className="hidden xl:block">
-      <div className="sticky top-24">
-        <a href="/pro" className="group block rounded-2xl overflow-hidden border border-amber-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-amber-300">
+    <aside className="hidden xl:block sticky top-24 self-start">
+      <a href="/pro" className="group block rounded-2xl overflow-hidden border border-amber-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-amber-300">
           <div className="h-1 w-full rounded-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20] mb-4" />
 
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-100">
@@ -156,7 +151,6 @@ function SidebarAccount() {
             Upgrade to PRO →
           </div>
         </a>
-      </div>
     </aside>
   );
 }
@@ -164,9 +158,8 @@ function SidebarAccount() {
 /* ── Test sidebar ────────────────────────────────────────────────────────── */
 function SidebarTest() {
   return (
-    <aside className="hidden lg:block">
-      <div className="sticky top-24">
-        <a href="/pro" className="group block rounded-2xl overflow-hidden border border-black/10 bg-white/80 backdrop-blur p-6 transition hover:shadow-lg hover:border-amber-300">
+    <aside className="hidden lg:block sticky top-24 self-start">
+      <a href="/pro" className="group block rounded-2xl overflow-hidden border border-black/10 bg-white/80 backdrop-blur p-6 transition hover:shadow-lg hover:border-amber-300">
           <div className="h-1 w-full rounded-full bg-gradient-to-r from-[#F5DA20] via-amber-400 to-[#F5DA20] mb-5" />
 
           <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 border border-amber-100">
@@ -198,7 +191,6 @@ function SidebarTest() {
             Get PRO →
           </div>
         </a>
-      </div>
     </aside>
   );
 }
