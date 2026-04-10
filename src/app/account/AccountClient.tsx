@@ -3629,7 +3629,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
       />
     )}
 
-    {editingDeadline && (
+    {editingDeadline && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setEditingDeadline(null)}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         <div className="relative w-full max-w-xs overflow-hidden rounded-3xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -3661,10 +3661,11 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             </div>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
-    {confirmInfoStudent && (
+    {confirmInfoStudent && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setConfirmInfoStudent(null)}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         <div
@@ -3704,7 +3705,8 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
     </>
   );
@@ -5378,7 +5380,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
     )}
 
     {/* ── Delete certificate confirmation modal ────────────────────────── */}
-    {deleteCertId && (
+    {deleteCertId && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteCertId(null)} />
         <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
@@ -5407,11 +5409,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {/* ── Reset confirmation modal ─────────────────────────────────────── */}
-    {resetConfirm && (
+    {resetConfirm && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setResetConfirm(false)} />
         <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
@@ -5440,11 +5443,12 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {/* ── Delete account confirmation modal ──────────────────────────── */}
-    {deleteConfirm && (
+    {deleteConfirm && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(false)} />
         <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl ring-1 ring-black/[0.06] p-7">
@@ -5474,7 +5478,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     <main className="min-h-screen bg-[#F6F6F7]">
