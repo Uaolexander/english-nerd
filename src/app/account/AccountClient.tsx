@@ -2997,7 +2997,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             <a href="/pro" className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600 transition whitespace-nowrap">
               Renew now →
             </a>
-            <a href="/api/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">
+            <a href="/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">
               Manage subscription
             </a>
           </div>
@@ -3018,7 +3018,7 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             </div>
             <div className="flex flex-col items-end gap-1">
               <a href="/pro" className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-600">Renew →</a>
-              <a href="/api/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">Manage</a>
+              <a href="/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">Manage</a>
             </div>
           </div>
         );
@@ -5857,7 +5857,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   {!proExpiresAt && <p className="text-xs text-slate-400">Active</p>}
                 </div>
                 <a
-                  href="/api/billing-portal"
+                  href="/billing-portal"
                   className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
                 >
                   Manage subscription
@@ -5893,7 +5893,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   {!teacherData.subscriptionExpiresAt && <p className="text-xs text-slate-400">Active</p>}
                 </div>
                 <a
-                  href="/api/billing-portal"
+                  href="/billing-portal"
                   className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
                 >
                   Manage subscription
