@@ -66,53 +66,10 @@ export default function ProPlans() {
         </p>
       </div>
 
-      {/* ── Cards ───────────────────────────────────────────────────────── */}
+      {/* ── Cards — Annual FIRST (left) for price anchoring ─────────────── */}
       <div className="grid gap-5 sm:grid-cols-2">
 
-        {/* ── Monthly card ── */}
-        <div
-          className={`flex flex-col rounded-2xl border p-8 transition-all duration-200 ${
-            !annual
-              ? "border-white/20 bg-white/[0.06]"
-              : "border-white/6 bg-white/[0.02] opacity-60"
-          }`}
-        >
-          <div className="mb-1 text-xs font-black uppercase tracking-widest text-white/50">Monthly</div>
-
-          <div className="mt-3 flex items-end gap-1.5">
-            <span className="text-5xl font-black text-white">$4.99</span>
-            <span className="mb-2 text-sm text-white/50">/ month</span>
-          </div>
-          <p className="mt-1 text-xs text-white/45">Billed monthly</p>
-
-          <p className="mt-3 text-xs text-white/55">
-            Or{" "}
-            <button
-              onClick={() => setAnnual(true)}
-              className="font-bold text-[#F5DA20]/70 underline underline-offset-2 hover:text-[#F5DA20] transition"
-            >
-              switch to Annual
-            </button>{" "}
-            and save <span className="font-bold text-white/60">$30/year</span>
-          </p>
-
-          <ul className="mt-6 mb-8 flex-1 space-y-3">
-            {PRO_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-white/50">
-                <Check />{f}
-              </li>
-            ))}
-          </ul>
-
-          <a
-            href="https://englishnerd.lemonsqueezy.com/checkout/buy/d99ea748-d180-4c9d-ba5b-aa420e67a040"
-            className="block w-full rounded-xl border border-white/12 bg-white/6 py-3.5 text-center text-sm font-black text-white transition hover:bg-white/10"
-          >
-            Get Monthly PRO
-          </a>
-        </div>
-
-        {/* ── Annual card ── */}
+        {/* ── Annual card — shown first so users anchor on $2.50, not $4.99 */}
         <div
           className={`relative flex flex-col overflow-hidden rounded-2xl border-2 p-8 transition-all duration-200 ${
             annual
@@ -139,6 +96,7 @@ export default function ProPlans() {
           </div>
           <p className="mt-1 text-xs text-white/55">
             Billed as <span className="font-black text-white/70">$29.99 / year</span>
+            <span className="ml-2 text-white/30">· $0.08/day</span>
           </p>
 
           <ul className="mt-6 mb-8 flex-1 space-y-3">
@@ -156,6 +114,51 @@ export default function ProPlans() {
             Get Annual PRO — $29.99/year
           </a>
           <p className="mt-3 text-center text-xs text-white/50">🛡 7-day money-back guarantee</p>
+        </div>
+
+        {/* ── Monthly card ── */}
+        <div
+          className={`flex flex-col rounded-2xl border p-8 transition-all duration-200 ${
+            !annual
+              ? "border-white/20 bg-white/[0.06]"
+              : "border-white/6 bg-white/[0.02] opacity-60"
+          }`}
+        >
+          <div className="mb-1 text-xs font-black uppercase tracking-widest text-white/50">Monthly</div>
+
+          <div className="mt-3 flex items-end gap-1.5">
+            <span className="text-5xl font-black text-white">$4.99</span>
+            <span className="mb-2 text-sm text-white/50">/ month</span>
+          </div>
+          <p className="mt-1 text-xs text-white/45">
+            Billed monthly · <span className="text-white/35">$59.88/year total</span>
+          </p>
+
+          <p className="mt-3 text-xs text-white/55">
+            Or{" "}
+            <button
+              onClick={() => setAnnual(true)}
+              className="font-bold text-[#F5DA20]/70 underline underline-offset-2 hover:text-[#F5DA20] transition"
+            >
+              switch to Annual
+            </button>{" "}
+            and save <span className="font-bold text-white/60">$30/year</span>
+          </p>
+
+          <ul className="mt-6 mb-8 flex-1 space-y-3">
+            {PRO_FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-2.5 text-sm text-white/50">
+                <Check />{f}
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="https://englishnerd.lemonsqueezy.com/checkout/buy/d99ea748-d180-4c9d-ba5b-aa420e67a040"
+            className="block w-full rounded-xl border border-white/12 bg-white/6 py-3.5 text-center text-sm font-black text-white transition hover:bg-white/10"
+          >
+            Get Monthly PRO
+          </a>
         </div>
       </div>
     </div>

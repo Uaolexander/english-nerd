@@ -89,7 +89,7 @@ const FAQS = [
   { q: "Is there a 7-day money-back guarantee?", a: "Yes. If you're not happy, reach out within 7 days of your first payment and we'll refund you in full. No questions asked." },
   { q: "Can I use a promo code instead of paying?", a: "Absolutely. Go to your Account page → Profile tab and enter your code. Promo codes give instant PRO access for 30 or 365 days with no payment required." },
   { q: "What happens when my PRO subscription ends?", a: "Your account stays active and all free content remains fully accessible. PRO features become locked again until you renew." },
-  { q: "How do teacher plans work?", a: "Teacher Starter ($6.99/mo or $59/yr) supports up to 5 students. Teacher Solo ($9.99/mo or $79/yr) supports up to 15 students. Teacher Plus ($15.99/mo or $129/yr) supports up to 40 students with class groups and priority support. Annual plans save up to 34%. Access is provided via voucher code — contact us to get started." },
+  { q: "How do teacher plans work?", a: "Teacher Starter ($6.99/mo or $59/yr) supports up to 5 students. Teacher Solo ($9.99/mo or $79/yr) supports up to 15 students. Teacher Plus ($15.99/mo or $129/yr) supports up to 40 students with priority support. Choose a plan in the Teacher section above, complete checkout, and your Teacher dashboard activates instantly. Annual plans save up to 34%." },
   { q: "Is there a student discount?", a: "Yes. We offer special promo codes for students. Reach out via the contact page and we'll take care of you." },
 ];
 
@@ -158,6 +158,25 @@ export default function ProPage() {
                 <svg className="h-3.5 w-3.5 text-emerald-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 {t}
               </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 1.5 STATS BAR ────────────────────────────────────────────────── */}
+      <section className="px-6 pb-16">
+        <div className="mx-auto max-w-4xl">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { num: "40+", label: "Grammar Lessons", color: "text-amber-400",  border: "border-amber-500/15",  bg: "bg-amber-500/5"  },
+              { num: "40+", label: "PDF Worksheets",  color: "text-sky-400",    border: "border-sky-500/15",    bg: "bg-sky-500/5"    },
+              { num: "5",   label: "CEFR Levels",     color: "text-emerald-400",border: "border-emerald-500/15",bg: "bg-emerald-500/5"},
+              { num: "12",  label: "Tense Modules",   color: "text-violet-400", border: "border-violet-500/15", bg: "bg-violet-500/5" },
+            ].map((s) => (
+              <div key={s.label} className={`flex flex-col items-center gap-1.5 rounded-2xl border ${s.border} ${s.bg} px-4 py-5 text-center`}>
+                <span className={`text-4xl font-black leading-none ${s.color}`}>{s.num}</span>
+                <span className="text-xs text-white/45">{s.label}</span>
+              </div>
             ))}
           </div>
         </div>
@@ -323,7 +342,49 @@ export default function ProPage() {
               English Nerd Teacher gives you a full classroom management system built directly into the platform.
             </p>
           </div>
+          {/* Teacher pain → gain */}
+          <div className="mb-12 grid gap-4 sm:grid-cols-3">
+            {[
+              { pain: "Tracking homework in spreadsheets", fix: "See all student progress at a glance" },
+              { pain: "Sharing materials via WhatsApp or email", fix: "Assign exercises directly in the platform" },
+              { pain: "No visibility on who's struggling", fix: "Test breakdowns reveal weak spots instantly" },
+            ].map((item) => (
+              <div key={item.pain} className="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]">
+                <div className="flex items-start gap-3 border-b border-white/6 bg-red-500/[0.06] px-5 py-4">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <p className="text-sm leading-snug text-white/55">{item.pain}</p>
+                </div>
+                <div className="flex items-start gap-3 bg-emerald-500/[0.06] px-5 py-4">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <p className="text-sm font-semibold leading-snug text-white/80">{item.fix}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <TeacherPlans />
+        </div>
+      </section>
+
+      {/* ── 7.5 GUARANTEE ────────────────────────────────────────────────── */}
+      <section className="px-6 pb-16">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex flex-col sm:flex-row items-center gap-6 rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.05] px-8 py-8 text-center sm:text-left">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/20">
+              <svg className="h-8 w-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <polyline points="9 12 11 14 15 10"/>
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-white">7-Day Money-Back Guarantee</h3>
+              <p className="mt-2 text-sm text-white/55 leading-relaxed">
+                Try PRO completely risk-free. If you&apos;re not satisfied within 7 days of your first payment, email{" "}
+                <a href="mailto:hello@englishnerd.cc" className="text-emerald-400 hover:underline transition">hello@englishnerd.cc</a>{" "}
+                and we&apos;ll refund you in full — no questions asked, no hoops to jump through.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -357,9 +418,12 @@ export default function ProPage() {
           <div className="pointer-events-none absolute left-1/2 top-0 h-48 w-72 -translate-x-1/2 rounded-full bg-[#F5DA20]/12 blur-[70px]" />
           <div className="relative">
             <div className="mb-5 text-5xl">👑</div>
-            <h2 className="text-3xl font-black leading-tight md:text-4xl">Ready to level up?</h2>
+            <h2 className="text-3xl font-black leading-tight md:text-4xl">
+              Stop guessing.<br />
+              <span className="text-[#F5DA20]">Start mastering.</span>
+            </h2>
             <p className="mx-auto mt-4 max-w-sm leading-relaxed text-white/55">
-              Join learners who stopped guessing and started mastering English with PRO.
+              You&apos;ve already started learning for free. PRO gives you the tools to go further — faster.
             </p>
             <div className="mx-auto mt-6 flex w-fit items-center gap-4 rounded-2xl border border-[#F5DA20]/15 bg-[#F5DA20]/5 px-6 py-3">
               <div className="text-left">

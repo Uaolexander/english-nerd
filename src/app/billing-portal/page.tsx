@@ -32,6 +32,8 @@ export default async function BillingPortalPage() {
     redirect("/pro");
   }
 
+  console.log("[billing-portal] subscription_id from DB:", sub.subscription_id);
+
   // 3. Fetch customer portal URL from LemonSqueezy
   const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
   if (!apiKey) {
@@ -50,13 +52,19 @@ export default async function BillingPortalPage() {
   );
 
   if (!res.ok) {
+    console.error("[billing-portal] LemonSqueezy API error:", res.status, res.statusText);
+    if (res.status === 404) {
+      redirect("/billing-portal/error?reason=not-found");
+    }
     redirect("/billing-portal/error");
   }
 
   const json = await res.json();
+  console.log("[billing-portal] subscription attributes:", JSON.stringify(json?.data?.attributes?.urls));
   const portalUrl = json?.data?.attributes?.urls?.customer_portal;
 
   if (!portalUrl) {
+    console.error("[billing-portal] No customer_portal URL in response. Status:", json?.data?.attributes?.status);
     redirect("/billing-portal/error");
   }
 
