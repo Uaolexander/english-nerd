@@ -51,7 +51,7 @@ export default function LetterboxSection() {
             <h2 className="text-3xl font-black md:text-4xl">
               Got something to say?
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-white/40">
+            <p className="mx-auto mt-3 max-w-md text-sm text-white/55">
               Suggest a topic, report an error, share feedback, or just say hi. We&apos;d love to hear from you.
             </p>
 
@@ -59,10 +59,10 @@ export default function LetterboxSection() {
               <div className="mt-8 flex flex-col items-center gap-3">
                 <div className="text-4xl">📬</div>
                 <div className="text-lg font-black text-white">Message sent!</div>
-                <p className="text-sm text-white/40">Thanks for writing. We&apos;ll read it soon.</p>
+                <p className="text-sm text-white/55">Thanks for writing. We&apos;ll read it soon.</p>
                 <button
                   onClick={() => setStatus("idle")}
-                  className="mt-2 text-xs text-white/30 hover:text-white/60 transition underline"
+                  className="mt-2 text-xs text-white/50 hover:text-white/60 transition underline"
                 >
                   Send another
                 </button>
@@ -77,9 +77,9 @@ export default function LetterboxSection() {
                   placeholder="Your message here…"
                   maxLength={1000}
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#F5DA20]/40 focus:bg-white/8 transition"
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white placeholder:text-white/45 outline-none focus:border-[#F5DA20]/40 focus:bg-white/8 transition"
                 />
-                <div className="mt-1 text-right text-xs text-white/35">{message.length}/1000</div>
+                <div className="mt-1 text-right text-xs text-white/50">{message.length}/1000</div>
                 <div className="mt-3 flex justify-center">
                   <button
                     type="submit"

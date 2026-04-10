@@ -20,9 +20,9 @@ export default function AboutPage() {
       <div className="relative mx-auto max-w-3xl px-6 py-16">
 
         {/* Breadcrumb */}
-        <div className="mb-10 text-sm text-white/40">
+        <div className="mb-10 text-sm text-white/55">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/35">/</span>
+          <span className="mx-2 text-white/50">/</span>
           <span className="text-white/70">About</span>
         </div>
 
@@ -40,7 +40,7 @@ export default function AboutPage() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-2">The person behind English Nerd</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">The person behind English Nerd</p>
             <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
               Oleksandr<br />
               <span className="text-[#F5DA20]">Vdovychenko</span>
@@ -104,7 +104,7 @@ export default function AboutPage() {
             ].map((s) => (
               <div key={s.label} className="rounded-2xl border border-white/8 bg-white/[0.03] p-5 text-center">
                 <div className="text-2xl font-black text-[#F5DA20]">{s.value}</div>
-                <div className="mt-1 text-xs text-white/40">{s.label}</div>
+                <div className="mt-1 text-xs text-white/55">{s.label}</div>
               </div>
             ))}
           </div>

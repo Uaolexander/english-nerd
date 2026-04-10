@@ -116,7 +116,7 @@ export default function PromoCodeModal() {
             </div>
 
             <h2 className="text-xl font-black text-white">Redeem Code</h2>
-            <p className="mt-1 text-sm text-white/40">Activate PRO or Teacher access with a valid code</p>
+            <p className="mt-1 text-sm text-white/55">Activate PRO or Teacher access with a valid code</p>
 
             {loggedIn === null && (
               <div className="mt-6 flex justify-center">

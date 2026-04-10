@@ -2993,9 +2993,14 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
             <p className="font-black">Subscription expired</p>
             <p className="mt-0.5 text-amber-700">Your data is safe. Grace period ends {new Date(new Date(teacherData.subscriptionExpiresAt).getTime() + 7 * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" })} — renew to restore full access.</p>
           </div>
-          <a href="/pro" className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600 transition whitespace-nowrap">
-            Renew now →
-          </a>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <a href="/pro" className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600 transition whitespace-nowrap">
+              Renew now →
+            </a>
+            <a href="/api/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">
+              Manage subscription
+            </a>
+          </div>
         </div>
       )}
 
@@ -3011,7 +3016,10 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
               </p>
               <p className="text-xs text-amber-600 mt-0.5">Renew your Teacher plan to keep your classroom running.</p>
             </div>
-            <a href="/pro" className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-600">Renew →</a>
+            <div className="flex flex-col items-end gap-1">
+              <a href="/pro" className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-600">Renew →</a>
+              <a href="/api/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">Manage</a>
+            </div>
           </div>
         );
       })()}
@@ -5821,6 +5829,74 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             </button>
           </form>
 
+          {/* ── Subscription status ────────────────────────────────────── */}
+          {isPro && (
+            <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-5 sm:px-7">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-[#F5DA20] shadow-sm">
+                  <svg aria-hidden="true" className="h-4 w-4 text-amber-900" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-black text-slate-900">PRO Subscription</p>
+                  {proExpiresAt && (() => {
+                    const daysLeft = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / 86400000);
+                    const isExpiringSoon = daysLeft >= 0 && daysLeft <= 14;
+                    return (
+                      <p className={`text-xs font-semibold ${isExpiringSoon ? "text-red-500" : "text-slate-400"}`}>
+                        {isExpiringSoon
+                          ? (daysLeft <= 1 ? "Expires today!" : `Expires in ${daysLeft} days`)
+                          : `Active until ${new Date(proExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                      </p>
+                    );
+                  })()}
+                  {!proExpiresAt && <p className="text-xs text-slate-400">Active</p>}
+                </div>
+                <a
+                  href="/api/billing-portal"
+                  className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  Manage subscription
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* ── Teacher Subscription status ────────────────────────────── */}
+          {isTeacher && teacherData && (
+            <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-5 sm:px-7">
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${teacherPlanTheme(teacherData.plan ?? "solo").badge} shadow-sm`}>
+                  <svg aria-hidden="true" className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-black text-slate-900">
+                    Teacher {teacherData.plan === "plus" ? "Plus" : teacherData.plan === "starter" ? "Starter" : "Solo"} Subscription
+                  </p>
+                  {teacherData.subscriptionExpiresAt && (() => {
+                    const daysLeft = Math.ceil((new Date(teacherData.subscriptionExpiresAt!).getTime() - Date.now()) / 86400000);
+                    const isExpiringSoon = daysLeft >= 0 && daysLeft <= 14;
+                    return (
+                      <p className={`text-xs font-semibold ${isExpiringSoon ? "text-red-500" : "text-slate-400"}`}>
+                        {isExpiringSoon
+                          ? (daysLeft <= 1 ? "Expires today!" : `Expires in ${daysLeft} days`)
+                          : `Active until ${new Date(teacherData.subscriptionExpiresAt!).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                      </p>
+                    );
+                  })()}
+                  {!teacherData.subscriptionExpiresAt && <p className="text-xs text-slate-400">Active</p>}
+                </div>
+                <a
+                  href="/api/billing-portal"
+                  className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  Manage subscription
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* ── Promo Code ─────────────────────────────────────────────── */}
           <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
             <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4 sm:px-7">
@@ -5833,25 +5909,6 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 <p className="text-sm font-black text-slate-900">Promo Code</p>
                 <p className="text-xs text-slate-400">Enter your promo code to unlock access</p>
               </div>
-              {isPro && (
-                <div className="ml-auto flex flex-col items-end">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900">
-                    <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg>
-                    PRO Active
-                  </span>
-                  {isPro && proExpiresAt && (() => {
-                    const daysLeft = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / 86400000);
-                    const isExpiringSoon = daysLeft >= 0 && daysLeft <= 14;
-                    return (
-                      <p className={`mt-0.5 text-xs font-bold ${isExpiringSoon ? "text-red-600" : "text-amber-700"}`}>
-                        {isExpiringSoon
-                          ? (daysLeft <= 1 ? "Expires today!" : `Expires in ${daysLeft} days`)
-                          : `Active until ${new Date(proExpiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
-                      </p>
-                    );
-                  })()}
-                </div>
-              )}
             </div>
             <form onSubmit={handlePromoRedeem} className="p-6 sm:p-7">
               <div className="flex gap-3">

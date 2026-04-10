@@ -1,3 +1,4 @@
+import React from "react";
 import FadeIn from "@/components/FadeIn";
 import LetterboxSection from "@/components/LetterboxSection";
 import ImageWithFallback from "@/components/ImageWithFallback";
@@ -73,7 +74,7 @@ function Hero() {
           <span className="text-[#F5DA20]">English.</span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-lg text-base text-white/50 md:text-lg">
+        <p className="mx-auto mt-6 max-w-lg text-base text-white/60 md:text-lg">
           Practice grammar, expand vocabulary, improve listening and reading — all in one place. Pick a topic, do exercises, see your score.
         </p>
 
@@ -108,46 +109,69 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="px-6 py-5 text-center">
       <div className="text-xl font-black text-white">{value}</div>
-      <div className="mt-0.5 text-xs text-white/40">{label}</div>
+      <div className="mt-0.5 text-xs text-white/55">{label}</div>
     </div>
   );
 }
 
 /* ─── Skills grid ───────────────────────────────────────────────────────── */
 
+const SKILL_ICONS: Record<string, React.ReactNode> = {
+  Grammar: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  ),
+  Vocabulary: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+  ),
+  Listening: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+    </svg>
+  ),
+  Reading: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  ),
+  Tests: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+    </svg>
+  ),
+};
+
 const SKILLS = [
   {
     href: "/grammar/a1",
     label: "Grammar",
-    icon: "📝",
     description: "Clear rules, examples, and graded exercises from A1 to C1.",
     tag: "A1 → C1",
   },
   {
     href: "/vocabulary",
     label: "Vocabulary",
-    icon: "📚",
     description: "Topic-based word lists with quizzes and spaced repetition.",
     tag: "All levels",
   },
   {
     href: "/listening",
     label: "Listening",
-    icon: "🎧",
     description: "Real audio with comprehension questions and transcripts.",
     tag: "A2 → C1",
   },
   {
     href: "/reading",
     label: "Reading",
-    icon: "📖",
     description: "Short texts with vocabulary highlights and exercises.",
     tag: "A1 → C1",
   },
   {
     href: "/tests/grammar",
     label: "Tests",
-    icon: "✅",
     description: "Placement and topic tests with instant score and feedback.",
     tag: "All levels",
   },
@@ -159,14 +183,14 @@ function Skills() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-10">
           <h2 className="text-2xl font-black md:text-3xl">What you&apos;ll practice</h2>
-          <p className="mt-2 text-sm text-white/40">Five core skills. Pick any, start anywhere.</p>
+          <p className="mt-2 text-sm text-white/55">Five core skills. Pick any, start anywhere.</p>
         </div>
 
         {/* Top 3 */}
         <div className="grid gap-4 md:grid-cols-3">
           {SKILLS.slice(0, 3).map((s, i) => (
             <FadeIn key={s.label} delay={i * 80} className="h-full">
-              <SkillCard {...s} />
+              <SkillCard href={s.href} label={s.label} description={s.description} tag={s.tag} />
             </FadeIn>
           ))}
         </div>
@@ -174,7 +198,7 @@ function Skills() {
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           {SKILLS.slice(3).map((s, i) => (
             <FadeIn key={s.label} delay={i * 80} className="h-full">
-              <SkillCard {...s} />
+              <SkillCard href={s.href} label={s.label} description={s.description} tag={s.tag} />
             </FadeIn>
           ))}
         </div>
@@ -186,13 +210,11 @@ function Skills() {
 function SkillCard({
   href,
   label,
-  icon,
   description,
   tag,
 }: {
   href: string;
   label: string;
-  icon: string;
   description: string;
   tag: string;
 }) {
@@ -202,20 +224,20 @@ function SkillCard({
       className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] p-6 transition hover:border-[#F5DA20]/30 hover:bg-white/[0.06]"
     >
       {/* Icon */}
-      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#F5DA20]/10 border border-[#F5DA20]/15 text-2xl transition group-hover:bg-[#F5DA20]/18">
-        {icon}
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#F5DA20]/10 border border-[#F5DA20]/15 text-[#F5DA20] transition group-hover:bg-[#F5DA20]/18">
+        {SKILL_ICONS[label]}
       </div>
 
       {/* Top row */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-white/30">{tag}</span>
+        <span className="text-xs font-bold text-white/50">{tag}</span>
       </div>
 
       {/* Label */}
       <div className="mt-2 text-xl font-black text-white">{label}</div>
 
       {/* Description */}
-      <p className="mt-2 text-sm leading-relaxed text-white/40">{description}</p>
+      <p className="mt-2 text-sm leading-relaxed text-white/55">{description}</p>
 
       {/* Bottom accent line */}
       <div className="mt-6 h-px w-0 bg-[#F5DA20]/50 transition-all duration-300 group-hover:w-full" />
@@ -246,7 +268,7 @@ function PlacementTest() {
             <h2 className="text-3xl font-black md:text-4xl">
               Not sure where to start?
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-white/40">
+            <p className="mx-auto mt-3 max-w-md text-sm text-white/55">
               Take a quick English level test. We&apos;ll tell you your current level and suggest what to practice first.
             </p>
 
@@ -255,13 +277,15 @@ function PlacementTest() {
                 href="/tests/grammar"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F5DA20] px-7 py-3.5 text-sm font-black text-black transition hover:opacity-90 shadow-lg shadow-[#F5DA20]/20"
               >
-                📝 Grammar test
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Grammar test
               </a>
               <a
                 href="/tests/vocabulary"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white/80 transition hover:bg-white/10"
               >
-                📚 Vocabulary test
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Vocabulary test
               </a>
             </div>
           </div>
@@ -290,9 +314,9 @@ function MeetTheTeacher() {
               </div>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-1">Behind the site</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/50 mb-1">Behind the site</p>
               <h2 className="text-xl font-black text-white sm:text-2xl">Oleksandr Vdovychenko</h2>
-              <p className="mt-2 text-sm text-white/50 leading-relaxed max-w-lg">
+              <p className="mt-2 text-sm text-white/60 leading-relaxed max-w-lg">
                 English teacher with 8+ years of experience, polyglot, and a genuine language nerd. Lived across seven countries, speaks five languages, and built this site to make English learning cleaner and more accessible.
               </p>
               <a href="/about" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#F5DA20] hover:opacity-80 transition">

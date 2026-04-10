@@ -121,7 +121,7 @@ export default function LoginClient() {
             Think in English.<br />
             <span className="text-[#F5DA20]">Be English.</span>
           </h2>
-          <p className="mt-5 text-base text-white/40 leading-relaxed max-w-xs">
+          <p className="mt-5 text-base text-white/55 leading-relaxed max-w-xs">
             Grammar, vocabulary, tenses and tests — everything in one place, designed for real progress.
           </p>
 
@@ -146,7 +146,7 @@ export default function LoginClient() {
             <p className="text-sm italic text-white/50 leading-relaxed">
               &ldquo;The limits of my language mean the limits of my world.&rdquo;
             </p>
-            <p className="mt-2 text-xs text-white/25">— Ludwig Wittgenstein</p>
+            <p className="mt-2 text-xs text-white/45">— Ludwig Wittgenstein</p>
           </div>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function LoginClient() {
           </a>
 
           <h1 className="text-3xl font-black text-white">Welcome back</h1>
-          <p className="mt-1.5 text-sm text-white/40">Log in to continue learning.</p>
+          <p className="mt-1.5 text-sm text-white/55">Log in to continue learning.</p>
 
           {/* Error banner */}
           {error && (
@@ -195,14 +195,14 @@ export default function LoginClient() {
           {/* Divider */}
           <div className="my-6 flex items-center gap-4">
             <div className="h-px flex-1 bg-white/8" />
-            <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">or</span>
+            <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">or</span>
             <div className="h-px flex-1 bg-white/8" />
           </div>
 
           {/* Email / password form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-white/40">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-white/55">
                 Email
               </label>
               <input
@@ -218,10 +218,10 @@ export default function LoginClient() {
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-widest text-white/40">
+                <label className="text-xs font-bold uppercase tracking-widest text-white/55">
                   Password
                 </label>
-                <a href="/forgot-password" className="text-xs text-white/35 hover:text-[#F5DA20] transition">
+                <a href="/forgot-password" className="text-xs text-white/50 hover:text-[#F5DA20] transition">
                   Forgot password?
                 </a>
               </div>
@@ -238,7 +238,7 @@ export default function LoginClient() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/45 hover:text-white/60 transition"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -265,7 +265,7 @@ export default function LoginClient() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-white/35">
+          <p className="mt-8 text-center text-sm text-white/50">
             Don&apos;t have an account?{" "}
             <a href="/register" className="font-bold text-[#F5DA20] hover:underline">
               Create one — it&apos;s free

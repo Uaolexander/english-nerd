@@ -106,13 +106,13 @@ export default function RedeemPage() {
             </form>
 
             <div className="mt-6 border-t border-white/8 pt-5 text-center space-y-2">
-              <p className="text-xs text-white/30">
+              <p className="text-xs text-white/50">
                 Don&apos;t have a code?{" "}
                 <a href="/pro" className="text-[#F5DA20]/70 underline underline-offset-2 hover:text-[#F5DA20] transition">See plans →</a>
               </p>
               <p className="text-xs text-white/20">
                 Need help?{" "}
-                <a href="/contact" className="underline underline-offset-2 hover:text-white/40 transition">Contact us</a>
+                <a href="/contact" className="underline underline-offset-2 hover:text-white/55 transition">Contact us</a>
               </p>
             </div>
           </div>

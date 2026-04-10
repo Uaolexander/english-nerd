@@ -15,15 +15,15 @@ export default function ContactPage() {
       <div className="relative mx-auto max-w-2xl px-6 py-16">
 
         {/* Breadcrumb */}
-        <div className="mb-8 text-sm text-white/40">
+        <div className="mb-8 text-sm text-white/55">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/35">/</span>
+          <span className="mx-2 text-white/50">/</span>
           <span className="text-white/70">Contact</span>
         </div>
 
         {/* Header */}
         <div className="mb-12">
-          <div className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Contact</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-3">Contact</div>
           <h1 className="text-4xl font-black tracking-tight">Get in touch</h1>
           <p className="mt-3 text-white/50">
             Spotted a mistake? Have a suggestion? Just want to say hi? We read every message.
@@ -69,7 +69,7 @@ export default function ContactPage() {
         </div>
 
         <div className="mt-12 rounded-2xl border border-white/8 bg-white/[0.03] p-6 text-center">
-          <div className="text-sm text-white/40">We typically respond within <strong className="text-white/70">1–3 business days</strong>.</div>
+          <div className="text-sm text-white/55">We typically respond within <strong className="text-white/70">1–3 business days</strong>.</div>
         </div>
 
       </div>

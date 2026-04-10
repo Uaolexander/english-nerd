@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 import PromoCodeModal from "@/components/PromoCodeModal";
 import TeacherPlans from "@/components/TeacherPlans";
@@ -35,11 +36,34 @@ const proSchema = {
 
 /* ─── Static data ─────────────────────────────────────────────────────────── */
 
+const FEATURE_ICONS: Record<string, React.ReactNode> = {
+  "SpeedRound Game": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  ),
+  "PDF Worksheets": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+    </svg>
+  ),
+  "Related Topics": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  ),
+  "Watch & Learn": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
+    </svg>
+  ),
+};
+
 const FEATURES = [
-  { icon: "⚡", title: "SpeedRound Game",  tag: "40 lessons",      gradient: "from-amber-500/25 to-yellow-600/10",   accent: "text-amber-400",  border: "border-amber-500/20",  desc: "Train your brain to answer grammar questions without thinking. 20 rapid-fire questions, instant feedback — build reflexes, not just rules." },
-  { icon: "📄", title: "PDF Worksheets",   tag: "40+ worksheets",  gradient: "from-sky-500/25 to-blue-600/10",       accent: "text-sky-400",    border: "border-sky-500/20",    desc: "Download and print any grammar lesson as a 4-exercise worksheet with a full answer key. Study anywhere — no screen needed." },
-  { icon: "🔗", title: "Related Topics",   tag: "13 tenses",       gradient: "from-violet-500/25 to-purple-600/10",  accent: "text-violet-400", border: "border-violet-500/20", desc: "Unlock bonus comparison exercises on every tense page — the contrast drills that make grammar finally click and stick." },
-  { icon: "🎬", title: "Watch & Learn",    tag: "Growing library", gradient: "from-emerald-500/25 to-green-600/10",  accent: "text-emerald-400",border: "border-emerald-500/20",desc: "Interactive vocabulary exercises built around real films and TV shows. Fill-in-blank, word match, quick-fire quiz." },
+  { title: "SpeedRound Game",  tag: "40 lessons",      gradient: "from-amber-500/25 to-yellow-600/10",   accent: "text-amber-400",  border: "border-amber-500/20",  desc: "Train your brain to answer grammar questions without thinking. 20 rapid-fire questions, instant feedback — build reflexes, not just rules." },
+  { title: "PDF Worksheets",   tag: "40+ worksheets",  gradient: "from-sky-500/25 to-blue-600/10",       accent: "text-sky-400",    border: "border-sky-500/20",    desc: "Download and print any grammar lesson as a 4-exercise worksheet with a full answer key. Study anywhere — no screen needed." },
+  { title: "Related Topics",   tag: "12 tenses",       gradient: "from-violet-500/25 to-purple-600/10",  accent: "text-violet-400", border: "border-violet-500/20", desc: "Unlock bonus comparison exercises on every tense page — the contrast drills that make grammar finally click and stick." },
+  { title: "Watch & Learn",    tag: "Growing library", gradient: "from-emerald-500/25 to-green-600/10",  accent: "text-emerald-400",border: "border-emerald-500/20",desc: "Interactive vocabulary exercises built around real films and TV shows. Fill-in-blank, word match, quick-fire quiz." },
 ];
 
 const CHECKLIST = [
@@ -128,7 +152,7 @@ export default function ProPage() {
               See what&apos;s included ↓
             </a>
           </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-xs text-white/30">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-xs text-white/50">
             {["Cancel any time", "7-day guarantee", "Promo codes accepted"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <svg className="h-3.5 w-3.5 text-emerald-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -149,11 +173,11 @@ export default function ProPage() {
           ].map((item) => (
             <div key={item.before} className="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]">
               <div className="flex items-start gap-3 border-b border-white/6 bg-red-500/[0.06] px-5 py-4">
-                <span className="mt-0.5">❌</span>
-                <p className="text-sm leading-snug text-white/45">{item.before}</p>
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <p className="text-sm leading-snug text-white/55">{item.before}</p>
               </div>
               <div className="flex items-start gap-3 bg-emerald-500/[0.06] px-5 py-4">
-                <span className="mt-0.5">✅</span>
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 <p className="text-sm font-semibold leading-snug text-white/80">{item.after}</p>
               </div>
             </div>
@@ -167,36 +191,36 @@ export default function ProPage() {
           <div className="mb-14 text-center">
             <p className="text-xs font-black uppercase tracking-widest text-[#F5DA20]/60">What PRO unlocks</p>
             <h2 className="mt-2 text-3xl font-black md:text-4xl">Four ways PRO accelerates you</h2>
-            <p className="mx-auto mt-3 max-w-md text-white/35">Every feature designed to make grammar stick faster and study sessions more productive.</p>
+            <p className="mx-auto mt-3 max-w-md text-white/50">Every feature designed to make grammar stick faster and study sessions more productive.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             {FEATURES.map((f) => (
               <div key={f.title} className={`group overflow-hidden rounded-2xl border bg-white/[0.03] ${f.border} transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50`}>
                 <div className={`flex h-44 w-full items-center justify-center bg-gradient-to-br ${f.gradient} relative`}>
-                  <span className="text-7xl opacity-80 transition-transform duration-300 group-hover:scale-110">{f.icon}</span>
+                  <span className={`opacity-80 transition-transform duration-300 group-hover:scale-110 [&>svg]:h-20 [&>svg]:w-20 ${f.accent}`}>{FEATURE_ICONS[f.title]}</span>
                   <span className={`absolute right-3 top-3 rounded-full bg-black/50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider backdrop-blur-sm ${f.accent}`}>{f.tag}</span>
                 </div>
                 <div className="p-6">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="text-2xl">{f.icon}</span>
+                    <span className={`[&>svg]:h-5 [&>svg]:w-5 ${f.accent}`}>{FEATURE_ICONS[f.title]}</span>
                     <h3 className="text-lg font-black text-white">{f.title}</h3>
                   </div>
-                  <p className="text-sm leading-relaxed text-white/50">{f.desc}</p>
+                  <p className="text-sm leading-relaxed text-white/55">{f.desc}</p>
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
-              { icon: "🏆", title: "Certificates", desc: "Download proof of completion for every course you finish." },
-              { icon: "📊", title: "Progress Stats", desc: "Track streaks, scores, and growth in your personal dashboard." },
-              { icon: "🚫", title: "No Ads", desc: "Study without distractions. A clean, fully ad-free experience." },
+              { icon: <svg className="h-5 w-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8m-4-4v4M5 3h14l-1.5 9H6.5L5 3z"/><path d="M9 12h6"/></svg>, title: "Certificates", desc: "Download proof of completion for every course you finish." },
+              { icon: <svg className="h-5 w-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, title: "Progress Stats", desc: "Track streaks, scores, and growth in your personal dashboard." },
+              { icon: <svg className="h-5 w-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>, title: "No Ads", desc: "Study without distractions. A clean, fully ad-free experience." },
             ].map((p) => (
               <div key={p.title} className="flex gap-4 rounded-2xl border border-white/6 bg-white/[0.03] p-5">
-                <span className="mt-0.5 shrink-0 text-2xl">{p.icon}</span>
+                <span className="mt-0.5 shrink-0">{p.icon}</span>
                 <div>
                   <div className="text-sm font-black text-white">{p.title}</div>
-                  <div className="mt-1 text-xs leading-relaxed text-white/40">{p.desc}</div>
+                  <div className="mt-1 text-xs leading-relaxed text-white/55">{p.desc}</div>
                 </div>
               </div>
             ))}
@@ -216,7 +240,7 @@ export default function ProPage() {
               <p className="mt-4 text-3xl font-black md:text-4xl">
                 PRO costs <span className="text-[#F5DA20]">$2.50 per month.</span>
               </p>
-              <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/40">
+              <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/55">
                 That&apos;s less than one minute of tutoring — for a full year of games, worksheets, certificates and exercises.
               </p>
               <a href="#pricing" className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-[#F5DA20] px-8 py-4 text-sm font-black text-black transition hover:bg-[#ffe033]">
@@ -236,8 +260,8 @@ export default function ProPage() {
           </div>
           <div className="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]">
             <div className="grid grid-cols-3 border-b border-white/8 px-6 py-4">
-              <div className="text-xs font-black uppercase tracking-widest text-white/25">Feature</div>
-              <div className="text-center text-xs font-black uppercase tracking-widest text-white/25">Free</div>
+              <div className="text-xs font-black uppercase tracking-widest text-white/45">Feature</div>
+              <div className="text-center text-xs font-black uppercase tracking-widest text-white/45">Free</div>
               <div className="flex justify-center">
                 <span className="inline-flex items-center gap-1 rounded-full bg-[#F5DA20] px-3 py-0.5 text-xs font-black text-black">
                   <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" /></svg>
@@ -262,7 +286,7 @@ export default function ProPage() {
           <div className="mb-12 text-center">
             <p className="text-xs font-black uppercase tracking-widest text-[#F5DA20]/60">Pricing</p>
             <h2 className="mt-2 text-3xl font-black md:text-4xl">Simple, honest pricing.</h2>
-            <p className="mt-3 text-white/40">Everything included. No hidden fees.</p>
+            <p className="mt-3 text-white/55">Everything included. No hidden fees.</p>
           </div>
           <ProPlans />
 
@@ -275,7 +299,7 @@ export default function ProPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-black text-white">Have a promo code?</p>
-              <p className="text-xs text-white/40">Got a voucher from a teacher or contest? Redeem it for free PRO access.</p>
+              <p className="text-xs text-white/55">Got a voucher from a teacher or contest? Redeem it for free PRO access.</p>
             </div>
             <PromoCodeModal />
           </div>
@@ -295,7 +319,7 @@ export default function ProPage() {
               Manage your students.{" "}
               <span className="text-[#F5DA20]">Assign work. Track progress.</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-lg leading-relaxed text-white/40">
+            <p className="mx-auto mt-4 max-w-lg leading-relaxed text-white/55">
               English Nerd Teacher gives you a full classroom management system built directly into the platform.
             </p>
           </div>
@@ -309,14 +333,14 @@ export default function ProPage() {
           <div className="mb-12 text-center">
             <p className="text-xs font-black uppercase tracking-widest text-[#F5DA20]/60">FAQ</p>
             <h2 className="mt-2 text-3xl font-black md:text-4xl">Common questions</h2>
-            <p className="mt-3 text-sm text-white/35">Everything you need to know before going PRO.</p>
+            <p className="mt-3 text-sm text-white/50">Everything you need to know before going PRO.</p>
           </div>
           <div className="space-y-3">
             {FAQS.map((faq) => (
               <details key={faq.q} className="group overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] open:border-[#F5DA20]/25 open:bg-[#F5DA20]/[0.04]">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-black text-white/75 group-open:text-white [&::-webkit-details-marker]:hidden">
                   {faq.q}
-                  <svg className="h-4 w-4 shrink-0 text-white/40 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="h-4 w-4 shrink-0 text-white/55 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </summary>
@@ -334,13 +358,13 @@ export default function ProPage() {
           <div className="relative">
             <div className="mb-5 text-5xl">👑</div>
             <h2 className="text-3xl font-black leading-tight md:text-4xl">Ready to level up?</h2>
-            <p className="mx-auto mt-4 max-w-sm leading-relaxed text-white/40">
+            <p className="mx-auto mt-4 max-w-sm leading-relaxed text-white/55">
               Join learners who stopped guessing and started mastering English with PRO.
             </p>
             <div className="mx-auto mt-6 flex w-fit items-center gap-4 rounded-2xl border border-[#F5DA20]/15 bg-[#F5DA20]/5 px-6 py-3">
               <div className="text-left">
-                <div className="text-[11px] text-white/30">per month</div>
-                <div className="text-xl font-black text-white">$2.50 <span className="text-sm font-semibold text-white/40">· $29.99/year</span></div>
+                <div className="text-[11px] text-white/50">per month</div>
+                <div className="text-xl font-black text-white">$2.50 <span className="text-sm font-semibold text-white/55">· $29.99/year</span></div>
               </div>
               <div className="h-8 w-px bg-white/10" />
               <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-black text-emerald-400">Save 50%</span>
@@ -352,7 +376,7 @@ export default function ProPage() {
               </a>
               <PromoCodeModal />
             </div>
-            <p className="mt-5 text-xs text-white/25">🛡 7-day guarantee · Cancel any time</p>
+            <p className="mt-5 text-xs text-white/45">🛡 7-day guarantee · Cancel any time</p>
           </div>
         </div>
       </section>

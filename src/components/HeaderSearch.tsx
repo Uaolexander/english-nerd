@@ -206,7 +206,7 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
 
           {/* Input row */}
           <div className="flex items-center gap-3 border-b border-white/8 px-4 py-3">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/40">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/55">
               <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
               <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
@@ -216,10 +216,10 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
               autoFocus={autoFocus}
               onChange={(e) => { setQ(e.target.value); setCursor(-1); }}
               placeholder="Search lessons, reading, voucher, PRO…"
-              className="flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/30 outline-none"
+              className="flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 outline-none"
             />
             {q && (
-              <button type="button" onClick={() => setQ("")} className="text-white/30 hover:text-white/60 transition">
+              <button type="button" onClick={() => setQ("")} className="text-white/50 hover:text-white/60 transition">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
@@ -228,7 +228,7 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
             <button
               type="button"
               onClick={closeDropdown}
-              className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white/40 hover:bg-white/10 hover:text-white/60 transition"
+              className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white/55 hover:bg-white/10 hover:text-white/60 transition"
             >
               Esc
             </button>
@@ -240,7 +240,7 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
               results.length > 0 ? (
                 Object.entries(grouped).map(([label, items]) => (
                   <div key={label} className="mb-1">
-                    <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/25">{label}</div>
+                    <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/45">{label}</div>
                     {items.map((r) => {
                       const globalIdx = results.indexOf(r);
                       const cat = getSearchCategory(r);
@@ -274,13 +274,13 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
                 <div className="px-4 py-8 text-center">
                   <div className="text-2xl mb-2">🔍</div>
                   <div className="text-sm font-semibold text-white/60">No results for &ldquo;{q}&rdquo;</div>
-                  <div className="mt-1 text-xs text-white/30">Try: passive voice, conditionals, phrasal verbs, voucher</div>
+                  <div className="mt-1 text-xs text-white/50">Try: passive voice, conditionals, phrasal verbs, voucher</div>
                 </div>
               )
             ) : (
               QUICK_PICKS.map((section) => (
                 <div key={section.label} className="mb-1">
-                  <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/25">{section.label}</div>
+                  <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/45">{section.label}</div>
                   {section.items.map((item) => {
                     const cat = getSearchCategory({ ...item, keywords: [] });
                     return (
@@ -307,8 +307,8 @@ export default function HeaderSearch({ onClose, autoFocus }: HeaderSearchProps =
 
           {/* Footer hint */}
           <div className="border-t border-white/8 px-4 py-2 flex items-center justify-between">
-            <span className="text-[11px] text-white/25">↑↓ navigate · Enter to open · ⌘K toggle</span>
-            <span className="text-[11px] text-white/25">{q.trim() ? `${results.length} result${results.length !== 1 ? "s" : ""}` : "Quick picks"}</span>
+            <span className="text-[11px] text-white/45">↑↓ navigate · Enter to open · ⌘K toggle</span>
+            <span className="text-[11px] text-white/45">{q.trim() ? `${results.length} result${results.length !== 1 ? "s" : ""}` : "Quick picks"}</span>
           </div>
         </div>
       )}

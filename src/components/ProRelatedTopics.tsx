@@ -40,8 +40,8 @@ function LockedCard({ ex, basePath }: { ex: Exercise; basePath: string }) {
 
       {/* Content */}
       <div className="p-3 sm:p-5">
-        <h3 className="text-sm font-black leading-snug text-white/40 sm:text-xl">{ex.title}</h3>
-        <p className="mt-1 text-[11px] text-white/25 leading-relaxed sm:mt-2 sm:text-sm">{ex.description}</p>
+        <h3 className="text-sm font-black leading-snug text-white/55 sm:text-xl">{ex.title}</h3>
+        <p className="mt-1 text-[11px] text-white/45 leading-relaxed sm:mt-2 sm:text-sm">{ex.description}</p>
 
         <div className="mt-3 sm:mt-4">
           <a
@@ -49,7 +49,7 @@ function LockedCard({ ex, basePath }: { ex: Exercise; basePath: string }) {
             className="absolute inset-0 z-10"
             aria-label={`Unlock ${ex.title} — PRO feature`}
           />
-          <code className="relative z-20 mb-3 block rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-mono text-white/30 sm:rounded-lg sm:px-2.5 sm:text-[11px]">
+          <code className="relative z-20 mb-3 block rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-mono text-white/50 sm:rounded-lg sm:px-2.5 sm:text-[11px]">
             {ex.label}
           </code>
           <button
@@ -133,7 +133,7 @@ export default function ProRelatedTopics({
               </span>
             )}
           </div>
-          <p className="text-xs text-white/35">Key grammar points and comparisons</p>
+          <p className="text-xs text-white/50">Key grammar points and comparisons</p>
         </div>
       </div>
 

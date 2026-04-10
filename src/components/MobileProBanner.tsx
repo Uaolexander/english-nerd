@@ -29,7 +29,7 @@ export default function MobileProBanner() {
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-xs font-black text-white">English Nerd PRO</span>
-          <span className="ml-1.5 text-xs text-white/40">· No ads · SpeedRound · PDFs</span>
+          <span className="ml-1.5 text-xs text-white/55">· No ads · SpeedRound · PDFs</span>
         </div>
         <span className="shrink-0 rounded-lg bg-[#F5DA20] px-3 py-1.5 text-[11px] font-black text-black">
           $2.50/mo →

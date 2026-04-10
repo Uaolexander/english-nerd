@@ -101,7 +101,7 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
     <div onKeyDown={handleKeyDown}>
       {/* Input */}
       <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/40" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/55" aria-hidden="true">
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
           <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
         </svg>
@@ -110,10 +110,10 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
           value={q}
           onChange={(e) => { setQ(e.target.value); setCursor(-1); }}
           placeholder="Search lessons, topics, tenses…"
-          className="w-full bg-transparent text-sm font-medium text-white placeholder:text-white/30 outline-none"
+          className="w-full bg-transparent text-sm font-medium text-white placeholder:text-white/50 outline-none"
         />
         {q && (
-          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="text-white/30 hover:text-white/60 transition">
+          <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="text-white/50 hover:text-white/60 transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           </button>
         )}
@@ -125,7 +125,7 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
           results.length > 0 ? (
             Object.entries(grouped).map(([label, items]) => (
               <div key={label} className="mb-1">
-                <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/25">{label}</div>
+                <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/45">{label}</div>
                 {items.map((r) => {
                   const globalIdx = results.indexOf(r);
                   return (
@@ -147,13 +147,13 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
             <div className="py-6 text-center">
               <div className="text-xl mb-1">🔍</div>
               <div className="text-sm font-semibold text-white/50">No results for &ldquo;{q}&rdquo;</div>
-              <div className="mt-1 text-xs text-white/25">Try: passive voice, conditionals</div>
+              <div className="mt-1 text-xs text-white/45">Try: passive voice, conditionals</div>
             </div>
           )
         ) : (
           MOBILE_QUICK_PICKS.map((section) => (
             <div key={section.label} className="mb-1">
-              <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/25">{section.label}</div>
+              <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/45">{section.label}</div>
               {section.items.map((item) => (
                 <a key={item.href} href={item.href} onClick={onClose}
                   className="flex items-center gap-3 rounded-xl px-2 py-2 text-white/80 hover:bg-white/7 transition-colors"
@@ -170,7 +170,7 @@ function MobileSearch({ onClose }: { onClose: () => void }) {
 
       {/* Footer */}
       {q.trim() && (
-        <div className="mt-1 border-t border-white/8 pt-2 text-right text-[11px] text-white/25">
+        <div className="mt-1 border-t border-white/8 pt-2 text-right text-[11px] text-white/45">
           {results.length} result{results.length !== 1 ? "s" : ""}
         </div>
       )}
@@ -332,7 +332,7 @@ export default function Header() {
                       </span>
                       <span className="flex flex-1 flex-col leading-tight">
                         <span className="text-sm font-extrabold text-white">{label}</span>
-                        <span className="text-xs text-white/40 group-hover/btn:text-white/55">{lessons} lessons</span>
+                        <span className="text-xs text-white/55 group-hover/btn:text-white/55">{lessons} lessons</span>
                       </span>
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0 text-white/20 transition group-hover/btn:text-white/60">
                         <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -461,7 +461,7 @@ export default function Header() {
                     </span>
                     <span className="flex flex-1 flex-col leading-tight">
                       <span className="text-sm font-extrabold text-white">Grammar test</span>
-                      <span className="text-xs text-white/40 group-hover/btn:text-white/55">A1 → C1 · 60 questions</span>
+                      <span className="text-xs text-white/55 group-hover/btn:text-white/55">A1 → C1 · 60 questions</span>
                     </span>
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0 text-white/15 transition group-hover/btn:text-white/50">
                       <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -478,7 +478,7 @@ export default function Header() {
                     </span>
                     <span className="flex flex-1 flex-col leading-tight">
                       <span className="text-sm font-extrabold text-white">Vocabulary test</span>
-                      <span className="text-xs text-white/40 group-hover/btn:text-white/55">A1 → C2 · 90 words</span>
+                      <span className="text-xs text-white/55 group-hover/btn:text-white/55">A1 → C2 · 90 words</span>
                     </span>
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0 text-white/15 transition group-hover/btn:text-white/50">
                       <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -495,7 +495,7 @@ export default function Header() {
                     </span>
                     <span className="flex flex-1 flex-col leading-tight">
                       <span className="text-sm font-extrabold text-white">Tenses test</span>
-                      <span className="text-xs text-white/40 group-hover/btn:text-white/55">A1 → C1 · 34 questions</span>
+                      <span className="text-xs text-white/55 group-hover/btn:text-white/55">A1 → C1 · 34 questions</span>
                     </span>
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0 text-white/15 transition group-hover/btn:text-white/50">
                       <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -602,7 +602,7 @@ export default function Header() {
                 <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${color} ${textColor} text-xs font-black shadow-sm`}>{lvl}</span>
                 <span className="flex flex-col leading-tight">
                   <span className="text-sm font-extrabold text-white">{lvl} — {label}</span>
-                  <span className="text-xs text-white/40">{lessons} lessons</span>
+                  <span className="text-xs text-white/55">{lessons} lessons</span>
                 </span>
               </Link>
             ))}
@@ -646,7 +646,7 @@ export default function Header() {
               </span>
               <span className="flex flex-col leading-tight">
                 <span className="text-sm font-extrabold text-white">Grammar test</span>
-                <span className="text-xs text-white/40">A1 → C1 · 60 questions</span>
+                <span className="text-xs text-white/55">A1 → C1 · 60 questions</span>
               </span>
             </Link>
             <Link href="/tests/vocabulary" onClick={closeAll}
@@ -656,7 +656,7 @@ export default function Header() {
               </span>
               <span className="flex flex-col leading-tight">
                 <span className="text-sm font-extrabold text-white">Vocabulary test</span>
-                <span className="text-xs text-white/40">A1 → C2 · 90 words</span>
+                <span className="text-xs text-white/55">A1 → C2 · 90 words</span>
               </span>
             </Link>
             <Link href="/tests/tenses" onClick={closeAll}
@@ -666,7 +666,7 @@ export default function Header() {
               </span>
               <span className="flex flex-col leading-tight">
                 <span className="text-sm font-extrabold text-white">Tenses test</span>
-                <span className="text-xs text-white/40">A1 → C1 · 34 questions</span>
+                <span className="text-xs text-white/55">A1 → C1 · 34 questions</span>
               </span>
             </Link>
           </MobileAccordion>

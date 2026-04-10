@@ -178,7 +178,7 @@ export default function TeacherHintBanner() {
           </div>
           <button
             onClick={dismiss}
-            className="mt-0.5 shrink-0 rounded-full p-1.5 text-white/30 transition hover:bg-white/8 hover:text-white/60"
+            className="mt-0.5 shrink-0 rounded-full p-1.5 text-white/50 transition hover:bg-white/8 hover:text-white/60"
             aria-label="Dismiss"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -204,7 +204,7 @@ export default function TeacherHintBanner() {
                 <circle cx="6" cy="6" r="6" fill={`${HEX}30`} />
                 <path d="M3.5 6l1.8 1.8L8.5 4.5" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span className="text-[11px] text-white/40">{perk}</span>
+              <span className="text-[11px] text-white/55">{perk}</span>
             </div>
           ))}
         </div>
@@ -224,7 +224,7 @@ export default function TeacherHintBanner() {
           </a>
           <button
             onClick={dismiss}
-            className="text-xs text-white/25 transition hover:text-white/50"
+            className="text-xs text-white/45 transition hover:text-white/50"
           >
             Not a teacher
           </button>

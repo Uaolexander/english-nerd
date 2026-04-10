@@ -106,7 +106,7 @@ export default function RegisterClient() {
               ✉️
             </div>
             <h2 className="text-xl font-black text-white">Check your email</h2>
-            <p className="mt-2 text-sm text-white/40">
+            <p className="mt-2 text-sm text-white/55">
               We sent a confirmation link to <span className="text-white/70 font-semibold">{email}</span>.
               Click it to activate your account.
             </p>
@@ -157,7 +157,7 @@ export default function RegisterClient() {
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-white/10 bg-[#121216] p-8">
           <h1 className="text-2xl font-black text-white">Create account</h1>
-          <p className="mt-1 text-sm text-white/40">Start free. Upgrade to Pro anytime.</p>
+          <p className="mt-1 text-sm text-white/55">Start free. Upgrade to Pro anytime.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
@@ -211,7 +211,7 @@ export default function RegisterClient() {
                 onChange={(e) => setAgreed(e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#F5DA20] cursor-pointer"
               />
-              <span className="text-xs text-white/40 leading-relaxed">
+              <span className="text-xs text-white/55 leading-relaxed">
                 I agree to the{" "}
                 <a href="/terms" target="_blank" className="text-[#F5DA20] hover:underline">
                   Terms of Service
@@ -230,7 +230,7 @@ export default function RegisterClient() {
                 onChange={(e) => setMarketingConsent(e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#F5DA20] cursor-pointer"
               />
-              <span className="text-xs text-white/40 leading-relaxed">
+              <span className="text-xs text-white/55 leading-relaxed">
                 Send me helpful tips, new content and occasional offers from English Nerd.
                 You can unsubscribe at any time.
               </span>
@@ -251,7 +251,7 @@ export default function RegisterClient() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-white/40">
+          <p className="mt-6 text-center text-sm text-white/55">
             Already have an account?{" "}
             <a href="/login" className="font-bold text-[#F5DA20] hover:underline">
               Log in

@@ -79,7 +79,7 @@ export default function LessonProgressBar() {
 
         {/* Label */}
         <div className="hidden sm:flex flex-col leading-none mr-1">
-          <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Lesson</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Lesson</span>
           <span className="mt-0.5 text-xs font-bold text-white/60">
             {allDone ? "Complete! 🎉" : `${doneCount}/4 done`}
           </span>
@@ -101,7 +101,7 @@ export default function LessonProgressBar() {
                 className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-black transition-all duration-300
                   ${done
                     ? `${circleBg(result.score)} text-white shadow-md`
-                    : "border-white/15 bg-white/5 text-white/30"
+                    : "border-white/15 bg-white/5 text-white/50"
                   }`}
               >
                 {done ? (
@@ -138,7 +138,7 @@ export default function LessonProgressBar() {
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <span className="text-[9px] font-bold text-white/25 tabular-nums">{progressPct}%</span>
+          <span className="text-[9px] font-bold text-white/45 tabular-nums">{progressPct}%</span>
         </div>
 
       </div>

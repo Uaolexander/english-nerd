@@ -62,7 +62,7 @@ export default function RelatedTopics({
         <span className="h-2.5 w-2.5 rounded-full bg-sky-400 shadow-lg" />
         <div>
           <h2 className="text-xl font-black text-white">Related Topics</h2>
-          <p className="text-xs text-white/35">Key grammar points and comparisons</p>
+          <p className="text-xs text-white/50">Key grammar points and comparisons</p>
         </div>
       </div>
 

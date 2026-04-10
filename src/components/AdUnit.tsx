@@ -35,7 +35,7 @@ function SidebarDark() {
 
           <p className="text-[10px] font-black uppercase tracking-widest text-[#F5DA20]/60 mb-1">Upgrade</p>
           <h3 className="text-lg font-black text-white leading-tight mb-1">Go PRO.<br/>Learn faster.</h3>
-          <p className="text-xs text-white/40 mb-5">Everything unlocked, no limits.</p>
+          <p className="text-xs text-white/55 mb-5">Everything unlocked, no limits.</p>
 
           {/* Features */}
           <ul className="space-y-2.5 mb-6">
@@ -53,9 +53,9 @@ function SidebarDark() {
           <div className="mb-4">
             <div className="flex items-end gap-1">
               <span className="text-3xl font-black text-white">$2.50</span>
-              <span className="mb-1 text-xs text-white/35">/ mo</span>
+              <span className="mb-1 text-xs text-white/50">/ mo</span>
             </div>
-            <p className="text-[10px] text-white/30">Billed as $29.99/year</p>
+            <p className="text-[10px] text-white/50">Billed as $29.99/year</p>
           </div>
 
           <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F5DA20] py-3 text-sm font-black text-black transition group-hover:bg-[#ffe033]">
@@ -205,7 +205,7 @@ function MobileDark() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-white leading-tight">Go PRO — $2.50/mo</p>
-          <p className="text-xs text-white/40 truncate">SpeedRound · PDFs · Ad-free</p>
+          <p className="text-xs text-white/55 truncate">SpeedRound · PDFs · Ad-free</p>
         </div>
         <div className="shrink-0 rounded-lg bg-[#F5DA20] px-3 py-2 text-xs font-black text-black transition group-hover:bg-[#ffe033]">
           Upgrade →

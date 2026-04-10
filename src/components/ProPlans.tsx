@@ -40,7 +40,7 @@ export default function ProPlans() {
           <button
             onClick={() => setAnnual(false)}
             className={`rounded-xl px-6 py-2.5 text-sm font-black transition ${
-              !annual ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"
+              !annual ? "bg-white/10 text-white" : "text-white/50 hover:text-white/60"
             }`}
           >
             Monthly
@@ -48,7 +48,7 @@ export default function ProPlans() {
           <button
             onClick={() => setAnnual(true)}
             className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-black transition ${
-              annual ? "bg-[#F5DA20] text-black" : "text-white/35 hover:text-white/60"
+              annual ? "bg-[#F5DA20] text-black" : "text-white/50 hover:text-white/60"
             }`}
           >
             Annual
@@ -61,7 +61,7 @@ export default function ProPlans() {
             </span>
           </button>
         </div>
-        <p className="text-xs text-white/25">
+        <p className="text-xs text-white/45">
           {annual ? "Billed once per year · Cancel any time" : "Billed monthly · Cancel any time"}
         </p>
       </div>
@@ -77,15 +77,15 @@ export default function ProPlans() {
               : "border-white/6 bg-white/[0.02] opacity-60"
           }`}
         >
-          <div className="mb-1 text-xs font-black uppercase tracking-widest text-white/35">Monthly</div>
+          <div className="mb-1 text-xs font-black uppercase tracking-widest text-white/50">Monthly</div>
 
           <div className="mt-3 flex items-end gap-1.5">
             <span className="text-5xl font-black text-white">$4.99</span>
-            <span className="mb-2 text-sm text-white/35">/ month</span>
+            <span className="mb-2 text-sm text-white/50">/ month</span>
           </div>
-          <p className="mt-1 text-xs text-white/25">Billed monthly</p>
+          <p className="mt-1 text-xs text-white/45">Billed monthly</p>
 
-          <p className="mt-3 text-xs text-white/40">
+          <p className="mt-3 text-xs text-white/55">
             Or{" "}
             <button
               onClick={() => setAnnual(true)}
@@ -105,7 +105,7 @@ export default function ProPlans() {
           </ul>
 
           <a
-            href="/account"
+            href="https://englishnerd.lemonsqueezy.com/checkout/buy/d99ea748-d180-4c9d-ba5b-aa420e67a040"
             className="block w-full rounded-xl border border-white/12 bg-white/6 py-3.5 text-center text-sm font-black text-white transition hover:bg-white/10"
           >
             Get Monthly PRO
@@ -128,16 +128,16 @@ export default function ProPlans() {
           <div className="mb-1 text-xs font-black uppercase tracking-widest text-[#F5DA20]/70">Annual</div>
 
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-sm font-semibold text-white/30 line-through">$4.99/mo</span>
+            <span className="text-sm font-semibold text-white/50 line-through">$4.99/mo</span>
             <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-black text-emerald-400">
               Save 50%
             </span>
           </div>
           <div className="mt-1 flex items-end gap-1.5">
             <span className="text-5xl font-black text-white">$2.50</span>
-            <span className="mb-2 text-sm text-white/40">/ month</span>
+            <span className="mb-2 text-sm text-white/55">/ month</span>
           </div>
-          <p className="mt-1 text-xs text-white/40">
+          <p className="mt-1 text-xs text-white/55">
             Billed as <span className="font-black text-white/70">$29.99 / year</span>
           </p>
 
@@ -150,12 +150,12 @@ export default function ProPlans() {
           </ul>
 
           <a
-            href="/account"
+            href="https://englishnerd.lemonsqueezy.com/checkout/buy/cdf8978d-3113-4911-ac9f-ec0f336ef92f"
             className="block w-full rounded-xl bg-[#F5DA20] py-3.5 text-center text-sm font-black text-black shadow-[0_4px_28px_rgba(245,218,32,0.32)] transition hover:bg-[#ffe033]"
           >
             Get Annual PRO — $29.99/year
           </a>
-          <p className="mt-3 text-center text-xs text-white/30">🛡 7-day money-back guarantee</p>
+          <p className="mt-3 text-center text-xs text-white/50">🛡 7-day money-back guarantee</p>
         </div>
       </div>
     </div>

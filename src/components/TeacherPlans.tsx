@@ -86,6 +86,8 @@ type Plan = {
   annualMonthly: string;
   savePercent: string;
   savePerYear: string;
+  monthlyUrl: string;
+  annualUrl: string;
   popular?: boolean;
 };
 
@@ -99,6 +101,8 @@ const PLANS: Plan[] = [
     annualMonthly: "$4.92",
     savePercent: "30%",
     savePerYear: "$25",
+    monthlyUrl: "https://englishnerd.lemonsqueezy.com/checkout/buy/aab3e786-3790-4ed2-9566-c8d6904c9ada",
+    annualUrl:  "https://englishnerd.lemonsqueezy.com/checkout/buy/61a8a58a-6534-435f-84fd-4797af21667a",
   },
   {
     id: "solo",
@@ -109,6 +113,8 @@ const PLANS: Plan[] = [
     annualMonthly: "$6.58",
     savePercent: "34%",
     savePerYear: "$41",
+    monthlyUrl: "https://englishnerd.lemonsqueezy.com/checkout/buy/411d45c6-82fd-4cc3-84ca-f471d62bbff7",
+    annualUrl:  "https://englishnerd.lemonsqueezy.com/checkout/buy/3bc3a86e-9681-4fa8-95f3-8011d154c670",
     popular: true,
   },
   {
@@ -120,6 +126,8 @@ const PLANS: Plan[] = [
     annualMonthly: "$10.75",
     savePercent: "33%",
     savePerYear: "$63",
+    monthlyUrl: "https://englishnerd.lemonsqueezy.com/checkout/buy/f17e903f-9713-40fe-bbc5-78039f53a989",
+    annualUrl:  "https://englishnerd.lemonsqueezy.com/checkout/buy/6f916e3c-88d8-4f7e-978a-e285e9d1861d",
   },
 ];
 
@@ -136,7 +144,7 @@ export default function TeacherPlans() {
           <button
             onClick={() => setAnnual(false)}
             className={`rounded-xl px-6 py-2.5 text-sm font-black transition ${
-              !annual ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"
+              !annual ? "bg-white/10 text-white" : "text-white/50 hover:text-white/60"
             }`}
           >
             Monthly
@@ -144,7 +152,7 @@ export default function TeacherPlans() {
           <button
             onClick={() => setAnnual(true)}
             className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-black transition ${
-              annual ? "bg-[#F5DA20] text-black" : "text-white/35 hover:text-white/60"
+              annual ? "bg-[#F5DA20] text-black" : "text-white/50 hover:text-white/60"
             }`}
           >
             Annual
@@ -157,7 +165,7 @@ export default function TeacherPlans() {
             </span>
           </button>
         </div>
-        <p className="text-xs text-white/25">
+        <p className="text-xs text-white/45">
           {annual ? "Billed once per year · Cancel any time" : "Billed monthly · Cancel any time"}
         </p>
       </div>
@@ -195,7 +203,7 @@ export default function TeacherPlans() {
                       <div className={`text-2xl font-black leading-none ${t.numText}`}>
                         {plan.studentNum}
                       </div>
-                      <div className="mt-0.5 text-[10px] font-black uppercase tracking-wider text-white/35">
+                      <div className="mt-0.5 text-[10px] font-black uppercase tracking-wider text-white/50">
                         students max
                       </div>
                     </div>
@@ -207,7 +215,7 @@ export default function TeacherPlans() {
                   {annual ? (
                     <>
                       <div className="mb-1 flex items-center gap-2">
-                        <span className="text-xs font-semibold text-white/30 line-through">
+                        <span className="text-xs font-semibold text-white/50 line-through">
                           {plan.monthlyPrice}/mo
                         </span>
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${t.saveChip}`}>
@@ -216,9 +224,9 @@ export default function TeacherPlans() {
                       </div>
                       <div className="flex items-end gap-1">
                         <span className="text-4xl font-black text-white">{plan.annualMonthly}</span>
-                        <span className="mb-1 text-sm text-white/40">/ mo</span>
+                        <span className="mb-1 text-sm text-white/55">/ mo</span>
                       </div>
-                      <p className="mt-1.5 text-xs text-white/35">
+                      <p className="mt-1.5 text-xs text-white/50">
                         Billed as{" "}
                         <span className="font-black text-white/60">
                           {plan.annualTotal} / year
@@ -229,9 +237,9 @@ export default function TeacherPlans() {
                     <>
                       <div className="flex items-end gap-1">
                         <span className="text-4xl font-black text-white">{plan.monthlyPrice}</span>
-                        <span className="mb-1 text-sm text-white/35">/ mo</span>
+                        <span className="mb-1 text-sm text-white/50">/ mo</span>
                       </div>
-                      <p className="mt-1.5 text-xs text-white/30">
+                      <p className="mt-1.5 text-xs text-white/50">
                         Or{" "}
                         <button
                           onClick={() => setAnnual(true)}
@@ -257,10 +265,10 @@ export default function TeacherPlans() {
 
                 {/* CTA */}
                 <a
-                  href="/contact"
+                  href={annual ? plan.annualUrl : plan.monthlyUrl}
                   className={`block w-full rounded-xl py-3.5 text-center text-sm font-black transition ${t.cta}`}
                 >
-                  Get in touch →
+                  Get {plan.name} →
                 </a>
               </div>
             </div>
@@ -277,7 +285,7 @@ export default function TeacherPlans() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-white">Have a teacher voucher?</p>
-          <p className="text-xs text-white/40">Got a code from us? Redeem it to activate your Teacher account instantly.</p>
+          <p className="text-xs text-white/55">Got a code from us? Redeem it to activate your Teacher account instantly.</p>
         </div>
         <PromoCodeModal />
       </div>

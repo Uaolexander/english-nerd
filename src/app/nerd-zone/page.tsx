@@ -211,8 +211,8 @@ function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
 
         {/* Footer */}
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-[11px] font-medium text-white/35">{s.count}</span>
-          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition group-hover:border-[#F5DA20]/40 group-hover:bg-[#F5DA20]/10 group-hover:text-[#F5DA20]">
+          <span className="text-[11px] font-medium text-white/50">{s.count}</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/55 transition group-hover:border-[#F5DA20]/40 group-hover:bg-[#F5DA20]/10 group-hover:text-[#F5DA20]">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </span>
         </div>
@@ -249,7 +249,7 @@ export default async function NerdZonePage() {
         {/* Breadcrumb */}
         <div className="text-sm text-white/50">
           <a href="/" className="hover:text-white/80 transition">Home</a>
-          <span className="mx-2 text-white/25">/</span>
+          <span className="mx-2 text-white/45">/</span>
           <span className="text-white/75">Nerd Zone</span>
         </div>
 
@@ -291,7 +291,7 @@ export default async function NerdZonePage() {
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${badge}`}>{word.level}</span>
-                <span className="text-[11px] italic text-white/40">{word.partOfSpeech}</span>
+                <span className="text-[11px] italic text-white/55">{word.partOfSpeech}</span>
               </div>
             </div>
 
@@ -301,7 +301,7 @@ export default async function NerdZonePage() {
             {/* Meaning + example */}
             <div className="relative space-y-1.5">
               <p className="text-sm font-semibold leading-snug text-white/90">{word.meaning}</p>
-              <p className="text-xs italic leading-relaxed text-white/40">&ldquo;{word.example}&rdquo;</p>
+              <p className="text-xs italic leading-relaxed text-white/55">&ldquo;{word.example}&rdquo;</p>
             </div>
           </div>
 
@@ -313,7 +313,7 @@ export default async function NerdZonePage() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-lg" />
             <div>
               <h2 className="text-xl font-black text-white">Explore sections</h2>
-              <p className="text-xs text-white/40">Pick a topic and dive in</p>
+              <p className="text-xs text-white/55">Pick a topic and dive in</p>
             </div>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-[11px] font-semibold text-black/40">
@@ -337,7 +337,7 @@ export default async function NerdZonePage() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#F5DA20] shadow-lg" />
             <div>
               <h2 className="text-xl font-black text-white">Certificate of Achievement</h2>
-              <p className="text-xs text-white/40">Prove your English level with a shareable certificate</p>
+              <p className="text-xs text-white/55">Prove your English level with a shareable certificate</p>
             </div>
           </div>
 
@@ -414,7 +414,7 @@ export default async function NerdZonePage() {
                   >
                     Get Pro — Unlock certificate
                   </a>
-                  <a href="/tests" className="text-sm font-semibold text-white/40 hover:text-white/70 transition">
+                  <a href="/tests" className="text-sm font-semibold text-white/55 hover:text-white/70 transition">
                     Take the test first →
                   </a>
                 </div>
