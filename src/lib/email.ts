@@ -126,7 +126,7 @@ export async function sendWelcomeEmail(to: string, name: string | null) {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       ${featureRow("📖", "Grammar lessons A1 → C1", "Clear explanations, exercises and instant feedback across all levels.")}
       ${divider()}
-      ${featureRow("⏱️", "13 tense topics", "Master every English tense with drills, quizzes and real examples.")}
+      ${featureRow("⏱️", "12 tense topics", "Master every English tense with drills, quizzes and real examples.")}
       ${divider()}
       ${featureRow("📝", "Full vocabulary & tests", "Check your level and discover your vocabulary size.")}
       ${divider()}
@@ -255,7 +255,45 @@ export async function sendTeacherWelcomeEmail(to: string, name: string | null, s
   await send(to, "Your Teacher account is ready 🏫", html);
 }
 
-// ─── 5. Student linked to teacher ────────────────────────────────────────────
+// ─── 5. Teacher subscription expired ─────────────────────────────────────────
+
+export async function sendTeacherExpiredEmail(to: string, name: string | null) {
+  const firstName = name?.split(" ")[0] ?? "there";
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#F59E0B,#FBBF24,#FDE68A)",
+    `
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;color:#B45309;letter-spacing:0.06em;text-transform:uppercase;">Teacher Account</span>
+    </div>
+
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">Your Teacher subscription has ended, ${firstName}</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+      Your Teacher account on English Nerd is no longer active. Your students, assignments and progress data are safely stored — you just won't be able to invite new students or assign new work until you renew.
+    </p>
+
+    <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:0.05em;">What's paused</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("🚫", "New student invites", "You can't invite new students until you renew.")}
+        ${divider()}
+        ${featureRow("📋", "New assignments", "Creating and assigning work is on hold.")}
+        ${divider()}
+        ${featureRow("📊", "Progress tracking", "Student dashboards are paused.")}
+      </table>
+    </div>
+
+    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#111827;text-align:center;">Ready to get back in the classroom?</p>
+    <p style="margin:0 0 4px;font-size:13px;color:#6B7280;text-align:center;">Renew your Teacher plan and pick up right where you left off.</p>
+
+    ${btn(`${SITE}/teacher`, "Renew Teacher plan →", "#D97706", "#ffffff")}
+    `
+  ) + FOOTER("You received this because your Teacher subscription on English Nerd has ended.") + CLOSE;
+
+  await send(to, "Your Teacher subscription has ended", html);
+}
+
+// ─── 6. Student linked to teacher ────────────────────────────────────────────
 
 export async function sendStudentLinkedEmail(to: string, studentName: string | null, teacherName: string | null) {
   const firstName = studentName?.split(" ")[0] ?? "there";

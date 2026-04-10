@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createServiceClient } from "@/lib/supabase/service";
-import { sendProGainedEmail, sendProExpiredEmail } from "@/lib/email";
+import { sendProGainedEmail, sendProExpiredEmail, sendTeacherWelcomeEmail, sendTeacherExpiredEmail } from "@/lib/email";
 
 // Required: Node.js runtime for crypto and Supabase admin API
 export const runtime = "nodejs";
@@ -80,6 +80,17 @@ const HANDLED_EVENTS = new Set([
   "subscription_payment_refunded",
   "subscription_plan_changed",
 ]);
+
+// ─── Teacher plan variant IDs ─────────────────────────────────────────────────
+
+const TEACHER_VARIANTS: Record<string, { plan: "starter" | "solo" | "plus"; studentLimit: number }> = {
+  "1513005": { plan: "starter", studentLimit: 5  },  // Starter Monthly
+  "1513010": { plan: "starter", studentLimit: 5  },  // Starter Annual
+  "1513014": { plan: "solo",    studentLimit: 15 },  // Solo Monthly
+  "1513016": { plan: "solo",    studentLimit: 15 },  // Solo Annual
+  "1513027": { plan: "plus",    studentLimit: 40 },  // Plus Monthly
+  "1513028": { plan: "plus",    studentLimit: 40 },  // Plus Annual
+};
 
 // ─── Pro logic ────────────────────────────────────────────────────────────────
 
@@ -324,6 +335,31 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── Update teacher_profiles if this is a Teacher plan ───────────────────
+  if (userId && variantId && TEACHER_VARIANTS[variantId]) {
+    const teacherPlan = TEACHER_VARIANTS[variantId];
+    const isActive = deriveIsPro(eventName, status, endsAt);
+    // Use renews_at for active subs, ends_at for cancelled, null for expired
+    const expiresAt = renewsAt ?? endsAt ?? null;
+
+    const { error: teacherErr } = await supabase.from("teacher_profiles").upsert(
+      {
+        user_id:                  userId,
+        plan:                     teacherPlan.plan,
+        student_limit:            teacherPlan.studentLimit,
+        is_active:                isActive,
+        subscription_expires_at:  expiresAt,
+        updated_at:               new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+    if (teacherErr) {
+      console.error("[webhook] teacher_profiles upsert error:", teacherErr);
+    } else {
+      console.log(`[webhook] teacher_profiles updated plan=${teacherPlan.plan} isActive=${isActive}`);
+    }
+  }
+
   // ── Send PRO status emails (fire-and-forget) ─────────────────────────────
   if (userId && customerEmail) {
     void (async () => {
@@ -338,10 +374,22 @@ export async function POST(req: Request) {
         const gainEvents = new Set(["subscription_created", "subscription_resumed", "subscription_payment_recovered"]);
         const loseEvents = new Set(["subscription_expired", "subscription_payment_refunded"]);
 
-        if (isPro && gainEvents.has(eventName)) {
-          await sendProGainedEmail(customerEmail, name, endsAt ?? renewsAt);
-        } else if (!isPro && loseEvents.has(eventName)) {
-          await sendProExpiredEmail(customerEmail, name);
+        const isTeacherVariant = variantId ? Boolean(TEACHER_VARIANTS[variantId]) : false;
+
+        if (isTeacherVariant) {
+          // Teacher plan emails
+          if (gainEvents.has(eventName) && variantId && TEACHER_VARIANTS[variantId]) {
+            await sendTeacherWelcomeEmail(customerEmail, name, TEACHER_VARIANTS[variantId].studentLimit);
+          } else if (loseEvents.has(eventName)) {
+            await sendTeacherExpiredEmail(customerEmail, name);
+          }
+        } else {
+          // PRO plan emails
+          if (isPro && gainEvents.has(eventName)) {
+            await sendProGainedEmail(customerEmail, name, endsAt ?? renewsAt);
+          } else if (!isPro && loseEvents.has(eventName)) {
+            await sendProExpiredEmail(customerEmail, name);
+          }
         }
       } catch (e) {
         console.error("[webhook] email error:", e);
