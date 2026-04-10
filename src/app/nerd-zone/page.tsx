@@ -1,6 +1,7 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata = {
   title: "Nerd Zone — English Nerd",
@@ -330,6 +331,9 @@ export default async function NerdZonePage() {
             </div>
           ))}
         </div>
+
+        {/* Ad (mobile only — dark theme) */}
+        <AdUnit variant="mobile-dark" />
 
         {/* ── Certificate teaser ─────────────────────────────────────── */}
         <div className="mt-14">

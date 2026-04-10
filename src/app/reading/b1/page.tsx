@@ -168,7 +168,7 @@ export default function ReadingB1Page() {
                         {ex.description}
                       </p>
 
-                      <div className="mt-4 flex items-center justify-between">
+                      <div className="mt-4 flex items-center gap-4">
                         {/* Full-card overlay link */}
                         <a
                           href={`/reading/b1/${ex.slug}`}
@@ -178,7 +178,7 @@ export default function ReadingB1Page() {
 
                         <a
                           href={`/reading/b1/${ex.slug}`}
-                          className="relative z-20 inline-flex items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90 transition"
+                          className="relative z-20 inline-flex shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-bold text-black hover:opacity-90 transition"
                         >
                           Start Exercise
                         </a>

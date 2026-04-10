@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata: Metadata = {
   title: "Useful Websites — Best Tools for Learning English | English Nerd",
@@ -130,8 +131,13 @@ export default async function UsefulSitesPage() {
           </p>
         </div>
 
+        {/* Ad */}
+        <div className="mt-8">
+          <AdUnit variant="inline-light" />
+        </div>
+
         {/* Cards grid */}
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SITES.map((site, idx) => {
             const locked = idx > 0 && !isPro;
             return (

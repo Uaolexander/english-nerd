@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdUnit from "@/components/AdUnit";
 
 const courseSchema = {
   "@context": "https://schema.org",
@@ -373,6 +374,11 @@ export default function RecommendationsPage() {
           <a href="#b1" className="rounded-xl bg-violet-500 px-5 py-2 text-sm font-black text-white shadow-sm transition hover:opacity-85">B1</a>
           <a href="#b2" className="rounded-xl bg-orange-500 px-5 py-2 text-sm font-black text-white shadow-sm transition hover:opacity-85">B2</a>
           <a href="#c1" className="rounded-xl bg-sky-500 px-5 py-2 text-sm font-black text-white shadow-sm transition hover:opacity-85">C1</a>
+        </div>
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdUnit variant="inline-light" />
         </div>
 
         {/* Level sections */}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import MaterialsClient from "./MaterialsClient";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata: Metadata = {
   title: "My Materials — Nerd Zone — English Nerd",
@@ -62,6 +63,11 @@ export default async function MyMaterialsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Ad */}
+      <div className="mt-6">
+        <AdUnit variant="inline-light" />
       </div>
 
       {/* Cards */}
