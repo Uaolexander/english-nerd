@@ -61,7 +61,7 @@ const SPEED_QUESTIONS: SRQuestion[] = [
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Present Simple Questions", href: "/grammar/a1/present-simple-questions", img: "/topics/a1/present-simple-questions.jpg", level: "A1", badge: "bg-emerald-500", reason: "Yes/no questions come first" },
   { title: "Present Simple (I/you/we/they)", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
-  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-of-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 
 export default function WhQuestionsLessonClient() {

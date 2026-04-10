@@ -59,7 +59,7 @@ const SPEED_QUESTIONS: SRQuestion[] = [
 
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Countable & Uncountable", href: "/grammar/a1/countable-uncountable", img: "/topics/a1/countable-uncountable.jpg", level: "A1", badge: "bg-emerald-500", reason: "Essential for some/any" },
-  { title: "Much / Many", href: "/grammar/a1/much-many-basic", img: "/topics/a1/much-many-basic.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Much / Many", href: "/grammar/a1/much-many-basic", img: "/topics/a1/much-many.jpg", level: "A1", badge: "bg-emerald-500" },
   { title: "There is / There are", href: "/grammar/a1/there-is-there-are", img: "/topics/a1/there-is-there-are.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 

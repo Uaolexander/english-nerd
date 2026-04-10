@@ -60,7 +60,7 @@ const SPEED_QUESTIONS: SRQuestion[] = [
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Present Simple (he/she/it)", href: "/grammar/a1/present-simple-he-she-it", img: "/topics/a1/present-simple-he-she-it.jpg", level: "A1", badge: "bg-emerald-500", reason: "The other half of Present Simple" },
   { title: "Present Simple Negative", href: "/grammar/a1/present-simple-negative", img: "/topics/a1/present-simple-negative.jpg", level: "A1", badge: "bg-emerald-500" },
-  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-of-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 
 export default function PresentSimpleIYouWeTheyLessonClient() {

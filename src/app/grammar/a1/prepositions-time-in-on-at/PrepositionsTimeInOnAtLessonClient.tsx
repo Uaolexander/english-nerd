@@ -58,8 +58,8 @@ const SPEED_QUESTIONS: SRQuestion[] = [
 ];
 
 const RECOMMENDATIONS: GrammarRec[] = [
-  { title: "Prepositions of Place", href: "/grammar/a1/prepositions-place", img: "/topics/a1/prepositions-place.jpg", level: "A1", badge: "bg-emerald-500", reason: "Same prepositions, different use" },
-  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Prepositions of Place", href: "/grammar/a1/prepositions-place", img: "/topics/a1/prepositions-of-place.jpg", level: "A1", badge: "bg-emerald-500", reason: "Same prepositions, different use" },
+  { title: "Adverbs of Frequency", href: "/grammar/a1/adverbs-frequency", img: "/topics/a1/adverbs-of-frequency.jpg", level: "A1", badge: "bg-emerald-500" },
   { title: "Present Simple (I/you/we/they)", href: "/grammar/a1/present-simple-i-you-we-they", img: "/topics/a1/present-simple-i-you-we-they.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 

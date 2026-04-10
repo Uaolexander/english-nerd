@@ -59,7 +59,7 @@ const SPEED_QUESTIONS: SRQuestion[] = [
 
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Some / Any", href: "/grammar/a1/some-any", img: "/topics/a1/some-any.jpg", level: "A1", badge: "bg-emerald-500", reason: "Used with countable & uncountable" },
-  { title: "Much / Many", href: "/grammar/a1/much-many-basic", img: "/topics/a1/much-many-basic.jpg", level: "A1", badge: "bg-emerald-500" },
+  { title: "Much / Many", href: "/grammar/a1/much-many-basic", img: "/topics/a1/much-many.jpg", level: "A1", badge: "bg-emerald-500" },
   { title: "Plural Nouns", href: "/grammar/a1/plural-nouns", img: "/topics/a1/plural-nouns.jpg", level: "A1", badge: "bg-emerald-500" },
 ];
 

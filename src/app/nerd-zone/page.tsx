@@ -197,9 +197,6 @@ function SectionCard({ s }: { s: typeof SECTIONS[number] }) {
           alt={s.title}
           className="h-full w-full object-cover"
         />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-4xl opacity-20 select-none transition group-hover:opacity-30">
-          {s.icon}
-        </div>
         <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black shadow-lg ${s.badgeColor}`}>
           {s.label}
         </div>
