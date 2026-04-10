@@ -127,7 +127,7 @@ export default function GrammarPage() {
         <div className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-emerald-500/4 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-12">
 
         {/* Breadcrumb */}
         <div className="text-sm text-white/40">

@@ -222,7 +222,7 @@ function MobileAccordion({
 
 function DropdownShell({ width, children }: { width: string; children: React.ReactNode }) {
   return (
-    <div className={`pointer-events-none invisible absolute left-0 top-full ${width} translate-y-1 scale-[0.98] opacity-0 transition duration-200 ease-out group-hover:pointer-events-auto group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100`}>
+    <div className={`pointer-events-none invisible absolute left-0 top-full ${width} translate-y-1 scale-[0.98] opacity-0 transition duration-200 ease-out group-hover:pointer-events-auto group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100`}>
       <div className="relative pt-2 before:absolute before:left-0 before:top-0 before:h-2 before:w-full before:content-['']">
         <div className="rounded-2xl border border-white/10 bg-black/95 p-3 shadow-2xl backdrop-blur-xl">
           {children}
@@ -302,7 +302,7 @@ export default function Header() {
                   loop
                   muted
                   playsInline
-                  preload="auto"
+                  preload="none"
                   onError={() => setVideoFailed(true)}
                   className="h-full w-full object-cover rounded-xl"
                 />
@@ -609,13 +609,17 @@ export default function Header() {
           </MobileAccordion>
 
           <MobileAccordion label="Tenses" isOpen={expandedSection === "Tenses"} onToggle={() => toggleSection("Tenses")}>
-            {tensesList.map(({ slug, title, level, color, textColor }) => (
+            {tensesList.slice(0, 6).map(({ slug, title, level, color, textColor }) => (
               <Link key={slug} href={`/tenses/${slug}`} onClick={closeAll}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-white/80 hover:bg-white/10 hover:text-white">
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${color} ${textColor} text-[10px] font-black shadow-sm`}>{level}</span>
                 <span className="text-sm font-semibold text-white">{title}</span>
               </Link>
             ))}
+            <Link href="/tenses" onClick={closeAll}
+              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black text-[#F5DA20] hover:bg-white/10">
+              See all 13 tenses →
+            </Link>
           </MobileAccordion>
 
           {(["Vocabulary", "Listening", "Reading"] as const).map((section) => (

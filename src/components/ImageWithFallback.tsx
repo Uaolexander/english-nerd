@@ -30,6 +30,8 @@ export default function ImageWithFallback({ src, alt, className }: Props) {
         ref={imgRef}
         src={src}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         className={`${className} transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
         onLoad={() => setLoaded(true)}
         onError={() => setFailed(true)}

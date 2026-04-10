@@ -1,3 +1,7 @@
+import AdUnit from "@/components/AdUnit";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
+
 export const metadata = {
   title: "Tests — English Nerd",
   description:
@@ -36,7 +40,11 @@ function TensesIcon() {
   );
 }
 
-export default function TestsPage() {
+export default async function TestsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glow */}
@@ -45,7 +53,7 @@ export default function TestsPage() {
         <div className="absolute inset-x-0 bottom-0 h-[300px] bg-gradient-to-t from-[#0B0B0D] to-transparent" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-6 py-14">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-14">
         {/* Breadcrumb */}
         <div className="text-sm text-white/50">
           <a href="/" className="hover:text-white transition">Home</a>
@@ -61,7 +69,13 @@ export default function TestsPage() {
           Find your level in minutes. Free, no sign-up, no tracking — just honest results.
         </p>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {!isPro && (
+          <div className="mt-10">
+            <AdUnit variant="inline-light" />
+          </div>
+        )}
+
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
           {/* ── Vocabulary ── */}
           <a href="/tests/vocabulary" className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#121216] transition duration-300 hover:-translate-y-1.5 hover:border-[#F5DA20]/30 hover:shadow-2xl hover:shadow-[#F5DA20]/10">
@@ -161,6 +175,8 @@ export default function TestsPage() {
           </a>
 
         </div>
+
+        {!isPro && <AdUnit variant="mobile-dark" />}
       </div>
     </main>
   );

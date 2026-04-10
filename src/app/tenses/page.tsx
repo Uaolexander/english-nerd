@@ -1,5 +1,7 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
 import AdUnit from "@/components/AdUnit";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata = {
   title: "English Tenses — English Nerd",
@@ -171,9 +173,10 @@ type GroupProps = {
   sublabel: string;
   tenses: Tense[];
   dotColor: string;
+  compact?: boolean;
 };
 
-function TenseGroup({ label, sublabel, tenses, dotColor }: GroupProps) {
+function TenseGroup({ label, sublabel, tenses, dotColor, compact }: GroupProps) {
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
@@ -185,7 +188,7 @@ function TenseGroup({ label, sublabel, tenses, dotColor }: GroupProps) {
       </div>
 
       {/* Mobile: horizontal carousel | Desktop: grid */}
-      <div className="flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 lg:grid-cols-4">
+      <div className={`flex gap-4 overflow-x-auto pb-3 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 sm:-mx-0 sm:px-0 ${compact ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
         {tenses.map((t) => (
           <div key={t.slug} className="snap-start">
             <TenseCard tense={t} />
@@ -196,7 +199,11 @@ function TenseGroup({ label, sublabel, tenses, dotColor }: GroupProps) {
   );
 }
 
-export default function TensesPage() {
+export default async function TensesPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glows */}
@@ -206,7 +213,7 @@ export default function TensesPage() {
         <div className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-sky-500/5 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-12">
 
         {/* Breadcrumb */}
         <div className="text-sm text-white/40">
@@ -232,103 +239,111 @@ export default function TensesPage() {
           </p>
         </div>
 
-        {/* Timeline bar */}
-        <div className="mt-10 flex items-center gap-0 overflow-hidden rounded-2xl border border-white/8">
-          {[
-            { label: "Past", sub: "4 tenses", color: "bg-amber-400/15", dot: "bg-amber-400" },
-            { label: "Present", sub: "4 tenses", color: "bg-[#F5DA20]/15", dot: "bg-[#F5DA20]" },
-            { label: "Future", sub: "4 tenses", color: "bg-sky-400/15", dot: "bg-sky-400" },
-          ].map(({ label, sub, color, dot }, i) => (
-            <div key={label} className={`flex flex-1 flex-col items-center gap-1 py-4 ${color} ${i === 1 ? "border-x border-white/8" : ""}`}>
-              <div className="flex items-center gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${dot}`} />
-                <span className="text-sm font-black text-white">{label}</span>
+        {/* Sidebar layout */}
+        <div className={`mt-10 ${!isPro ? "grid gap-8 lg:grid-cols-[320px_1fr]" : ""}`}>
+          {!isPro && <AdUnit variant="sidebar-dark" />}
+
+          <section>
+            {/* Timeline bar */}
+            <div className="flex items-center gap-0 overflow-hidden rounded-2xl border border-white/8">
+              {[
+                { label: "Past", sub: "4 tenses", color: "bg-amber-400/15", dot: "bg-amber-400" },
+                { label: "Present", sub: "4 tenses", color: "bg-[#F5DA20]/15", dot: "bg-[#F5DA20]" },
+                { label: "Future", sub: "4 tenses", color: "bg-sky-400/15", dot: "bg-sky-400" },
+              ].map(({ label, sub, color, dot }, i) => (
+                <div key={label} className={`flex flex-1 flex-col items-center gap-1 py-4 ${color} ${i === 1 ? "border-x border-white/8" : ""}`}>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`h-2 w-2 rounded-full ${dot}`} />
+                    <span className="text-sm font-black text-white">{label}</span>
+                  </div>
+                  <span className="text-[10px] text-white/35">{sub}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Tenses test CTA */}
+            <a
+              href="/tests/tenses"
+              className="group mt-8 flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-violet-400/25 bg-violet-500/8 px-6 py-5 transition hover:border-violet-400/40 hover:bg-violet-500/12"
+            >
+              <div className="flex items-center gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400 text-xl shadow-md">⏱</span>
+                <div>
+                  <p className="font-black text-white">Not sure which tenses you know?</p>
+                  <p className="mt-0.5 text-sm text-white/50">Take the Tenses Test — get a full breakdown in 10 minutes.</p>
+                </div>
               </div>
-              <span className="text-[10px] text-white/35">{sub}</span>
+              <span className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-violet-400 px-4 py-2 text-sm font-black text-black transition group-hover:opacity-90">
+                Take test
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </span>
+            </a>
+
+            {!isPro && <AdUnit variant="mobile-dark" />}
+
+            {/* Tense groups */}
+            <div className="mt-14 flex flex-col gap-14">
+              <TenseGroup
+                label="Present"
+                sublabel="What is happening now, what is always true"
+                tenses={PRESENT}
+                dotColor="bg-[#F5DA20]"
+                compact={!isPro}
+              />
+              <TenseGroup
+                label="Past"
+                sublabel="What happened, was happening, or had happened"
+                tenses={PAST}
+                dotColor="bg-emerald-400"
+                compact={!isPro}
+              />
+              <TenseGroup
+                label="Future"
+                sublabel="What will happen, will be happening, or will have happened"
+                tenses={FUTURE}
+                dotColor="bg-sky-400"
+                compact={!isPro}
+              />
             </div>
-          ))}
-        </div>
 
-        {/* Tenses test CTA */}
-        <a
-          href="/tests/tenses"
-          className="group mt-10 flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-violet-400/25 bg-violet-500/8 px-6 py-5 transition hover:border-violet-400/40 hover:bg-violet-500/12"
-        >
-          <div className="flex items-center gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400 text-xl shadow-md">⏱</span>
-            <div>
-              <p className="font-black text-white">Not sure which tenses you know?</p>
-              <p className="mt-0.5 text-sm text-white/50">Take the Tenses Test — get a full breakdown in 10 minutes.</p>
+            {/* Quick-reference card */}
+            <div className="mt-14 rounded-3xl border border-white/8 bg-white/[0.02] p-8">
+              <h2 className="text-lg font-black text-white">Quick reference</h2>
+              <p className="mt-1 text-sm text-white/35">All 12 tenses at a glance — structure only.</p>
+
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/8 text-left">
+                      <th className="pb-3 pr-6 text-xs font-bold uppercase tracking-widest text-white/25">Tense</th>
+                      <th className="pb-3 pr-6 text-xs font-bold uppercase tracking-widest text-white/25">Positive</th>
+                      <th className="pb-3 text-xs font-bold uppercase tracking-widest text-white/25">Level</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {[...PRESENT, ...PAST, ...FUTURE].map((t) => (
+                      <tr key={t.slug} className="group">
+                        <td className="py-3 pr-6">
+                          <a href={`/tenses/${t.slug}`} className="font-semibold text-white/70 transition group-hover:text-white">
+                            {t.title}
+                          </a>
+                        </td>
+                        <td className="py-3 pr-6">
+                          <code className="text-[12px] text-white/40 font-mono">{t.structure}</code>
+                        </td>
+                        <td className="py-3">
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/35">
+                            {t.level}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <span className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-violet-400 px-4 py-2 text-sm font-black text-black transition group-hover:opacity-90">
-            Take test
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </span>
-        </a>
 
-        {/* Tense groups */}
-        <div className="mt-14 flex flex-col gap-14">
-          <TenseGroup
-            label="Present"
-            sublabel="What is happening now, what is always true"
-            tenses={PRESENT}
-            dotColor="bg-[#F5DA20]"
-          />
-          <TenseGroup
-            label="Past"
-            sublabel="What happened, was happening, or had happened"
-            tenses={PAST}
-            dotColor="bg-emerald-400"
-          />
-          <TenseGroup
-            label="Future"
-            sublabel="What will happen, will be happening, or will have happened"
-            tenses={FUTURE}
-            dotColor="bg-sky-400"
-          />
-        </div>
-
-        {/* Ad */}
-        <div className="mt-14">
-          <AdUnit variant="inline-light" />
-        </div>
-
-        {/* Quick-reference card */}
-        <div className="mt-10 rounded-3xl border border-white/8 bg-white/[0.02] p-8">
-          <h2 className="text-lg font-black text-white">Quick reference</h2>
-          <p className="mt-1 text-sm text-white/35">All 12 tenses at a glance — structure only.</p>
-
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/8 text-left">
-                  <th className="pb-3 pr-6 text-xs font-bold uppercase tracking-widest text-white/25">Tense</th>
-                  <th className="pb-3 pr-6 text-xs font-bold uppercase tracking-widest text-white/25">Positive</th>
-                  <th className="pb-3 text-xs font-bold uppercase tracking-widest text-white/25">Level</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {[...PRESENT, ...PAST, ...FUTURE].map((t) => (
-                  <tr key={t.slug} className="group">
-                    <td className="py-3 pr-6">
-                      <a href={`/tenses/${t.slug}`} className="font-semibold text-white/70 transition group-hover:text-white">
-                        {t.title}
-                      </a>
-                    </td>
-                    <td className="py-3 pr-6">
-                      <code className="text-[12px] text-white/40 font-mono">{t.structure}</code>
-                    </td>
-                    <td className="py-3">
-                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/35">
-                        {t.level}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          </section>
         </div>
 
       </div>

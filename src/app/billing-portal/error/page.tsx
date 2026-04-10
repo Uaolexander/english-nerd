@@ -48,11 +48,23 @@ export default async function BillingPortalError({
             Contact support and we&apos;ll sort it out for you manually.
           </div>
 
+          {/* Upgrade to paid plan */}
+          <div className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left">
+            <p className="text-sm font-semibold text-white/80 mb-1">Want a self-service subscription?</p>
+            <p className="text-xs text-white/45 mb-3">Switch to a regular PRO plan and manage billing yourself — cancel, upgrade, or download invoices any time.</p>
+            <a
+              href="/pro"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#F5DA20] px-4 py-2 text-xs font-black text-black transition hover:opacity-90"
+            >
+              View PRO plans →
+            </a>
+          </div>
+
           {/* Actions */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
+          <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
             <a
               href="mailto:hello@englishnerd.cc"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-6 py-3 text-sm font-bold text-white/70 transition hover:bg-white/15 hover:text-white"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>

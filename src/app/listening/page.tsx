@@ -1,4 +1,7 @@
 import ImageWithFallback from "@/components/ImageWithFallback";
+import AdUnit from "@/components/AdUnit";
+import { createClient } from "@/lib/supabase/server";
+import { getIsPro } from "@/lib/getIsPro";
 
 export const metadata = {
   title: "English Listening Practice — English Nerd",
@@ -118,7 +121,11 @@ function LevelCard({ lvl }: { lvl: Level }) {
   );
 }
 
-export default function ListeningPage() {
+export default async function ListeningPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPro = user ? await getIsPro(supabase, user.id) : false;
+
   return (
     <main className="relative min-h-screen bg-[#0E0F13] text-white">
       {/* Background glows */}
@@ -128,7 +135,7 @@ export default function ListeningPage() {
         <div className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-amber-500/4 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-12">
 
         {/* Breadcrumb */}
         <div className="text-sm text-white/40">
@@ -154,44 +161,53 @@ export default function ListeningPage() {
           </p>
         </div>
 
-        {/* Level overview bar */}
-        <div className="mt-10 flex items-center gap-0 overflow-hidden rounded-2xl border border-white/8">
-          {[
-            { label: "A1", sub: "Beginner",     color: "bg-[#F5DA20]/15",   dot: "bg-[#F5DA20]" },
-            { label: "A2", sub: "Elementary",    color: "bg-emerald-400/10", dot: "bg-emerald-400" },
-            { label: "B1", sub: "Intermediate",  color: "bg-violet-400/10",  dot: "bg-violet-400" },
-            { label: "B2", sub: "Upper-Int",     color: "bg-orange-400/10",  dot: "bg-orange-400" },
-            { label: "C1", sub: "Advanced",      color: "bg-sky-400/10",     dot: "bg-sky-400" },
-          ].map(({ label, sub, color, dot }, i) => (
-            <div
-              key={label}
-              className={`flex flex-1 flex-col items-center gap-1 py-4 ${color} ${i > 0 ? "border-l border-white/8" : ""}`}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${dot}`} />
-                <span className="text-sm font-black text-white">{label}</span>
-              </div>
-              <span className="hidden text-[10px] text-white/35 sm:block">{sub}</span>
+        {/* Sidebar layout */}
+        <div className={`mt-10 ${!isPro ? "grid gap-8 lg:grid-cols-[320px_1fr]" : ""}`}>
+          {!isPro && <AdUnit variant="sidebar-dark" />}
+
+          <section>
+            {/* Level overview bar */}
+            <div className="flex items-center gap-0 overflow-hidden rounded-2xl border border-white/8">
+              {[
+                { label: "A1", sub: "Beginner",     color: "bg-[#F5DA20]/15",   dot: "bg-[#F5DA20]" },
+                { label: "A2", sub: "Elementary",    color: "bg-emerald-400/10", dot: "bg-emerald-400" },
+                { label: "B1", sub: "Intermediate",  color: "bg-violet-400/10",  dot: "bg-violet-400" },
+                { label: "B2", sub: "Upper-Int",     color: "bg-orange-400/10",  dot: "bg-orange-400" },
+                { label: "C1", sub: "Advanced",      color: "bg-sky-400/10",     dot: "bg-sky-400" },
+              ].map(({ label, sub, color, dot }, i) => (
+                <div
+                  key={label}
+                  className={`flex flex-1 flex-col items-center gap-1 py-4 ${color} ${i > 0 ? "border-l border-white/8" : ""}`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className={`h-2 w-2 rounded-full ${dot}`} />
+                    <span className="text-sm font-black text-white">{label}</span>
+                  </div>
+                  <span className="hidden text-[10px] text-white/35 sm:block">{sub}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Tip card */}
-        <div className="mt-10 flex items-start gap-4 overflow-hidden rounded-2xl border border-[#F5DA20]/25 bg-[#F5DA20]/8 px-6 py-5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] text-xl shadow-md">🎧</span>
-          <div>
-            <p className="font-black text-white">How to use listening exercises</p>
-            <p className="mt-0.5 text-sm text-white/50">
-              Listen once without pausing. Then answer the questions. Finally, listen again while reading the transcript to check your understanding.
-            </p>
-          </div>
-        </div>
+            {/* Tip card */}
+            <div className="mt-8 flex items-start gap-4 overflow-hidden rounded-2xl border border-[#F5DA20]/25 bg-[#F5DA20]/8 px-6 py-5">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] text-xl shadow-md">🎧</span>
+              <div>
+                <p className="font-black text-white">How to use listening exercises</p>
+                <p className="mt-0.5 text-sm text-white/50">
+                  Listen once without pausing. Then answer the questions. Finally, listen again while reading the transcript to check your understanding.
+                </p>
+              </div>
+            </div>
 
-        {/* Level cards — grid on all screens */}
-        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {LEVELS.map((lvl) => (
-            <LevelCard key={lvl.lvl} lvl={lvl} />
-          ))}
+            {!isPro && <AdUnit variant="mobile-dark" />}
+
+            {/* Level cards — grid on all screens */}
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:mt-10 lg:grid-cols-3">
+              {LEVELS.map((lvl) => (
+                <LevelCard key={lvl.lvl} lvl={lvl} />
+              ))}
+            </div>
+          </section>
         </div>
 
       </div>

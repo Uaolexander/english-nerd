@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import PromoCodeModal from "@/components/PromoCodeModal";
 import TeacherPlans from "@/components/TeacherPlans";
 import ProPlans from "@/components/ProPlans";
+import ScrollToPricing from "@/components/ScrollToPricing";
 
 export const metadata: Metadata = {
   title: "English Nerd PRO — Unlock All Features & Learn Faster",
@@ -126,6 +127,7 @@ function X() {
 export default function ProPage() {
   return (
     <main className="min-h-screen bg-[#0B0B0D] text-white">
+      <ScrollToPricing />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(proSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
@@ -243,6 +245,147 @@ export default function ProPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3.5 CERTIFICATE + DASHBOARD PREVIEW ─────────────────────────── */}
+      <section className="px-6 pb-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="text-xs font-black uppercase tracking-widest text-[#F5DA20]/60">See it in action</p>
+            <h2 className="mt-2 text-3xl font-black md:text-4xl">Your progress. Your proof.</h2>
+            <p className="mx-auto mt-3 max-w-md text-white/50">Track every lesson, earn real certificates, and always know exactly how far you&apos;ve come.</p>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+
+            {/* ── Certificate mockup ── */}
+            <div>
+              <p className="mb-3 text-xs font-black uppercase tracking-widest text-amber-400/70">Certificate of Achievement</p>
+              <div className="overflow-hidden rounded-3xl border border-[#F5DA20]/20 bg-gradient-to-br from-[#1c1a08] to-[#0e0e09] p-[3px] shadow-2xl shadow-[#F5DA20]/8">
+                <div className="rounded-[22px] bg-[#faf8f0] px-8 py-8 text-center">
+                  {/* Decorative top border */}
+                  <div className="mb-5 flex items-center justify-center gap-1.5">
+                    {[8,4,12,4,20,4,12,4,8].map((w, i) => (
+                      <div key={i} className={`h-1 rounded-full ${i === 4 ? "bg-[#F5DA20]" : "bg-[#F5DA20]/30"}`} style={{ width: `${w}px` }} />
+                    ))}
+                  </div>
+
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Certificate of Achievement</p>
+
+                  <div className="my-4 flex justify-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F5DA20] shadow-lg">
+                      <span className="text-xl font-black text-black">EN</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-400">This is to certify that</p>
+                  <p className="mt-1 text-2xl font-black text-slate-800">Your Name</p>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-400">has successfully completed</p>
+                  <p className="mt-0.5 text-lg font-black text-slate-800">B1 Intermediate Grammar</p>
+                  <p className="text-xs text-slate-400">English Nerd · 22 lessons · 440 exercises</p>
+
+                  <div className="mt-4 flex justify-center gap-2">
+                    <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-black text-violet-700">B1 Intermediate</span>
+                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-black text-amber-700">Grammar</span>
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
+                    <div className="text-left">
+                      <p className="text-[10px] text-slate-300">Date issued</p>
+                      <p className="text-xs font-bold text-slate-500">April 2026</p>
+                    </div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F5DA20]/15">
+                      <svg className="h-5 w-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/></svg>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-300">Credential ID</p>
+                      <p className="font-mono text-xs font-bold text-slate-500">EN-B1-2026</p>
+                    </div>
+                  </div>
+
+                  {/* Decorative bottom border */}
+                  <div className="mt-5 flex items-center justify-center gap-1.5">
+                    {[8,4,12,4,20,4,12,4,8].map((w, i) => (
+                      <div key={i} className={`h-1 rounded-full ${i === 4 ? "bg-[#F5DA20]" : "bg-[#F5DA20]/30"}`} style={{ width: `${w}px` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-white/30">Download as PDF · Share on LinkedIn · Add to your CV</p>
+            </div>
+
+            {/* ── Progress dashboard mockup ── */}
+            <div>
+              <p className="mb-3 text-xs font-black uppercase tracking-widest text-sky-400/70">Progress Dashboard</p>
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111115] p-6 shadow-2xl">
+
+                {/* Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-black text-white">My Progress</p>
+                    <p className="text-xs text-white/30">April 2026</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black text-emerald-400">● Active streak</span>
+                </div>
+
+                {/* Stats row */}
+                <div className="mb-5 grid grid-cols-3 gap-2">
+                  {[
+                    { label: "Lessons done", value: "47", color: "text-[#F5DA20]" },
+                    { label: "Day streak", value: "12", color: "text-emerald-400" },
+                    { label: "Avg. score", value: "89%", color: "text-sky-400" },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-2xl bg-white/5 p-3 text-center">
+                      <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                      <p className="mt-0.5 text-[10px] text-white/35">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Progress bars */}
+                <div className="mb-5 space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/25">Course progress</p>
+                  {[
+                    { label: "A1 Grammar", pct: 95, color: "bg-[#F5DA20]" },
+                    { label: "A2 Grammar", pct: 68, color: "bg-emerald-400" },
+                    { label: "B1 Grammar", pct: 31, color: "bg-violet-400" },
+                    { label: "Present Tenses", pct: 75, color: "bg-sky-400" },
+                  ].map((b) => (
+                    <div key={b.label}>
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-xs text-white/50">{b.label}</span>
+                        <span className="text-xs font-bold text-white/60">{b.pct}%</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
+                        <div className={`h-full rounded-full ${b.color}`} style={{ width: `${b.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recent activity */}
+                <div>
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/25">Recent activity</p>
+                  {[
+                    { lesson: "Present Perfect", score: "9/10", level: "B1", color: "bg-violet-400" },
+                    { lesson: "Past Simple", score: "10/10", level: "A2", color: "bg-emerald-400" },
+                    { lesson: "Articles: a / an", score: "8/10", level: "A1", color: "bg-[#F5DA20]" },
+                  ].map((a) => (
+                    <div key={a.lesson} className="flex items-center justify-between rounded-xl px-3 py-2 transition hover:bg-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`flex h-6 w-6 items-center justify-center rounded-md ${a.color} text-[8px] font-black text-black`}>{a.level}</span>
+                        <span className="text-xs font-semibold text-white/70">{a.lesson}</span>
+                      </div>
+                      <span className="text-xs font-black text-emerald-400">{a.score}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-white/30">Your personal stats · Updated after every lesson</p>
+            </div>
+
           </div>
         </div>
       </section>
