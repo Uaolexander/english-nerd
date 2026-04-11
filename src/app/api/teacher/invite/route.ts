@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTeacherStatus } from "@/lib/getTeacherStatus";
+import { sendStudentInviteEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -65,10 +66,21 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
 
+  const inviteUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/teacher/join?token=${token}`;
+
+  // Send invitation email to student
+  const teacherName = (user.user_metadata?.full_name as string | undefined) ?? null;
+  try {
+    await sendStudentInviteEmail(email.toLowerCase(), teacherName, inviteUrl, !!studentId);
+  } catch (emailErr) {
+    console.error("[teacher/invite] Failed to send invite email:", emailErr);
+    // Don't fail the request — invite is created, email is best-effort
+  }
+
   return NextResponse.json({
     ok: true,
     status: newStatus,
     inviteToken: token,
-    inviteUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/teacher/join?token=${token}`,
+    inviteUrl,
   });
 }

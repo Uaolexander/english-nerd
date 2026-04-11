@@ -453,7 +453,46 @@ export async function sendTeacherExpiringSoonEmail(to: string, name: string | nu
   await send(to, `Your Teacher plan expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`, html);
 }
 
-// ─── 10. Student linked to teacher ───────────────────────────────────────────
+// ─── 10. Teacher invite to student ───────────────────────────────────────────
+
+export async function sendStudentInviteEmail(to: string, teacherName: string | null, inviteUrl: string, isExistingUser: boolean) {
+  const teacher = teacherName ?? "An English Nerd teacher";
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#7C3AED,#8B5CF6,#A78BFA)",
+    `
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;color:#7C3AED;letter-spacing:0.06em;text-transform:uppercase;">Teacher Invitation</span>
+    </div>
+
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">You've been invited to join a class!</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+      <strong style="color:#111827;">${teacher}</strong> has invited you to join their English Nerd class. Accept the invitation to start receiving assignments and track your progress.
+    </p>
+
+    <div style="background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#5B21B6;text-transform:uppercase;letter-spacing:0.05em;">What you'll get</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("📬", "Receive assignments", "Your teacher will assign exercises and quizzes.")}
+        ${divider()}
+        ${featureRow("✅", "Submit your work", "Complete assignments directly on the platform.")}
+        ${divider()}
+        ${featureRow("📈", "Track your progress", "See your scores and improvement over time.")}
+      </table>
+    </div>
+
+    ${btn(inviteUrl, "Accept invitation →", "#7C3AED", "#ffffff")}
+
+    <p style="margin:16px 0 0;font-size:12px;color:#9CA3AF;text-align:center;">
+      ${isExistingUser ? "You already have an English Nerd account — just click above to confirm." : "You'll create a free account when you accept."}
+    </p>
+    `
+  ) + FOOTER(`You received this because ${teacher} invited you to their English Nerd class.`) + CLOSE;
+
+  await send(to, `${teacher} invited you to their English class`, html);
+}
+
+// ─── 11. Student linked to teacher ───────────────────────────────────────────
 
 export async function sendStudentLinkedEmail(to: string, studentName: string | null, teacherName: string | null) {
   const firstName = studentName?.split(" ")[0] ?? "there";
