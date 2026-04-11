@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
 import { getTeacherStatus } from "@/lib/getTeacherStatus";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isWidget = pathname.startsWith("/widget/");
+
+  // Widget pages render bare — no auth, no header/footer
+  if (isWidget) {
+    return (
+      <html lang="en">
+        <body style={{ margin: 0, padding: 0, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+          {children}
+        </body>
+      </html>
+    );
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const [isPro, studentStatus, teacherStatus] = await Promise.all([

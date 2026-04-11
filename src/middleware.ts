@@ -3,6 +3,13 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // Widget routes: skip auth, just forward with pathname header
+  if (request.nextUrl.pathname.startsWith("/widget/")) {
+    const response = NextResponse.next({ request });
+    response.headers.set("x-pathname", request.nextUrl.pathname);
+    return response;
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -91,5 +98,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/login", "/register"],
+  matcher: ["/account/:path*", "/login", "/register", "/widget/:path*"],
 };
