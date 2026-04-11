@@ -3,7 +3,7 @@ import { createHmac } from "crypto";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM ?? "hello@englishnerd.cc";
+const FROM = process.env.EMAIL_FROM ?? "noreply@englishnerd.cc";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://englishnerd.cc";
 
 function unsubscribeUrl(email: string): string {
