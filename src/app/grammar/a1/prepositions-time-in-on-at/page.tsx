@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import PrepositionsTimeInOnAtLessonClient from "./PrepositionsTimeInOnAtLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Prepositions of Time (In, On, At) Exercises with Answers (A1)"
+        description="Learn when to use in, on and at for time in English. A1 grammar lesson: in June, on Monday, at 8 o"
+        url="https://englishnerd.cc/grammar/a1/prepositions-time-in-on-at"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <PrepositionsTimeInOnAtLessonClient />
     </main>
+    </>
   );
 }

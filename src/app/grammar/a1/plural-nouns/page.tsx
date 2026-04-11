@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import PluralNounsLessonClient from "./PluralNounsLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Plural Nouns Exercises with Answers for Beginners (A1)"
+        description="Learn to form English plural nouns: regular -s endings, -es rules, irregular plurals and uncountable nouns. A1 grammar exercises with instant feedback."
+        url="https://englishnerd.cc/grammar/a1/plural-nouns"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <PluralNounsLessonClient />
     </main>
+    </>
   );
 }

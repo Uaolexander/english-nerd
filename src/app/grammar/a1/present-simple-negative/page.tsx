@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import PresentSimpleNegativeLessonClient from "./PresentSimpleNegativeLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Present Simple Negative (Don"
+        description="Learn to form Present Simple negatives with don"
+        url="https://englishnerd.cc/grammar/a1/present-simple-negative"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <PresentSimpleNegativeLessonClient />
     </main>
+    </>
   );
 }

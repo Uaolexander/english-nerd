@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import PresentSimpleQuestionsLessonClient from "./PresentSimpleQuestionsLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Present Simple Questions (Do / Does) Exercises with Answers for Beginners (A1)"
+        description="Learn to ask Present Simple questions with Do and Does. A1 grammar exercises covering yes/no questions, short answers and common mistakes."
+        url="https://englishnerd.cc/grammar/a1/present-simple-questions"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <PresentSimpleQuestionsLessonClient />
     </main>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import CanCantLessonClient from "./CanCantLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Can / Can"
+        description="Learn to use can and can"
+        url="https://englishnerd.cc/grammar/a1/can-cant"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <CanCantLessonClient />
     </main>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import type { Metadata } from "next";
 import WhQuestionsLessonClient from "./Wh-QuestionsLessonClient";
 
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
+    <>
+      <LessonSchema
+        title="Questions (What, Where, When, Why, Who, How) Exercises with Answers for Beginners (A1)"
+        description="Learn to ask Wh-questions in English: What, Where, When, Why, Who and How. A1 grammar lesson with 4 exercises and real-life question examples."
+        url="https://englishnerd.cc/grammar/a1/wh-questions"
+        level="A1"
+      />
+      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100 text-black">
       <WhQuestionsLessonClient />
     </main>
+    </>
   );
 }
