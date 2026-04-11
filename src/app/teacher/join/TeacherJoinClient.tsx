@@ -84,13 +84,13 @@ export default function TeacherJoinClient({ token, inviteEmail, isLoggedIn, curr
               Please log in or create an account with <strong>{inviteEmail}</strong> to accept the invitation.
             </p>
             <Link
-              href={`/login?redirect=/teacher/join?token=${token}`}
+              href={`/login?next=${encodeURIComponent(`/teacher/join?token=${token}`)}`}
               className="block w-full rounded-xl bg-violet-600 py-3 text-center text-sm font-bold text-white transition hover:bg-violet-700"
             >
               Log in to accept
             </Link>
             <Link
-              href={`/signup?email=${encodeURIComponent(inviteEmail)}&redirect=/teacher/join?token=${token}`}
+              href={`/register?next=${encodeURIComponent(`/teacher/join?token=${token}`)}`}
               className="block w-full rounded-xl border border-slate-200 py-3 text-center text-sm font-bold text-slate-600 transition hover:bg-slate-50"
             >
               Create account
