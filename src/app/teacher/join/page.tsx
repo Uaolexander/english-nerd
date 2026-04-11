@@ -20,9 +20,10 @@ export default async function TeacherJoinPage({
   if (!token) redirect("/");
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
-  // Look up the invite
-  const { data: invite } = await supabase
+  // Look up the invite via service client (bypasses RLS — needed for unauthenticated visitors)
+  const { data: invite } = await service
     .from("teacher_students")
     .select("id, teacher_id, invite_email, status")
     .eq("invite_token", token)
@@ -48,7 +49,6 @@ export default async function TeacherJoinPage({
   }
 
   // ── Auto-accept ───────────────────────────────────────────────────────────
-  const service = createServiceClient();
 
   await service
     .from("teacher_students")
