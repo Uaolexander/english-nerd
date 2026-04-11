@@ -14,7 +14,9 @@ interface Props {
 export default function TeacherJoinClient({ token, inviteEmail, isLoggedIn, currentUserEmail }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [declined, setDeclined] = useState(false);
 
   const emailMatches = currentUserEmail?.toLowerCase() === inviteEmail.toLowerCase();
 
@@ -33,6 +35,24 @@ export default function TeacherJoinClient({ token, inviteEmail, isLoggedIn, curr
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
+    }
+  }
+
+  async function handleDecline() {
+    setDeclining(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/teacher/invite/decline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (!data.ok) { setError(data.error); setDeclining(false); return; }
+      setDeclined(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setDeclining(false);
     }
   }
 
@@ -83,6 +103,11 @@ export default function TeacherJoinClient({ token, inviteEmail, isLoggedIn, curr
             </p>
             <p className="mt-2 text-sm text-amber-700">Please log out and sign in with the correct account.</p>
           </div>
+        ) : declined ? (
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-5 text-center">
+            <p className="text-sm font-semibold text-slate-700">Invitation declined</p>
+            <p className="mt-1 text-xs text-slate-400">Your teacher has been notified. You can close this page.</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {error && (
@@ -92,10 +117,17 @@ export default function TeacherJoinClient({ token, inviteEmail, isLoggedIn, curr
             )}
             <button
               onClick={handleAccept}
-              disabled={loading}
+              disabled={loading || declining}
               className="w-full rounded-xl bg-violet-600 py-3 text-sm font-bold text-white transition hover:bg-violet-700 disabled:opacity-60"
             >
               {loading ? "Joining…" : "Accept invitation"}
+            </button>
+            <button
+              onClick={handleDecline}
+              disabled={loading || declining}
+              className="w-full rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 disabled:opacity-60"
+            >
+              {declining ? "Declining…" : "Decline"}
             </button>
             <p className="text-center text-xs text-slate-400">
               By accepting, your teacher will be able to see your exercise progress.

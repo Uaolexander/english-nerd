@@ -12,7 +12,7 @@ export type StudentRow = {
   linkId: string;
   studentId: string | null;
   email: string;
-  status: "pending" | "active";
+  status: "pending" | "pending_student" | "active" | "declined";
   joinedAt: string | null;
   inviteToken: string;
   totalCompleted: number;
@@ -86,7 +86,7 @@ export default async function TeacherPage() {
     linkId: s.id,
     studentId: s.student_id,
     email: s.invite_email,
-    status: s.status as "pending" | "active",
+    status: s.status as "pending" | "pending_student" | "active" | "declined",
     joinedAt: s.joined_at,
     inviteToken: s.invite_token,
     totalCompleted: s.student_id ? (progressByStudent[s.student_id]?.total ?? 0) : 0,

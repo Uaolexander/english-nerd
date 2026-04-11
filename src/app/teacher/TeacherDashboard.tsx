@@ -173,10 +173,12 @@ function StudentsTab({ students, classes, studentLimit, siteUrl }: {
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-sm font-semibold text-slate-800">{s.email}</p>
                   <p className="text-xs text-slate-400">
-                    {s.status === "pending" ? (
-                      <span className="text-amber-500 font-semibold">Pending</span>
-                    ) : (
+                    {s.status === "active" ? (
                       <>Active · Last: {timeAgo(s.lastActivity)}</>
+                    ) : s.status === "declined" ? (
+                      <span className="text-red-500 font-semibold">Declined invitation</span>
+                    ) : (
+                      <span className="text-amber-500 font-semibold">Waiting for confirmation</span>
                     )}
                   </p>
                 </div>
@@ -601,7 +603,7 @@ export default function TeacherDashboard({ teacherEmail, plan, studentLimit, isI
   const [tab, setTab] = useState<Tab>("students");
 
   const activeStudents = students.filter((s) => s.status === "active").length;
-  const pendingStudents = students.filter((s) => s.status === "pending").length;
+  const pendingStudents = students.filter((s) => s.status === "pending" || s.status === "pending_student").length;
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "students", label: "Students", count: activeStudents },
