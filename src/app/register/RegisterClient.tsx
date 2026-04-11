@@ -1,11 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
 
 export default function RegisterClient() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/account";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -87,7 +91,7 @@ export default function RegisterClient() {
       email,
       password,
       options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
+        emailRedirectTo: `${location.origin}/auth/callback${next !== "/account" ? `?next=${encodeURIComponent(next)}` : ""}`,
         data: { marketing_consent: marketingConsent },
       },
     });
