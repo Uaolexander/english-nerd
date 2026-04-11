@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createServiceClient } from "@/lib/supabase/service";
-import { sendProGainedEmail, sendProExpiredEmail, sendTeacherWelcomeEmail, sendTeacherExpiredEmail } from "@/lib/email";
+import { sendProGainedEmail, sendProExpiredEmail, sendTeacherWelcomeEmail, sendTeacherExpiredEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail } from "@/lib/email";
 
 // Required: Node.js runtime for crypto and Supabase admin API
 export const runtime = "nodejs";
@@ -382,6 +382,10 @@ export async function POST(req: Request) {
             await sendTeacherWelcomeEmail(customerEmail, name, TEACHER_VARIANTS[variantId].studentLimit);
           } else if (loseEvents.has(eventName)) {
             await sendTeacherExpiredEmail(customerEmail, name);
+          } else if (eventName === "subscription_payment_failed") {
+            await sendPaymentFailedEmail(customerEmail, name, true);
+          } else if (eventName === "subscription_cancelled") {
+            await sendSubscriptionCancelledEmail(customerEmail, name, endsAt, true);
           }
         } else {
           // PRO plan emails
@@ -389,6 +393,10 @@ export async function POST(req: Request) {
             await sendProGainedEmail(customerEmail, name, endsAt ?? renewsAt);
           } else if (!isPro && loseEvents.has(eventName)) {
             await sendProExpiredEmail(customerEmail, name);
+          } else if (eventName === "subscription_payment_failed") {
+            await sendPaymentFailedEmail(customerEmail, name, false);
+          } else if (eventName === "subscription_cancelled") {
+            await sendSubscriptionCancelledEmail(customerEmail, name, endsAt, false);
           }
         }
       } catch (e) {

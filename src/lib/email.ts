@@ -293,7 +293,86 @@ export async function sendTeacherExpiredEmail(to: string, name: string | null) {
   await send(to, "Your Teacher subscription has ended", html);
 }
 
-// ─── 6. Student linked to teacher ────────────────────────────────────────────
+// ─── 6. Payment failed ───────────────────────────────────────────────────────
+
+export async function sendPaymentFailedEmail(to: string, name: string | null, isTeacher = false) {
+  const firstName = name?.split(" ")[0] ?? "there";
+  const planLabel = isTeacher ? "Teacher" : "PRO";
+  const renewUrl = isTeacher ? `${SITE}/teacher` : `${SITE}/pro`;
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#EF4444,#F87171,#FCA5A5)",
+    `
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;color:#DC2626;letter-spacing:0.06em;text-transform:uppercase;">Payment failed</span>
+    </div>
+
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">Your payment didn't go through, ${firstName}</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+      We couldn't process your ${planLabel} subscription payment. <strong style="color:#111827;">Your access is still active</strong> — we'll retry automatically. To avoid any interruption, please update your payment details now.
+    </p>
+
+    <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:0.05em;">What to do next</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("💳", "Update your payment method", "Log in to your billing portal and add a valid payment card.")}
+        ${divider()}
+        ${featureRow("🔄", "Automatic retry", "We'll retry the payment automatically — updating your card is enough.")}
+        ${divider()}
+        ${featureRow("✅", "Keep your access", "Once the payment goes through, everything continues as normal.")}
+      </table>
+    </div>
+
+    ${btn(`${SITE}/billing-portal`, "Update payment method →", "#DC2626", "#ffffff")}
+
+    <p style="margin:20px 0 0;font-size:13px;color:#9CA3AF;text-align:center;line-height:1.6;">
+      Need help? <a href="${SITE}/contact" style="color:#9CA3AF;text-decoration:underline;">Contact us</a> and we'll sort it out.
+    </p>
+    `
+  ) + FOOTER(`You received this because a payment for your English Nerd ${planLabel} subscription failed.`) + CLOSE;
+
+  await send(to, `Action needed: your ${planLabel} payment didn't go through`, html);
+}
+
+// ─── 7. Subscription cancelled ───────────────────────────────────────────────
+
+export async function sendSubscriptionCancelledEmail(to: string, name: string | null, endsAt: string | null, isTeacher = false) {
+  const firstName = name?.split(" ")[0] ?? "there";
+  const planLabel = isTeacher ? "Teacher" : "PRO";
+  const renewUrl = isTeacher ? `${SITE}/teacher` : `${SITE}/pro`;
+
+  const accessLine = endsAt
+    ? `<p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">Your ${planLabel} access will continue until <strong style="color:#111827;">${new Date(endsAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</strong>. After that, you'll switch to a free account — your progress is safely saved.</p>`
+    : `<p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">Your ${planLabel} subscription has been cancelled. Your progress and data are safely saved — nothing is lost.</p>`;
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#94A3B8,#CBD5E1,#E2E8F0)",
+    `
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">Subscription cancelled, ${firstName}</p>
+    ${accessLine}
+
+    <div style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:0.05em;">Your data is safe</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("📊", "All progress saved", "Every exercise, score and streak you've built stays on your account.")}
+        ${divider()}
+        ${featureRow("🔒", "Account stays active", "You keep your free account — log in any time.")}
+        ${divider()}
+        ${featureRow("↩️", "Easy to come back", "Reactivate your ${planLabel} any time with one click.")}
+      </table>
+    </div>
+
+    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#111827;text-align:center;">Changed your mind?</p>
+    <p style="margin:0 0 4px;font-size:13px;color:#6B7280;text-align:center;">You can reactivate any time — your progress will be right where you left it.</p>
+
+    ${btn(renewUrl, `Reactivate ${planLabel} →`, "#7C3AED", "#ffffff")}
+    `
+  ) + FOOTER(`You received this because you cancelled your English Nerd ${planLabel} subscription.`) + CLOSE;
+
+  await send(to, `Your ${planLabel} subscription has been cancelled`, html);
+}
+
+// ─── 8. Student linked to teacher ────────────────────────────────────────────
 
 export async function sendStudentLinkedEmail(to: string, studentName: string | null, teacherName: string | null) {
   const firstName = studentName?.split(" ")[0] ?? "there";

@@ -163,7 +163,8 @@ export default async function AccountPage() {
   });
 
   // Pro status
-  const { isPro, hadProBefore, expiresAt } = await getProStatus(supabase, user.id);
+  const { isPro, hadProBefore, expiresAt, subscriptionStatus } = await getProStatus(supabase, user.id);
+  const isPaymentFailed = subscriptionStatus === "past_due";
 
   // Streak freezes (PRO-only feature)
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
@@ -445,6 +446,7 @@ export default async function AccountPage() {
       canUseFreeze={canUseFreeze}
       weakTopics={weakTopics}
       proExpiresAt={expiresAt ?? null}
+      isPaymentFailed={isPaymentFailed}
       siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? ""}
       toursDone={toursDone}
     />

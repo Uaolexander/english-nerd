@@ -101,6 +101,7 @@ type Props = {
   canUseFreeze: boolean;
   weakTopics: WeakTopic[];
   proExpiresAt: string | null;
+  isPaymentFailed: boolean;
   siteUrl: string;
   toursDone: { pro: boolean; teacher: boolean; student: boolean };
 };
@@ -5060,7 +5061,7 @@ function StudentTab({
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, proExpiresAt, siteUrl, toursDone }: Props) {
+export default function AccountClient({ email, fullName, avatarUrl, createdAt, provider, stats, certificates, isPro, hadProBefore, isTeacher, teacherData, isStudent, teacherInfo, pendingTeacherInvite, studentAssignments, completedExerciseKeys, streak, weekly, maxWeekly, overallPct, currentLevel, recs, freezeCount, canUseFreeze, weakTopics, proExpiresAt, isPaymentFailed, siteUrl, toursDone }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -5527,6 +5528,16 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                   <path d="M5 16 3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm0 2h14v2H5v-2z" />
                 </svg>
               </div>
+              {isPaymentFailed && (
+                <div className="mx-4 mb-3 mt-3 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
+                  <span className="text-lg">🚨</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-black text-red-700">Payment failed — action needed</p>
+                    <p className="text-[11px] text-red-500">Your last payment didn't go through. Update your card to avoid losing PRO access.</p>
+                  </div>
+                  <a href="/billing-portal" className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-red-600">Fix now →</a>
+                </div>
+              )}
               {proExpiresAt && (() => {
                 const daysLeft = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / 86400000);
                 if (daysLeft > 14 || daysLeft < 0) return null;

@@ -4,6 +4,7 @@ export interface ProStatus {
   isPro: boolean;
   hadProBefore: boolean; // had PRO but it has now expired
   expiresAt: string | null;
+  subscriptionStatus: string | null; // e.g. "active", "past_due", "cancelled", "expired"
 }
 
 /**
@@ -16,13 +17,13 @@ export async function getProStatus(
   // 1. Active paid subscription — same filter as original getIsPro
   const { data: activeSub } = await supabase
     .from("subscriptions")
-    .select("id")
+    .select("id, status")
     .eq("user_id", userId)
     .eq("is_pro", true)
     .limit(1)
     .maybeSingle();
 
-  if (activeSub) return { isPro: true, hadProBefore: false, expiresAt: null };
+  if (activeSub) return { isPro: true, hadProBefore: false, expiresAt: null, subscriptionStatus: activeSub.status as string };
 
   // 2. Active promo redemption
   const { data: activePromo } = await supabase
@@ -33,7 +34,7 @@ export async function getProStatus(
     .limit(1)
     .maybeSingle();
 
-  if (activePromo) return { isPro: true, hadProBefore: false, expiresAt: activePromo.expires_at as string };
+  if (activePromo) return { isPro: true, hadProBefore: false, expiresAt: activePromo.expires_at as string, subscriptionStatus: null };
 
   // ── Not currently PRO — check if they ever had PRO ──────────────────
 
@@ -58,5 +59,6 @@ export async function getProStatus(
     isPro: false,
     hadProBefore: anySub !== null || expiredPromo !== null,
     expiresAt: null,
+    subscriptionStatus: null,
   };
 }
