@@ -676,7 +676,7 @@ export default function Header() {
           </MobileAccordion>
 
           <div className="pt-4 px-1">
-            <AuthButton className="flex w-full items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-3 text-sm font-bold text-black hover:opacity-90" />
+            <AuthButton variant="drawer" onAction={closeAll} />
           </div>
         </nav>
       </div>

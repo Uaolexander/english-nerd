@@ -54,9 +54,11 @@ function StudentBadge() {
 export default function AuthButton({
   className,
   variant = "button",
+  onAction,
 }: {
   className?: string;
-  variant?: "button" | "avatar";
+  variant?: "button" | "avatar" | "drawer";
+  onAction?: () => void;
 }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const isPro = useIsPro();
@@ -144,9 +146,52 @@ export default function AuthButton({
       );
     }
 
+    if (variant === "drawer") {
+      const handleSignOut = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        window.location.href = "/";
+      };
+
+      return (
+        <div className="flex flex-col gap-2">
+          <Link
+            href={accountHref}
+            onClick={onAction}
+            className="flex w-full items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-3 text-sm font-bold text-black hover:opacity-90"
+          >
+            Account
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white/60 transition hover:bg-white/10 hover:text-white"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign out
+          </button>
+        </div>
+      );
+    }
+
     return (
       <Link href={accountHref} className={className}>
         Account
+      </Link>
+    );
+  }
+
+  if (variant === "drawer") {
+    return (
+      <Link
+        href="/login"
+        onClick={onAction}
+        className="flex w-full items-center justify-center rounded-xl bg-[#F5DA20] px-4 py-3 text-sm font-bold text-black hover:opacity-90"
+      >
+        Log in
       </Link>
     );
   }
