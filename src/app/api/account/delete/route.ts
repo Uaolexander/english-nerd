@@ -16,6 +16,7 @@ export async function DELETE() {
   const { error } = await service.auth.admin.deleteUser(user.id);
 
   if (error) {
+    console.error("[account/delete] Supabase error:", error.message, "userId:", user.id);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 

@@ -5349,6 +5349,9 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
       router.push("/");
       router.refresh();
     } else {
+      const data = await res.json().catch(() => ({})) as { error?: string };
+      console.error("[deleteAccount] failed:", data);
+      alert(data.error ?? "Failed to delete account. Please try again.");
       setDeleting(false);
       setDeleteConfirm(false);
     }
