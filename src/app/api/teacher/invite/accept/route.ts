@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (user.email?.toLowerCase() !== invite.invite_email) {
     return NextResponse.json({
       ok: false,
-      error: `This invite was sent to ${invite.invite_email}. Please log in with that account.`,
+      error: "This invitation was sent to a different email address. Please sign in with the correct account.",
     }, { status: 403 });
   }
 

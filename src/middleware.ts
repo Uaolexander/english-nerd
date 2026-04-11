@@ -74,13 +74,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect logged-in users away from /login and /register
+  // BUT preserve ?next= so deep links (e.g. teacher invite) still work
   if (
     user &&
     (request.nextUrl.pathname === "/login" ||
       request.nextUrl.pathname === "/register")
   ) {
+    const next = request.nextUrl.searchParams.get("next");
     const url = request.nextUrl.clone();
-    url.pathname = "/account";
+    url.pathname = next && next.startsWith("/") ? next : "/account";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

@@ -167,12 +167,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
-  // Increment used_count atomically — only if still within limit to prevent overflow
-  await service
+  // Increment used_count atomically — only if still within limit.
+  // Check rows affected: if 0, someone else claimed the last slot — roll back.
+  const { data: incremented } = await service
     .from("promo_codes")
     .update({ used_count: promoCode.used_count + 1 })
     .eq("id", promoCode.id)
-    .lt("used_count", promoCode.max_uses);
+    .lt("used_count", promoCode.max_uses)
+    .select("id");
+
+  if (!incremented || incremented.length === 0) {
+    // Race condition: another request used the last slot between our read and write
+    await service
+      .from("promo_redemptions")
+      .delete()
+      .eq("code_id", promoCode.id)
+      .eq("user_id", user.id);
+    return NextResponse.json({ ok: false, error: "This promo code has already reached its limit." }, { status: 400 });
+  }
 
   const months = promoCode.duration_days >= 365
     ? `${Math.round(promoCode.duration_days / 30)} months`

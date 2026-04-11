@@ -14,8 +14,14 @@ export async function POST(req: Request) {
   }
 
   const { email } = await req.json() as { email: string };
-  if (!email || !email.includes("@")) {
-    return NextResponse.json({ ok: false, error: "Invalid email" }, { status: 400 });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email.trim())) {
+    return NextResponse.json({ ok: false, error: "Invalid email address" }, { status: 400 });
+  }
+
+  // Prevent teacher from inviting themselves
+  if (email.trim().toLowerCase() === user.email?.toLowerCase()) {
+    return NextResponse.json({ ok: false, error: "You cannot invite yourself as a student" }, { status: 400 });
   }
 
   // Check student limit
@@ -49,8 +55,9 @@ export async function POST(req: Request) {
   });
   const studentId = studentIdRow ?? null;
 
-  // Generate invite token
+  // Generate invite token (expires in 7 days)
   const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
   // If student has an account, set status to pending_student so they must confirm
   const newStatus = studentId ? "pending_student" : "pending";
@@ -60,6 +67,7 @@ export async function POST(req: Request) {
     student_id: studentId,
     invite_email: email.toLowerCase(),
     invite_token: token,
+    invite_expires_at: expiresAt,
     status: newStatus,
     joined_at: null,
   });

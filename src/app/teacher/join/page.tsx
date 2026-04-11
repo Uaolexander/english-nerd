@@ -25,7 +25,7 @@ export default async function TeacherJoinPage({
   // Look up the invite via service client (bypasses RLS — needed for unauthenticated visitors)
   const { data: invite } = await service
     .from("teacher_students")
-    .select("id, teacher_id, invite_email, status")
+    .select("id, teacher_id, invite_email, status, invite_expires_at")
     .eq("invite_token", token)
     .maybeSingle();
 
@@ -33,6 +33,11 @@ export default async function TeacherJoinPage({
 
   // Already accepted
   if (invite.status === "active") redirect("/account?joined=1");
+
+  // Check expiry (only for pending invites, not already active ones)
+  if (invite.invite_expires_at && new Date(invite.invite_expires_at) < new Date()) {
+    redirect("/teacher/join/expired");
+  }
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();

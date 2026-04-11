@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProWelcomeModal from "@/components/ProWelcomeModal";
 import TeacherWelcomeModal from "@/components/TeacherWelcomeModal";
 
 export default function RedeemPage() {
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const searchParams = useSearchParams();
+  const [code, setCode] = useState(() => searchParams.get("code") ?? "");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [showPro, setShowPro] = useState(false);
@@ -98,13 +99,13 @@ export default function RedeemPage() {
                   {msg.type === "err" && msg.text.toLowerCase().includes("signed in") && (
                     <div className="flex gap-2">
                       <a
-                        href={`/login?next=${encodeURIComponent("/redeem")}`}
+                        href={`/login?next=${encodeURIComponent(code.trim() ? `/redeem?code=${encodeURIComponent(code.trim())}` : "/redeem")}`}
                         className="flex-1 rounded-2xl border border-white/15 bg-white/5 py-3 text-sm font-black text-white text-center transition hover:bg-white/10"
                       >
                         Log in
                       </a>
                       <a
-                        href={`/register?next=${encodeURIComponent("/redeem")}`}
+                        href={`/register?next=${encodeURIComponent(code.trim() ? `/redeem?code=${encodeURIComponent(code.trim())}` : "/redeem")}`}
                         className="flex-1 rounded-2xl bg-[#F5DA20] py-3 text-sm font-black text-black text-center transition hover:bg-[#ffe033]"
                       >
                         Create account
