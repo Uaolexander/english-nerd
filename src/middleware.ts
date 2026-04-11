@@ -3,13 +3,6 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // Widget routes: skip auth, forward with pathname on the REQUEST headers
-  // (layout reads request headers via headers(), not response headers)
-  if (request.nextUrl.pathname.startsWith("/widget/")) {
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-pathname", request.nextUrl.pathname);
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  }
 
   let supabaseResponse = NextResponse.next({ request });
 
@@ -99,5 +92,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/login", "/register", "/widget/:path*"],
+  matcher: ["/account/:path*", "/login", "/register"],
 };

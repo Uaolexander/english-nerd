@@ -40,7 +40,7 @@ export default function WidgetQuiz({ widget }: { widget: WidgetData }) {
   if (done) {
     const pct = Math.round((score / total) * 100);
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-5 px-6 text-center">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-[99999] gap-5 px-6 text-center">
         <div
           className="flex h-16 w-16 items-center justify-center rounded-2xl text-white text-2xl font-black"
           style={{ background: accent }}
@@ -73,7 +73,7 @@ export default function WidgetQuiz({ widget }: { widget: WidgetData }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="fixed inset-0 flex flex-col bg-white z-[99999]">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
