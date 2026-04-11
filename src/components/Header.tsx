@@ -196,7 +196,7 @@ function MobileAccordion({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[15px] font-semibold text-white/80 hover:bg-white/10 hover:text-white"
+        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[15px] font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
       >
         {label}
         <svg
@@ -204,16 +204,23 @@ function MobileAccordion({
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`h-4 w-4 transition-transform duration-300 ease-in-out ${isOpen ? "rotate-180" : ""}`}
         >
           <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clipRule="evenodd" />
         </svg>
       </button>
-      {isOpen && (
-        <div className="ml-2 mt-1 flex flex-col gap-0.5 border-l border-white/10 pl-2">
-          {children}
+      {/* CSS grid trick: grid-rows-[0fr]→[1fr] animates height without knowing exact px */}
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="ml-2 mb-1 mt-1 flex flex-col gap-0.5 border-l border-white/10 pl-2">
+            {children}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -562,12 +569,13 @@ export default function Header() {
       </header>
 
       {/* Overlay */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm min-[1100px]:hidden"
-          onClick={closeAll}
-          aria-hidden="true"
-        />
+      <div
+        onClick={closeAll}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 min-[1100px]:hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+          menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      />
       )}
 
       {/* Slide-in drawer */}
