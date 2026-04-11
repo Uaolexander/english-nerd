@@ -372,7 +372,88 @@ export async function sendSubscriptionCancelledEmail(to: string, name: string | 
   await send(to, `Your ${planLabel} subscription has been cancelled`, html);
 }
 
-// ─── 8. Student linked to teacher ────────────────────────────────────────────
+// ─── 8. PRO expiring soon (voucher/promo) ────────────────────────────────────
+
+export async function sendProExpiringSoonEmail(to: string, name: string | null, expiresAt: string, daysLeft: number) {
+  const firstName = name?.split(" ")[0] ?? "there";
+  const expiryDate = new Date(expiresAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#F59E0B,#FBBF24,#FCD34D)",
+    `
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;color:#D97706;letter-spacing:0.06em;text-transform:uppercase;">PRO Member</span>
+    </div>
+
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">Your PRO expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}, ${firstName}</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+      Your PRO access expires on <strong style="color:#111827;">${expiryDate}</strong>. Renew now to keep all your features without interruption.
+    </p>
+
+    <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:0.05em;">What you'll lose after ${expiryDate}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("📥", "Material downloads", "PDF worksheets and grammar summaries.")}
+        ${divider()}
+        ${featureRow("🎓", "Certificates", "Shareable proof of your grammar and tense mastery.")}
+        ${divider()}
+        ${featureRow("🧠", "Detailed test analytics", "Topic-level breakdowns and vocabulary size estimates.")}
+        ${divider()}
+        ${featureRow("🔥", "Streak freeze", "Protect your streak on days you can't practice.")}
+      </table>
+    </div>
+
+    ${btn(`${SITE}/pro`, "Renew PRO →", "#D97706", "#ffffff")}
+
+    <p style="margin:20px 0 0;font-size:13px;color:#9CA3AF;text-align:center;line-height:1.6;">
+      Your progress and streaks are always saved — renewing is instant.
+    </p>
+    `
+  ) + FOOTER("You received this because your English Nerd PRO access is expiring soon.") + CLOSE;
+
+  await send(to, `Your PRO expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`, html);
+}
+
+// ─── 9. Teacher expiring soon (voucher) ──────────────────────────────────────
+
+export async function sendTeacherExpiringSoonEmail(to: string, name: string | null, expiresAt: string, daysLeft: number) {
+  const firstName = name?.split(" ")[0] ?? "there";
+  const expiryDate = new Date(expiresAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const html = BASE + LOGO + card(
+    "linear-gradient(90deg,#0EA5E9,#38BDF8,#7DD3FC)",
+    `
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;color:#0284C7;letter-spacing:0.06em;text-transform:uppercase;">Teacher Account</span>
+    </div>
+
+    <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px;">Your Teacher plan expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}, ${firstName}</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+      Your Teacher access expires on <strong style="color:#111827;">${expiryDate}</strong>. Renew before then to keep your classroom running without interruption.
+    </p>
+
+    <div style="background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:800;color:#075985;text-transform:uppercase;letter-spacing:0.05em;">What pauses after ${expiryDate}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${featureRow("👥", "Student invites", "You won't be able to invite new students.")}
+        ${divider()}
+        ${featureRow("📋", "New assignments", "Creating and assigning work will be paused.")}
+        ${divider()}
+        ${featureRow("📊", "Progress tracking", "Student dashboards will be paused.")}
+      </table>
+    </div>
+
+    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#111827;text-align:center;">Your student data is always safe.</p>
+    <p style="margin:0 0 4px;font-size:13px;color:#6B7280;text-align:center;">Renew now to keep your classroom active.</p>
+
+    ${btn(`${SITE}/teacher`, "Renew Teacher plan →", "#0284C7", "#ffffff")}
+    `
+  ) + FOOTER("You received this because your English Nerd Teacher plan is expiring soon.") + CLOSE;
+
+  await send(to, `Your Teacher plan expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`, html);
+}
+
+// ─── 10. Student linked to teacher ───────────────────────────────────────────
 
 export async function sendStudentLinkedEmail(to: string, studentName: string | null, teacherName: string | null) {
   const firstName = studentName?.split(" ")[0] ?? "there";
