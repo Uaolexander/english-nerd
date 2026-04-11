@@ -3,8 +3,6 @@ import { getWidget, getAllWidgets } from "@/lib/widgetData";
 import WidgetQuiz from "./WidgetQuiz";
 import type { Metadata } from "next";
 
-export const dynamic = "force-static";
-
 export function generateStaticParams() {
   return getAllWidgets().map((w) => ({ slug: w.slug }));
 }
