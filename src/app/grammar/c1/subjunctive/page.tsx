@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import SubjunctiveLessonClient from "./SubjunctiveLessonClient";
 
 export const metadata = {

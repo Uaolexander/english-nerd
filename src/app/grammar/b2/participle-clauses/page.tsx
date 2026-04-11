@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ParticleClausesLessonClient from "./ParticipleClausesLessonClient";
 
 export const metadata = {

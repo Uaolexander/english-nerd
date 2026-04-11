@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ThirdConditionalLessonClient from "./ThirdConditionalLessonClient";
 
 export const metadata = {

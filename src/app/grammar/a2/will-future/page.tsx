@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import WillFutureLessonClient from "./WillFutureLessonClient";
 
 export const metadata = {

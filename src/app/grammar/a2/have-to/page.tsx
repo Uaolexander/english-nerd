@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import HaveToLessonClient from "./HaveToLessonClient";
 
 export const metadata = {

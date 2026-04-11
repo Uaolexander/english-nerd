@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import GoingToLessonClient from "./GoingToLessonClient";
 
 export const metadata = {

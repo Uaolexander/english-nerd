@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ModalDeductionLessonClient from "./ModalDeductionLessonClient";
 
 export const metadata = {

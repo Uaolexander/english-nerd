@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import VerbInfinitiveLessonClient from "./VerbInfinitiveLessonClient";
 
 export const metadata = {

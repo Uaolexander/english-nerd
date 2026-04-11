@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AsAsComparisonLessonClient from "./AsAsComparisonLessonClient";
 
 export const metadata = {

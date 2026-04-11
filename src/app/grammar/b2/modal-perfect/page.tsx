@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ModalPerfectLessonClient from "./ModalPerfectLessonClient";
 
 export const metadata = {

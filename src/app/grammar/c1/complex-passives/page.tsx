@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ComplexPassivesLessonClient from "./ComplexPassivesLessonClient";
 
 export const metadata = {

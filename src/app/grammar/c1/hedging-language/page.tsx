@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import HedgingLanguageLessonClient from "./HedgingLanguageLessonClient";
 
 export const metadata = {

@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AdvancedInversionLessonClient from "./AdvancedInversionLessonClient";
 
 export const metadata = {

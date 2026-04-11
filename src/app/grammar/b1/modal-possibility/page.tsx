@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ModalPossibilityLessonClient from "./ModalPossibilityLessonClient";
 
 export const metadata = {

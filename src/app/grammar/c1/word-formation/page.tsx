@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import WordFormationLessonClient from "./WordFormationLessonClient";
 
 export const metadata = {

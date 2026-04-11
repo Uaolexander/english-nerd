@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import TimeExpressionsPastLessonClient from "./TimeExpressionsPastLessonClient";
 
 export const metadata = {

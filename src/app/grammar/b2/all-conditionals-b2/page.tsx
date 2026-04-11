@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AllConditionalsB2LessonClient from "./AllConditionalsB2LessonClient";
 
 export const metadata = {

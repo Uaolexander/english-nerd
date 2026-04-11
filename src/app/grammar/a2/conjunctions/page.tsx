@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ConjunctionsLessonClient from "./ConjunctionsLessonClient";
 
 export const metadata = {

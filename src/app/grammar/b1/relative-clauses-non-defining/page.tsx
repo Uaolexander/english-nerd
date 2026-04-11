@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import RelativeClausesNonDefiningLessonClient from "./RelativeClausesNonDefiningLessonClient";
 
 export const metadata = {

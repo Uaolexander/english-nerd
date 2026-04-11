@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import WishPastLessonClient from "./WishPastLessonClient";
 
 export const metadata = {

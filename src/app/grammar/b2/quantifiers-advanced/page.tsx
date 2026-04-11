@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import QuantifiersAdvancedLessonClient from "./QuantifiersAdvancedLessonClient";
 
 export const metadata = {

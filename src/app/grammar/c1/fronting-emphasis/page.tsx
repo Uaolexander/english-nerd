@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import FrontingEmphasisLessonClient from "./FrontingEmphasisLessonClient";
 
 export const metadata = {

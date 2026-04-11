@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AdvancedModalsLessonClient from "./AdvancedModalsLessonClient";
 
 export const metadata = {

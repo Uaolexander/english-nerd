@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import SuperlativeAdjectivesLessonClient from "./SuperlativeAdjectivesLessonClient";
 
 export const metadata = {

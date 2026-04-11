@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import TooEnoughLessonClient from "./TooEnoughLessonClient";
 
 export const metadata = {

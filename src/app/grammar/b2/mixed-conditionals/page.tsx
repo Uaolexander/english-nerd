@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import MixedConditionalsLessonClient from "./MixedConditionalsLessonClient";
 
 export const metadata = {

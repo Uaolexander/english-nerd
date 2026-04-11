@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import NominalisationLessonClient from "./NominalisationLessonClient";
 
 export const metadata = {

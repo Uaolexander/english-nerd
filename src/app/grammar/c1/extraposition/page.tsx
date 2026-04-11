@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ExtrapositionLessonClient from "./ExtrapositionLessonClient";
 
 export const metadata = {

@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AdvancedRelativeClausesLessonClient from "./AdvancedRelativeClausesLessonClient";
 
 export const metadata = {

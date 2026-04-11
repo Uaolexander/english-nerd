@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import FuturePerfectLessonClient from "./FuturePerfectLessonClient";
 
 export const metadata = {

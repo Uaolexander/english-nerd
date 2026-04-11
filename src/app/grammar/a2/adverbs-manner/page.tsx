@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AdverbsMannerLessonClient from "./AdverbsMannerLessonClient";
 
 export const metadata = {

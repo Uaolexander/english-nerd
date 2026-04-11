@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PastSimpleIrregularLessonClient from "./PastSimpleIrregularLessonClient";
 
 export const metadata = {

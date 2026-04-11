@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PastSimpleNegativeQuestionsLessonClient from "./PastSimpleNegativeQuestionsLessonClient";
 
 export const metadata = {

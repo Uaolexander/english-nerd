@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import FutureContinuousLessonClient from "./FutureContinuousLessonClient";
 
 export const metadata = {

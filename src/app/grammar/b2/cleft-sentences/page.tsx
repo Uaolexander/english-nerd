@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import CleftSentencesLessonClient from "./CleftSentencesLessonClient";
 
 export const metadata = {

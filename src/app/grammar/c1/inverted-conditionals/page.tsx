@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import InvertedConditionalsLessonClient from "./InvertedConditionalsLessonClient";
 
 export const metadata = {

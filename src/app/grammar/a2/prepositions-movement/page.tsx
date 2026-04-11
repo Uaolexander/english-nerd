@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PrepositionsMovementLessonClient from "./PrepositionsMovementLessonClient";
 
 export const metadata = {

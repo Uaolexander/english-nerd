@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import GerundsInfinitivesLessonClient from "./GerundsInfinitivesLessonClient";
 
 export const metadata = {

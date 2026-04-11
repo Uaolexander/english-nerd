@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import CausativeLessonClient from "./CausativeLessonClient";
 
 export const metadata = {

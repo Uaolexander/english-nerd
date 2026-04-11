@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ComparativeAdjectivesLessonClient from "./ComparativeAdjectivesLessonClient";
 
 export const metadata = {

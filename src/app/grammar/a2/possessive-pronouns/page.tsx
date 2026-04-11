@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PossessivePronounsLessonClient from "./PossessivePronounsLessonClient";
 
 export const metadata = {

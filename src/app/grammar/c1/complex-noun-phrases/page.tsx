@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import ComplexNounPhrasesLessonClient from "./ComplexNounPhrasesLessonClient";
 
 export const metadata = {

@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import WouldPastHabitsLessonClient from "./WouldPastHabitsLessonClient";
 
 export const metadata = {

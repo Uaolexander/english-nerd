@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import AdvancedDiscourseMarkersLessonClient from "./AdvancedDiscourseMarkersLessonClient";
 
 export const metadata = {

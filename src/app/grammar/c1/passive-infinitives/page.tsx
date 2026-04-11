@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PassiveInfinitivesLessonClient from "./PassiveInfinitivesLessonClient";
 
 export const metadata = {

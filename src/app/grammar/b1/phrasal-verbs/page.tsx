@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PhrasalVerbsLessonClient from "./PhrasalVerbsLessonClient";
 
 export const metadata = {

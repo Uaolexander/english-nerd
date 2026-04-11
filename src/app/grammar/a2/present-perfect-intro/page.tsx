@@ -1,3 +1,4 @@
+import LessonSchema from "@/components/LessonSchema";
 import PresentPerfectIntroLessonClient from "./PresentPerfectIntroLessonClient";
 
 export const metadata = {
