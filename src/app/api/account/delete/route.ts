@@ -12,12 +12,21 @@ export async function DELETE() {
 
   const service = createServiceClient();
 
-  // Delete the user — Supabase cascades to user_progress, user_sessions, certificates
-  const { error } = await service.auth.admin.deleteUser(user.id);
+  // Try admin API first
+  const { error: adminError } = await service.auth.admin.deleteUser(user.id);
 
-  if (error) {
-    console.error("[account/delete] Supabase error:", error.message, "userId:", user.id);
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  if (!adminError) {
+    return NextResponse.json({ ok: true });
+  }
+
+  console.error("[account/delete] admin.deleteUser failed:", adminError.message, "— trying raw SQL");
+
+  // Fallback: delete directly via SQL (cascades to all related tables)
+  const { error: sqlError } = await service.rpc("delete_user_by_id", { target_user_id: user.id });
+
+  if (sqlError) {
+    console.error("[account/delete] SQL fallback failed:", sqlError.message, "userId:", user.id);
+    return NextResponse.json({ ok: false, error: sqlError.message }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
