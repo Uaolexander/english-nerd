@@ -2988,6 +2988,17 @@ function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUr
         />
       )}
 
+      {isPaymentFailed && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <span className="text-xl">🚨</span>
+          <div className="flex-1">
+            <p className="text-sm font-black text-red-700">Payment failed — action needed</p>
+            <p className="text-xs text-red-500 mt-0.5">Your last payment didn't go through. Update your card to avoid losing Teacher access.</p>
+          </div>
+          <a href="/billing-portal" className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-red-600">Fix now →</a>
+        </div>
+      )}
+
       {teacherData.isInGracePeriod && teacherData.subscriptionExpiresAt && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800 flex items-start justify-between gap-4">
           <div>
