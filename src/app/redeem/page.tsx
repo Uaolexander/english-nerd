@@ -91,8 +91,26 @@ export default function RedeemPage() {
               />
 
               {msg && (
-                <div className={`rounded-xl px-4 py-3 text-sm font-semibold text-center ${msg.type === "ok" ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
-                  {msg.text}
+                <div className="space-y-3">
+                  <div className={`rounded-xl px-4 py-3 text-sm font-semibold text-center ${msg.type === "ok" ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
+                    {msg.text}
+                  </div>
+                  {msg.type === "err" && msg.text.toLowerCase().includes("signed in") && (
+                    <div className="flex gap-2">
+                      <a
+                        href={`/login?next=${encodeURIComponent("/redeem")}`}
+                        className="flex-1 rounded-2xl border border-white/15 bg-white/5 py-3 text-sm font-black text-white text-center transition hover:bg-white/10"
+                      >
+                        Log in
+                      </a>
+                      <a
+                        href={`/register?next=${encodeURIComponent("/redeem")}`}
+                        className="flex-1 rounded-2xl bg-[#F5DA20] py-3 text-sm font-black text-black text-center transition hover:bg-[#ffe033]"
+                      >
+                        Create account
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
