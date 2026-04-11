@@ -2445,7 +2445,7 @@ type ActivityItem = {
 
 // ── TeacherTab ─────────────────────────────────────────────────────────────
 
-function TeacherTab({ teacherData, siteUrl }: { teacherData: TeacherData; siteUrl: string }) {
+function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: TeacherData; siteUrl: string; isPaymentFailed: boolean }) {
   const [innerTab, setInnerTab] = useState<"students" | "classes" | "assignments">("students");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
@@ -5788,7 +5788,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
 
         {/* ══════════════ TEACHER TAB ══════════════ */}
         {tab === "teacher" && isTeacher && teacherData && (
-          <TeacherTab teacherData={teacherData} siteUrl={siteUrl} />
+          <TeacherTab teacherData={teacherData} siteUrl={siteUrl} isPaymentFailed={isPaymentFailed} />
         )}
 
         {/* ══════════════ PROFILE TAB ══════════════ */}
