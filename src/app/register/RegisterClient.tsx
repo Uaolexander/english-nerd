@@ -19,6 +19,32 @@ export default function RegisterClient() {
   const [captchaToken, setCaptchaToken] = useState("");
   const widgetRef = useRef<TurnstileInstance | null>(null);
 
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendDone, setResendDone] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  async function handleResend() {
+    if (resendCooldown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setResendError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setResendLoading(false);
+    if (error) {
+      setResendError(error.message);
+    } else {
+      setResendDone(true);
+      let secs = 60;
+      setResendCooldown(secs);
+      const timer = setInterval(() => {
+        secs -= 1;
+        setResendCooldown(secs);
+        if (secs <= 0) clearInterval(timer);
+      }, 1000);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -102,17 +128,51 @@ export default function RegisterClient() {
       <main className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-16">
         <div className="w-full max-w-sm flex flex-col gap-4">
           <div className="rounded-2xl border border-white/10 bg-[#121216] p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/10 text-2xl">
-              ✉️
+            {/* Envelope icon */}
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F5DA20]/10">
+              <svg className="h-8 w-8 text-[#F5DA20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
             </div>
+
             <h2 className="text-xl font-black text-white">Check your email</h2>
-            <p className="mt-2 text-sm text-white/55">
-              We sent a confirmation link to <span className="text-white/70 font-semibold">{email}</span>.
+            <p className="mt-2 text-sm leading-relaxed text-white/55">
+              We sent a confirmation link to{" "}
+              <span className="font-semibold text-white/80">{email}</span>.
               Click it to activate your account.
             </p>
+
+            {/* Resend section */}
+            <div className="mt-5 border-t border-white/8 pt-5">
+              {resendDone ? (
+                <div className="flex items-center justify-center gap-2 text-sm text-emerald-400">
+                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Email resent!{resendCooldown > 0 && <span className="text-white/35"> Resend again in {resendCooldown}s</span>}
+                </div>
+              ) : (
+                <p className="text-xs text-white/35">
+                  Didn&apos;t receive it?{" "}
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendLoading || resendCooldown > 0}
+                    className="font-semibold text-[#F5DA20] transition hover:underline disabled:opacity-40 disabled:no-underline"
+                  >
+                    {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend confirmation email"}
+                  </button>
+                </p>
+              )}
+              {resendError && (
+                <p className="mt-2 text-xs text-red-400">{resendError}</p>
+              )}
+            </div>
+
             <a
               href="/login"
-              className="mt-6 block rounded-xl border border-white/10 py-3 text-sm font-bold text-white/60 hover:bg-white/5 transition"
+              className="mt-4 block rounded-xl border border-white/10 py-3 text-sm font-bold text-white/50 hover:bg-white/5 hover:text-white/70 transition"
             >
               Back to login
             </a>

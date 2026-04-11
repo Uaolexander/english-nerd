@@ -249,7 +249,7 @@ export default function FrontingEmphasisLessonClient() {
   }, [checked, current, mcqAnswers, inputAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">

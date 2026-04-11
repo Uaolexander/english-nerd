@@ -10,15 +10,15 @@ export default function PrivacyPolicyPage() {
       <div className="mx-auto max-w-3xl px-6 py-16">
 
         {/* Breadcrumb */}
-        <div className="mb-8 text-sm text-white/40">
+        <div className="mb-8 text-sm text-white/55">
           <a href="/" className="hover:text-white transition">Home</a>
-          <span className="mx-2 text-white/35">/</span>
+          <span className="mx-2 text-white/50">/</span>
           <span className="text-white/70">Privacy Policy</span>
         </div>
 
         {/* Header */}
         <div className="mb-12">
-          <div className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Legal</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-3">Legal</div>
           <h1 className="text-4xl font-black tracking-tight">Privacy Policy</h1>
           <p className="mt-3 text-white/50 text-sm">Last updated: March 2026</p>
           <div className="mt-6 h-px bg-white/8" />

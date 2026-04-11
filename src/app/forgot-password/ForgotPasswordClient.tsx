@@ -61,7 +61,7 @@ export default function ForgotPasswordClient() {
               ✉️
             </div>
             <h2 className="text-xl font-black text-white">Check your email</h2>
-            <p className="mt-2 text-sm text-white/40">
+            <p className="mt-2 text-sm text-white/55">
               If this email exists in our system, we sent a password reset link.
             </p>
             <a
@@ -81,7 +81,7 @@ export default function ForgotPasswordClient() {
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-white/10 bg-[#121216] p-8">
           <h1 className="text-2xl font-black text-white">Reset password</h1>
-          <p className="mt-1 text-sm text-white/40">
+          <p className="mt-1 text-sm text-white/55">
             Enter your email and we&apos;ll send you a reset link.
           </p>
 
@@ -115,7 +115,7 @@ export default function ForgotPasswordClient() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-white/40">
+          <p className="mt-6 text-center text-sm text-white/55">
             Remembered your password?{" "}
             <a href="/login" className="font-bold text-[#F5DA20] hover:underline">
               Log in

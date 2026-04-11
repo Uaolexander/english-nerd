@@ -168,7 +168,7 @@ export default function SoSuchLessonClient() {
         { id: "e2q1", prompt: "It was ___ long film that we left early.", options: ["so", "such a", "such"], correctIndex: 1, explanation: "such a + singular countable noun: such a long film." },
         { id: "e2q2", prompt: "The music was ___ loud that the neighbours complained.", options: ["such", "such a", "so"], correctIndex: 2, explanation: "so + adjective (no noun follows): so loud." },
         { id: "e2q3", prompt: "They are ___ lovely children!", options: ["so", "such a", "such"], correctIndex: 2, explanation: "such + plural noun: such lovely children." },
-        { id: "e2q4", prompt: "I've never met ___ interesting person.", options: ["so", "such", "such a"], correctIndex: 2, explanation: "such a + singular countable noun: such an interesting person." },
+        { id: "e2q4", prompt: "I've never met ___ interesting person.", options: ["so", "such", "such an"], correctIndex: 2, explanation: "such an + singular countable noun starting with a vowel: such an interesting person." },
         { id: "e2q5", prompt: "She was ___ angry that she slammed the door.", options: ["such a", "such", "so"], correctIndex: 2, explanation: "so + adjective: so angry." },
         { id: "e2q6", prompt: "We had ___ fun at the party!", options: ["so", "such a", "such"], correctIndex: 2, explanation: "such + uncountable noun (fun): such fun." },
         { id: "e2q7", prompt: "It's ___ hot today!", options: ["such", "such a", "so"], correctIndex: 2, explanation: "so + adjective (no noun): so hot." },
@@ -245,7 +245,7 @@ export default function SoSuchLessonClient() {
   }, [checked, current, mcqAnswers, inputAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -317,7 +317,7 @@ export default function SoSuchLessonClient() {
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/5 text-sm font-black text-slate-700">{idx + 1}</div>
                             <div className="flex-1">
                               <div className="font-bold text-slate-900">{q.prompt}</div>
-                              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                              <div className={`mt-3 grid gap-2 ${exNo === 4 ? "grid-cols-1" : "sm:grid-cols-3"}`}>
                                 {q.options.map((opt, oi) => (
                                   <label key={oi} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 transition ${chosen === oi ? "border-[#F5DA20] bg-[#F5DA20]/20" : "border-black/10 bg-white hover:bg-black/5"} ${checked ? "cursor-default" : ""}`}>
                                     <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => setMcqAnswers((p) => ({ ...p, [q.id]: oi }))} />

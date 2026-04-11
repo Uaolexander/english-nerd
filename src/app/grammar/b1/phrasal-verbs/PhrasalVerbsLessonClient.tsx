@@ -233,7 +233,7 @@ export default function PhrasalVerbsLessonClient() {
   }, [checked, current, mcqAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">

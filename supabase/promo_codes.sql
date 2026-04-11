@@ -42,28 +42,28 @@ create index if not exists promo_redemptions_expires_idx on public.promo_redempt
 -- Seed: all promo codes
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- YKO campaign — 20 codes — 30 days PRO (for YKO company meeting)
+-- YKO campaign — 20 codes — 90 days PRO (for YKO company meeting)
 insert into public.promo_codes (code, campaign, duration_days, max_uses) values
-  ('YKO-PLUS',  'yko', 30, 1),
-  ('YKO-STAR',  'yko', 30, 1),
-  ('YKO-GOLD',  'yko', 30, 1),
-  ('YKO-FAST',  'yko', 30, 1),
-  ('YKO-BEST',  'yko', 30, 1),
-  ('YKO-RISE',  'yko', 30, 1),
-  ('YKO-GROW',  'yko', 30, 1),
-  ('YKO-FLOW',  'yko', 30, 1),
-  ('YKO-PEAK',  'yko', 30, 1),
-  ('YKO-ZONE',  'yko', 30, 1),
-  ('YKO-FIRE',  'yko', 30, 1),
-  ('YKO-GLOW',  'yko', 30, 1),
-  ('YKO-BOLD',  'yko', 30, 1),
-  ('YKO-KEEN',  'yko', 30, 1),
-  ('YKO-WISE',  'yko', 30, 1),
-  ('YKO-LIFT',  'yko', 30, 1),
-  ('YKO-BUZZ',  'yko', 30, 1),
-  ('YKO-VIBE',  'yko', 30, 1),
-  ('YKO-NOVA',  'yko', 30, 1),
-  ('YKO-EDGE',  'yko', 30, 1)
+  ('YKO-PLUS',  'yko', 90, 1),
+  ('YKO-STAR',  'yko', 90, 1),
+  ('YKO-GOLD',  'yko', 90, 1),
+  ('YKO-FAST',  'yko', 90, 1),
+  ('YKO-BEST',  'yko', 90, 1),
+  ('YKO-RISE',  'yko', 90, 1),
+  ('YKO-GROW',  'yko', 90, 1),
+  ('YKO-FLOW',  'yko', 90, 1),
+  ('YKO-PEAK',  'yko', 90, 1),
+  ('YKO-ZONE',  'yko', 90, 1),
+  ('YKO-FIRE',  'yko', 90, 1),
+  ('YKO-GLOW',  'yko', 90, 1),
+  ('YKO-BOLD',  'yko', 90, 1),
+  ('YKO-KEEN',  'yko', 90, 1),
+  ('YKO-WISE',  'yko', 90, 1),
+  ('YKO-LIFT',  'yko', 90, 1),
+  ('YKO-BUZZ',  'yko', 90, 1),
+  ('YKO-VIBE',  'yko', 90, 1),
+  ('YKO-NOVA',  'yko', 90, 1),
+  ('YKO-EDGE',  'yko', 90, 1)
 on conflict (code) do nothing;
 
 -- NERD general campaign — 30 codes — 30 days PRO

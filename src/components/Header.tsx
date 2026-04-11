@@ -576,7 +576,6 @@ export default function Header() {
           menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       />
-      )}
 
       {/* Slide-in drawer */}
       <div

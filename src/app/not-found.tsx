@@ -27,7 +27,7 @@ export default function NotFound() {
 
       {/* Quick navigation */}
       <div className="mt-14 w-full max-w-xl">
-        <p className="mb-4 text-center text-xs font-bold uppercase tracking-widest text-white/25">
+        <p className="mb-4 text-center text-xs font-bold uppercase tracking-widest text-white/45">
           Maybe you were looking for
         </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

@@ -180,6 +180,7 @@ export default function FillInBlankClient() {
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setExNo(n);
     setChecked(false);
     setAnswers({});

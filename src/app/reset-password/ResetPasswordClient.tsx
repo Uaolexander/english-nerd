@@ -42,7 +42,7 @@ export default function ResetPasswordClient() {
               ✅
             </div>
             <h2 className="text-xl font-black text-white">Password updated</h2>
-            <p className="mt-2 text-sm text-white/40">
+            <p className="mt-2 text-sm text-white/55">
               Your password has been changed successfully.
             </p>
             <a
@@ -62,7 +62,7 @@ export default function ResetPasswordClient() {
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-white/10 bg-[#121216] p-8">
           <h1 className="text-2xl font-black text-white">New password</h1>
-          <p className="mt-1 text-sm text-white/40">
+          <p className="mt-1 text-sm text-white/55">
             Choose a new password for your account.
           </p>
 
