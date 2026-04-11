@@ -118,7 +118,7 @@ export function getRecommendations(stats: ProgressStats): TopicRec[] {
     const target = vocabScore >= 70 ? NEXT_LEVEL[base] : base;
     const vocab = VOCAB_BY_LEVEL[target] ?? VOCAB_BY_LEVEL.a2;
     recs.push({
-      slug: `vocabulary-${target}`, title: vocab.title, img: `/topics/vocabulary-${target}.jpg`, href: vocab.href,
+      slug: `vocabulary-${target}`, title: vocab.title, img: `/topics/vocabulary/${target}.jpg`, href: vocab.href,
       level: target.toUpperCase(), badge: "bg-emerald-500",
       reason: vocabScore < 70 ? `Vocab: ${vocabScore}% — build your word bank` : `Vocab: ${vocabScore}% — explore next level`,
     });
