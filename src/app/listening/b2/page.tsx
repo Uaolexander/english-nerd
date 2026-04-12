@@ -75,21 +75,24 @@ export default async function ListeningB2Page() {
               { lvl: "A2", href: "/listening/a2" },
               { lvl: "B1", href: "/listening/b1" },
               { lvl: "B2", href: "/listening/b2" },
-              { lvl: "C1", href: "/listening/c1" },
+              { lvl: "C1", href: null },
             ].map(({ lvl, href }) => {
               const active = lvl === "B2";
+              const Tag = href ? "a" : "span";
               return (
-                <a
+                <Tag
                   key={lvl}
-                  href={href}
+                  {...(href ? { href } : {})}
                   className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-bold transition ${
                     active
                       ? "bg-orange-400 text-black shadow-sm"
-                      : "border border-white/15 text-white/55 hover:border-white/30 hover:text-white/85"
+                      : href
+                      ? "border border-white/15 text-white/55 hover:border-white/30 hover:text-white/85"
+                      : "border border-white/8 text-white/25 cursor-not-allowed"
                   }`}
                 >
-                  {lvl}
-                </a>
+                  {lvl}{!href && <span className="ml-1 text-xs opacity-60">soon</span>}
+                </Tag>
               );
             })}
           </div>

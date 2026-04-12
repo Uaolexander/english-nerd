@@ -1859,12 +1859,6 @@ function buildXML() {
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://englishnerd.cc/listening/c1</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.65</priority>
-  </url>
-  <url>
     <loc>https://englishnerd.cc/listening/b2/work-life-balance</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
