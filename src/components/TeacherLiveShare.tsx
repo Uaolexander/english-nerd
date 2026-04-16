@@ -100,7 +100,7 @@ export default function TeacherLiveShare() {
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl overflow-hidden">
             {/* Header */}
