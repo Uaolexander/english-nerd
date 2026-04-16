@@ -131,7 +131,7 @@ export default function ProPlans() {
             <span className="mb-2 text-sm text-white/50">/ month</span>
           </div>
           <p className="mt-1 text-xs text-white/45">
-            Billed monthly · <span className="text-white/35">$59.88/year total</span>
+            Billed monthly · Cancel any time
           </p>
 
           <p className="mt-3 text-xs text-white/55">
@@ -142,7 +142,7 @@ export default function ProPlans() {
             >
               switch to Annual
             </button>{" "}
-            and save <span className="font-bold text-white/60">$30/year</span>
+            and pay only <span className="font-bold text-white/70">$2.50/month</span>
           </p>
 
           <ul className="mt-6 mb-8 flex-1 space-y-3">

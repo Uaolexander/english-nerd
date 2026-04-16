@@ -780,81 +780,149 @@ function AssignmentsTab({ assignments, students, classes }: {
 
       {/* Create form */}
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-2xl border border-violet-100 bg-violet-50 p-6 space-y-4">
-          <h2 className="font-bold text-slate-800">New Assignment</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Title</label>
+        <form onSubmit={handleCreate} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          {/* Form header */}
+          <div className="border-b border-slate-100 px-6 py-4">
+            <h2 className="font-black text-slate-800">New Assignment</h2>
+            <p className="mt-0.5 text-xs text-slate-400">Choose a category, pick an exercise, and assign it to a student or class</p>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Title */}
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">Title</label>
               <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Past Continuous Exercise 1"
-                required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+                placeholder="e.g. Past Continuous – Fill in the Blank"
+                required className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
             </div>
+
+            {/* Category cards */}
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Category</label>
-              <select value={form.category} onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                <option value="grammar">Grammar</option>
-                <option value="tenses">Tenses</option>
-                <option value="vocabulary">Vocabulary</option>
-                <option value="reading">Reading</option>
-                <option value="listening">Listening</option>
-                <option value="tests">Tests</option>
-              </select>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Category</label>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {[
+                  { id: "grammar",    label: "Grammar",    color: "violet", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                  )},
+                  { id: "tenses",     label: "Tenses",     color: "sky", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  )},
+                  { id: "vocabulary", label: "Vocabulary",  color: "amber", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                  )},
+                  { id: "reading",    label: "Reading",    color: "emerald", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                  )},
+                  { id: "listening",  label: "Listening",  color: "rose", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                    </svg>
+                  )},
+                  { id: "tests",      label: "Tests",      color: "orange", icon: (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                  )},
+                ].map(({ id, label, color, icon }) => {
+                  const isSelected = form.category === id;
+                  const colorMap: Record<string, string> = {
+                    violet:  isSelected ? "border-violet-500 bg-violet-50 text-violet-700 shadow-md shadow-violet-100"  : "border-slate-200 bg-slate-50 text-slate-500 hover:border-violet-300 hover:bg-violet-50/50",
+                    sky:     isSelected ? "border-sky-500 bg-sky-50 text-sky-700 shadow-md shadow-sky-100"              : "border-slate-200 bg-slate-50 text-slate-500 hover:border-sky-300 hover:bg-sky-50/50",
+                    amber:   isSelected ? "border-amber-500 bg-amber-50 text-amber-700 shadow-md shadow-amber-100"      : "border-slate-200 bg-slate-50 text-slate-500 hover:border-amber-300 hover:bg-amber-50/50",
+                    emerald: isSelected ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md shadow-emerald-100" : "border-slate-200 bg-slate-50 text-slate-500 hover:border-emerald-300 hover:bg-emerald-50/50",
+                    rose:    isSelected ? "border-rose-500 bg-rose-50 text-rose-700 shadow-md shadow-rose-100"          : "border-slate-200 bg-slate-50 text-slate-500 hover:border-rose-300 hover:bg-rose-50/50",
+                    orange:  isSelected ? "border-orange-500 bg-orange-50 text-orange-700 shadow-md shadow-orange-100"  : "border-slate-200 bg-slate-50 text-slate-500 hover:border-orange-300 hover:bg-orange-50/50",
+                  };
+                  return (
+                    <button key={id} type="button" onClick={() => handleCategoryChange(id)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition ${colorMap[color]}`}>
+                      {icon}
+                      <span className="text-[10px] font-black leading-none tracking-wide">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Level / Tense pills */}
+            {levelKeys.length > 0 && (
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">
+                  {form.category === "tenses" ? "Tense" : form.category === "tests" ? "Type" : "Level"}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {levelKeys.map((k) => (
+                    <button key={k} type="button" onClick={() => handleLevelChange(k)}
+                      className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+                        form.level === k
+                          ? "bg-slate-800 text-white shadow-sm"
+                          : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                      }`}>
+                      {form.category === "tenses" ? TENSE_LABELS[k] ?? k : LEVEL_LABELS[k] ?? k.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Exercise */}
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">
-                {form.category === "tenses" ? "Tense" : form.category === "tests" ? "Type" : "Level"}
-              </label>
-              <select value={form.level} onChange={(e) => handleLevelChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                {levelKeys.map((k) => (
-                  <option key={k} value={k}>
-                    {form.category === "tenses" ? TENSE_LABELS[k] ?? k : LEVEL_LABELS[k] ?? k.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Exercise</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">Exercise</label>
               <select value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
+                required className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
                 {exerciseOptions.length === 0 && <option value="">— no exercises available —</option>}
                 {exerciseOptions.map((ex) => (
                   <option key={ex.slug} value={ex.slug}>{ex.label}</option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Due date (optional)</label>
-              <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Assign to</label>
-              <select value={form.targetType} onChange={(e) => setForm({ ...form, targetType: e.target.value as "student" | "class", targetId: "" })}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                <option value="student">Individual student</option>
-                <option value="class">Class</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">
-                {form.targetType === "student" ? "Student" : "Class"}
-              </label>
-              <select value={form.targetId} onChange={(e) => setForm({ ...form, targetId: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                <option value="">Everyone (no specific target)</option>
-                {form.targetType === "student"
-                  ? activeStudents.map((s) => <option key={s.studentId} value={s.studentId!}>{s.email}</option>)
-                  : classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)
-                }
-              </select>
+
+            {/* Bottom row: due date + assign */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">Due date</label>
+                <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">Assign to</label>
+                <select value={form.targetType} onChange={(e) => setForm({ ...form, targetType: e.target.value as "student" | "class", targetId: "" })}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+                  <option value="student">Individual student</option>
+                  <option value="class">Class</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">
+                  {form.targetType === "student" ? "Student" : "Class"}
+                </label>
+                <select value={form.targetId} onChange={(e) => setForm({ ...form, targetId: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+                  <option value="">Everyone</option>
+                  {form.targetType === "student"
+                    ? activeStudents.map((s) => <option key={s.studentId} value={s.studentId!}>{s.email}</option>)
+                    : classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)
+                  }
+                </select>
+              </div>
             </div>
           </div>
-          <button type="submit" disabled={saving}
-            className="w-full rounded-xl bg-violet-600 py-3 text-sm font-bold text-white transition hover:bg-violet-700 disabled:opacity-50">
-            {saving ? "Creating…" : "Create Assignment"}
-          </button>
+
+          {/* Footer */}
+          <div className="border-t border-slate-100 px-6 py-4">
+            <button type="submit" disabled={saving}
+              className="w-full rounded-xl bg-violet-600 py-3 text-sm font-bold text-white transition hover:bg-violet-700 disabled:opacity-50">
+              {saving ? "Creating…" : "Create Assignment"}
+            </button>
+          </div>
         </form>
       )}
 
@@ -871,7 +939,12 @@ function AssignmentsTab({ assignments, students, classes }: {
             return (
               <div key={a.id} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white px-6 py-4 shadow-sm">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black text-white ${
-                  a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : "bg-amber-500"
+                  a.category === "grammar" ? "bg-violet-500" :
+                  a.category === "tenses" ? "bg-sky-500" :
+                  a.category === "vocabulary" ? "bg-amber-500" :
+                  a.category === "reading" ? "bg-emerald-500" :
+                  a.category === "listening" ? "bg-rose-500" :
+                  a.category === "tests" ? "bg-orange-500" : "bg-slate-400"
                 }`}>
                   {(a.level ?? "—").toUpperCase()}
                 </div>

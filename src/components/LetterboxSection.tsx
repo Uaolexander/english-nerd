@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function LetterboxSection() {
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error" | "unauth">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,6 +21,8 @@ export default function LetterboxSection() {
       if (res.ok) {
         setStatus("sent");
         setMessage("");
+      } else if (res.status === 401) {
+        setStatus("unauth");
       } else {
         setStatus("error");
       }
@@ -91,6 +93,15 @@ export default function LetterboxSection() {
                 </div>
                 {status === "error" && (
                   <p className="mt-3 text-xs text-red-400">Something went wrong. Please try again.</p>
+                )}
+                {status === "unauth" && (
+                  <p className="mt-3 text-xs text-white/60">
+                    Please{" "}
+                    <a href="/login" className="font-bold text-[#F5DA20] hover:underline">log in</a>
+                    {" "}or{" "}
+                    <a href="/register" className="font-bold text-[#F5DA20] hover:underline">create a free account</a>
+                    {" "}to send a message.
+                  </p>
                 )}
               </form>
             )}

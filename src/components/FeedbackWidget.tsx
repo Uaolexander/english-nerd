@@ -213,7 +213,7 @@ export default function FeedbackWidget({ email, plan }: Props) {
   }
 
   return (
-    <div ref={panelRef} className="fixed bottom-[68px] right-4 z-40 flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
+    <div ref={panelRef} className="fixed bottom-[80px] right-4 z-40 flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
 
       {open && (
         <div

@@ -457,6 +457,7 @@ type ParsedExercise = { category: string; level: string | null; slug: string; ti
 
 const CATEGORY_COLORS: Record<string, string> = {
   grammar: "bg-violet-500", tenses: "bg-sky-500", vocabulary: "bg-amber-500",
+  reading: "bg-emerald-500", listening: "bg-rose-500", tests: "bg-orange-500",
 };
 const LEVEL_COLORS_ASSIGN: Record<string, string> = {
   a1: "bg-emerald-500", a2: "bg-teal-500", b1: "bg-violet-500", b2: "bg-amber-500", c1: "bg-rose-500",
@@ -467,8 +468,8 @@ function parseExerciseUrl(raw: string): ParsedExercise | null {
   try { pathname = new URL(raw.trim()).pathname; } catch { /* treat as pathname */ }
   pathname = pathname.replace(/\/$/, "");
 
-  // /grammar/b1/past-continuous  OR  /vocabulary/a1/animals
-  const gcMatch = pathname.match(/^\/(grammar|vocabulary)\/([a-z0-9]+)\/([a-z0-9-]+)/);
+  // /grammar/b1/past-continuous  OR  /vocabulary/a1/animals  OR  /reading/b1/work-from-home
+  const gcMatch = pathname.match(/^\/(grammar|vocabulary|reading|listening)\/([a-z0-9]+)\/([a-z0-9-]+)/);
   if (gcMatch) {
     const [, cat, level, slug] = gcMatch;
     const item = searchIndex.find((i) => i.href.startsWith(`/${cat}/${level}/${slug}`));
@@ -481,18 +482,32 @@ function parseExerciseUrl(raw: string): ParsedExercise | null {
     const item = searchIndex.find((i) => i.href === `/tenses/${slug}`);
     return { category: "tenses", level: null, slug, title: item?.title ?? slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") };
   }
+  // /tests/grammar  OR  /tests/vocabulary  OR  /tests/tenses
+  const testsMatch = pathname.match(/^\/tests\/([a-z0-9-]+)/);
+  if (testsMatch) {
+    const slug = testsMatch[1];
+    const item = searchIndex.find((i) => i.href === `/tests/${slug}`);
+    return { category: "tests", level: null, slug, title: item?.title ?? slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") };
+  }
   return null;
 }
 
-// Assignable topics from searchIndex (grammar + tenses + vocabulary only)
-const ASSIGNABLE = searchIndex.filter((i) =>
-  /^\/(grammar|tenses|vocabulary)\//.test(i.href) &&
-  !i.href.split("/").at(-1)?.match(/^(a1|a2|b1|b2|c1)$/)  // exclude level-overview pages
-);
+// Assignable topics from searchIndex (all exercise categories)
+const ASSIGNABLE = searchIndex.filter((i) => {
+  if (/^\/(grammar|tenses|vocabulary|reading|listening)\//.test(i.href)) {
+    // exclude level-overview pages like /reading/a1 or /grammar/b1
+    return !i.href.split("/").at(-1)?.match(/^(a1|a2|b1|b2|c1)$/);
+  }
+  // include specific tests pages (not the overview /tests)
+  if (/^\/tests\/[a-z]/.test(i.href)) return true;
+  return false;
+});
 
 function getTopicsForLevel(category: string, level: string) {
   return ASSIGNABLE.filter((i) => {
     if (category === "tenses") return i.href.startsWith("/tenses/");
+    if (category === "tests") return i.href.startsWith("/tests/");
+    if (category === "listening") return i.href.startsWith("/listening/") && i.href.split("/").length === 4;
     return i.href.startsWith(`/${category}/${level}/`);
   });
 }
@@ -587,7 +602,7 @@ function NewAssignmentModal({
     if (!item) return;
     const parts = item.href.split("/");
     const cat = parts[1];
-    const level = browseCategory === "tenses" ? null : parts[2];
+    const level = (browseCategory === "tenses" || browseCategory === "tests") ? null : parts[2];
     const slug = parts[parts.length - 1];
     setParsed({ category: cat, level, slug, title: item.title });
     setTitle(item.title);
@@ -771,7 +786,7 @@ function NewAssignmentModal({
                       <input
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
-                        placeholder="https://englishnerd.cc/grammar/b1/past-continuous"
+                        placeholder="https://englishnerd.cc/reading/b1/work-from-home"
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100 transition"
                       />
                       {urlInput && (
@@ -787,16 +802,23 @@ function NewAssignmentModal({
                   <div className="space-y-3">
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Category</label>
-                      <div className="flex gap-1.5">
-                        {(["grammar", "tenses", "vocabulary"] as const).map((cat) => (
-                          <button key={cat} type="button" onClick={() => setBrowseCategory(cat)}
-                            className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${browseCategory === cat ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
-                            {cat}
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {([
+                          { id: "grammar",    label: "Grammar",    emoji: "✏️" },
+                          { id: "tenses",     label: "Tenses",     emoji: "🕐" },
+                          { id: "vocabulary", label: "Vocabulary", emoji: "📖" },
+                          { id: "reading",    label: "Reading",    emoji: "📚" },
+                          { id: "listening",  label: "Listening",  emoji: "🎧" },
+                          { id: "tests",      label: "Tests",      emoji: "✅" },
+                        ] as const).map(({ id, label, emoji }) => (
+                          <button key={id} type="button" onClick={() => setBrowseCategory(id)}
+                            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition ${browseCategory === id ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                            <span>{emoji}</span>{label}
                           </button>
                         ))}
                       </div>
                     </div>
-                    {browseCategory !== "tenses" && (
+                    {browseCategory !== "tenses" && browseCategory !== "tests" && browseCategory !== "listening" && (
                       <div>
                         <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Level</label>
                         <div className="flex gap-1.5">
@@ -1770,7 +1792,7 @@ function StudentDetailPanel({
                   <div className="divide-y divide-slate-50 border-t border-rose-50">
                     {visible.map((t) => {
                       const key = `${t.category}:${t.level ?? ""}:${t.slug}`;
-                      const catColor: Record<string, string> = { grammar: "bg-violet-500", tenses: "bg-sky-500", vocabulary: "bg-amber-500", reading: "bg-emerald-500" };
+                      const catColor: Record<string, string> = { grammar: "bg-violet-500", tenses: "bg-sky-500", vocabulary: "bg-amber-500", reading: "bg-emerald-500", listening: "bg-rose-500", tests: "bg-orange-500" };
                       const scoreCls = t.bestScore < 40 ? "text-rose-600 bg-rose-50 border-rose-200" : t.bestScore < 60 ? "text-amber-600 bg-amber-50 border-amber-200" : "text-orange-600 bg-orange-50 border-orange-200";
                       return (
                         <div key={key} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/60 transition-colors group">
@@ -1935,7 +1957,7 @@ function StudentDetailPanel({
                   const isDone = !isEssay && progressKeys.has(key);
                   const due = a.dueDate ? new Date(a.dueDate) : null;
                   const isOverdue = due && due < new Date();
-                  const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : isEssay ? "bg-rose-500" : "bg-amber-500";
+                  const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : a.category === "reading" ? "bg-emerald-500" : a.category === "listening" ? "bg-rose-400" : a.category === "tests" ? "bg-orange-500" : isEssay ? "bg-rose-500" : "bg-amber-500";
                   return (
                     <button
                       key={a.id}
@@ -2015,7 +2037,7 @@ function AssignmentResultsModal({
 
   const isEssay = assignment.category === "essay";
   const href = isEssay ? null : `/${assignment.category}${assignment.level ? `/${assignment.level}` : ""}/${assignment.slug}${assignment.exerciseNo ? `#ex${assignment.exerciseNo}` : ""}`;
-  const catColor = assignment.category === "grammar" ? "from-violet-500 to-violet-600" : assignment.category === "tenses" ? "from-sky-500 to-sky-600" : isEssay ? "from-rose-500 to-rose-600" : "from-amber-500 to-amber-600";
+  const catColor = assignment.category === "grammar" ? "from-violet-500 to-violet-600" : assignment.category === "tenses" ? "from-sky-500 to-sky-600" : assignment.category === "reading" ? "from-emerald-500 to-emerald-600" : assignment.category === "listening" ? "from-rose-400 to-rose-500" : assignment.category === "tests" ? "from-orange-500 to-orange-600" : isEssay ? "from-rose-500 to-rose-600" : "from-amber-500 to-amber-600";
 
   useEffect(() => {
     fetch(`/api/teacher/assignments/results?assignmentId=${assignment.id}`)
@@ -3478,7 +3500,7 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
                 const isDueSoon = due && !isOverdue && (due.getTime() - now.getTime()) < 2 * 86_400_000;
                 const href = `/${a.category}${a.level ? `/${a.level}` : ""}/${a.slug}${a.exerciseNo ? `#ex${a.exerciseNo}` : ""}`;
                 const isEssayAssign = a.category === "essay";
-                const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : isEssayAssign ? "bg-rose-500" : "bg-amber-500";
+                const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : a.category === "reading" ? "bg-emerald-500" : a.category === "listening" ? "bg-rose-400" : a.category === "tests" ? "bg-orange-500" : isEssayAssign ? "bg-rose-500" : "bg-amber-500";
                 const targetCount = a.targetStudentIds.length + a.targetClassIds.length;
                 const targetLabel = targetCount === 0 ? "Everyone"
                   : a.targetStudentIds.length > 0
@@ -4203,7 +4225,7 @@ function HomeworkModal({
 
 function AssignmentPreviewModal({ assignment, onClose }: { assignment: StudentAssignment; onClose: () => void }) {
   const isEssay = assignment.category === "essay";
-  const catColor = assignment.category === "grammar" ? "bg-violet-500" : assignment.category === "tenses" ? "bg-sky-500" : assignment.category === "essay" ? "bg-rose-500" : "bg-amber-500";
+  const catColor = assignment.category === "grammar" ? "bg-violet-500" : assignment.category === "tenses" ? "bg-sky-500" : assignment.category === "reading" ? "bg-emerald-500" : assignment.category === "listening" ? "bg-rose-400" : assignment.category === "tests" ? "bg-orange-500" : assignment.category === "essay" ? "bg-rose-500" : "bg-amber-500";
   const due = assignment.dueDate ? new Date(assignment.dueDate) : null;
   const isOverdue = due && due < new Date();
 
@@ -4684,7 +4706,7 @@ function AssignmentNotificationPopup({
           <div className="mt-5 space-y-2">
             {assignments.slice(0, 3).map((a) => {
               const isEssay = a.category === "essay";
-              const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : isEssay ? "bg-rose-500" : "bg-amber-500";
+              const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : a.category === "reading" ? "bg-emerald-500" : a.category === "listening" ? "bg-rose-400" : a.category === "tests" ? "bg-orange-500" : isEssay ? "bg-rose-500" : "bg-amber-500";
               return (
                 <div key={a.id} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3.5 py-3">
                   <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${catColor}`}>
@@ -4952,7 +4974,7 @@ function StudentTab({
             const due = a.dueDate ? new Date(a.dueDate) : null;
             const isOverdue = due && due < new Date();
             const isDueSoon = due && !isOverdue && (due.getTime() - Date.now()) < 2 * 86_400_000;
-            const catColor = isEssay ? "bg-rose-500" : isHw ? "bg-amber-500" : isQuiz ? "bg-indigo-600" : a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : "bg-amber-500";
+            const catColor = isEssay ? "bg-rose-500" : isHw ? "bg-amber-500" : isQuiz ? "bg-indigo-600" : a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : a.category === "reading" ? "bg-emerald-500" : a.category === "listening" ? "bg-rose-400" : a.category === "tests" ? "bg-orange-500" : "bg-amber-500";
             const anyDone = isDone || essayReviewed || hwDone || quizDone;
             const iconBg = anyDone ? "bg-emerald-500" : catColor;
 

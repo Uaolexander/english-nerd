@@ -84,7 +84,7 @@ export default function TeacherLiveShare() {
   return (
     <>
       {/* Teacher share button — bottom-left, separate from all right-side widgets */}
-      <div className="fixed bottom-[68px] left-4 lg:bottom-6 lg:left-6 z-40">
+      <div className="fixed bottom-[80px] left-4 lg:bottom-6 lg:left-6 z-40">
         <button
           onClick={() => setOpen(true)}
           className="group flex items-center gap-2.5 rounded-2xl bg-violet-600 py-2.5 pl-3.5 pr-4 shadow-lg shadow-violet-900/30 transition-all hover:bg-violet-500 hover:shadow-violet-900/50 hover:-translate-y-0.5 active:scale-95"

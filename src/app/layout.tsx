@@ -66,7 +66,7 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth bg-[#0B0B0D]">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#0B0B0D] text-white antialiased pb-[52px] lg:pb-0`}
       >
