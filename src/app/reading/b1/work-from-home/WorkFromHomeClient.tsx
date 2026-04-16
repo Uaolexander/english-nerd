@@ -241,7 +241,7 @@ export default function WorkFromHomeClient() {
       </div>
 
       <p className="mt-3 max-w-3xl text-slate-700">
-        Read the article and answer the multiple choice questions.
+        Read the article and fill in the gaps with words from the word box.
       </p>
 
       <div className="mt-3 flex items-center gap-3"><PDFButton onDownload={downloadPDF} loading={pdfLoading} /></div>
