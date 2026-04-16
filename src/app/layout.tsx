@@ -8,20 +8,11 @@ import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
 import AssignmentBanner from "@/components/AssignmentBanner";
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
 import { ProProvider } from "@/lib/ProContext";
 import { StudentProvider } from "@/lib/StudentContext";
 import { TeacherProvider } from "@/lib/TeacherContext";
 import { GoogleAnalytics } from "@next/third-parties/google";
-
-// Non-critical components — loaded after page is interactive
-const MobileProBanner       = dynamic(() => import("@/components/MobileProBanner"),       { ssr: false });
-const TeacherHintBanner     = dynamic(() => import("@/components/TeacherHintBanner"),     { ssr: false });
-const FeedbackWidget        = dynamic(() => import("@/components/FeedbackWidget"),        { ssr: false });
-const BackToTop             = dynamic(() => import("@/components/BackToTop"),             { ssr: false });
-const TeacherLiveShare      = dynamic(() => import("@/components/TeacherLiveShare"),      { ssr: false });
-const ExerciseInviteListener = dynamic(() => import("@/components/ExerciseInviteListener"), { ssr: false });
-const CookieBanner          = dynamic(() => import("@/components/CookieBanner"),          { ssr: false });
+import ClientShell from "@/components/ClientShell";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -91,21 +82,12 @@ export default async function RootLayout({
               <Suspense><AssignmentBanner /></Suspense>
               {children}
               <Footer />
-              <CookieBanner />
               <SessionGuard />
               <ProgressToast />
-              <MobileProBanner />
-              <TeacherHintBanner />
-              <TeacherLiveShare />
-              <ExerciseInviteListener />
-              {user ? (
-                <FeedbackWidget
-                  email={user.email ?? ""}
-                  plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
-                />
-              ) : (
-                <BackToTop />
-              )}
+              <ClientShell
+                user={user ? { email: user.email ?? "" } : null}
+                plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
+              />
             </TeacherProvider>
           </StudentProvider>
         </ProProvider>
