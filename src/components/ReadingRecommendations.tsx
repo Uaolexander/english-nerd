@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 type Rec = { title: string; href: string; img: string; level: string; badge: string; type: string };
 
 const ALL_RECS: Record<string, Rec> = {
@@ -60,12 +62,12 @@ export default function ReadingRecommendations({ level, currentSlug }: { level: 
             className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="relative h-32 w-full overflow-hidden bg-slate-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={rec.img}
                 alt={rec.title}
-                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover transition duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <span className={`absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-md ${rec.badge}`}>

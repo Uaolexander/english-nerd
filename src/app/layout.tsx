@@ -4,21 +4,24 @@ import "./globals.css";
 import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CookieBanner from "@/components/CookieBanner";
 import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
 import AssignmentBanner from "@/components/AssignmentBanner";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { ProProvider } from "@/lib/ProContext";
 import { StudentProvider } from "@/lib/StudentContext";
 import { TeacherProvider } from "@/lib/TeacherContext";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import MobileProBanner from "@/components/MobileProBanner";
-import TeacherHintBanner from "@/components/TeacherHintBanner";
-import FeedbackWidget from "@/components/FeedbackWidget";
-import BackToTop from "@/components/BackToTop";
-import TeacherLiveShare from "@/components/TeacherLiveShare";
-import ExerciseInviteListener from "@/components/ExerciseInviteListener";
+
+// Non-critical components — loaded after page is interactive
+const MobileProBanner       = dynamic(() => import("@/components/MobileProBanner"),       { ssr: false });
+const TeacherHintBanner     = dynamic(() => import("@/components/TeacherHintBanner"),     { ssr: false });
+const FeedbackWidget        = dynamic(() => import("@/components/FeedbackWidget"),        { ssr: false });
+const BackToTop             = dynamic(() => import("@/components/BackToTop"),             { ssr: false });
+const TeacherLiveShare      = dynamic(() => import("@/components/TeacherLiveShare"),      { ssr: false });
+const ExerciseInviteListener = dynamic(() => import("@/components/ExerciseInviteListener"), { ssr: false });
+const CookieBanner          = dynamic(() => import("@/components/CookieBanner"),          { ssr: false });
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -79,7 +82,7 @@ export default async function RootLayout({
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2015658649191943"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
         <ProProvider isPro={isPro || studentStatus.isStudent || teacherStatus.isTeacher}>
           <StudentProvider isStudent={studentStatus.isStudent}>
