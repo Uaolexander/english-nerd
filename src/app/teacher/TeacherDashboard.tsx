@@ -336,7 +336,14 @@ function StudentsTab({ students, classes, studentLimit, siteUrl }: {
         body: JSON.stringify({ email: inviteEmail }),
       });
       const data = await res.json();
-      if (!data.ok) { setInviteMsg({ type: "err", text: data.error }); setInviting(false); return; }
+      if (!data.ok) {
+        const errText = res.status === 401
+          ? "Session expired — please refresh the page and try again."
+          : data.error;
+        setInviteMsg({ type: "err", text: errText });
+        setInviting(false);
+        return;
+      }
       setInviteMsg({
         type: "ok",
         text: data.status === "active" ? "Student added successfully!" : "Invite link created. Share it with the student.",
