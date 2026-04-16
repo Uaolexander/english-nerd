@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
 type Planner = {
   name: string;
@@ -115,9 +119,31 @@ const STATEMENTS: Statement[] = [
 ];
 
 export default function ChangingCitiesClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "Changing Cities",
+        level: "B2",
+        filename: "EnglishNerd_Changing-Cities_B2.pdf",
+        passages: PLANNERS.map((p) => ({
+          speaker: p.name,
+          speakerSub: `${p.role} · ${p.city}`,
+          text: p.text,
+        })),
+        trueFalse: STATEMENTS.map((s) => ({ text: s.text, answer: s.answer })),
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   const answeredCount = STATEMENTS.filter((s) => answers[s.id] != null).length;
   const allAnswered = answeredCount === STATEMENTS.length;
@@ -178,225 +204,227 @@ export default function ChangingCitiesClient() {
       : "low";
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Dark header */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-3xl px-6 py-6">
-          {/* Breadcrumb */}
-          <div className="text-sm text-white/55">
-            <a className="hover:text-white transition" href="/">Home</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading">Reading</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading/b2">B2</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <span className="text-white/80">Changing Cities</span>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-orange-400 px-3 py-1 text-xs font-black text-black">
-              B2
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              True / False
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              8 questions
-            </span>
-          </div>
-
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">
-            Changing Cities
-          </h1>
-          <p className="mt-1 text-sm text-white/55">
-            Read what four urban planners say about the future of cities, then decide if
-            each statement is True or False.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/b2">B2</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Changing Cities</span>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Changing Cities
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-700 border border-violet-200">
+          B2
+        </span>
+      </div>
 
-        {/* Planners grid */}
-        <div className="grid gap-5 sm:grid-cols-2">
-          {PLANNERS.map((p) => (
-            <div
-              key={p.name}
-              className={`rounded-2xl border border-slate-200 border-l-4 ${p.borderColor} ${p.bgColor} bg-white shadow-sm p-6`}
-            >
-              <div className="flex items-baseline gap-2">
-                <h2 className={`text-base font-black ${p.color}`}>{p.name}</h2>
-                <span className="text-xs text-slate-400 font-medium">
-                  {p.role}, {p.city}
-                </span>
-              </div>
-              <p className="mt-3 text-slate-700 leading-relaxed text-base">{p.text}</p>
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read the article and choose the best answer for each question.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3">
+        <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+      </div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
+
+            {/* Planners grid */}
+            <div className="grid gap-5 sm:grid-cols-2">
+              {PLANNERS.map((p) => (
+                <div
+                  key={p.name}
+                  className={`rounded-2xl border border-slate-200 border-l-4 ${p.borderColor} ${p.bgColor} bg-white shadow-sm p-6`}
+                >
+                  <div className="flex items-baseline gap-2">
+                    <h2 className={`text-base font-black ${p.color}`}>{p.name}</h2>
+                    <span className="text-xs text-slate-400 font-medium">
+                      {p.role}, {p.city}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-slate-700 leading-relaxed text-base">{p.text}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Progress bar */}
-        <div className="mt-8">
-          <div className="mb-2 flex items-center justify-between text-sm text-slate-500">
-            <span>Progress</span>
-            <span>{answeredCount} / {STATEMENTS.length}</span>
-          </div>
-          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
-              style={{ width: `${(answeredCount / STATEMENTS.length) * 100}%` }}
-            />
-          </div>
-        </div>
+            {/* Progress bar */}
+            <div className="mt-8">
+              <div className="mb-2 flex items-center justify-between text-sm text-slate-500">
+                <span>Progress</span>
+                <span>{answeredCount} / {STATEMENTS.length}</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
+                  style={{ width: `${(answeredCount / STATEMENTS.length) * 100}%` }}
+                />
+              </div>
+            </div>
 
-        {/* Statements */}
-        <div ref={resultsRef} className="mt-6 flex flex-col gap-4">
-          {STATEMENTS.map((s) => {
-            const chosen = answers[s.id];
-            const isCorrect = checked ? chosen === s.answer : null;
+            {/* Statements */}
+            <div ref={resultsRef} className="mt-6 flex flex-col gap-4">
+              {STATEMENTS.map((s) => {
+                const chosen = answers[s.id];
+                const isCorrect = checked ? chosen === s.answer : null;
 
-            return (
-              <div
-                key={s.id}
-                className={`rounded-2xl border bg-white shadow-sm p-5 transition ${
-                  checked && isCorrect === true
-                    ? "border-emerald-400 bg-emerald-50"
-                    : checked && isCorrect === false
-                    ? "border-red-400 bg-red-50"
-                    : "border-slate-200"
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <p
-                    className={`font-semibold text-base ${
+                return (
+                  <div
+                    key={s.id}
+                    className={`rounded-2xl border bg-white shadow-sm p-5 transition ${
                       checked && isCorrect === true
-                        ? "text-emerald-700"
+                        ? "border-emerald-400 bg-emerald-50"
                         : checked && isCorrect === false
-                        ? "text-red-700"
-                        : "text-slate-800"
+                        ? "border-red-400 bg-red-50"
+                        : "border-slate-200"
                     }`}
                   >
-                    <span className="mr-2 text-slate-400 font-normal text-sm">
-                      {s.id}.
-                    </span>
-                    {s.text}
-                  </p>
-
-                  <div className="flex gap-2 shrink-0">
-                    {(["TRUE", "FALSE"] as const).map((label) => {
-                      const val = label === "TRUE";
-                      const selected = chosen === val;
-                      let btnClass =
-                        "rounded-xl border px-4 py-2 text-sm font-bold transition select-none ";
-
-                      if (!checked) {
-                        btnClass += selected
-                          ? "bg-[#F5DA20] border-[#F5DA20] text-black"
-                          : "border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 cursor-pointer";
-                      } else {
-                        const isThisCorrect = val === s.answer;
-                        if (selected && isThisCorrect) {
-                          btnClass += "bg-emerald-400 border-emerald-400 text-white";
-                        } else if (selected && !isThisCorrect) {
-                          btnClass += "bg-red-400 border-red-400 text-white";
-                        } else if (!selected && isThisCorrect) {
-                          btnClass += "bg-emerald-100 border-emerald-400 text-emerald-700";
-                        } else {
-                          btnClass += "border-slate-200 text-slate-300";
-                        }
-                      }
-
-                      return (
-                        <button
-                          key={label}
-                          type="button"
-                          className={btnClass}
-                          onClick={() => pick(s.id, val)}
-                          disabled={checked}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {checked && (
-                  <div className="mt-2 text-sm">
-                    {isCorrect ? (
-                      <span className="text-emerald-600 font-semibold">
-                        Correct! The statement is {s.answer ? "True" : "False"}.
-                      </span>
-                    ) : (
-                      <span className="text-red-600 font-semibold">
-                        Wrong. The correct answer is{" "}
-                        <span className="uppercase font-black">
-                          {s.answer ? "True" : "False"}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <p
+                        className={`font-semibold text-base ${
+                          checked && isCorrect === true
+                            ? "text-emerald-700"
+                            : checked && isCorrect === false
+                            ? "text-red-700"
+                            : "text-slate-800"
+                        }`}
+                      >
+                        <span className="mr-2 text-slate-400 font-normal text-sm">
+                          {s.id}.
                         </span>
-                        .
-                      </span>
+                        {s.text}
+                      </p>
+
+                      <div className="flex gap-2 shrink-0">
+                        {(["TRUE", "FALSE"] as const).map((label) => {
+                          const val = label === "TRUE";
+                          const selected = chosen === val;
+                          let btnClass =
+                            "rounded-xl border px-4 py-2 text-sm font-bold transition select-none ";
+
+                          if (!checked) {
+                            btnClass += selected
+                              ? "bg-[#F5DA20] border-[#F5DA20] text-black"
+                              : "border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 cursor-pointer";
+                          } else {
+                            const isThisCorrect = val === s.answer;
+                            if (selected && isThisCorrect) {
+                              btnClass += "bg-emerald-400 border-emerald-400 text-white";
+                            } else if (selected && !isThisCorrect) {
+                              btnClass += "bg-red-400 border-red-400 text-white";
+                            } else if (!selected && isThisCorrect) {
+                              btnClass += "bg-emerald-100 border-emerald-400 text-emerald-700";
+                            } else {
+                              btnClass += "border-slate-200 text-slate-300";
+                            }
+                          }
+
+                          return (
+                            <button
+                              key={label}
+                              type="button"
+                              className={btnClass}
+                              onClick={() => pick(s.id, val)}
+                              disabled={checked}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {checked && (
+                      <div className="mt-2 text-sm">
+                        {isCorrect ? (
+                          <span className="text-emerald-600 font-semibold">
+                            Correct! The statement is {s.answer ? "True" : "False"}.
+                          </span>
+                        ) : (
+                          <span className="text-red-600 font-semibold">
+                            Wrong. The correct answer is{" "}
+                            <span className="uppercase font-black">
+                              {s.answer ? "True" : "False"}
+                            </span>
+                            .
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Check / score area */}
-        <div className="mt-8 flex flex-col items-center gap-4">
-          {!checked ? (
-            <button
-              type="button"
-              onClick={check}
-              disabled={!allAnswered}
-              className={`rounded-2xl px-8 py-3 text-base font-black transition ${
-                allAnswered
-                  ? "bg-[#F5DA20] text-black hover:opacity-90"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
-              }`}
-            >
-              {allAnswered ? "Check Answers" : `Answer all ${STATEMENTS.length} questions`}
-            </button>
-          ) : (
-            <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm p-6 text-center">
-              <p className="text-sm text-slate-500 font-semibold uppercase tracking-wide">
-                Your score
-              </p>
-              <p
-                className={`mt-1 text-5xl font-black ${
-                  grade === "great"
-                    ? "text-emerald-500"
-                    : grade === "ok"
-                    ? "text-[#F5DA20]"
-                    : "text-red-500"
-                }`}
-              >
-                {correctCount} / {STATEMENTS.length}
-              </p>
-              <p className="mt-1 text-slate-500 text-sm">{percent}% correct</p>
-              <p className="mt-3 text-slate-700 font-semibold">
-                {grade === "great"
-                  ? "Excellent work! Your reading comprehension is strong."
-                  : grade === "ok"
-                  ? "Good effort. Review the planners' texts to understand any mistakes."
-                  : "Keep practising. Reread the texts carefully and try again."}
-              </p>
-              <button
-                type="button"
-                onClick={reset}
-                className="mt-4 rounded-xl border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
-              >
-                Try Again
-              </button>
+                );
+              })}
             </div>
-          )}
-        </div>
 
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
-      </div>
+            {/* Check / score area */}
+            <div className="mt-8 flex flex-col items-center gap-4">
+              {!checked ? (
+                <button
+                  type="button"
+                  onClick={check}
+                  disabled={!allAnswered}
+                  className={`rounded-2xl px-8 py-3 text-base font-black transition ${
+                    allAnswered
+                      ? "bg-[#F5DA20] text-black hover:opacity-90"
+                      : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                  }`}
+                >
+                  {allAnswered ? "Check Answers" : `Answer all ${STATEMENTS.length} questions`}
+                </button>
+              ) : (
+                <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm p-6 text-center">
+                  <p className="text-sm text-slate-500 font-semibold uppercase tracking-wide">
+                    Your score
+                  </p>
+                  <p
+                    className={`mt-1 text-5xl font-black ${
+                      grade === "great"
+                        ? "text-emerald-500"
+                        : grade === "ok"
+                        ? "text-[#F5DA20]"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {correctCount} / {STATEMENTS.length}
+                  </p>
+                  <p className="mt-1 text-slate-500 text-sm">{percent}% correct</p>
+                  <p className="mt-3 text-slate-700 font-semibold">
+                    {grade === "great"
+                      ? "Excellent work! Your reading comprehension is strong."
+                      : grade === "ok"
+                      ? "Good effort. Review the planners' texts to understand any mistakes."
+                      : "Keep practising. Reread the texts carefully and try again."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="mt-4 rounded-xl border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </section>
+
+        {isPro ? (
+          <ReadingRecommendations level="b2" currentSlug="changing-cities" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
       </div>
     </div>
   );

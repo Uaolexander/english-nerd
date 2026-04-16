@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
 type Profile = {
   name: string;
@@ -20,7 +24,7 @@ const PROFILES: Profile[] = [
     bgColor: "bg-violet-500/10",
     borderColor: "border-violet-500",
     text:
-      "Traditional IQ tests measure a narrow band of cognitive ability and fail to capture creativity, emotional intelligence and practical reasoning. My research into neuroplasticity strongly suggests that intelligence is not a fixed trait but a dynamic capacity shaped by experience and environment throughout the lifespan. The heritability estimates frequently cited in popular media are regularly overstated and misrepresent what the scientific literature actually supports. When we expand our definition of intelligence beyond the logico-mathematical, we find that human cognitive potential is far broader and more malleable than standardised testing would have us believe.",
+      "Traditional IQ tests measure a narrow band of cognitive ability and fail to capture creativity, emotional intelligence and practical reasoning. My research into neuroplasticity strongly suggests that intelligence is not a fixed trait but a dynamic capacity shaped by experience and environment throughout the lifespan. The heritability estimates frequently cited in popular media are regularly overstated and misrepresent what the scientific literature actually supports. When we expand our definition of intelligence beyond the logico-mathematical, we find that human cognitive potential is far broader and more malleable than standardised testing would have us believe. Indeed, longitudinal neuroimaging studies reveal that targeted cognitive training can produce measurable changes in cortical density, demonstrating that the brain remains responsive to enrichment well into adulthood. Policy makers who rely on static IQ scores risk entrenching inequality rather than addressing it.",
   },
   {
     name: "Dr. Nakamura",
@@ -29,7 +33,7 @@ const PROFILES: Profile[] = [
     bgColor: "bg-emerald-500/10",
     borderColor: "border-emerald-500",
     text:
-      "Howard Gardner's theory of multiple intelligences offers a compelling framework for understanding the full spectrum of human ability. Educational systems systematically undervalue spatial, musical and interpersonal intelligences in favour of linguistic and logical-mathematical ones, disadvantaging large numbers of students. My longitudinal study tracked children identified as gifted at age seven and found that, contrary to popular assumption, they do not consistently outperform their peers by adulthood. Early identification of giftedness is a poor predictor of long-term achievement across most domains of life.",
+      "Howard Gardner's theory of multiple intelligences offers a compelling framework for understanding the full spectrum of human ability. Educational systems systematically undervalue spatial, musical and interpersonal intelligences in favour of linguistic and logical-mathematical ones, disadvantaging large numbers of students. My longitudinal study tracked children identified as gifted at age seven and found that, contrary to popular assumption, they do not consistently outperform their peers by adulthood. Early identification of giftedness is a poor predictor of long-term achievement across most domains of life. This finding has direct consequences for school funding models that concentrate enrichment resources on a small cohort of high-scorers. A broader investment in diverse forms of talent would almost certainly yield better societal outcomes and reduce the profound sense of exclusion felt by students whose abilities fall outside the narrow academic band currently rewarded.",
   },
   {
     name: "Prof. Osei",
@@ -38,7 +42,7 @@ const PROFILES: Profile[] = [
     bgColor: "bg-orange-500/10",
     borderColor: "border-orange-500",
     text:
-      "What we conventionally call intelligence is far more context-dependent than is commonly acknowledged. Research my team conducted demonstrates that financial stress temporarily reduces cognitive capacity by an amount equivalent to losing approximately 13 IQ points. This finding has profound implications: it suggests that poverty itself constrains intellectual performance, rather than the reverse relationship assumed in many policy debates. Cognitive bandwidth is a finite resource. When mental energy is consumed by the immediate pressures of scarcity, fewer resources remain available for abstract reasoning, planning and problem-solving.",
+      "What we conventionally call intelligence is far more context-dependent than is commonly acknowledged. Research my team conducted demonstrates that financial stress temporarily reduces cognitive capacity by an amount equivalent to losing approximately 13 IQ points. This finding has profound implications: it suggests that poverty itself constrains intellectual performance, rather than the reverse relationship assumed in many policy debates. Cognitive bandwidth is a finite resource. When mental energy is consumed by the immediate pressures of scarcity, fewer resources remain available for abstract reasoning, planning and problem-solving. Follow-up studies across three continents have replicated this effect, showing that the cognitive tax of scarcity is not culturally specific but appears to be a universal feature of human psychology. Addressing material deprivation is therefore not merely a social justice imperative — it is a prerequisite for unlocking collective cognitive potential.",
   },
   {
     name: "Dr. Lindqvist",
@@ -47,7 +51,7 @@ const PROFILES: Profile[] = [
     bgColor: "bg-sky-500/10",
     borderColor: "border-sky-500",
     text:
-      "Genetic factors do account for a meaningful proportion of variance in measured intelligence, with estimates converging around fifty percent. However, this figure is routinely misunderstood. Heritability is not destiny. Gene-environment interaction means that the same genetic predispositions can lead to very different outcomes depending on the circumstances in which a child develops. Deterministic interpretations of genetic data are therefore scientifically unjustified and potentially harmful. The evidence strongly supports early childhood intervention programmes as highly effective in raising cognitive outcomes, which is precisely what a simplistic genetic determinist position would not predict.",
+      "Genetic factors do account for a meaningful proportion of variance in measured intelligence, with estimates converging around fifty percent. However, this figure is routinely misunderstood. Heritability is not destiny. Gene-environment interaction means that the same genetic predispositions can lead to very different outcomes depending on the circumstances in which a child develops. Deterministic interpretations of genetic data are therefore scientifically unjustified and potentially harmful. The evidence strongly supports early childhood intervention programmes as highly effective in raising cognitive outcomes, which is precisely what a simplistic genetic determinist position would not predict. My own twin studies indicate that the heritability coefficient itself rises in high-resource environments and falls in deprived ones, meaning that equalising environmental conditions effectively diminishes the role of genetic advantage — a finding with clear and actionable implications for public health policy.",
   },
 ];
 
@@ -110,8 +114,10 @@ const STATEMENTS: Statement[] = [
 ];
 
 export default function RethinkingIntelligenceClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const answeredCount = STATEMENTS.filter((s) => answers[s.id] != null).length;
@@ -147,6 +153,26 @@ export default function RethinkingIntelligenceClient() {
     setChecked(false);
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "Rethinking Intelligence",
+        level: "C1",
+        filename: "EnglishNerd_Rethinking-Intelligence_C1.pdf",
+        passages: PROFILES.map((p) => ({
+          speaker: p.name,
+          speakerSub: p.title,
+          text: p.text,
+        })),
+        trueFalse: STATEMENTS.map((s) => ({ text: s.text, answer: s.answer })),
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!checked || percent === null) return;
     fetch("/api/progress/save", {
@@ -173,44 +199,42 @@ export default function RethinkingIntelligenceClient() {
       : "low";
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Dark header bar */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-3xl px-6 py-6">
-          {/* Breadcrumb */}
-          <div className="text-sm text-white/55">
-            <a className="hover:text-white transition" href="/">Home</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading">Reading</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading/c1">C1</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <span className="text-white/80">Rethinking Intelligence</span>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-sky-400 px-3 py-1 text-xs font-black text-black">
-              C1
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              True / False
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              8 questions
-            </span>
-          </div>
-
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">
-            Rethinking Intelligence
-          </h1>
-          <p className="mt-1 text-sm text-white/55">
-            Read what four researchers say about intelligence. Decide whether each statement is True or False based on what the researcher actually claims.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/c1">C1</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Rethinking Intelligence</span>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Rethinking Intelligence
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-700 border border-rose-200">
+          C1
+        </span>
+      </div>
+
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read the article and decide if each statement is True or False.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3">
+        <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+      </div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
 
         {/* Profiles grid */}
         <div className="grid gap-5 sm:grid-cols-2">
@@ -387,9 +411,14 @@ export default function RethinkingIntelligenceClient() {
           )}
         </div>
 
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
-      </div>
+          </div>
+        </section>
+
+        {isPro ? (
+          <ReadingRecommendations level="c1" currentSlug="rethinking-intelligence" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
       </div>
     </div>
   );

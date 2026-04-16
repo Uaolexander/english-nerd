@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
 const WORD_BANK = [
   "contested",
@@ -35,7 +39,7 @@ const SEGMENTS: Segment[] = [
   { type: "gap", index: 6 },
   { type: "text", content: " have shown that speakers of languages with more colour terms distinguish certain hues more rapidly. The debate has significant implications for language " },
   { type: "gap", index: 7 },
-  { type: "text", content: ", suggesting that the languages children learn first may shape not only what they say but how they experience the world." },
+  { type: "text", content: ", suggesting that the languages children learn first may shape not only what they say but how they experience the world. Evidence from bilingual speakers adds further complexity: individuals who shift between languages often report perceiving emotional situations differently depending on which language is active, hinting at deep links between linguistic and affective processing. Cross-cultural studies of spatial reasoning have similarly found that communities whose languages encode direction using absolute terms — such as north and south — rather than relative ones like left and right develop strikingly different navigational strategies and mental maps. These findings collectively suggest that, while language may not rigidly determine thought, it reliably tilts the probabilities of certain conceptual distinctions, categories and habitual ways of perceiving, making the question of linguistic influence on mind far from settled." },
 ];
 
 const ANSWERS = [
@@ -49,12 +53,27 @@ const ANSWERS = [
   "acquisition",
 ];
 
+// Text parts for PDF (text segments only, in order between/around gaps)
+const PDF_TEXT_PARTS = [
+  "The relationship between language and thought remains one of the most ",
+  " questions in cognitive science. The hypothesis of linguistic ",
+  ", associated with Whorf and Sapir, proposes that the language we speak shapes our ",
+  " of reality. In its strong form, this view holds that thought is fundamentally ",
+  " within language. This extreme version has been largely discredited. However, a weaker and more ",
+  " interpretation continues to attract ",
+  " empirical support. Studies of colour ",
+  " have shown that speakers of languages with more colour terms distinguish certain hues more rapidly. The debate has significant implications for language ",
+  ", suggesting that the languages children learn first may shape not only what they say but how they experience the world. Evidence from bilingual speakers adds further complexity: individuals who shift between languages often report perceiving emotional situations differently depending on which language is active, hinting at deep links between linguistic and affective processing. Cross-cultural studies of spatial reasoning have similarly found that communities whose languages encode direction using absolute terms — such as north and south — rather than relative ones like left and right develop strikingly different navigational strategies and mental maps. These findings collectively suggest that, while language may not rigidly determine thought, it reliably tilts the probabilities of certain conceptual distinctions, categories and habitual ways of perceiving, making the question of linguistic influence on mind far from settled.",
+];
+
 export default function LanguageAndThoughtClient() {
+  const isPro = useIsPro();
   const [selected, setSelected] = useState<(string | null)[]>(
     Array(ANSWERS.length).fill(null)
   );
   const [activeGap, setActiveGap] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const usedWords = selected.filter((w): w is string => w !== null);
@@ -126,6 +145,26 @@ export default function LanguageAndThoughtClient() {
     setChecked(false);
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "Language and Thought",
+        level: "C1",
+        filename: "EnglishNerd_Language-and-Thought_C1.pdf",
+        passages: [{ text: "Fill in each gap with a word from the word bank below." }],
+        fillBlank: {
+          wordBank: [...WORD_BANK],
+          textParts: PDF_TEXT_PARTS,
+          answers: [...ANSWERS],
+        },
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!checked || percent === null) return;
     fetch("/api/progress/save", {
@@ -152,44 +191,42 @@ export default function LanguageAndThoughtClient() {
       : "low";
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Dark header bar */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-3xl px-6 py-6">
-          {/* Breadcrumb */}
-          <div className="text-sm text-white/55">
-            <a className="hover:text-white transition" href="/">Home</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading">Reading</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading/c1">C1</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <span className="text-white/80">Language and Thought</span>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-sky-400 px-3 py-1 text-xs font-black text-black">
-              C1
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              Fill in Blanks
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              8 questions
-            </span>
-          </div>
-
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">
-            Language and Thought
-          </h1>
-          <p className="mt-1 text-sm text-white/55">
-            Click a gap in the text, then click the correct word from the word bank to fill it.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/c1">C1</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Language and Thought</span>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Language and Thought
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-700 border border-rose-200">
+          C1
+        </span>
+      </div>
+
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read the article and choose the best answer for each question.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3">
+        <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+      </div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
 
         {/* Word bank */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -373,9 +410,14 @@ export default function LanguageAndThoughtClient() {
           )}
         </div>
 
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
-      </div>
+          </div>
+        </section>
+
+        {isPro ? (
+          <ReadingRecommendations level="c1" currentSlug="language-and-thought" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
       </div>
     </div>
   );

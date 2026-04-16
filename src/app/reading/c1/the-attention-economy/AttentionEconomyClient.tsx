@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
-const TEXT = `The concept of the attention economy rests on a simple but profound premise: in an age of information abundance, human attention has become the scarcest and most valuable resource. Technology companies, media platforms and advertisers compete aggressively for a finite commodity that cannot be manufactured or expanded. The phrase was popularised by psychologist and Nobel laureate Herbert Simon, who observed in 1971 that information consumes the attention of its recipients and that a wealth of information creates a poverty of attention.
+const TEXT = `The concept of the attention economy rests on a simple but profound premise: in an age of information abundance, human attention has become the scarcest and most valuable resource. Technology companies, media platforms and advertisers compete aggressively for a finite commodity that cannot be manufactured or expanded. The phrase was popularised by psychologist and Nobel laureate Herbert Simon, who observed in 1971 that information consumes the attention of its recipients and that a wealth of information creates a poverty of attention. Economists later extended this insight, arguing that time and cognitive focus are the true bottlenecks in modern information markets, not bandwidth or storage.
 
-The mechanisms by which platforms capture and retain attention have grown increasingly sophisticated. Variable reward schedules, borrowed from behavioural psychology research on gambling, underpin the design of social media feeds. Unpredictable rewards, such as an unexpected like or a surprising post, trigger dopamine release and compel continued engagement more effectively than predictable ones. This architecture is not accidental. Former employees of major tech companies have testified that engagement metrics, rather than user wellbeing, drive product decisions.
+The mechanisms by which platforms capture and retain attention have grown increasingly sophisticated. Variable reward schedules, borrowed from behavioural psychology research on gambling, underpin the design of social media feeds. Unpredictable rewards, such as an unexpected like or a surprising post, trigger dopamine release and compel continued engagement more effectively than predictable ones. This architecture is not accidental. Former employees of major tech companies have testified that engagement metrics, rather than user wellbeing, drive product decisions. Push notifications, autoplay features and algorithmically curated feeds are all calibrated to minimise the moments at which a user might choose to disengage, creating what critics describe as frictionless compulsion loops.
 
-The implications extend beyond individual behaviour. Some researchers argue that the commodification of attention has degraded the quality of public discourse by systematically rewarding outrage, simplification and tribal affiliation over nuance and complexity. Others contend that moral panics about technology are cyclical and that previous innovations, from the printing press to television, generated similar anxieties that ultimately proved overstated.
+The implications extend beyond individual behaviour. Some researchers argue that the commodification of attention has degraded the quality of public discourse by systematically rewarding outrage, simplification and tribal affiliation over nuance and complexity. When emotional arousal reliably generates clicks and shares, content producers — whether journalists, politicians or independent creators — face structural incentives to prioritise provocation over accuracy. Others contend that moral panics about technology are cyclical and that previous innovations, from the printing press to television, generated similar anxieties that ultimately proved overstated. These critics point to evidence that heavy social media users are not uniformly worse informed than non-users, and that the same platforms have been used to organise civic movements and disseminate public health information effectively.
 
-What distinguishes the current moment, proponents of regulation argue, is the unprecedented scale, speed and personalisation of these systems, which may require novel regulatory frameworks rather than analogies to earlier media.`;
+What distinguishes the current moment, proponents of regulation argue, is the unprecedented scale, speed and personalisation of these systems, which may require novel regulatory frameworks rather than analogies to earlier media. Unlike the printing press or broadcast television, modern recommendation engines are not passive distributors of content; they are active architects of individual information environments, adjusting in real time to maximise the probability of continued engagement. Proposals range from mandating algorithmic transparency and data minimisation to introducing legal duties of care requiring platforms to demonstrate that their designs do not cause foreseeable psychological harm.`;
 
 type Question = {
   id: number;
@@ -82,8 +86,10 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function AttentionEconomyClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
@@ -119,6 +125,26 @@ export default function AttentionEconomyClient() {
     setChecked(false);
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "The Attention Economy",
+        level: "C1",
+        filename: "EnglishNerd_Attention-Economy_C1.pdf",
+        passages: [{ text: TEXT }],
+        multipleChoiceLetter: QUESTIONS.map((q) => ({
+          question: q.text,
+          options: q.options,
+          answer: q.answer,
+        })),
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!checked || percent === null) return;
     fetch("/api/progress/save", {
@@ -145,44 +171,42 @@ export default function AttentionEconomyClient() {
       : "low";
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Dark header bar */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-3xl px-6 py-6">
-          {/* Breadcrumb */}
-          <div className="text-sm text-white/55">
-            <a className="hover:text-white transition" href="/">Home</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading">Reading</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading/c1">C1</a>{" "}
-            <span className="text-white/30">/</span>{" "}
-            <span className="text-white/80">The Attention Economy</span>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-sky-400 px-3 py-1 text-xs font-black text-black">
-              C1
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              Comprehension
-            </span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-white/60">
-              6 questions
-            </span>
-          </div>
-
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">
-            The Attention Economy
-          </h1>
-          <p className="mt-1 text-sm text-white/55">
-            Read the analytical essay and choose the best answer for each question.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/c1">C1</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">The Attention Economy</span>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          The Attention Economy
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-700 border border-rose-200">
+          C1
+        </span>
+      </div>
+
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read the article and fill in the blanks with the correct words from the word bank.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3">
+        <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+      </div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
 
         {/* Reading text */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
@@ -359,9 +383,14 @@ export default function AttentionEconomyClient() {
           )}
         </div>
 
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
-      </div>
+          </div>
+        </section>
+
+        {isPro ? (
+          <ReadingRecommendations level="c1" currentSlug="the-attention-economy" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
       </div>
     </div>
   );

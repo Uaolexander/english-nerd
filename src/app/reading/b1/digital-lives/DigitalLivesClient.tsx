@@ -2,6 +2,10 @@
 
 import { useState, useCallback } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
 type Person = {
   name: string;
@@ -129,11 +133,33 @@ async function saveResult(score: number) {
 }
 
 export default function DigitalLivesClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>(() =>
     Object.fromEntries(STATEMENTS.map((s) => [s.id, null]))
   );
   const [checked, setChecked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "Digital Lives",
+        level: "B1",
+        filename: "EnglishNerd_Digital-Lives_B1.pdf",
+        passages: PEOPLE.map(p => ({
+          speaker: `${p.name}, ${p.age}`,
+          speakerSub: p.role,
+          text: p.text,
+        })),
+        trueFalse: STATEMENTS.map(s => ({ text: s.text, answer: s.answer })),
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   const answered = Object.values(answers).filter((v) => v !== null).length;
   const progress = Math.round((answered / STATEMENTS.length) * 100);
@@ -168,197 +194,196 @@ export default function DigitalLivesClient() {
     : 0;
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Dark header */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-3xl px-6 py-8">
-          {/* Breadcrumb */}
-          <div className="text-sm text-white/50">
-            <a className="hover:text-white transition" href="/">Home</a>{" "}
-            <span className="text-white/25">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading">Reading</a>{" "}
-            <span className="text-white/25">/</span>{" "}
-            <a className="hover:text-white transition" href="/reading/b1">B1</a>{" "}
-            <span className="text-white/25">/</span>{" "}
-            <span className="text-white/80">Digital Lives</span>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-violet-400 px-3 py-1 text-xs font-black text-black">
-              B1
-            </span>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/60">
-              True / False
-            </span>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/60">
-              8 questions
-            </span>
-          </div>
-
-          <h1 className="mt-3 text-2xl font-black md:text-3xl">Digital Lives</h1>
-          <p className="mt-1 text-sm text-white/50">
-            Read what four young people say about social media and technology. Decide if each statement is true or false.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/b1">B1</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Digital Lives</span>
       </div>
 
-      {/* Main content */}
-      <div className="mx-auto max-w-3xl px-6 py-8 space-y-8">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Digital Lives
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-700 border border-blue-200">
+          B1
+        </span>
+      </div>
 
-        {/* Reading texts -- 2x2 grid */}
-        <section>
-          <h2 className="mb-4 text-base font-bold text-slate-800">Read the texts</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {PEOPLE.map((person) => (
-              <div
-                key={person.name}
-                className={`rounded-2xl border-2 ${person.borderColor} ${person.color} p-5`}
-              >
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white font-black text-slate-700 text-sm shadow-sm">
-                    {person.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-black text-slate-800 text-sm">{person.name}, {person.age}</p>
-                    <p className="text-xs text-slate-500">{person.role}</p>
-                  </div>
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read the article about technology and decide if each statement is True or False.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3"><PDFButton onDownload={downloadPDF} loading={pdfLoading} /></div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
+            <div className="space-y-8">
+
+              {/* Reading texts -- 2x2 grid */}
+              <section>
+                <h2 className="mb-4 text-base font-bold text-slate-800">Read the texts</h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {PEOPLE.map((person) => (
+                    <div
+                      key={person.name}
+                      className={`rounded-2xl border-2 ${person.borderColor} ${person.color} p-5`}
+                    >
+                      <div className="mb-3 flex items-center gap-2">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white font-black text-slate-700 text-sm shadow-sm">
+                          {person.name[0]}
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-800 text-sm">{person.name}, {person.age}</p>
+                          <p className="text-xs text-slate-500">{person.role}</p>
+                        </div>
+                      </div>
+                      <p className="text-slate-700 leading-relaxed text-sm">{person.text}</p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-slate-700 leading-relaxed text-sm">{person.text}</p>
+              </section>
+
+              {/* Progress bar */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
+                  <span>{answered} / {STATEMENTS.length} answered</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
               </div>
-            ))}
+
+              {/* Statements */}
+              <section className="space-y-3">
+                <h2 className="text-base font-bold text-slate-800">True or False?</h2>
+                {STATEMENTS.map((stmt) => {
+                  const userAnswer = answers[stmt.id];
+                  const isCorrect = checked ? userAnswer === stmt.answer : null;
+
+                  return (
+                    <div
+                      key={stmt.id}
+                      className={`rounded-2xl border-2 bg-white p-4 transition ${
+                        checked
+                          ? isCorrect
+                            ? "border-emerald-400 bg-emerald-50"
+                            : "border-red-400 bg-red-50"
+                          : userAnswer !== null
+                          ? "border-[#F5DA20]"
+                          : "border-slate-200"
+                      }`}
+                    >
+                      <p className="mb-3 text-slate-700 leading-relaxed text-sm font-medium">
+                        <span className="mr-2 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-500">
+                          {stmt.id}
+                        </span>
+                        {stmt.text}
+                      </p>
+
+                      <div className="flex gap-2">
+                        {([true, false] as const).map((val) => {
+                          const label = val ? "TRUE" : "FALSE";
+                          const selected = userAnswer === val;
+                          const isThisCorrect = checked && val === stmt.answer;
+                          const isThisWrong = checked && selected && val !== stmt.answer;
+
+                          return (
+                            <button
+                              key={label}
+                              type="button"
+                              onClick={() => handleAnswer(stmt.id, val)}
+                              disabled={checked}
+                              className={`rounded-xl px-5 py-2 text-xs font-black transition ${
+                                isThisCorrect
+                                  ? "bg-emerald-400 text-black"
+                                  : isThisWrong
+                                  ? "bg-red-400 text-white"
+                                  : selected
+                                  ? "bg-[#F5DA20] text-black"
+                                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                              } disabled:cursor-default`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+
+                        {checked && (
+                          <span className={`ml-auto text-xs font-bold ${isCorrect ? "text-emerald-600" : "text-red-500"}`}>
+                            {isCorrect ? "Correct" : `Answer: ${stmt.answer ? "TRUE" : "FALSE"}`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
+
+              {/* Result */}
+              {checked && (
+                <div className="rounded-2xl border-2 border-[#F5DA20] bg-[#F5DA20]/10 p-5 text-center">
+                  <p className="text-2xl font-black text-slate-800">
+                    {correct} / {STATEMENTS.length}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {correct === STATEMENTS.length
+                      ? "Perfect score! Excellent reading comprehension."
+                      : correct >= 6
+                      ? "Great job! Just a couple of mistakes."
+                      : correct >= 4
+                      ? "Good effort. Read the texts again to review your mistakes."
+                      : "Keep practising. Read more carefully and try again."}
+                  </p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-3">
+                {!checked ? (
+                  <button
+                    type="button"
+                    onClick={handleCheck}
+                    disabled={answered < STATEMENTS.length}
+                    className="inline-flex items-center rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Check Answers
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-sm font-black text-slate-700 transition hover:border-slate-400"
+                  >
+                    Try Again
+                  </button>
+                )}
+              </div>
+
+            </div>
           </div>
         </section>
 
-        {/* Progress bar */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
-            <span>{answered} / {STATEMENTS.length} answered</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Statements */}
-        <section className="space-y-3">
-          <h2 className="text-base font-bold text-slate-800">True or False?</h2>
-          {STATEMENTS.map((stmt) => {
-            const userAnswer = answers[stmt.id];
-            const isCorrect = checked ? userAnswer === stmt.answer : null;
-
-            return (
-              <div
-                key={stmt.id}
-                className={`rounded-2xl border-2 bg-white p-4 transition ${
-                  checked
-                    ? isCorrect
-                      ? "border-emerald-400 bg-emerald-50"
-                      : "border-red-400 bg-red-50"
-                    : userAnswer !== null
-                    ? "border-[#F5DA20]"
-                    : "border-slate-200"
-                }`}
-              >
-                <p className="mb-3 text-slate-700 leading-relaxed text-sm font-medium">
-                  <span className="mr-2 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-500">
-                    {stmt.id}
-                  </span>
-                  {stmt.text}
-                </p>
-
-                <div className="flex gap-2">
-                  {([true, false] as const).map((val) => {
-                    const label = val ? "TRUE" : "FALSE";
-                    const selected = userAnswer === val;
-                    const isThisCorrect = checked && val === stmt.answer;
-                    const isThisWrong = checked && selected && val !== stmt.answer;
-
-                    return (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => handleAnswer(stmt.id, val)}
-                        disabled={checked}
-                        className={`rounded-xl px-5 py-2 text-xs font-black transition ${
-                          isThisCorrect
-                            ? "bg-emerald-400 text-black"
-                            : isThisWrong
-                            ? "bg-red-400 text-white"
-                            : selected
-                            ? "bg-[#F5DA20] text-black"
-                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                        } disabled:cursor-default`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-
-                  {checked && (
-                    <span className={`ml-auto text-xs font-bold ${isCorrect ? "text-emerald-600" : "text-red-500"}`}>
-                      {isCorrect ? "Correct" : `Answer: ${stmt.answer ? "TRUE" : "FALSE"}`}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* Result */}
-        {checked && (
-          <div className="rounded-2xl border-2 border-[#F5DA20] bg-[#F5DA20]/10 p-5 text-center">
-            <p className="text-2xl font-black text-slate-800">
-              {correct} / {STATEMENTS.length}
-            </p>
-            <p className="mt-1 text-sm text-slate-600">
-              {correct === STATEMENTS.length
-                ? "Perfect score! Excellent reading comprehension."
-                : correct >= 6
-                ? "Great job! Just a couple of mistakes."
-                : correct >= 4
-                ? "Good effort. Read the texts again to review your mistakes."
-                : "Keep practising. Read more carefully and try again."}
-            </p>
-          </div>
+        {isPro ? (
+          <ReadingRecommendations level="b1" currentSlug="digital-lives" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
         )}
-
-        {/* Action buttons */}
-        <div className="flex flex-wrap gap-3">
-          {!checked ? (
-            <button
-              type="button"
-              onClick={handleCheck}
-              disabled={answered < STATEMENTS.length}
-              className="inline-flex items-center rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Check Answers
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-sm font-black text-slate-700 transition hover:border-slate-400"
-            >
-              Try Again
-            </button>
-          )}
-          <a
-            href="/reading/b1"
-            className="inline-flex items-center rounded-xl border-2 border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-600 transition hover:border-slate-300"
-          >
-            Back to B1
-          </a>
-        </div>
-
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
       </div>
-      </div>
-    </main>
+    </div>
   );
 }

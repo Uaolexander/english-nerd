@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useIsPro } from "@/lib/ProContext";
+import ReadingRecommendations from "@/components/ReadingRecommendations";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
 
 type PenPal = {
   name: string;
@@ -64,8 +68,10 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function PenPalsClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const questionsTopRef = useRef<HTMLDivElement>(null);
 
@@ -79,6 +85,22 @@ export default function PenPalsClient() {
     correctCount !== null
       ? Math.round((correctCount / QUESTIONS.length) * 100)
       : null;
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const config: ReadingPDFConfig = {
+        title: "Pen Pals",
+        level: "A2",
+        filename: "EnglishNerd_Pen-Pals_A2.pdf",
+        passages: PEN_PALS.map((p) => ({ speaker: p.name, speakerSub: p.country, text: p.message })),
+        trueFalse: QUESTIONS.map((q) => ({ text: q.text, answer: q.answer })),
+      };
+      await generateReadingPDF(config);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function pick(id: number, val: boolean) {
     if (checked) return;
@@ -123,292 +145,290 @@ export default function PenPalsClient() {
     percent === null ? null : percent >= 80 ? "great" : percent >= 60 ? "ok" : "low";
 
   return (
-    <main className="min-h-screen bg-slate-50">
-
-      {/* Dark header */}
-      <div className="bg-[#0E0F13] text-white">
-        <div className="mx-auto max-w-4xl px-6 py-8">
-
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs text-white/40">
-            <a href="/" className="hover:text-white transition">Home</a>
-            <svg className="h-3 w-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6" /></svg>
-            <a href="/reading" className="hover:text-white transition">Reading</a>
-            <svg className="h-3 w-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6" /></svg>
-            <a href="/reading/a2" className="hover:text-white transition">A2</a>
-            <svg className="h-3 w-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6" /></svg>
-            <span className="text-white/70 font-medium">Pen Pals</span>
-          </nav>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-emerald-400 px-3 py-0.5 text-[11px] font-black text-black">A2</span>
-            <span className="rounded-full border border-white/15 px-3 py-0.5 text-[11px] font-semibold text-white/40">True / False</span>
-            <span className="rounded-full border border-white/15 px-3 py-0.5 text-[11px] font-semibold text-white/40">8 questions</span>
-          </div>
-
-          <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight">
-            Pen <span className="text-[#F5DA20]">Pals</span>
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-white/45 leading-relaxed">
-            Read messages from four pen pals around the world. Then decide if each statement is True or False.
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <a className="hover:text-slate-900 transition" href="/">Home</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading">Reading</a>
+        <span className="text-slate-300">/</span>
+        <a className="hover:text-slate-900 transition" href="/reading/a2">A2</a>
+        <span className="text-slate-300">/</span>
+        <span className="text-slate-700 font-medium">Pen Pals</span>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
+      <div className="mt-4 flex flex-wrap items-start gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          Pen Pals
+        </h1>
+        <span className="mt-2 inline-flex items-center rounded-full bg-teal-100 px-3 py-1 text-xs font-black text-teal-700 border border-teal-200">
+          A2
+        </span>
+      </div>
 
-        {/* 2x2 pen pal profile cards */}
-        <div>
-          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Messages from pen pals</h2>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {PEN_PALS.map((pal) => (
-              <div
-                key={pal.name}
-                className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-l-4 ${pal.border}`}
-              >
-                <div className="p-5 sm:p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black text-slate-500">
-                      {pal.name[0]}
+      <p className="mt-3 max-w-3xl text-slate-700">
+        Read messages from four pen pals and decide if each statement is True or False.
+      </p>
+
+      <div className="mt-3 flex items-center gap-3">
+        <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
+      </div>
+
+      {/* Layout grid */}
+      <div className={`mt-10 grid gap-6 ${isPro ? "lg:grid-cols-[1fr_300px]" : "lg:grid-cols-[260px_1fr_260px]"}`}>
+        {!isPro && <AdUnit variant="sidebar-dark" />}
+
+        {/* Main content card */}
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+          <div className="p-6 md:p-8">
+            <div className="space-y-6">
+
+              {/* 2x2 pen pal profile cards */}
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Messages from pen pals</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {PEN_PALS.map((pal) => (
+                    <div
+                      key={pal.name}
+                      className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-l-4 ${pal.border}`}
+                    >
+                      <div className="p-5 sm:p-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black text-slate-500">
+                            {pal.name[0]}
+                          </div>
+                          <div>
+                            <p className="font-black text-slate-800 text-sm">{pal.name}</p>
+                            <p className="text-xs text-slate-400">{pal.country}</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed text-base">{pal.message}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-black text-slate-800 text-sm">{pal.name}</p>
-                      <p className="text-xs text-slate-400">{pal.country}</p>
-                    </div>
-                  </div>
-                  <p className="text-slate-700 leading-relaxed text-base">{pal.message}</p>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Scroll anchor */}
-        <div ref={questionsTopRef} />
+              {/* Scroll anchor */}
+              <div ref={questionsTopRef} />
 
-        {/* Score panel */}
-        {checked && percent !== null && (
-          <div
-            className={`flex items-center gap-5 rounded-2xl border px-6 py-5 ${
-              grade === "great"
-                ? "border-emerald-400/40 bg-emerald-50"
-                : grade === "ok"
-                ? "border-amber-400/40 bg-amber-50"
-                : "border-red-400/40 bg-red-50"
-            }`}
-          >
-            <div
-              className={`text-5xl font-black tabular-nums ${
-                grade === "great"
-                  ? "text-emerald-600"
-                  : grade === "ok"
-                  ? "text-amber-600"
-                  : "text-red-600"
-              }`}
-            >
-              {percent}<span className="text-2xl">%</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-slate-600">
-                {correctCount} out of {QUESTIONS.length} correct
-              </div>
-              <div className="mt-2 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+              {/* Score panel */}
+              {checked && percent !== null && (
                 <div
-                  className="h-full rounded-full bg-[#F5DA20] transition-all duration-700"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-              <p className="mt-2 text-xs text-slate-500">
-                {grade === "great"
-                  ? "Excellent! You understood the pen pal messages very well."
-                  : grade === "ok"
-                  ? "Good effort. Read the messages again and try once more."
-                  : "Read the messages carefully again, then try again."}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Questions card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          {/* Card header */}
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-            <div>
-              <h2 className="text-[15px] font-black text-slate-800">True / False Questions</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Choose the correct answer for each statement.</p>
-            </div>
-            {!checked ? (
-              <div className="flex items-center gap-2.5">
-                <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
-                    style={{ width: `${(answeredCount / QUESTIONS.length) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs font-bold text-slate-400 tabular-nums">
-                  {answeredCount}/{QUESTIONS.length}
-                </span>
-              </div>
-            ) : (
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-black ${
-                  grade === "great"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : grade === "ok"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {correctCount}/{QUESTIONS.length}
-              </span>
-            )}
-          </div>
-
-          {/* Questions list */}
-          <div className="divide-y divide-slate-100">
-            {QUESTIONS.map((q, idx) => {
-              const chosen = answers[q.id];
-              const isCorrect = checked && chosen === q.answer;
-              const isWrong = checked && chosen != null && chosen !== q.answer;
-
-              return (
-                <div
-                  key={q.id}
-                  className={`px-6 py-5 transition-colors duration-200 ${
-                    isCorrect ? "bg-emerald-50" : isWrong ? "bg-red-50" : ""
+                  className={`flex items-center gap-5 rounded-2xl border px-6 py-5 ${
+                    grade === "great"
+                      ? "border-emerald-400/40 bg-emerald-50"
+                      : grade === "ok"
+                      ? "border-amber-400/40 bg-amber-50"
+                      : "border-red-400/40 bg-red-50"
                   }`}
                 >
-                  <div className="flex gap-4">
-                    {/* Number bubble */}
-                    <div
-                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black transition-all ${
-                        isCorrect
-                          ? "bg-emerald-400 text-white"
-                          : isWrong
-                          ? "bg-red-400 text-white"
-                          : chosen != null
-                          ? "bg-[#F5DA20] text-black"
-                          : "bg-slate-100 text-slate-400"
-                      }`}
-                    >
-                      {checked
-                        ? isCorrect
-                          ? "✓"
-                          : "✗"
-                        : String(idx + 1).padStart(2, "0")}
+                  <div
+                    className={`text-5xl font-black tabular-nums ${
+                      grade === "great"
+                        ? "text-emerald-600"
+                        : grade === "ok"
+                        ? "text-amber-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {percent}<span className="text-2xl">%</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-slate-600">
+                      {correctCount} out of {QUESTIONS.length} correct
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] text-slate-700 leading-snug font-medium">
-                        {q.text}
-                      </p>
-
-                      {/* TRUE / FALSE buttons */}
-                      <div className="mt-3.5 grid grid-cols-2 gap-2">
-                        {([true, false] as const).map((val) => {
-                          const sel = chosen === val;
-                          const ok = checked && sel && val === q.answer;
-                          const bad = checked && sel && val !== q.answer;
-                          const reveal = checked && !sel && val === q.answer;
-
-                          return (
-                            <button
-                              key={String(val)}
-                              onClick={() => pick(q.id, val)}
-                              disabled={checked}
-                              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all duration-150 ${
-                                ok
-                                  ? "bg-emerald-400 text-white shadow-sm"
-                                  : bad
-                                  ? "bg-red-400 text-white shadow-sm"
-                                  : reveal
-                                  ? "border border-emerald-400/50 bg-emerald-50 text-emerald-700"
-                                  : sel
-                                  ? "bg-[#F5DA20] text-black shadow-sm"
-                                  : checked
-                                  ? "border border-slate-200 bg-slate-50 text-slate-300"
-                                  : "border border-slate-200 bg-white text-slate-500 hover:border-[#F5DA20]/60 hover:bg-[#F5DA20]/10 hover:text-slate-700 active:scale-[0.97]"
-                              }`}
-                            >
-                              {val ? (
-                                <>
-                                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                                  True
-                                </>
-                              ) : (
-                                <>
-                                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                                  False
-                                </>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {checked && (
-                        <p
-                          className={`mt-2 text-xs font-medium ${
-                            isCorrect ? "text-emerald-600" : "text-red-500"
-                          }`}
-                        >
-                          {isCorrect
-                            ? "Correct!"
-                            : `Incorrect. The answer is ${q.answer ? "True" : "False"}.`}
-                        </p>
-                      )}
+                    <div className="mt-2 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#F5DA20] transition-all duration-700"
+                        style={{ width: `${percent}%` }}
+                      />
                     </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {grade === "great"
+                        ? "Excellent! You understood the pen pal messages very well."
+                        : grade === "ok"
+                        ? "Good effort. Read the messages again and try once more."
+                        : "Read the messages carefully again, then try again."}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+              )}
+
+              {/* Questions card */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                {/* Card header */}
+                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                  <div>
+                    <h2 className="text-[15px] font-black text-slate-800">True / False Questions</h2>
+                    <p className="text-xs text-slate-400 mt-0.5">Choose the correct answer for each statement.</p>
+                  </div>
+                  {!checked ? (
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-[#F5DA20] transition-all duration-300"
+                          style={{ width: `${(answeredCount / QUESTIONS.length) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 tabular-nums">
+                        {answeredCount}/{QUESTIONS.length}
+                      </span>
+                    </div>
+                  ) : (
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-black ${
+                        grade === "great"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : grade === "ok"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {correctCount}/{QUESTIONS.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Questions list */}
+                <div className="divide-y divide-slate-100">
+                  {QUESTIONS.map((q, idx) => {
+                    const chosen = answers[q.id];
+                    const isCorrect = checked && chosen === q.answer;
+                    const isWrong = checked && chosen != null && chosen !== q.answer;
+
+                    return (
+                      <div
+                        key={q.id}
+                        className={`px-6 py-5 transition-colors duration-200 ${
+                          isCorrect ? "bg-emerald-50" : isWrong ? "bg-red-50" : ""
+                        }`}
+                      >
+                        <div className="flex gap-4">
+                          {/* Number bubble */}
+                          <div
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black transition-all ${
+                              isCorrect
+                                ? "bg-emerald-400 text-white"
+                                : isWrong
+                                ? "bg-red-400 text-white"
+                                : chosen != null
+                                ? "bg-[#F5DA20] text-black"
+                                : "bg-slate-100 text-slate-400"
+                            }`}
+                          >
+                            {checked
+                              ? isCorrect
+                                ? "✓"
+                                : "✗"
+                              : String(idx + 1).padStart(2, "0")}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[15px] text-slate-700 leading-snug font-medium">
+                              {q.text}
+                            </p>
+
+                            {/* TRUE / FALSE buttons */}
+                            <div className="mt-3.5 grid grid-cols-2 gap-2">
+                              {([true, false] as const).map((val) => {
+                                const sel = chosen === val;
+                                const ok = checked && sel && val === q.answer;
+                                const bad = checked && sel && val !== q.answer;
+                                const reveal = checked && !sel && val === q.answer;
+
+                                return (
+                                  <button
+                                    key={String(val)}
+                                    onClick={() => pick(q.id, val)}
+                                    disabled={checked}
+                                    className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all duration-150 ${
+                                      ok
+                                        ? "bg-emerald-400 text-white shadow-sm"
+                                        : bad
+                                        ? "bg-red-400 text-white shadow-sm"
+                                        : reveal
+                                        ? "border border-emerald-400/50 bg-emerald-50 text-emerald-700"
+                                        : sel
+                                        ? "bg-[#F5DA20] text-black shadow-sm"
+                                        : checked
+                                        ? "border border-slate-200 bg-slate-50 text-slate-300"
+                                        : "border border-slate-200 bg-white text-slate-500 hover:border-[#F5DA20]/60 hover:bg-[#F5DA20]/10 hover:text-slate-700 active:scale-[0.97]"
+                                    }`}
+                                  >
+                                    {val ? (
+                                      <>
+                                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+                                        True
+                                      </>
+                                    ) : (
+                                      <>
+                                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                                        False
+                                      </>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {checked && (
+                              <p
+                                className={`mt-2 text-xs font-medium ${
+                                  isCorrect ? "text-emerald-600" : "text-red-500"
+                                }`}
+                              >
+                                {isCorrect
+                                  ? "Correct!"
+                                  : `Incorrect. The answer is ${q.answer ? "True" : "False"}.`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Card footer */}
+                <div className="flex items-center gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                  {!checked ? (
+                    <>
+                      <button
+                        onClick={check}
+                        disabled={!allAnswered}
+                        className="rounded-xl bg-[#F5DA20] px-6 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        Check Answers
+                      </button>
+                      {!allAnswered && (
+                        <span className="text-xs text-slate-400">
+                          {QUESTIONS.length - answeredCount} question
+                          {QUESTIONS.length - answeredCount !== 1 ? "s" : ""} remaining
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={reset}
+                      className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition"
+                    >
+                      Try Again
+                    </button>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
+        </section>
 
-          {/* Card footer */}
-          <div className="flex items-center gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
-            {!checked ? (
-              <>
-                <button
-                  onClick={check}
-                  disabled={!allAnswered}
-                  className="rounded-xl bg-[#F5DA20] px-6 py-2.5 text-sm font-black text-black transition hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  Check Answers
-                </button>
-                {!allAnswered && (
-                  <span className="text-xs text-slate-400">
-                    {QUESTIONS.length - answeredCount} question
-                    {QUESTIONS.length - answeredCount !== 1 ? "s" : ""} remaining
-                  </span>
-                )}
-              </>
-            ) : (
-              <button
-                onClick={reset}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom nav */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-          <a
-            href="/reading/a2"
-            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7" /></svg>
-            All A2 Reading
-          </a>
-        </div>
-
-      <div className="mt-10">
-        <AdUnit variant="inline-light" />
+        {isPro ? (
+          <ReadingRecommendations level="a2" currentSlug="pen-pals" />
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
       </div>
-      </div>
-    </main>
+    </div>
   );
 }
