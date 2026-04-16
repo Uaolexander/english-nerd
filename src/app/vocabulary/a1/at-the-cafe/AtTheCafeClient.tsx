@@ -2,6 +2,66 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Where do you look to choose food at a café?", options: ["bill", "menu", "seat", "bag"], answer: 1 },
+  { q: "What is the first meal of the day?", options: ["lunch", "dinner", "breakfast", "snack"], answer: 2 },
+  { q: "What do you ask for when you want to pay?", options: ["menu", "bag", "bill", "juice"], answer: 2 },
+  { q: "A hot drink made from beans:", options: ["tea", "coffee", "juice", "milk"], answer: 1 },
+  { q: "Two pieces of bread with filling inside:", options: ["cake", "salad", "sandwich", "soup"], answer: 2 },
+  { q: "A white liquid you add to coffee:", options: ["water", "milk", "juice", "sugar"], answer: 1 },
+  { q: "A cold drink made from fruit:", options: ["coffee", "tea", "milk", "juice"], answer: 3 },
+  { q: "Euros are a type of ___.", options: ["food", "money", "drink", "bag"], answer: 1 },
+  { q: "You put food in a ___ to take it away.", options: ["bag", "cup", "plate", "box"], answer: 0 },
+  { q: "Coffee that needs to cool down is very ___.", options: ["cold", "sweet", "hot", "long"], answer: 2 },
+  { q: "Orange is a type of ___.", options: ["coffee", "juice", "milk", "tea"], answer: 1 },
+  { q: "Apple ___ is a popular drink.", options: ["milk", "sandwich", "juice", "coffee"], answer: 2 },
+  { q: "What does a waiter give you at the start?", options: ["bill", "bag", "menu", "coffee"], answer: 2 },
+  { q: "Pedro wants something ___ to drink.", options: ["cold", "hot", "sweet", "big"], answer: 1 },
+  { q: "You ___ ten euros for your food.", options: ["bring", "pay", "cook", "ask"], answer: 1 },
+  { q: "Maria orders a sandwich with ___.", options: ["milk", "cheese", "honey", "juice"], answer: 1 },
+  { q: "At a café, you ___ breakfast.", options: ["do", "make", "have", "cook"], answer: 2 },
+  { q: "Fresh orange ___ is a drink.", options: ["cake", "juice", "coffee", "bread"], answer: 1 },
+  { q: "When you want to leave, you ask for the ___.", options: ["menu", "bag", "bill", "seat"], answer: 2 },
+  { q: "A waiter works at a ___.", options: ["school", "café", "park", "hospital"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "At the Café",
+  subtitle: "A1 dialogue vocabulary — 10 questions + key words",
+  level: "A1",
+  keyRule: "Café vocabulary: menu · breakfast · bill · juice · sandwich",
+  exercises: [
+    {
+      number: 1,
+      title: "Dialogue Exercise — Choose the correct word",
+      difficulty: "Easy",
+      instruction: "Read each sentence from the dialogue and choose the word that fits best.",
+      questions: [
+        "Maria and Pedro want to have ___ at a café. (breakfast / homework / exercise)",
+        "The waiter gives them the ___. (menu / bed / shoe)",
+        "Pedro wants a ___, please. (coffee / chair / flower)",
+        "Do you want ___ in your coffee? (milk / sand / music)",
+        "Maria wants a ___ with cheese. (sandwich / pencil / cloud)",
+        "They have orange juice and ___ juice. (apple / book / door)",
+        "The coffee is very ___. (hot / long / green)",
+        "Can we have the ___, please? (bill / song / cat)",
+        "That's ten ___, please. (euros / kilos / hours)",
+        "Can I have a ___ for my sandwich? (bag / dream / lesson)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["breakfast", "menu", "coffee", "milk", "sandwich", "apple", "hot", "bill", "euros", "bag"] },
+  ],
+};
 
 /*
   Dialogue: "At the Café"
@@ -121,8 +181,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function AtTheCafeClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -215,13 +283,28 @@ export default function AtTheCafeClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-at-the-cafe" subject="At the Café Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <AtTheCafeExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -430,50 +513,65 @@ export default function AtTheCafeClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/a1"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/a1" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All A1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Useful café vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* A1 tip */}
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A1 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                When you don't know a word, look at the <span className="font-semibold text-yellow-800">whole sentence</span> for clues. The situation, other words and common sense will help you choose correctly.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function AtTheCafeExplanation() {
+  const words = [
+    ["breakfast", "сніданок — перший прийом їжі"],
+    ["menu", "меню — список страв і напоїв"],
+    ["coffee", "кава — гарячий напій із зерен"],
+    ["milk", "молоко — біла рідина, додають до кави"],
+    ["sandwich", "сандвіч — два шматки хліба з начинкою"],
+    ["juice", "сік — холодний напій із фруктів"],
+    ["apple", "яблуко — фрукт, з нього роблять сік"],
+    ["orange", "апельсин — фрукт, популярний для соку"],
+    ["hot", "гарячий — висока температура"],
+    ["bill", "рахунок — скільки потрібно заплатити"],
+    ["euros", "євро — гроші в Європі"],
+    ["bag", "пакет — щоб взяти їжу з собою"],
+    ["waiter", "офіціант — людина, яка приносить їжу"],
+    ["café", "кафе — місце, де п'ють каву та їдять"],
+    ["drink", "напій — рідина, яку п'ють"],
+    ["food", "їжа — те, що їдять"],
+    ["pay", "платити — давати гроші"],
+    ["choose", "вибирати — приймати рішення"],
+    ["order", "замовляти — просити принести страву"],
+    ["leave", "йти — виходити"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">At the Café — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[80px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">When you don't know a word, look at the <strong>whole sentence</strong> for clues. The situation, other words and common sense will help you choose correctly.</p>
       </div>
     </div>
   );

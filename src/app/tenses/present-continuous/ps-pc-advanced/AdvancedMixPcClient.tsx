@@ -235,7 +235,7 @@ export default function AdvancedMixPcClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="pc-advanced" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="pc-advanced" subject="Present Continuous" questions={PC_SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

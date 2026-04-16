@@ -2918,10 +2918,17 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
     }
   }
 
+  // Badge = assignments that need teacher attention (unreviewed essays or new student completions not yet seen)
+  const assignmentsNeedingAttention = assignments.filter((a) => {
+    const s = summaries[a.id];
+    if (!s) return false;
+    return s.unreviewedCount > 0 || (s.completedCount > 0 && !seenAssignments.has(a.id));
+  }).length;
+
   const innerTabs = [
     { id: "students" as const, label: "Students", count: activeStudents.length },
     { id: "classes" as const, label: "Classes", count: classes.length },
-    { id: "assignments" as const, label: "Assignments", count: assignments.length },
+    { id: "assignments" as const, label: "Assignments", count: assignmentsNeedingAttention },
   ];
 
   if (selectedStudent) {
@@ -5138,6 +5145,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMsg, setPromoMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const promoInputRef = useRef<HTMLInputElement>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTeacherWelcome, setShowTeacherWelcome] = useState(false);
   const [teacherWelcomePlan, setTeacherWelcomePlan] = useState<"starter" | "solo" | "plus">("solo");
@@ -5677,20 +5685,61 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           </div>
         </div>
 
+        {/* ── Voucher banner (free users only) ────────────────────── */}
+        {!isPro && !isTeacher && !isStudent && (
+          <button
+            onClick={() => {
+              setTab("profile");
+              setTimeout(() => {
+                const el = promoInputRef.current;
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  el.focus();
+                }
+              }, 80);
+            }}
+            className="mt-6 w-full flex items-center gap-4 rounded-2xl border border-dashed border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-5 py-4 text-left transition hover:border-amber-400 hover:from-amber-100 hover:to-yellow-100 group"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5DA20] shadow-sm">
+              <svg className="h-5 w-5 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+                <line x1="9" y1="12" x2="9.01" y2="12" strokeWidth="3"/>
+                <line x1="15" y1="12" x2="15.01" y2="12" strokeWidth="3"/>
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-slate-900">Have a voucher or promo code?</p>
+              <p className="text-xs text-slate-500 mt-0.5">Activate your Pro access instantly — no payment needed</p>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 rounded-xl bg-[#F5DA20] px-4 py-2 text-xs font-black text-amber-900 shadow-sm group-hover:bg-amber-300 transition">
+              Enter Code
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </button>
+        )}
+
         {/* ── Tabs ──────────────────────────────────────────────────── */}
-        <div className="mt-8 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/[0.04]">
+        {(() => {
+          const _completedSet = new Set(completedExerciseKeys);
+          const pendingAssignments = studentAssignments.filter((a) => {
+            if (a.category === "essay") return !a.essayStatus;
+            return !_completedSet.has(`${a.category}:${a.level ?? ""}:${a.slug}:${a.exerciseNo ?? ""}`);
+          }).length;
+
+          return (
+          <div className="mt-8 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/[0.04]">
           {([
-            { key: "dashboard" as const, label: "Dashboard", icon: "M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z", show: true },
-            { key: "teacher"   as const, label: "Teacher",   icon: "M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z", show: isTeacher },
-            { key: "student"   as const, label: "Student",   icon: "M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z", show: isStudent || !!pendingTeacherInvite },
-            { key: "profile"   as const, label: "Profile",   icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", show: true },
-            { key: "security"  as const, label: "Security",  icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", show: true },
+            { key: "dashboard" as const, label: "Dashboard", badge: 0, icon: "M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z", show: true },
+            { key: "teacher"   as const, label: "Teacher",   badge: 0, icon: "M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z", show: isTeacher },
+            { key: "student"   as const, label: "Student",   badge: pendingAssignments, icon: "M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z", show: isStudent || !!pendingTeacherInvite },
+            { key: "profile"   as const, label: "Profile",   badge: 0, icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", show: true },
+            { key: "security"  as const, label: "Security",  badge: 0, icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", show: true },
           ]).filter((t) => t.show).map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               {...(t.key === "teacher" ? { "data-tour": "teacher-tab-btn" } : t.key === "dashboard" ? { "data-tour": "dashboard-tab-btn" } : t.key === "student" ? { "data-tour": "student-tab-btn" } : {})}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
+              className={`relative flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
                 tab === t.key
                   ? t.key === "teacher"
                     ? `${teacherData ? teacherPlanTheme(teacherData.plan).btnSolid : "bg-violet-600"} text-white shadow-sm`
@@ -5702,9 +5751,16 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 <path d={t.icon} />
               </svg>
               {t.label}
+              {t.badge > 0 && tab !== t.key && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white">
+                  {t.badge > 9 ? "9+" : t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
+          );
+        })()}
 
         {/* ══════════════ STUDENT TAB ══════════════ */}
         {tab === "student" && (() => {
@@ -5943,6 +5999,8 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
             <form onSubmit={handlePromoRedeem} className="p-6 sm:p-7">
               <div className="flex gap-3">
                 <input
+                  ref={promoInputRef}
+                  id="promo-code-input"
                   type="text"
                   value={promoCode}
                   onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoMsg(null); }}

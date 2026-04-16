@@ -477,7 +477,7 @@ export default function AmIsAreClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="ps-to-be" subject="am / is / are" questions={SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="ps-to-be" subject="am / is / are" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

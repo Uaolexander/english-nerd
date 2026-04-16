@@ -193,7 +193,7 @@ export default function PresentContinuousQuizClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="pc-quiz" subject="Present Continuous Quiz" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="pc-quiz" subject="Present Continuous Quiz" questions={PC_SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

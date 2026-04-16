@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "A destination is the ___ you are travelling to.", options: ["hotel", "ticket", "place", "guide"], answer: 2 },
+  { q: "To travel abroad means to visit another ___.", options: ["city", "country", "region", "town"], answer: 1 },
+  { q: "A passport is a document for ___ travel.", options: ["domestic", "international", "local", "business"], answer: 1 },
+  { q: "A budget is how much ___ you can spend.", options: ["time", "luggage", "money", "energy"], answer: 2 },
+  { q: "An itinerary is a detailed ___ for a trip.", options: ["map", "ticket", "plan/schedule", "guide"], answer: 2 },
+  { q: "Direct flights have ___ stops.", options: ["many", "some", "no", "one"], answer: 2 },
+  { q: "Accommodation is where you ___ on a trip.", options: ["eat", "fly", "stay/sleep", "shop"], answer: 2 },
+  { q: "To book means to ___ in advance.", options: ["pay", "reserve", "pack", "choose"], answer: 1 },
+  { q: "Luggage is your ___ when travelling.", options: ["ticket", "passport", "bags and suitcases", "guide"], answer: 2 },
+  { q: "Laura and Mike are planning their summer ___.", options: ["interview", "lesson", "holiday", "meeting"], answer: 2 },
+  { q: "Abroad means in another ___.", options: ["city", "region", "country", "hotel"], answer: 2 },
+  { q: "Local transport includes buses and ___ in that area.", options: ["flights", "trains", "ships", "taxis"], answer: 1 },
+  { q: "A guidebook gives information about ___.", options: ["flights", "hotels only", "travel destinations", "passports"], answer: 2 },
+  { q: "A visa allows you to ___ a foreign country.", options: ["leave", "enter", "fly over", "drive through"], answer: 1 },
+  { q: "Jet lag is tiredness caused by ___.", options: ["long walks", "time zone changes", "bad food", "hot weather"], answer: 1 },
+  { q: "Travel insurance protects you against unexpected ___.", options: ["delays and illness", "boredom", "good weather", "cheap flights"], answer: 0 },
+  { q: "A currency exchange is where you swap ___.", options: ["passports", "money from one currency to another", "luggage", "tickets"], answer: 1 },
+  { q: "Mike asks Laura: Have you chosen a ___?", options: ["hotel", "guidebook", "destination", "flight"], answer: 2 },
+  { q: "Look forward to means to ___.", options: ["look behind", "be excited about something coming", "plan carefully", "worry about"], answer: 1 },
+  { q: "Japan is known for its ___ culture and food.", options: ["European", "African", "unique", "ordinary"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Travel Plans",
+  subtitle: "B1 travel vocabulary — dialogue exercise",
+  level: "B1",
+  keyRule: "Travel vocabulary: destination · passport · itinerary · accommodation · budget · luggage · visa",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Medium",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "Laura and Mike are planning their summer ___. (holiday / lesson / meeting)",
+        "Have you chosen a ___? Where do you want to go? (destination / jacket / window)",
+        "Have you ever ___ abroad before? (travelled / cooked / slept)",
+        "We need to get our ___ before we can fly. (passports / suitcases / tickets)",
+        "We are working with a strict ___. (budget / guidebook / schedule)",
+        "I've already planned our ___. (itinerary / luggage / accommodation)",
+        "We should look for ___ near the city centre. (accommodation / transport / food)",
+        "Are there any ___ flights or do we need to change? (direct / cheap / long)",
+        "I can't wait to see the ___ culture and food! (local / old / basic)",
+        "I'm really looking ___ to the trip! (forward / back / up)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["holiday", "destination", "travelled", "passports", "budget", "itinerary", "accommodation", "direct", "local", "forward"] },
+  ],
+};
 
 /*
   Dialogue: "Travel Plans"
@@ -121,8 +179,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function TravelPlansClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -216,13 +282,28 @@ export default function TravelPlansClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-travel-plans" subject="Travel Plans Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <TravelPlansExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -431,50 +512,65 @@ export default function TravelPlansClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/b1"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/b1" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All B1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Useful travel vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* B1 tip */}
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4">
-              <p className="text-xs font-black text-violet-700 uppercase tracking-wide mb-2">B1 Tip</p>
-              <p className="text-xs text-violet-800/70 leading-relaxed">
-                Notice phrasal verbs like <span className="font-semibold text-violet-800">"look forward to"</span>. These are very common in spoken English and can't always be guessed from the individual words — you need to learn them as fixed expressions.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function TravelPlansExplanation() {
+  const words = [
+    ["holiday", "відпустка — period of travel/relaxation"],
+    ["destination", "пункт призначення — place you travel to"],
+    ["passport", "паспорт — document for international travel"],
+    ["budget", "бюджет — how much money you can spend"],
+    ["itinerary", "маршрут — detailed plan for a trip"],
+    ["accommodation", "проживання — where you stay on a trip"],
+    ["direct flight", "прямий рейс — flight with no stops"],
+    ["local culture", "місцева культура — traditions of an area"],
+    ["look forward to", "з нетерпінням чекати — be excited about"],
+    ["luggage", "багаж — bags and suitcases"],
+    ["visa", "віза — document to enter a foreign country"],
+    ["jet lag", "джетлаг — tiredness from time zone change"],
+    ["travel insurance", "страхування подорожі — protection for trips"],
+    ["currency exchange", "обмін валют — swap money currencies"],
+    ["guidebook", "путівник — book with travel information"],
+    ["sightseeing", "огляд визначних місць — visiting attractions"],
+    ["abroad", "за кордон — in another country"],
+    ["booking", "бронювання — reserving in advance"],
+    ["hostel", "хостел — cheap shared accommodation"],
+    ["souvenir", "сувенір — gift bought on holiday"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Travel Plans — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Notice phrasal verbs like <strong>"look forward to"</strong> — very common in spoken English. Learn them as fixed expressions!</p>
       </div>
     </div>
   );

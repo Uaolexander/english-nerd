@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "The woman who is your parent:", options: ["sister", "grandmother", "mother", "aunt"], answer: 2 },
+  { q: "The man who is your parent:", options: ["brother", "grandfather", "uncle", "father"], answer: 3 },
+  { q: "A boy with the same parents as you:", options: ["uncle", "cousin", "brother", "father"], answer: 2 },
+  { q: "A girl with the same parents as you:", options: ["aunt", "mother", "cousin", "sister"], answer: 3 },
+  { q: "The mother of your mother:", options: ["aunt", "grandmother", "sister", "cousin"], answer: 1 },
+  { q: "The father of your father:", options: ["uncle", "brother", "grandfather", "cousin"], answer: 2 },
+  { q: "The group of people you are related to:", options: ["class", "team", "family", "club"], answer: 2 },
+  { q: "A sister or brother is your ___.", options: ["friend", "sibling", "cousin", "parent"], answer: 1 },
+  { q: "What do you have for Christmas dinner?", options: ["lesson", "food", "rain", "music"], answer: 1 },
+  { q: "Friendly and generous means:", options: ["expensive", "difficult", "kind", "small"], answer: 2 },
+  { q: "Anna's grandmother lives in a small ___.", options: ["city", "hotel", "hospital", "house"], answer: 3 },
+  { q: "To spend ___ with family means to be with them.", options: ["money", "time", "music", "rain"], answer: 1 },
+  { q: "Your mother's sister is your ___.", options: ["grandmother", "cousin", "aunt", "niece"], answer: 2 },
+  { q: "Your brother's son is your ___.", options: ["nephew", "cousin", "uncle", "sibling"], answer: 0 },
+  { q: "A large ___ has many people in it.", options: ["house", "class", "family", "dinner"], answer: 2 },
+  { q: "Anna has ___ people in her family.", options: ["two", "three", "four", "five"], answer: 3 },
+  { q: "Jack is Anna's ___.", options: ["father", "brother", "uncle", "cousin"], answer: 1 },
+  { q: "Emma is ___ years old.", options: ["six", "seven", "eight", "ten"], answer: 2 },
+  { q: "What does a grandfather tell?", options: ["jokes", "stories", "songs", "lessons"], answer: 1 },
+  { q: "Anna's father drives a big ___.", options: ["car", "train", "bus", "bike"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "My Family",
+  subtitle: "A1 family vocabulary — dialogue exercise + key words",
+  level: "A1",
+  keyRule: "Family vocabulary: mother · father · brother · sister · grandmother",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Easy",
+      instruction: "Read each sentence and choose the correct family word.",
+      questions: [
+        "I have a big ___. There are five people in it. (family / garden / lesson)",
+        "My ___ is a nurse. She works at the hospital. (mother / mirror / lamp)",
+        "My ___ drives a big bus. (father / pencil / cloud)",
+        "Do you have a ___? Yes! His name is Jack, he is ten. (brother / kitchen / flower)",
+        "My ___ Emma is eight years old. (sister / chair / sky)",
+        "Every Sunday, we visit my ___. She lives in a village. (grandmother / student / market)",
+        "My grandmother makes great ___. (food / stone / book)",
+        "My grandfather is very ___. He tells funny stories. (kind / difficult / expensive)",
+        "We have a big family ___ every Christmas. (dinner / lesson / river)",
+        "I love spending ___ with my family at weekends. (time / rain / music)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["family", "mother", "father", "brother", "sister", "grandmother", "food", "kind", "dinner", "time"] },
+  ],
+};
 
 type Question = {
   id: number;
@@ -115,8 +173,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function MyFamilyClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -210,13 +276,28 @@ export default function MyFamilyClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-my-family" subject="My Family Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <MyFamilyExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -424,47 +505,65 @@ export default function MyFamilyClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/a1"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/a1" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All A1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Family vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A1 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                Family words are some of the first words you learn in English. Notice that <span className="font-semibold text-yellow-800">mother, father, brother, sister</span> are used without "my" when you talk about them generally.
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function MyFamilyExplanation() {
+  const words = [
+    ["mother", "мама — жінка-батьок"],
+    ["father", "тато — чоловік-батьок"],
+    ["brother", "брат — хлопець із тими ж батьками"],
+    ["sister", "сестра — дівчина із тими ж батьками"],
+    ["grandmother", "бабуся — мама твоїх батьків"],
+    ["grandfather", "дідусь — тато твоїх батьків"],
+    ["aunt", "тітка — сестра твоїх батьків"],
+    ["uncle", "дядько — брат твоїх батьків"],
+    ["cousin", "двоюрідний — дитина тітки або дядька"],
+    ["nephew", "племінник — хлопець-дитина брата або сестри"],
+    ["niece", "племінниця — дівчина-дитина брата або сестри"],
+    ["family", "родина — усі твої родичі"],
+    ["parents", "батьки — мама і тато разом"],
+    ["sibling", "брат або сестра"],
+    ["kind", "добрий — friendly and generous"],
+    ["dinner", "вечеря — the main evening meal"],
+    ["food", "їжа — що їдять"],
+    ["time", "час — spend time = бути разом"],
+    ["village", "село — small place in the countryside"],
+    ["stories", "оповіді — tales or narratives"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">My Family — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[90px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Family words are some of the first words you learn in English. <strong>Mother, father, brother, sister</strong> can be used without "my" when talking generally.</p>
       </div>
     </div>
   );

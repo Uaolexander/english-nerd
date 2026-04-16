@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "A social media ___ decides which content you see.", options: ["algorithm", "profile", "advert", "filter"], answer: 0 },
+  { q: "Likes, shares and comments are forms of ___.", options: ["clickbait", "engagement", "streaming", "hacking"], answer: 1 },
+  { q: "A misleading headline designed to attract clicks is called ___.", options: ["fake news", "clickbait", "viral content", "streaming"], answer: 1 },
+  { q: "When a video spreads very quickly online it is described as ___.", options: ["streamed", "viral", "offline", "encrypted"], answer: 1 },
+  { q: "An ___ promotes products to their social media followers.", options: ["editor", "influencer", "analyst", "developer"], answer: 1 },
+  { q: "Live delivery of content over the internet is called ___.", options: ["streaming", "blogging", "printing", "uploading"], answer: 0 },
+  { q: "False or misleading information presented as news is called ___.", options: ["clickbait", "satire", "fake news", "blogging"], answer: 2 },
+  { q: "An ___ bubble shows you only views that reinforce your own.", options: ["echo", "filter", "online", "empty"], answer: 0 },
+  { q: "Checking where information comes from means verifying your ___.", options: ["sources", "followers", "grammar", "photos"], answer: 0 },
+  { q: "A journalist's supervisor who oversees content is called an ___.", options: ["editor", "influencer", "blogger", "analyst"], answer: 0 },
+  { q: "Content that is only available to paying users is called ___.", options: ["premium", "viral", "clickbait", "streamed"], answer: 0 },
+  { q: "A ___ is a regularly updated website with personal commentary.", options: ["blog", "stream", "algorithm", "source"], answer: 0 },
+  { q: "Data protection rules are part of digital ___.", options: ["privacy", "algorithm", "engagement", "clickbait"], answer: 0 },
+  { q: "A ___ is a false or misleading story spread on social media.", options: ["hoax", "podcast", "stream", "blog"], answer: 0 },
+  { q: "A ___ is an audio programme available for download.", options: ["podcast", "tweet", "stream", "hashtag"], answer: 0 },
+  { q: "The ___ is the total number of people who follow an account.", options: ["following", "engagement", "reach", "algorithm"], answer: 2 },
+  { q: "To ___ content means to remove it for violating guidelines.", options: ["moderate", "stream", "curate", "upload"], answer: 0 },
+  { q: "A ___ is a word or phrase preceded by # used to index content.", options: ["hashtag", "clickbait", "thread", "caption"], answer: 0 },
+  { q: "Content created by users rather than companies is called ___.", options: ["user-generated content", "editorial", "advertising", "streaming"], answer: 0 },
+  { q: "The practice of tracking users' online behaviour is called ___.", options: ["data tracking", "streaming", "engagement", "blogging"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Media & Technology",
+  subtitle: "B2 digital media vocabulary — dialogue",
+  level: "B2",
+  keyRule: "Digital media vocabulary: algorithm · engagement · clickbait · viral · influencer · streaming · fake news",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "Anna is discussing digital media trends with her ___. (editor / neighbour / baker)",
+        "How do social media ___ decide which content people see? (algorithms / windows / colours)",
+        "Many posts are designed to maximise ___ — likes, shares, and comments. (engagement / furniture / weather)",
+        "Some websites use ___ headlines to get more clicks. (clickbait / honest / boring)",
+        "When a video becomes ___, it spreads very quickly online. (viral / offline / private)",
+        "Many brands now work with ___ who have millions of followers. (influencers / politicians / athletes)",
+        "News is now ___ in real time — we can follow events as they happen. (streamed / printed / posted)",
+        "The rise of ___ journalism is worrying — many stories are not verified. (fake news / good news / local news)",
+        "Social media can create an ___ bubble where you only see opinions you agree with. (echo / empty / online)",
+        "We must always check our ___ before publishing any story. (sources / grammar / photos)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["editor", "algorithms", "engagement", "clickbait", "viral", "influencers", "streamed", "fake news", "echo", "sources"] },
+  ],
+};
 
 /*
   Dialogue: "Media & Technology"
@@ -119,8 +177,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function MediaTechnologyClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -214,13 +280,28 @@ export default function MediaTechnologyClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-media-technology" subject="Media & Technology Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <MediaTechnologyExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -438,41 +519,61 @@ export default function MediaTechnologyClient() {
             </a>
           </div>
         </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Digital media vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* B2 tip */}
-            <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
-              <p className="text-xs font-black text-orange-700 uppercase tracking-wide mb-2">B2 Tip</p>
-              <p className="text-xs text-orange-800/70 leading-relaxed">
-                Media vocabulary changes quickly. Learn <span className="font-semibold text-orange-800">collocations</span> like "go viral", "fake news story", and "social media algorithm" as fixed phrases rather than individual words.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
+        )}
           </div>
-        </aside>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function MediaTechnologyExplanation() {
+  const words = [
+    ["algorithm", "алгоритм — rules a platform uses to decide what content to show"],
+    ["engagement", "залученість — likes, shares, comments and other interactions"],
+    ["clickbait", "клікбейт — misleading headlines designed to attract clicks"],
+    ["viral", "вірусний — spreading very quickly across the internet"],
+    ["influencer", "інфлюенсер — a person who promotes brands to their social media followers"],
+    ["streaming", "стримінг — delivering live audio/video content over the internet"],
+    ["fake news", "фейкові новини — false or misleading information presented as fact"],
+    ["echo chamber", "ехо-камера — an environment where you only hear views you agree with"],
+    ["source", "джерело — the origin or provider of information"],
+    ["editor", "редактор — a person who oversees and approves content"],
+    ["podcast", "подкаст — an audio programme available for download or streaming"],
+    ["hashtag", "хештег — a word preceded by # used to categorise content"],
+    ["blog", "блог — a regularly updated website with personal commentary"],
+    ["hoax", "містифікація — a false story spread to deceive people"],
+    ["reach", "охоплення — the total number of people exposed to content"],
+    ["moderate", "модерувати — to review and remove content that breaks rules"],
+    ["premium content", "преміум-контент — exclusive content available to paying subscribers"],
+    ["data tracking", "відстеження даних — monitoring users' online behaviour"],
+    ["user-generated content", "контент від користувачів — media created by ordinary users"],
+    ["digital literacy", "цифрова грамотність — the ability to use digital tools critically"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Media & Technology — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[120px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          Media vocabulary changes quickly. Learn <strong>collocations</strong> like "go viral", "fake news story", and "social media algorithm" as fixed phrases. Understanding digital media language is essential for reading English-language news and journalism at B2 level.
+        </p>
       </div>
     </div>
   );

@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "You book a table in advance with a ___.", options: ["menu", "bill", "reservation", "receipt"], answer: 2 },
+  { q: "The first course of a meal is called ___.", options: ["main course", "starter", "dessert", "side dish"], answer: 1 },
+  { q: "The ___ is a list of food and drinks.", options: ["menu", "bill", "table", "waiter"], answer: 0 },
+  { q: "The final course of a meal is ___.", options: ["starter", "main course", "reservation", "dessert"], answer: 3 },
+  { q: "The waiter brings you the ___ to pay.", options: ["menu", "bill", "tip", "plate"], answer: 1 },
+  { q: "An Italian restaurant serves ___.", options: ["sushi", "pizza", "tacos", "curry"], answer: 1 },
+  { q: "Gluten-free means without ___.", options: ["sugar", "salt", "wheat", "oil"], answer: 2 },
+  { q: "To recommend means to ___.", options: ["order food", "suggest something good", "pay the bill", "reserve a table"], answer: 1 },
+  { q: "A tip is extra money for the ___.", options: ["food", "waiter", "table", "kitchen"], answer: 1 },
+  { q: "Tender meat is ___.", options: ["hard", "spicy", "soft and easy to chew", "cold"], answer: 2 },
+  { q: "You are a vegetarian if you don't eat ___.", options: ["vegetables", "fruit", "meat", "bread"], answer: 2 },
+  { q: "A ___ course comes before the main.", options: ["dessert", "starter", "side", "bill"], answer: 1 },
+  { q: "Sarah and Mark go to the restaurant for ___.", options: ["lunch", "breakfast", "dinner", "snack"], answer: 2 },
+  { q: "The chef ___ the restaurant.", options: ["serves", "runs", "orders", "books"], answer: 1 },
+  { q: "Wine is a type of ___.", options: ["food", "drink", "dessert", "starter"], answer: 1 },
+  { q: "When food is delicious, it tastes very ___.", options: ["bad", "good", "spicy", "cold"], answer: 1 },
+  { q: "To reserve a table means to ___ it in advance.", options: ["book", "pay", "order", "taste"], answer: 0 },
+  { q: "A fork is a piece of ___.", options: ["furniture", "crockery", "cutlery", "glassware"], answer: 2 },
+  { q: "The ___ brings your food to the table.", options: ["chef", "manager", "waiter", "cashier"], answer: 2 },
+  { q: "Pasta is an example of an ___ dish.", options: ["English", "French", "Italian", "Spanish"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "At the Restaurant",
+  subtitle: "A2 restaurant dialogue vocabulary — 10 questions",
+  level: "A2",
+  keyRule: "Restaurant vocabulary: reservation · menu · starter · main course · dessert · bill · tip",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Easy",
+      instruction: "Read the dialogue and choose the correct word.",
+      questions: [
+        "Have you made a ___? We have a table for two. (reservation / bicycle / window)",
+        "Here is the ___. Please take a look. (menu / weather / shoe)",
+        "I'd like the soup as a ___. (starter / homework / dream)",
+        "What is the ___ course? (main / first / only / last)",
+        "I'd like pasta as my ___. (main course / dessert / starter)",
+        "Could we have the ___ please? (bill / song / cat)",
+        "Can I leave a ___? The service was excellent. (tip / change / note)",
+        "This steak is very ___. (tender / hard / loud)",
+        "Do you have any ___ options? (gluten-free / expensive / large)",
+        "The chef of this restaurant is ___. (excellent / poor / ordinary)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["reservation", "menu", "starter", "main", "main course", "bill", "tip", "tender", "gluten-free", "excellent"] },
+  ],
+};
 
 /*
   Dialogue: "At the Restaurant"
@@ -121,8 +179,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function AtTheRestaurantClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -215,13 +281,28 @@ export default function AtTheRestaurantClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-at-the-restaurant" subject="At the Restaurant Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <AtTheRestaurantExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -431,50 +512,65 @@ export default function AtTheRestaurantClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/a2"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/a2" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All A2 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Useful restaurant vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* A2 tip */}
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A2 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                At a restaurant, you will often hear words like <span className="font-semibold text-yellow-800">starter, main course</span> and <span className="font-semibold text-yellow-800">dessert</span>. These are the three parts of a full meal.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function AtTheRestaurantExplanation() {
+  const words = [
+    ["reservation", "резервація — booking a table in advance"],
+    ["menu", "меню — list of food and drinks"],
+    ["starter", "закуска — first course of a meal"],
+    ["main course", "головна страва — the central dish"],
+    ["dessert", "десерт — sweet food at the end of a meal"],
+    ["bill", "рахунок — the paper showing what you owe"],
+    ["tip", "чайові — extra money for good service"],
+    ["waiter", "офіціант — person who brings your food"],
+    ["chef", "шеф-кухар — person who cooks in a restaurant"],
+    ["gluten-free", "без глютену — no wheat products"],
+    ["vegetarian", "вегетаріанець — no meat"],
+    ["tender", "ніжний — soft and easy to chew"],
+    ["recommend", "рекомендувати — suggest something good"],
+    ["flavour", "смак — the taste of food"],
+    ["pasta", "паста — Italian noodle dish"],
+    ["wine", "вино — alcoholic grape drink"],
+    ["table", "стіл — where you sit to eat"],
+    ["cutlery", "столові прибори — forks, knives, spoons"],
+    ["excellent", "відмінний — very good"],
+    ["delicious", "смачний — tastes very good"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">At the Restaurant — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[90px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">At a restaurant, the three parts of a full meal are: <strong>starter → main course → dessert</strong>. Learn them in order!</p>
       </div>
     </div>
   );

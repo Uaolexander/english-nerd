@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "A meeting agenda is a list of ___ to be discussed.", options: ["people", "items", "dates", "rooms"], answer: 1 },
+  { q: "A proposal is a formal ___ for consideration.", options: ["complaint", "plan", "report", "budget"], answer: 1 },
+  { q: "A quarterly strategy covers ___ months.", options: ["one", "two", "three", "six"], answer: 2 },
+  { q: "To outsource means to have work done by ___.", options: ["your team", "an external company", "a manager", "volunteers"], answer: 1 },
+  { q: "A stakeholder has an ___ in a project.", options: ["objection", "interest", "office", "account"], answer: 1 },
+  { q: "A budget is the amount of ___ available.", options: ["time", "staff", "money", "space"], answer: 2 },
+  { q: "ROI stands for Return on ___.", options: ["Income", "Interest", "Investment", "Innovation"], answer: 2 },
+  { q: "A deadline is the ___ by which something must be done.", options: ["person", "place", "latest time", "cost"], answer: 2 },
+  { q: "To monitor means to ___.", options: ["ignore", "track carefully", "delegate", "outsource"], answer: 1 },
+  { q: "A campaign is a series of ___ towards a goal.", options: ["meetings", "activities", "reports", "budgets"], answer: 1 },
+  { q: "Rachel is the ___ of the team.", options: ["applicant", "director", "analyst", "assistant"], answer: 1 },
+  { q: "A collaborator works ___ with others.", options: ["alone", "against", "together", "separately"], answer: 2 },
+  { q: "An action point is a task someone must ___.", options: ["ignore", "complete", "delegate", "cancel"], answer: 1 },
+  { q: "To present means to ___ information formally.", options: ["hide", "share", "demand", "refuse"], answer: 1 },
+  { q: "The minutes of a meeting are ___.", options: ["the duration", "a formal record", "the agenda", "the participants"], answer: 1 },
+  { q: "To approve means to ___.", options: ["reject", "discuss", "officially agree to", "delay"], answer: 2 },
+  { q: "A pitch is a persuasive ___ to get approval.", options: ["document", "presentation", "budget", "meeting"], answer: 1 },
+  { q: "Revenue is the ___ a company earns.", options: ["cost", "loss", "money/income", "tax"], answer: 2 },
+  { q: "To implement means to ___.", options: ["plan", "put into practice", "reject", "delay"], answer: 1 },
+  { q: "An objective is a specific ___ you want to achieve.", options: ["problem", "goal", "budget", "meeting"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Business Meeting",
+  subtitle: "B2 business vocabulary — meeting dialogue",
+  level: "B2",
+  keyRule: "Business vocabulary: agenda · proposal · strategy · budget · deadline · stakeholder · ROI",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "The team meets to discuss the quarterly ___. (strategy / weather / furniture)",
+        "Can everyone see the meeting ___? (agenda / window / holiday)",
+        "I'd like to present our ___ for the new campaign. (proposal / kitchen / sunset)",
+        "Let's keep a close eye on the ___. (budget / team / office)",
+        "The ___ from last quarter were very positive. (results / meetings / agendas)",
+        "Could we ___ these tasks to our partner agency? (outsource / cancel / ignore)",
+        "I need everyone to be aware of the ___. (deadline / weather / coffee)",
+        "Let's ensure all ___ are kept informed. (stakeholders / furniture / windows)",
+        "We need to monitor the ___ of this campaign closely. (performance / cost / colour)",
+        "Let's schedule a follow-up ___ for next week. (meeting / lunch / holiday)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["strategy", "agenda", "proposal", "budget", "results", "outsource", "deadline", "stakeholders", "performance", "meeting"] },
+  ],
+};
 
 /*
   Dialogue: "A Business Meeting"
@@ -119,8 +177,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function BusinessMeetingClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -214,13 +280,28 @@ export default function BusinessMeetingClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-business-meeting" subject="Business Meeting Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <BusinessMeetingExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -438,41 +519,61 @@ export default function BusinessMeetingClient() {
             </a>
           </div>
         </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Business meeting vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* B2 tip */}
-            <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
-              <p className="text-xs font-black text-orange-700 uppercase tracking-wide mb-2">B2 Tip</p>
-              <p className="text-xs text-orange-800/70 leading-relaxed">
-                At B2 level, focus on <span className="font-semibold text-orange-800">collocations</span> — words that naturally go together in business English, such as "meet a deadline" or "monitor a budget".
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
+        )}
           </div>
-        </aside>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function BusinessMeetingExplanation() {
+  const words = [
+    ["agenda", "порядок денний — list of items to be discussed"],
+    ["proposal", "пропозиція — a formal plan put forward for approval"],
+    ["strategy", "стратегія — a plan of action to achieve a goal"],
+    ["deadline", "кінцевий термін — the latest time by which something must be done"],
+    ["stakeholder", "зацікавлена сторона — a person with an interest in a project"],
+    ["outsource", "передавати на аутсорсинг — to hire an external company to do work"],
+    ["objective", "ціль — a specific goal you want to achieve"],
+    ["budget", "бюджет — the amount of money available for a plan"],
+    ["ROI", "рентабельність інвестицій — Return on Investment"],
+    ["revenue", "дохід — the money a company earns"],
+    ["implement", "впроваджувати — to put a plan into practice"],
+    ["monitor", "відстежувати — to track something carefully over time"],
+    ["breakdown", "детальний аналіз — a detailed list of components"],
+    ["campaign", "кампанія — a series of activities towards a goal"],
+    ["collaborate", "співпрацювати — to work together with others"],
+    ["approve", "схвалювати — to officially agree to something"],
+    ["pitch", "презентація-пропозиція — a persuasive presentation to get approval"],
+    ["minutes", "протокол — a formal written record of a meeting"],
+    ["action point", "пункт дій — a task assigned to someone at a meeting"],
+    ["quarterly", "щоквартальний — happening or produced every three months"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Business Meeting — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          At B2 level, focus on <strong>collocations</strong> — words that naturally go together, such as "meet a deadline", "monitor a budget", or "present a proposal". These fixed combinations are essential for professional English.
+        </p>
       </div>
     </div>
   );

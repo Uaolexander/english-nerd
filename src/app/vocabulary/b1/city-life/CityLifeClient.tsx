@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Public transport includes buses, trains and ___.", options: ["cars", "taxis", "trams", "bikes"], answer: 2 },
+  { q: "Rush hour is when many people ___ to work.", options: ["drive fast", "travel", "eat", "sleep"], answer: 1 },
+  { q: "A commute is a journey between ___ and work.", options: ["school", "home", "park", "hotel"], answer: 1 },
+  { q: "Pollution is harmful ___ to the environment.", options: ["damage", "help", "support", "care"], answer: 0 },
+  { q: "A suburb is on the ___ of a city.", options: ["centre", "underground", "edge", "top"], answer: 2 },
+  { q: "A pedestrian is a person who is ___.", options: ["driving", "cycling", "walking", "flying"], answer: 2 },
+  { q: "A skyscraper is a very ___ building.", options: ["old", "small", "wide", "tall"], answer: 3 },
+  { q: "Nightlife refers to activities at ___.", options: ["dawn", "midday", "night", "morning"], answer: 2 },
+  { q: "Affordable means not too ___.", options: ["big", "expensive", "far", "crowded"], answer: 1 },
+  { q: "A neighbourhood is an area where people ___.", options: ["work", "travel", "live near each other", "shop"], answer: 2 },
+  { q: "The underground is public transport that goes ___.", options: ["underground", "above ground", "on water", "in the air"], answer: 0 },
+  { q: "Congested means blocked with too much ___.", options: ["people", "noise", "traffic", "pollution"], answer: 2 },
+  { q: "Facilities are buildings and services that make life ___.", options: ["harder", "easier", "slower", "noisier"], answer: 1 },
+  { q: "The community is a group of people who ___ in the same area.", options: ["work", "travel", "live", "shop"], answer: 2 },
+  { q: "To commute means to travel regularly between ___ and work.", options: ["home", "school", "park", "shop"], answer: 0 },
+  { q: "Rents that are too high mean housing is ___.", options: ["cheap", "free", "affordable", "expensive"], answer: 3 },
+  { q: "Air pollution from cars is a ___ in big cities.", options: ["solution", "benefit", "major problem", "small issue"], answer: 2 },
+  { q: "The city centre is more ___ than the suburbs.", options: ["quiet", "green", "crowded", "cheap"], answer: 2 },
+  { q: "Good ___ reduces car use and pollution.", options: ["nightlife", "public transport", "facilities", "housing"], answer: 1 },
+  { q: "A friendly ___ makes an area a nicer place to live.", options: ["traffic", "community", "weather", "pollution"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "City Life",
+  subtitle: "B1 urban vocabulary — transport, community, city features",
+  level: "B1",
+  keyRule: "City vocabulary: public transport · commute · rush hour · pollution · suburb · neighbourhood",
+  exercises: [
+    {
+      number: 1, title: "Exercise 1 — Multiple Choice", difficulty: "Medium",
+      instruction: "Choose the correct answer.",
+      questions: [
+        "Public transport = buses, trains and trams for everyone. (True/False concept)",
+        "Rush hour = a time when many people travel to/from work",
+        "A commute = the journey to and from work",
+        "Pollution = damage to the environment caused by chemicals",
+        "A suburb = an area on the edge of a city",
+        "Pedestrian = a person walking",
+        "Skyscraper = a very tall building",
+        "Nightlife = entertainment and social activities at night",
+        "Affordable = not too expensive, within budget",
+        "Neighbourhood = an area where people live near each other",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["Buses, trains and trams for everyone", "A time when many people travel to or from work", "The journey to and from work", "Damage to the environment caused by chemicals", "An area on the edge of a city", "A person walking", "A very tall building", "Entertainment and social activities at night", "Not too expensive, within budget", "An area where people live near each other"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +150,18 @@ function normalize(s: string) {
 }
 
 export default function CityLifeClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +244,28 @@ export default function CityLifeClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-city-life" subject="City Life Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <CityLifeExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -547,40 +628,60 @@ export default function CityLifeClient() {
               All B1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">City and urban life words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4">
-              <p className="text-xs font-black text-violet-700 uppercase tracking-wide mb-2">B1 Tip</p>
-              <p className="text-xs text-violet-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-violet-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function CityLifeExplanation() {
+  const words = [
+    ["public transport", "громадський транспорт — buses, trains, trams"],
+    ["rush hour", "година пік — busy travel time morning/evening"],
+    ["commute", "їздити на роботу — regular journey to/from work"],
+    ["pollution", "забруднення — harmful damage to the environment"],
+    ["suburb", "передмістя — area on the edge of a city"],
+    ["pedestrian", "пішохід — a person who is walking"],
+    ["skyscraper", "хмарочос — a very tall building"],
+    ["nightlife", "нічне життя — entertainment at night"],
+    ["affordable", "доступний — not too expensive"],
+    ["neighbourhood", "район — area where people live"],
+    ["underground", "метро — trains running under the city"],
+    ["congested", "перевантажений — blocked with too much traffic"],
+    ["facilities", "об'єкти — buildings and services"],
+    ["community", "спільнота — group of people in the same area"],
+    ["rent", "оренда — money paid to live in a property"],
+    ["traffic jam", "затор — when traffic cannot move"],
+    ["air quality", "якість повітря — cleanliness of the air"],
+    ["city centre", "центр міста — the middle of the city"],
+    ["green space", "зелені зони — parks and gardens"],
+    ["infrastructure", "інфраструктура — basic systems like roads and transport"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">City Life — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar!</p>
       </div>
     </div>
   );

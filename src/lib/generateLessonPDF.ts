@@ -193,41 +193,33 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
     y += 17;
   }
 
-  // Exercises 1 & 2
-  const [ex1, ex2, ex3, ex4] = config.exercises;
+  // ── Exercises (dynamic: 1–4) ─────────────────────────────────────────────
+  const exercises = config.exercises;
+  let pageNum = 1;
 
-  y = exHeader(ex1, y);
-  y += 2;
-  y = exItems(y, ex1.questions);
-  y += 8;
+  for (let i = 0; i < exercises.length; i++) {
+    const ex = exercises[i];
+    // Start a new page for exercises 3+ (or if content would overflow)
+    if (i === 2) {
+      pageFooter(pageNum);
+      pageNum++;
+      pdf.addPage();
+      pageHeader(pageNum, "Grammar Worksheet");
+      y = 20;
+    }
+    y = exHeader(ex, y);
+    y += 2;
+    y = exItems(y, ex.questions);
+    if (i < exercises.length - 1 && i !== 1) y += 8;
+  }
 
-  y = exHeader(ex2, y);
-  y += 2;
-  y = exItems(y, ex2.questions);
+  pageFooter(pageNum);
 
-  pageFooter(1);
+  // ── Answer Key (dynamic page number) ────────────────────────────────────
 
-  // ── PAGE 2 ───────────────────────────────────────────────────────────────
-
+  pageNum++;
   pdf.addPage();
-  pageHeader(2, "Grammar Worksheet");
-  y = 20;
-
-  y = exHeader(ex3, y);
-  y += 2;
-  y = exItems(y, ex3.questions);
-  y += 8;
-
-  y = exHeader(ex4, y);
-  y += 2;
-  y = exItems(y, ex4.questions);
-
-  pageFooter(2);
-
-  // ── PAGE 3: Answer Key ───────────────────────────────────────────────────
-
-  pdf.addPage();
-  pageHeader(3, `${config.title} — Answer Key`);
+  pageHeader(pageNum, `${config.title} — Answer Key`);
   y = 20;
 
   pdf.setFillColor(Y);
@@ -243,6 +235,18 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
   y += 26;
 
   config.answerKey.forEach(({ exercise, subtitle, answers }) => {
+    const rowH = 9;
+    const half = Math.ceil(answers.length / 2);
+    const blockHeight = 13 + half * rowH + 8;
+    // Add a new page if this exercise block won't fit
+    if (y + blockHeight > H - 15) {
+      pageFooter(pageNum);
+      pageNum++;
+      pdf.addPage();
+      pageHeader(pageNum, `${config.title} — Answer Key`);
+      y = 20;
+    }
+
     numCircle(ml, y, exercise);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(12);
@@ -260,8 +264,6 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
 
     // 2-column answer list — left col: answers 1-5, right col: 6-10
     const colW = cw / 2;
-    const rowH = 9;
-    const half = Math.ceil(answers.length / 2);
     for (let i = 0; i < half; i++) {
       for (let col = 0; col < 2; col++) {
         const idx = col === 0 ? i : i + half;
@@ -291,7 +293,7 @@ export async function generateLessonPDF(config: LessonPDFConfig): Promise<void> 
     y += half * rowH + 8;
   });
 
-  pageFooter(3);
+  pageFooter(pageNum);
 
   // ── Save ─────────────────────────────────────────────────────────────────
   const safeName = config.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");

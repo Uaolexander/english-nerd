@@ -2,6 +2,98 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What do you use to see?", options: ["ears", "nose", "eyes", "mouth"], answer: 2 },
+  { q: "What do you use to hear?", options: ["eyes", "ears", "nose", "mouth"], answer: 1 },
+  { q: "How many fingers do most people have?", options: ["five", "eight", "ten", "twelve"], answer: 2 },
+  { q: "Which part do you use to walk?", options: ["arms", "hands", "legs", "shoulders"], answer: 2 },
+  { q: "What is at the top of your body?", options: ["foot", "stomach", "head", "knee"], answer: 2 },
+  { q: "What do you use to smell flowers?", options: ["ears", "nose", "mouth", "eyes"], answer: 1 },
+  { q: "What do you use to eat and speak?", options: ["nose", "ear", "mouth", "eye"], answer: 2 },
+  { q: "How many legs does a person have?", options: ["one", "two", "three", "four"], answer: 1 },
+  { q: "Which part connects your head to your chest?", options: ["knee", "shoulder", "neck", "elbow"], answer: 2 },
+  { q: "Where are your teeth?", options: ["in your ear", "in your mouth", "in your eye", "in your nose"], answer: 1 },
+  { q: "You write with your ___.", options: ["foot", "ear", "hand", "knee"], answer: 2 },
+  { q: "You kick a ball with your ___.", options: ["hand", "ear", "nose", "foot"], answer: 3 },
+  { q: "You carry a bag on your ___.", options: ["knee", "back", "stomach", "nose"], answer: 1 },
+  { q: "You hug someone with your ___.", options: ["legs", "arms", "ears", "fingers"], answer: 1 },
+  { q: "You clap with your ___.", options: ["feet", "ears", "hands", "legs"], answer: 2 },
+  { q: "You type with your ___.", options: ["fingers", "toes", "ears", "eyes"], answer: 0 },
+  { q: "The joint in the middle of your leg is the ___.", options: ["elbow", "shoulder", "knee", "wrist"], answer: 2 },
+  { q: "Socks go on your ___.", options: ["hands", "head", "feet", "ears"], answer: 2 },
+  { q: "You raise your ___ to ask a question.", options: ["leg", "arm", "ear", "knee"], answer: 1 },
+  { q: "Your neck connects your head to your ___.", options: ["foot", "knee", "body", "arm"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "My Body",
+  subtitle: "A1 body parts vocabulary — 3 exercises",
+  level: "A1",
+  keyRule: "Body parts: head · arms · legs · hands · feet · face parts",
+  exercises: [
+    {
+      number: 1, title: "Exercise 1 — Multiple Choice", difficulty: "Easy",
+      instruction: "Choose the correct answer.",
+      questions: [
+        "What do you use to see? (Eyes / Ears / Mouth / Nose)",
+        "What do you use to hear? (Eyes / Ears / Nose / Mouth)",
+        "How many fingers do most people have? (Five / Eight / Ten / Twelve)",
+        "Which part do you use to walk? (Arms / Hands / Legs / Shoulders)",
+        "What is at the very top of your body? (Foot / Stomach / Head / Knee)",
+        "What do you use to smell flowers? (Ears / Nose / Mouth / Eyes)",
+        "What do you use to eat and speak? (Nose / Ear / Mouth / Eye)",
+        "How many legs does a person have? (One / Two / Three / Four)",
+        "Which part connects your head to your chest? (Knee / Shoulder / Neck / Elbow)",
+        "Where are your teeth? (In your ear / In your mouth / In your eye / In your nose)",
+      ],
+    },
+    {
+      number: 2, title: "Exercise 2 — Choose the Word", difficulty: "Easy",
+      instruction: "Choose the word that fits each sentence.",
+      questions: [
+        "I write with my right ___. (hand / foot / ear)",
+        "My feet are cold — I need ___. (socks / hat / gloves)",
+        "She has long brown ___. (hair / nose / arm)",
+        "I can hear music with my ___. (ears / mouth / fingers)",
+        "I kicked the ball with my ___. (foot / hand / nose)",
+        "The doctor looked into my ___ to check my teeth. (mouth / ear / knee)",
+        "I hurt my ___. Now I cannot bend my leg. (knee / shoulder / elbow)",
+        "She showed her white ___. (teeth / eyes / hair)",
+        "I carry my bag on my ___. (back / stomach / nose)",
+        "He raised his ___ to ask a question. (arm / foot / neck)",
+      ],
+    },
+    {
+      number: 3, title: "Exercise 3 — Fill in the Blanks", difficulty: "Medium",
+      instruction: "Words: head / eyes / ears / nose / mouth / arms / legs / hands / fingers / back",
+      questions: [
+        "You wear a hat on your ___ to protect it from the sun.",
+        "You use your ___ to see the world around you.",
+        "You listen to music with your ___.",
+        "You use your ___ to smell food and flowers.",
+        "You use your ___ to eat, speak, and sing.",
+        "You hug someone with your ___.",
+        "You use your ___ to walk, run, and kick.",
+        "You clap with your ___.",
+        "You type on a keyboard with your ___.",
+        "You carry a heavy bag on your ___.",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["Eyes", "Ears", "Ten", "Legs", "Head", "Nose", "Mouth", "Two", "Neck", "In your mouth"] },
+    { exercise: 2, subtitle: "Choose the Word", answers: ["hand", "socks", "hair", "ears", "foot", "mouth", "knee", "teeth", "back", "arm"] },
+    { exercise: 3, subtitle: "Fill in the Blanks", answers: ["head", "eyes", "ears", "nose", "mouth", "arms", "legs", "hands", "fingers", "back"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -93,10 +185,18 @@ function normalize(s: string) {
 }
 
 export default function MyBodyClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -180,13 +280,28 @@ export default function MyBodyClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-my-body" subject="My Body Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <MyBodyExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -549,40 +664,60 @@ export default function MyBodyClient() {
               All A1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Body words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A1 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                Body words are essential vocabulary. Try to say them out loud while pointing to each part — this helps you remember them much faster!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function MyBodyExplanation() {
+  const words = [
+    ["head", "голова — top of your body"],
+    ["eyes", "очі — used to see"],
+    ["ears", "вуха — used to hear"],
+    ["nose", "ніс — used to smell"],
+    ["mouth", "рот — used to eat and speak"],
+    ["teeth", "зуби — inside your mouth"],
+    ["neck", "шия — connects head to body"],
+    ["shoulder", "плече — where arm meets body"],
+    ["arm", "рука (верхня) — used to hug and carry"],
+    ["elbow", "лікоть — joint in the middle of your arm"],
+    ["hand", "кисть — used to write and hold"],
+    ["fingers", "пальці — used to type and touch"],
+    ["chest", "груди — front of your upper body"],
+    ["back", "спина — rear part of your body"],
+    ["stomach", "живіт — below your chest"],
+    ["leg", "нога — used to walk and run"],
+    ["knee", "коліно — joint in the middle of your leg"],
+    ["foot", "ступня — bottom of your leg"],
+    ["hair", "волосся — grows on your head"],
+    ["skin", "шкіра — covers your whole body"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">My Body — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[80px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Say body words out loud while <strong>pointing to each part</strong> — this helps you remember them much faster!</p>
       </div>
     </div>
   );

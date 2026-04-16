@@ -2,6 +2,83 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What is 'climate change'?", options: ["Changes in fashion", "Long-term shifts in global temperatures", "Daily weather", "Ocean pollution"], answer: 1 },
+  { q: "What are 'fossil fuels'?", options: ["Solar and wind energy", "Nuclear power", "Oil, coal and gas", "Hydrogen fuel"], answer: 2 },
+  { q: "What does 'renewable energy' mean?", options: ["Energy from oil", "Energy that never runs out", "Nuclear energy", "Expensive energy"], answer: 1 },
+  { q: "What is 'deforestation'?", options: ["Planting new trees", "Clearing forests", "A type of pollution", "Ocean damage"], answer: 1 },
+  { q: "What is a 'carbon footprint'?", options: ["A footprint in ash", "Total greenhouse gas emissions caused by a person", "A type of shoe", "A tax system"], answer: 1 },
+  { q: "What does 'biodiversity' mean?", options: ["Air pollution", "Ocean temperature", "Chemical farming", "Variety of plant and animal life"], answer: 3 },
+  { q: "A greenhouse gas ___ heat in the atmosphere.", options: ["creates", "traps", "removes", "generates"], answer: 1 },
+  { q: "What does 'sustainable' mean?", options: ["Expensive", "Harmful", "Able to continue without damaging nature", "Very fast"], answer: 2 },
+  { q: "What is 'acid rain'?", options: ["Clean rain", "Heavy rain", "Rain containing harmful chemicals", "Snow"], answer: 2 },
+  { q: "What is 'conservation'?", options: ["Destroying habitats", "Building cities", "Industrial farming", "Protection of nature"], answer: 3 },
+  { q: "Gases released into the atmosphere are called ___.", options: ["emissions", "resources", "fuels", "pollutants"], answer: 0 },
+  { q: "A prolonged period of low rainfall is a ___.", options: ["flood", "drought", "hurricane", "monsoon"], answer: 1 },
+  { q: "A species at risk of extinction is ___.", options: ["vulnerable", "invasive", "endangered", "extinct"], answer: 2 },
+  { q: "A community of living things and their environment is an ___.", options: ["habitat", "ecosystem", "biome", "reserve"], answer: 1 },
+  { q: "To ___ means to use resources faster than they are replaced.", options: ["conserve", "deplete", "recycle", "restore"], answer: 1 },
+  { q: "Air ___ in major cities has reached dangerous levels.", options: ["temperature", "quality", "pollution", "pressure"], answer: 2 },
+  { q: "The melting of polar ice caps is caused by ___.", options: ["deforestation", "acid rain", "global warming", "conservation"], answer: 2 },
+  { q: "Wind and solar are examples of ___ energy.", options: ["fossil", "nuclear", "clean/renewable", "synthetic"], answer: 2 },
+  { q: "The ___ of coral reefs is threatened by warming oceans.", options: ["economy", "biodiversity", "atmosphere", "pollution"], answer: 1 },
+  { q: "Reforestation means ___.", options: ["cutting down trees", "planting new trees", "burning forests", "clearing land"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "The Environment",
+  subtitle: "B2 environmental vocabulary — 3 exercises",
+  level: "B2",
+  keyRule: "Environmental vocabulary: emissions · deforestation · biodiversity · sustainable · renewable · carbon footprint · ecosystem",
+  exercises: [
+    {
+      number: 1, title: "Multiple Choice", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct answer (A, B, C or D).",
+      questions: [
+        "What is 'climate change'? A) Fashion changes B) Long-term shifts in temperatures C) Daily forecasts D) A pollution type",
+        "What are 'fossil fuels'? A) Renewable sources B) Oil, coal and gas C) Solar energy D) Nuclear power",
+        "What does 'renewable energy' mean? A) Oil energy B) Energy that never runs out C) Nuclear energy D) Expensive energy",
+        "What is 'deforestation'? A) Planting trees B) Clearing forests C) A pollution type D) Ocean pollution",
+        "What is the 'carbon footprint'? A) A shoe type B) Total greenhouse emissions C) A footprint in ash D) A tax",
+      ],
+    },
+    {
+      number: 2, title: "Choose the Word", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "We need to reduce our ___ by using less energy. (carbon footprint / bank balance / social media)",
+        "The government plans to ___ plastic bags to reduce waste. (ban / promote / sell)",
+        "Solar panels are a form of ___ that helps reduce CO2. (renewable energy / fossil fuel / nuclear power)",
+        "Large-scale ___ is destroying wildlife habitats. (deforestation / conservation / reforestation)",
+        "The ___ of coral reefs is threatened by rising temperatures. (biodiversity / atmosphere / economy)",
+      ],
+    },
+    {
+      number: 3, title: "Fill in the Blanks", difficulty: "Upper-Intermediate",
+      instruction: "Use words from the box to complete the sentences.",
+      questions: [
+        "We must reduce CO2 ___ to slow climate change. (emissions)",
+        "Cutting down forests causes ___ and destroys habitats. (deforestation)",
+        "The rainforest has incredible ___ — thousands of species live there. (biodiversity)",
+        "We need ___ development that meets today's needs. (sustainable)",
+        "Wind and solar are examples of ___ energy. (renewable)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["B", "B", "B", "B", "B"] },
+    { exercise: 2, subtitle: "Choose the Word", answers: ["carbon footprint", "ban", "renewable energy", "deforestation", "biodiversity"] },
+    { exercise: 3, subtitle: "Fill in the Blanks", answers: ["emissions", "deforestation", "biodiversity", "sustainable", "renewable"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +169,18 @@ function normalize(s: string) {
 }
 
 export default function EnvironmentClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +263,28 @@ export default function EnvironmentClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-environment" subject="Environment Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <EnvironmentExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -548,39 +648,61 @@ export default function EnvironmentClient() {
             </a>
           </div>
         </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Environmental words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
-              <p className="text-xs font-black text-orange-700 uppercase tracking-wide mb-2">B2 Tip</p>
-              <p className="text-xs text-orange-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-orange-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
+        )}
           </div>
-        </aside>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function EnvironmentExplanation() {
+  const words = [
+    ["climate change", "зміна клімату — long-term shifts in global temperatures"],
+    ["fossil fuels", "викопне паливо — oil, coal and gas formed from ancient organisms"],
+    ["renewable energy", "відновлювана енергія — energy from sources that naturally replenish"],
+    ["deforestation", "вирубка лісів — the large-scale clearing of forests"],
+    ["carbon footprint", "вуглецевий слід — total greenhouse gas emissions caused by a person"],
+    ["biodiversity", "біорізноманіття — the variety of plant and animal life in an area"],
+    ["greenhouse gas", "парниковий газ — a gas that traps heat in the atmosphere"],
+    ["sustainable", "сталий — able to be maintained without damaging the environment"],
+    ["acid rain", "кислотний дощ — rain containing harmful chemicals from pollution"],
+    ["conservation", "охорона природи — protection and preservation of nature"],
+    ["emissions", "викиди — gases released into the atmosphere"],
+    ["drought", "посуха — a prolonged period of abnormally low rainfall"],
+    ["endangered", "під загрозою зникнення — at serious risk of extinction"],
+    ["ecosystem", "екосистема — a community of living things and their environment"],
+    ["pollution", "забруднення — harmful substances in the environment"],
+    ["global warming", "глобальне потепління — rise in Earth's average temperature"],
+    ["reforestation", "лісовідновлення — planting new trees to replace cleared forests"],
+    ["habitat", "середовище існування — the natural home of an animal or plant"],
+    ["recycle", "переробляти — to process materials to use again"],
+    ["ozone layer", "озоновий шар — layer of atmosphere that absorbs UV radiation"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">The Environment — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[120px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar! Focus on collocations like "reduce emissions", "protect biodiversity", and "carbon footprint".
+        </p>
       </div>
     </div>
   );

@@ -205,7 +205,7 @@ export default function FillInBlankClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="pc-fill-in-blank" subject="Present Continuous Writing" questions={PC_SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="pc-fill-in-blank" subject="Present Continuous Writing" questions={PC_SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

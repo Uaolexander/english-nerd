@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "A job interview is a formal ___ to decide if someone is hired.", options: ["test", "party", "meeting", "lesson"], answer: 2 },
+  { q: "A position is a ___ role within a company.", options: ["job", "building", "project", "meeting"], answer: 0 },
+  { q: "Work experience refers to ___ you have done in the past.", options: ["training", "jobs and tasks", "education", "hobbies"], answer: 1 },
+  { q: "A CV is a document showing your ___ and experience.", options: ["address", "photo", "skills", "hobbies"], answer: 2 },
+  { q: "A strength is something you are ___ at.", options: ["bad", "good", "neutral", "unsure"], answer: 1 },
+  { q: "A deadline is a ___ by which something must be done.", options: ["place", "person", "time limit", "rule"], answer: 2 },
+  { q: "To manage means to ___ and control something.", options: ["ignore", "organise", "avoid", "delegate"], answer: 1 },
+  { q: "A salary is the ___ you receive for your work.", options: ["title", "money", "bonus", "holiday"], answer: 1 },
+  { q: "Teamwork means working ___ with others.", options: ["alone", "competitively", "together", "slowly"], answer: 2 },
+  { q: "A challenge is something ___ that requires effort.", options: ["easy", "difficult", "boring", "simple"], answer: 1 },
+  { q: "Tom applies for the position of Marketing ___.", options: ["Director", "Manager", "Assistant", "Officer"], answer: 2 },
+  { q: "Sarah is the ___ at the marketing company.", options: ["applicant", "interviewer", "receptionist", "assistant"], answer: 1 },
+  { q: "To work under ___ means to handle stress well.", options: ["people", "budget", "pressure", "deadlines"], answer: 2 },
+  { q: "A qualification is a ___ you have earned.", options: ["job", "skill", "certificate/degree", "experience"], answer: 2 },
+  { q: "Motivated means wanting to ___ and succeed.", options: ["rest", "quit", "work hard", "complain"], answer: 2 },
+  { q: "A management role involves ___ a team.", options: ["joining", "leading", "competing with", "avoiding"], answer: 1 },
+  { q: "Notice period is the time before you ___.", options: ["start the job", "get paid", "leave the job", "have an interview"], answer: 2 },
+  { q: "Flexible hours means you can choose ___.", options: ["your salary", "when you work", "your team", "your tasks"], answer: 1 },
+  { q: "An interviewer ___ candidates for a job.", options: ["trains", "ignores", "questions", "pays"], answer: 2 },
+  { q: "Professional means behaving in a ___ way at work.", options: ["casual", "formal and competent", "friendly", "creative"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Job Interview",
+  subtitle: "B1 career vocabulary — job interview dialogue",
+  level: "B1",
+  keyRule: "Job vocabulary: interview · position · experience · CV · salary · teamwork · deadline",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Medium",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "Tom arrives for a job ___. (interview / holiday / concert)",
+        "Thank you for applying for the ___ of Marketing Assistant. (position / window / ticket)",
+        "Can you tell me about your previous work ___? (experience / weather / music)",
+        "I saw your ___ online and was very impressed. (CV / house / photo)",
+        "What would you say is your greatest ___? (strength / weakness / hobby)",
+        "Can you work to tight ___? (deadlines / budgets / teams)",
+        "I'd like to ___ a team of five people. (manage / join / avoid)",
+        "What ___ are you expecting for this role? (salary / title / office)",
+        "I believe in good ___ and working together. (teamwork / competition / isolation)",
+        "We'd like to offer you the position. When can you ___? (start / quit / retire)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["interview", "position", "experience", "CV", "strength", "deadlines", "manage", "salary", "teamwork", "start"] },
+  ],
+};
 
 /*
   Dialogue: "A Job Interview"
@@ -121,8 +179,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function JobInterviewClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -216,13 +282,28 @@ export default function JobInterviewClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-job-interview" subject="Job Interview Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <JobInterviewExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -431,50 +512,65 @@ export default function JobInterviewClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/b1"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/b1" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All B1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Useful job interview vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* B1 tip */}
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4">
-              <p className="text-xs font-black text-violet-700 uppercase tracking-wide mb-2">B1 Tip</p>
-              <p className="text-xs text-violet-800/70 leading-relaxed">
-                At B1 level, focus on <span className="font-semibold text-violet-800">word collocations</span> — words that naturally go together, like "work under pressure" or "management role". These combinations will make your English sound more natural.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function JobInterviewExplanation() {
+  const words = [
+    ["interview", "співбесіда — formal meeting for a job"],
+    ["position", "посада — job role within a company"],
+    ["experience", "досвід — jobs and tasks done in the past"],
+    ["CV", "резюме — document showing skills and experience"],
+    ["strength", "сила — something you are good at"],
+    ["weakness", "слабкість — something you need to improve"],
+    ["deadline", "дедлайн — time limit for completing work"],
+    ["manage", "управляти — organise and control"],
+    ["salary", "зарплата — money received for work"],
+    ["teamwork", "командна робота — working together"],
+    ["applicant", "здобувач — person applying for a job"],
+    ["interviewer", "інтерв'юер — person conducting the interview"],
+    ["qualification", "кваліфікація — certificate or degree earned"],
+    ["motivated", "мотивований — wanting to work hard and succeed"],
+    ["notice period", "термін попередження — time before leaving a job"],
+    ["flexible hours", "гнучкий графік — choose when to work"],
+    ["professional", "професійний — formal and competent"],
+    ["challenge", "виклик — something difficult requiring effort"],
+    ["management role", "управлінська роль — leading a team"],
+    ["work under pressure", "працювати під тиском — handle stress well"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Job Interview — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[110px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Focus on <strong>word collocations</strong> — words that naturally go together, like "work under pressure" or "management role".</p>
       </div>
     </div>
   );

@@ -17,6 +17,8 @@ import MobileProBanner from "@/components/MobileProBanner";
 import TeacherHintBanner from "@/components/TeacherHintBanner";
 import FeedbackWidget from "@/components/FeedbackWidget";
 import BackToTop from "@/components/BackToTop";
+import TeacherLiveShare from "@/components/TeacherLiveShare";
+import ExerciseInviteListener from "@/components/ExerciseInviteListener";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getStudentStatus } from "@/lib/getStudentStatus";
@@ -91,6 +93,8 @@ export default async function RootLayout({
               <ProgressToast />
               <MobileProBanner />
               <TeacherHintBanner />
+              <TeacherLiveShare />
+              <ExerciseInviteListener />
               {user ? (
                 <FeedbackWidget
                   email={user.email ?? ""}

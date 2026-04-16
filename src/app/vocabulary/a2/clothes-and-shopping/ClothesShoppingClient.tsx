@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What do you wear on your feet?", options: ["shoes", "hat", "gloves", "scarf"], answer: 0 },
+  { q: "What do you wear on your head?", options: ["socks", "hat", "trousers", "belt"], answer: 1 },
+  { q: "What do you wear in the rain?", options: ["swimsuit", "shorts", "raincoat", "t-shirt"], answer: 2 },
+  { q: "Cheap is the opposite of ___.", options: ["big", "long", "expensive", "heavy"], answer: 2 },
+  { q: "Where do you buy clothes?", options: ["hospital", "library", "school", "shop"], answer: 3 },
+  { q: "What do you use to pay for things?", options: ["key", "money", "book", "pen"], answer: 1 },
+  { q: "What do you wear in hot summer?", options: ["coat", "jumper", "t-shirt", "boots"], answer: 2 },
+  { q: "In American English, trousers are called ___.", options: ["shorts", "pants", "skirt", "tights"], answer: 1 },
+  { q: "To try on clothes means to ___.", options: ["pay for them", "wash them", "wear them to check fit", "throw them away"], answer: 2 },
+  { q: "A receipt shows ___.", options: ["the weather", "what you bought", "the size", "opening hours"], answer: 1 },
+  { q: "Tight shoes are too ___.", options: ["big", "expensive", "small", "colourful"], answer: 2 },
+  { q: "On sale means items are ___.", options: ["new", "returned", "reduced in price", "out of stock"], answer: 2 },
+  { q: "To fit means to be the right ___.", options: ["colour", "price", "size", "style"], answer: 2 },
+  { q: "You can pay by ___ if you have no cash.", options: ["phone", "card", "letter", "cheque"], answer: 1 },
+  { q: "A jacket is a piece of ___.", options: ["furniture", "jewellery", "clothing", "equipment"], answer: 2 },
+  { q: "A ___ is a garment worn by women.", options: ["dress", "river", "window", "boots"], answer: 0 },
+  { q: "A bigger size is what you need when something is too ___.", options: ["loose", "expensive", "dark", "small"], answer: 3 },
+  { q: "A belt goes around your ___.", options: ["neck", "head", "waist", "feet"], answer: 2 },
+  { q: "Boots are heavy footwear, good for ___.", options: ["swimming", "sleeping", "cold weather", "hot weather"], answer: 2 },
+  { q: "A scarf is worn around your ___.", options: ["head", "neck", "wrist", "ankle"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Clothes & Shopping",
+  subtitle: "A2 vocabulary — clothes, shopping, payment",
+  level: "A2",
+  keyRule: "Clothes: shoes · hat · raincoat · t-shirt · jacket · dress · trousers",
+  exercises: [
+    {
+      number: 1, title: "Exercise 1 — Multiple Choice", difficulty: "Easy",
+      instruction: "Choose the correct answer.",
+      questions: [
+        "What do you wear on your feet? (Shoes / Hat / Gloves / Scarf)",
+        "What do you wear on your head? (Socks / Hat / Trousers / Belt)",
+        "What do you wear when it rains? (Swimsuit / Shorts / Raincoat / T-shirt)",
+        "Cheap is the opposite of ___. (Big / Long / Expensive / Heavy)",
+        "Where do you go to buy clothes? (Hospital / Library / School / Shop)",
+        "What do you use to pay? (Key / Money / Book / Pen)",
+        "What do you wear in summer? (Coat / Jumper / T-shirt / Boots)",
+        "Trousers in American English: (Shorts / Pants / Skirt / Tights)",
+        "To try on clothes means to: (Pay / Wash / Wear to check fit / Throw away)",
+        "A receipt shows: (Weather / What you bought / Size / Hours)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["Shoes", "Hat", "Raincoat", "Expensive", "Shop", "Money", "T-shirt", "Pants", "Wear them to see if they fit", "What you bought and how much you paid"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +150,18 @@ function normalize(s: string) {
 }
 
 export default function ClothesShoppingClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +244,28 @@ export default function ClothesShoppingClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-clothes-shopping" subject="Clothes & Shopping Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <ClothesShoppingExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -547,40 +628,60 @@ export default function ClothesShoppingClient() {
               All A2 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Clothes and shopping words</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A2 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-yellow-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function ClothesShoppingExplanation() {
+  const words = [
+    ["shoes", "туфлі/кросівки — worn on feet"],
+    ["hat", "капелюх/шапка — worn on head"],
+    ["raincoat", "дощовик — keeps you dry in rain"],
+    ["t-shirt", "футболка — light top for warm weather"],
+    ["jacket", "куртка — light outer garment"],
+    ["coat", "пальто — heavy outer garment"],
+    ["trousers/pants", "штани — covers both legs"],
+    ["dress", "сукня — one-piece garment for women"],
+    ["skirt", "спідниця — worn below the waist"],
+    ["boots", "чоботи — heavy footwear"],
+    ["socks", "шкарпетки — worn on feet under shoes"],
+    ["gloves", "рукавиці — worn on hands"],
+    ["scarf", "шарф — worn around the neck"],
+    ["belt", "ремінь — goes around the waist"],
+    ["receipt", "чек — proof of purchase"],
+    ["shop", "магазин — where you buy things"],
+    ["cheap", "дешевий — low price"],
+    ["expensive", "дорогий — high price"],
+    ["try on", "приміряти — wear to check fit"],
+    ["on sale", "на розпродажі — reduced in price"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Clothes & Shopping — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[90px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar!</p>
       </div>
     </div>
   );

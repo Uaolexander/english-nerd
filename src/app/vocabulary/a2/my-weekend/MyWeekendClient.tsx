@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Saturday and Sunday are the ___.", options: ["workdays", "weekend", "holidays", "evenings"], answer: 1 },
+  { q: "To relax means to ___.", options: ["work hard", "rest and enjoy free time", "exercise", "study"], answer: 1 },
+  { q: "To go shopping means to ___.", options: ["visit shops to buy things", "go to the gym", "cook dinner", "watch TV"], answer: 0 },
+  { q: "Go ___ means to ride a bicycle.", options: ["swimming", "cycling", "running", "shopping"], answer: 1 },
+  { q: "A barbecue is ___.", options: ["cooking food outdoors on a grill", "a type of dance", "a swimming pool", "a board game"], answer: 0 },
+  { q: "To catch up means to ___.", options: ["run faster", "spend time talking after a while apart", "miss an event", "go shopping"], answer: 1 },
+  { q: "An exhibition is ___.", options: ["a sports event", "a public display of art or objects", "a cooking class", "a shopping mall"], answer: 1 },
+  { q: "Leisure time is ___.", options: ["time at work", "free time away from work", "study time", "exercise time"], answer: 1 },
+  { q: "A picnic means eating ___.", options: ["at a restaurant", "outdoors in nature", "at home", "in a café"], answer: 1 },
+  { q: "To get out of the city means to ___.", options: ["stay home", "leave the city", "visit a museum", "go shopping"], answer: 1 },
+  { q: "Emma wants to go shopping to buy ___.", options: ["books", "new clothes", "food", "electronics"], answer: 1 },
+  { q: "A film is another word for a ___.", options: ["book", "game", "movie", "song"], answer: 2 },
+  { q: "Go ___ means to swim in a pool or lake.", options: ["hiking", "cycling", "swimming", "camping"], answer: 2 },
+  { q: "Camping means sleeping ___.", options: ["at a hotel", "outdoors in a tent", "at a friend's house", "on a ship"], answer: 1 },
+  { q: "A hike is a long ___ in nature.", options: ["drive", "swim", "walk", "flight"], answer: 2 },
+  { q: "Karaoke is ___.", options: ["a food dish", "singing along to music tracks", "a sport", "a board game"], answer: 1 },
+  { q: "An art gallery shows ___.", options: ["films", "books", "paintings and sculptures", "food"], answer: 2 },
+  { q: "James asks Emma about her ___.", options: ["job", "weekend plans", "family", "studies"], answer: 1 },
+  { q: "To meet friends means to ___.", options: ["call them", "see them in person", "text them", "email them"], answer: 1 },
+  { q: "Go for a ___ means to walk for pleasure.", options: ["swim", "run", "walk", "drive"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "My Weekend",
+  subtitle: "A2 weekend activities vocabulary — dialogue exercise",
+  level: "A2",
+  keyRule: "Weekend vocabulary: relax · go shopping · barbecue · exhibition · leisure · picnic",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Easy",
+      instruction: "Choose the correct word for each gap in the dialogue.",
+      questions: [
+        "Emma is talking about her plans for the ___. (weekend / kitchen / ceiling)",
+        "Are you going to ___ this weekend? (relax / climb / build)",
+        "I want to ___ and buy some new clothes. (go shopping / go sleeping / go cooking)",
+        "On Saturday afternoon, I plan to go ___. (cycling / eating / driving)",
+        "My friends are having a ___ in the garden. (barbecue / lesson / storm)",
+        "It's a great chance to ___ with old friends. (catch up / give up / wake up)",
+        "On Sunday, I'm going to an art ___. (exhibition / station / hospital)",
+        "Sunday evening is perfect for ___. (leisure / business / exercise)",
+        "We often have a ___ in the park when it's sunny. (picnic / lesson / meeting)",
+        "It's nice to get out of the ___ at the weekend. (city / school / office)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["weekend", "relax", "go shopping", "cycling", "barbecue", "catch up", "exhibition", "leisure", "picnic", "city"] },
+  ],
+};
 
 /*
   Dialogue: "My Weekend"
@@ -121,8 +179,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function MyWeekendClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -215,13 +281,28 @@ export default function MyWeekendClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-my-weekend" subject="My Weekend Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <MyWeekendExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -430,50 +511,65 @@ export default function MyWeekendClient() {
 
           {/* Bottom nav */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <a
-              href="/vocabulary/a2"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
-            >
+            <a href="/vocabulary/a2" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
               All A2 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Weekend activity vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* A2 tip */}
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A2 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                English uses <span className="font-semibold text-yellow-800">go + -ing</span> for many activities: go shopping, go swimming, go walking. Learn these phrases together — they are very common in everyday conversation!
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function MyWeekendExplanation() {
+  const words = [
+    ["weekend", "вихідні — Saturday and Sunday"],
+    ["relax", "відпочивати — rest and enjoy free time"],
+    ["go shopping", "йти по магазинах — visit shops"],
+    ["cycling", "їзда на велосипеді — riding a bicycle"],
+    ["barbecue", "барбекю — cooking outdoors on a grill"],
+    ["catch up", "надолужити — spend time talking after apart"],
+    ["exhibition", "виставка — public display of art/objects"],
+    ["leisure", "дозвілля — free time activities"],
+    ["picnic", "пікнік — eating outdoors in nature"],
+    ["hiking", "піші прогулянки — long walks in nature"],
+    ["camping", "кемпінг — sleeping outdoors in a tent"],
+    ["go swimming", "піти купатись — swim for pleasure"],
+    ["karaoke", "караоке — singing to music tracks"],
+    ["art gallery", "художня галерея — shows paintings"],
+    ["film", "фільм — a movie"],
+    ["meet friends", "зустрітися з друзями"],
+    ["go for a walk", "піти на прогулянку"],
+    ["city", "місто — urban area"],
+    ["plans", "плани — things you intend to do"],
+    ["activity", "активність — something you do"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">My Weekend — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">English uses <strong>go + -ing</strong> for many activities: go shopping, go swimming, go walking. Learn these phrases together!</p>
       </div>
     </div>
   );

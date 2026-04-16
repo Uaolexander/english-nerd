@@ -509,7 +509,7 @@ export default function SpotTheMistakeClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="ps-spot-the-mistake" subject="Spot the Mistake" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

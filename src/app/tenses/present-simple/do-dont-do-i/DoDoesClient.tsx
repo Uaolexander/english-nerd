@@ -477,7 +477,7 @@ export default function DoDoesClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="ps-do-does" subject="do / does / don't / doesn't" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

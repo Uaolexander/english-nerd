@@ -3,6 +3,12 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import { FUTPERFCONT_SPEED_QUESTIONS, FUTPERFCONT_PDF_CONFIG } from "../futPerfContSharedData";
+import TenseRecommendations from "@/components/TenseRecommendations";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -150,9 +156,16 @@ export default function SpotTheMistakeClient() {
   const [clickedIdx, setClickedIdx] = useState<Record<string, number>>({});
   const [typedFix, setTypedFix] = useState<Record<string, string>>({});
   const [typed, setTyped] = useState<Record<string, string>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const isPro = useIsPro();
 
   const current = SETS[exNo];
   const allChecked = current.questions.every((q) => checked[q.id]);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(FUTPERFCONT_PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   function checkOne(qId: string) {
     setChecked((p) => ({ ...p, [qId]: true }));
@@ -243,8 +256,12 @@ export default function SpotTheMistakeClient() {
         {/* Three-column grid */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className=""><SpeedRound gameId="fpc-spot-the-mistake" subject="Future Perfect Continuous Spot the Mistake" questions={FUTPERFCONT_SPEED_QUESTIONS} variant="sidebar" /></div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -253,6 +270,7 @@ export default function SpotTheMistakeClient() {
             <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
               <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
               <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+              <PDFButton onDownload={handlePDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -359,9 +377,21 @@ export default function SpotTheMistakeClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <TenseRecommendations tense="future-perfect-continuous" />
+          ) : (
+            <AdUnit variant="sidebar-light" />
+          )}
         </div>
+
+        {!isPro && (
+          <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
+            <div className="hidden lg:block" />
+            <SpeedRound gameId="fpc-spot-the-mistake" subject="Future Perfect Continuous Spot the Mistake" questions={FUTPERFCONT_SPEED_QUESTIONS} />
+            <div className="hidden lg:block" />
+          </div>
+        )}
 
         {/* Mobile ad */}
         <AdUnit variant="mobile-dark" />

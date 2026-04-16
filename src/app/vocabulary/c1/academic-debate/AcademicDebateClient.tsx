@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "The system of methods used in a study is called ___.", options: ["bibliography", "methodology", "hypothesis", "data"], answer: 1 },
+  { q: "A formal testable proposition in research is a ___.", options: ["theory", "hypothesis", "finding", "conclusion"], answer: 1 },
+  { q: "___ evidence is based on observation and experiment.", options: ["Theoretical", "Empirical", "Personal", "Secondary"], answer: 1 },
+  { q: "Evaluation of research by independent experts is called ___.", options: ["peer review", "publication", "citation", "analysis"], answer: 0 },
+  { q: "The practical consequences of research findings are called ___.", options: ["limitations", "implications", "hypotheses", "methodologies"], answer: 1 },
+  { q: "To ___ means to formally argue against something.", options: ["contend", "assert", "support", "validate"], answer: 0 },
+  { q: "A study's ___ shows patterns within data.", options: ["sample", "conclusion", "data set", "analysis"], answer: 3 },
+  { q: "The ___ of a study are factors that restrict its scope.", options: ["implications", "findings", "limitations", "citations"], answer: 2 },
+  { q: "Further ___ is needed before making definitive claims.", options: ["publication", "research", "citation", "analysis"], answer: 1 },
+  { q: "A ___ contribution means a significant academic addition.", options: ["minor", "notable", "tentative", "controversial"], answer: 1 },
+  { q: "The ability to apply findings to other contexts is called ___.", options: ["validity", "reliability", "generalisability", "replication"], answer: 2 },
+  { q: "A study you can repeat with the same results is ___.", options: ["valid", "reliable", "theoretical", "empirical"], answer: 1 },
+  { q: "An academic ___ is a theory or framework that guides research.", options: ["paradigm", "sample", "citation", "review"], answer: 0 },
+  { q: "To ___ a claim means to prove it with evidence.", options: ["refute", "substantiate", "assert", "contend"], answer: 1 },
+  { q: "An academic ___ is a disagreement between researchers.", options: ["consensus", "controversy", "collaboration", "citation"], answer: 1 },
+  { q: "The body of existing research on a topic is the ___.", options: ["bibliography", "abstract", "literature", "dataset"], answer: 2 },
+  { q: "To ___ means to officially evaluate and approve research.", options: ["validate", "publish", "cite", "analyse"], answer: 0 },
+  { q: "A ___ relationship means one thing causes another.", options: ["correlational", "causal", "theoretical", "empirical"], answer: 1 },
+  { q: "To ___ a hypothesis means to prove it false.", options: ["support", "contend", "refute", "validate"], answer: 2 },
+  { q: "A research ___ is the group of subjects being studied.", options: ["sample", "paradigm", "hypothesis", "dataset"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "An Academic Debate",
+  subtitle: "C1 academic vocabulary — dialogue",
+  level: "C1",
+  keyRule: "Academic vocabulary: methodology · hypothesis · empirical · peer review · implications · contend · limitations",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Advanced",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "Two professors debate research ___ in social sciences. (methodology / fashion / cooking)",
+        "Your ___ is interesting, but is it supported by empirical data? (hypothesis / opinion / feeling)",
+        "Our findings are based on ___ evidence gathered over five years. (empirical / theoretical / personal)",
+        "Has this paper been through ___? Independent experts must validate it. (peer review / editing / printing)",
+        "The ___ of this research for education policy are significant. (implications / opinions / costs)",
+        "I would ___ that your sample size is too small. (contend / agree / suggest)",
+        "Our ___ clearly shows a causal relationship between the variables. (analysis / opinion / feeling)",
+        "The research has certain ___ — the cultural context limits its generalisability. (limitations / advantages / costs)",
+        "Further ___ is needed before we can make definitive claims. (research / opinions / data)",
+        "This study makes a ___ contribution to our understanding. (notable / small / minor)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["methodology", "hypothesis", "empirical", "peer review", "implications", "contend", "analysis", "limitations", "research", "notable"] },
+  ],
+};
 
 /*
   Dialogue: "An Academic Debate"
@@ -120,8 +178,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function AcademicDebateClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;
@@ -214,13 +280,28 @@ export default function AcademicDebateClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-academic-debate" subject="Academic Debate Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <AcademicDebateExplanation /> : (
+          <div className="space-y-5">
 
           {/* Score panel */}
           {checked && percent !== null && (
@@ -437,41 +518,61 @@ export default function AcademicDebateClient() {
             </a>
           </div>
         </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-
-            {/* Vocabulary spotlight */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Words</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Academic vocabulary</p>
-              </div>
-              <div className="px-4 py-3 space-y-3.5">
-                {VOCAB_FOCUS.map(({ word, def }) => (
-                  <div key={word}>
-                    <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* C1 tip */}
-            <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-4">
-              <p className="text-xs font-black text-sky-700 uppercase tracking-wide mb-2">C1 Tip</p>
-              <p className="text-xs text-sky-800/70 leading-relaxed">
-                Academic discourse has its own register. Learn to distinguish verbs like <span className="font-semibold text-sky-800">contend, assert, posit</span> from everyday alternatives — they signal intellectual engagement.
-              </p>
-            </div>
-
-            {/* Ad */}
-            <AdUnit variant="inline-light" />
-
+        )}
           </div>
-        </aside>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="c1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function AcademicDebateExplanation() {
+  const words = [
+    ["methodology", "методологія — the system of methods used in a field of study"],
+    ["hypothesis", "гіпотеза — a formal testable proposition in research"],
+    ["empirical", "емпіричний — based on observation and experiment, not theory"],
+    ["peer review", "рецензування — evaluation of research by independent experts"],
+    ["implications", "наслідки/значення — the possible consequences of research findings"],
+    ["contend", "стверджувати/сперечатися — to formally argue a position"],
+    ["analysis", "аналіз — detailed examination of data or arguments"],
+    ["limitations", "обмеження — factors that restrict the scope of a study"],
+    ["generalisability", "узагальнюваність — the ability to apply findings to other contexts"],
+    ["causal", "причинно-наслідковий — involving a direct cause-and-effect relationship"],
+    ["validate", "підтверджувати — to officially prove or confirm something"],
+    ["substantiate", "обґрунтовувати — to support a claim with solid evidence"],
+    ["paradigm", "парадигма — a theoretical framework guiding research"],
+    ["refute", "спростовувати — to prove a claim or argument is false"],
+    ["literature", "наукова література — the body of existing research on a topic"],
+    ["sample", "вибірка — the group of subjects being studied"],
+    ["variable", "змінна — a factor that can change in an experiment"],
+    ["correlation", "кореляція — a statistical relationship between two variables"],
+    ["replication", "відтворення — repeating a study to verify its results"],
+    ["abstract", "анотація — a short summary of a research paper"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Academic Debate — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[110px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">C1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          Academic discourse has its own register. Learn to distinguish verbs like <strong>contend, assert, posit</strong> from everyday alternatives — they signal intellectual engagement. At C1, precision in academic vocabulary is essential.
+        </p>
       </div>
     </div>
   );

@@ -730,7 +730,7 @@ export default function AdvancedMixedClient() {
           {/* Left column */}
           {isPro ? (
             <div className="">
-              <SpeedRound gameId="ps-pc-advanced" subject="Advanced Mixed" questions={SPEED_QUESTIONS} variant="sidebar" />
+              <div className=""><SpeedRound gameId="ps-pc-advanced" subject="Advanced Mixed" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
             </div>
           ) : (
             <AdUnit variant="sidebar-dark" />

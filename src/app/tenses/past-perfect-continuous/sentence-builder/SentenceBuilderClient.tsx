@@ -1,6 +1,12 @@
 "use client";
 import { useState } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import { PASTPERFCONT_SPEED_QUESTIONS, PASTPERFCONT_PDF_CONFIG } from "../pastPerfContSharedData";
+import TenseRecommendations from "@/components/TenseRecommendations";
 
 type SentenceQ = {
   id: string;
@@ -238,6 +244,13 @@ export default function SentenceBuilderClient() {
   const [qIdx, setQIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const isPro = useIsPro();
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PASTPERFCONT_PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const current = SETS[exNo];
   const q = current.questions[qIdx];
@@ -335,8 +348,12 @@ export default function SentenceBuilderClient() {
 
         {/* Layout */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className=""><SpeedRound gameId="pastperfcont-sentence-builder" subject="Past Perfect Continuous" questions={PASTPERFCONT_SPEED_QUESTIONS} variant="sidebar" /></div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -354,6 +371,7 @@ export default function SentenceBuilderClient() {
               >
                 Explanation
               </button>
+              <PDFButton onDownload={handlePDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3] as const).map((n) => (
@@ -557,8 +575,12 @@ export default function SentenceBuilderClient() {
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <TenseRecommendations tense="past-perfect-continuous" />
+          ) : (
+            <AdUnit variant="sidebar-light" />
+          )}
         </div>
 
         {/* Mobile ad */}

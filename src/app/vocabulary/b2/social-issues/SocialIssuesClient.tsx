@@ -2,6 +2,83 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What is 'inequality'?", options: ["Equal treatment", "Unfair difference between groups", "A type of law", "A government"], answer: 1 },
+  { q: "What does 'discrimination' mean?", options: ["Fair treatment", "Unfair treatment based on race or gender", "A type of education", "A tax"], answer: 1 },
+  { q: "What is 'poverty'?", options: ["Having too much money", "The state of being very poor", "A type of crime", "A policy"], answer: 1 },
+  { q: "What does 'diversity' mean?", options: ["Everyone being the same", "Variety of different people and cultures", "A type of discrimination", "A political party"], answer: 1 },
+  { q: "What is 'homelessness'?", options: ["Having a large house", "Having no permanent place to live", "A type of poverty", "A community issue"], answer: 1 },
+  { q: "What is 'gender equality'?", options: ["Men and women having different rights", "Men and women having equal rights", "A type of discrimination", "A programme"], answer: 1 },
+  { q: "What does 'integration' mean?", options: ["Separating different groups", "Combining groups into a united society", "A type of conflict", "A social problem"], answer: 1 },
+  { q: "What is 'social mobility'?", options: ["Using public transport", "Moving between social classes", "Moving to another city", "A type of migration"], answer: 1 },
+  { q: "What is 'a welfare state'?", options: ["A very rich country", "A system of government social protection", "A type of economy", "A private company"], answer: 1 },
+  { q: "What does 'marginalised' mean?", options: ["Very powerful", "Excluded from society", "Well-educated", "Financially successful"], answer: 1 },
+  { q: "The wealth gap has ___ in recent decades.", options: ["closed", "widened", "disappeared", "stabilised"], answer: 1 },
+  { q: "To ___ means to give someone power and confidence.", options: ["isolate", "discriminate", "empower", "marginalise"], answer: 2 },
+  { q: "Economic ___ gives people tools to improve their lives.", options: ["discrimination", "empowerment", "inequality", "poverty"], answer: 1 },
+  { q: "A ___ system protects citizens during unemployment or illness.", options: ["welfare", "banking", "education", "media"], answer: 0 },
+  { q: "Racial ___ means unequal rights between racial groups.", options: ["harmony", "tolerance", "inequality", "diversity"], answer: 2 },
+  { q: "Community projects help ___ people.", options: ["isolate", "ignore", "empower", "discriminate"], answer: 2 },
+  { q: "The government tackled ___ among young people.", options: ["tourism", "education", "homelessness", "diversity"], answer: 2 },
+  { q: "A person who has been ___ faces exclusion from society.", options: ["empowered", "marginalised", "integrated", "educated"], answer: 1 },
+  { q: "Education is the key driver of ___.", options: ["poverty", "social mobility", "discrimination", "welfare"], answer: 1 },
+  { q: "Successful ___ of immigrants requires support.", options: ["isolation", "integration", "discrimination", "marginalisation"], answer: 1 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Social Issues",
+  subtitle: "B2 social issues vocabulary — 3 exercises",
+  level: "B2",
+  keyRule: "Social issues vocabulary: inequality · discrimination · poverty · diversity · homelessness · welfare · integration · social mobility",
+  exercises: [
+    {
+      number: 1, title: "Multiple Choice", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct answer (A, B, C or D).",
+      questions: [
+        "What is 'inequality'? A) Equal treatment B) Unfair difference C) A law type D) A government",
+        "What does 'discrimination' mean? A) Fair treatment B) Unfair treatment based on race/gender C) Education type D) A tax",
+        "What is 'poverty'? A) Having too much money B) The state of being very poor C) A crime type D) A policy",
+        "What does 'diversity' mean? A) Everyone the same B) Variety of people and cultures C) A discrimination type D) A party",
+        "What is 'social mobility'? A) Using public transport B) Moving between social classes C) Moving cities D) Migration type",
+      ],
+    },
+    {
+      number: 2, title: "Choose the Word", difficulty: "Upper-Intermediate",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "The gap between rich and poor has ___ in recent decades. (widened / closed / disappeared)",
+        "Women still face ___ in the workplace. (discrimination / promotion / equality)",
+        "The government launched a campaign to tackle ___ among young people. (homelessness / education / tourism)",
+        "Schools should promote ___ by celebrating different backgrounds. (diversity / uniformity / competition)",
+        "We need to improve ___ so talent determines success. (social mobility / social media / public transport)",
+      ],
+    },
+    {
+      number: 3, title: "Fill in the Blanks", difficulty: "Upper-Intermediate",
+      instruction: "Use words from the box to complete the sentences.",
+      questions: [
+        "Economic ___ means some have far more opportunities than others. (inequality)",
+        "Millions of children grow up in ___ without access to education. (poverty)",
+        "Racial and gender ___ are still widespread. (discrimination)",
+        "A diverse workplace benefits from the ___ of employees. (diversity)",
+        "The ___ system protects citizens during unemployment. (welfare)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["B", "B", "B", "B", "B"] },
+    { exercise: 2, subtitle: "Choose the Word", answers: ["widened", "discrimination", "homelessness", "diversity", "social mobility"] },
+    { exercise: 3, subtitle: "Fill in the Blanks", answers: ["inequality", "poverty", "discrimination", "diversity", "welfare"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +169,18 @@ function normalize(s: string) {
 }
 
 export default function SocialIssuesClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +263,28 @@ export default function SocialIssuesClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-social-issues" subject="Social Issues Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <SocialIssuesExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -548,39 +648,61 @@ export default function SocialIssuesClient() {
             </a>
           </div>
         </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Social issues words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
-              <p className="text-xs font-black text-orange-700 uppercase tracking-wide mb-2">B2 Tip</p>
-              <p className="text-xs text-orange-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-orange-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
+        )}
           </div>
-        </aside>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function SocialIssuesExplanation() {
+  const words = [
+    ["inequality", "нерівність — unfair difference in wealth or opportunities between groups"],
+    ["discrimination", "дискримінація — unfair treatment based on race, gender, age, etc."],
+    ["poverty", "бідність — the state of having very little money"],
+    ["diversity", "різноманітність — variety of different people, ideas and cultures"],
+    ["homelessness", "бездомність — the condition of having no stable home"],
+    ["gender equality", "гендерна рівність — equal rights for people of all genders"],
+    ["integration", "інтеграція — combining different groups into one unified society"],
+    ["social mobility", "соціальна мобільність — ability to move between social classes"],
+    ["welfare state", "соціальна держава — government provides social protection"],
+    ["marginalised", "маргіналізований — pushed to the edges of society"],
+    ["empower", "розширювати права — to give someone confidence and control"],
+    ["empowerment", "розширення прав — process of gaining power and confidence"],
+    ["welfare", "добробут/соціальний захист — government support for people in need"],
+    ["widened", "розширився — increased (of a gap or difference)"],
+    ["tackle", "вирішувати — to deal with a difficult problem"],
+    ["privilege", "привілей — a special advantage available to some but not others"],
+    ["systemic", "системний — relating to the whole system, not just individuals"],
+    ["barrier", "бар'єр — an obstacle that prevents progress"],
+    ["inclusive", "інклюзивний — welcoming and including everyone"],
+    ["stereotype", "стереотип — a fixed, oversimplified idea about a group"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Social Issues — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[110px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar! Focus on noun forms: inequality, discrimination, empowerment, integration.
+        </p>
       </div>
     </div>
   );

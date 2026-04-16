@@ -2,6 +2,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import { PASTPERF_SPEED_QUESTIONS, PASTPERF_PDF_CONFIG } from "../pastPerfSharedData";
+import TenseRecommendations from "@/components/TenseRecommendations";
 
 type MCQ = {
   id: string;
@@ -344,9 +350,16 @@ export default function PastPerfectQuizClient() {
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const isPro = useIsPro();
   const current = SETS[exNo];
 
   const { save } = useProgress();
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PASTPERF_PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -414,8 +427,12 @@ export default function PastPerfectQuizClient() {
 
         {/* Layout */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-          {/* Left ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Left column */}
+          {isPro ? (
+            <div className=""><SpeedRound gameId="pastperf-quiz" subject="Past Perfect" questions={PASTPERF_SPEED_QUESTIONS} variant="sidebar" /></div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           {/* Main content */}
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
@@ -433,6 +450,7 @@ export default function PastPerfectQuizClient() {
               >
                 Explanation
               </button>
+              <PDFButton onDownload={handlePDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -467,6 +485,7 @@ export default function PastPerfectQuizClient() {
                       ))}
                     </div>
                   </div>
+
 
                   <div className="mt-8 space-y-5">
                     {current.questions.map((q, idx) => {
@@ -590,13 +609,17 @@ export default function PastPerfectQuizClient() {
                   </div>
                 </>
               ) : (
-                <Explanation />
+                <PastPerfectExplanation />
               )}
             </div>
           </section>
 
-          {/* Right ad */}
-          <AdUnit variant="sidebar-dark" />
+          {/* Right column */}
+          {isPro ? (
+            <TenseRecommendations tense="past-perfect" />
+          ) : (
+            <AdUnit variant="sidebar-light" />
+          )}
         </div>
 
         {/* Mobile ad */}
@@ -653,7 +676,7 @@ function Ex({ en }: { en: string }) {
   );
 }
 
-function Explanation() {
+function PastPerfectExplanation() {
   return (
     <div className="space-y-8">
       {/* 3 gradient cards */}

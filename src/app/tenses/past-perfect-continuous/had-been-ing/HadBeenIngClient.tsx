@@ -2,6 +2,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import { PASTPERFCONT_SPEED_QUESTIONS, PASTPERFCONT_PDF_CONFIG } from "../pastPerfContSharedData";
+import TenseRecommendations from "@/components/TenseRecommendations";
 
 type MCQ = {
   id: string;
@@ -344,9 +350,16 @@ export default function HadBeenIngClient() {
   const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
   const [checked, setChecked] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const isPro = useIsPro();
   const current = SETS[exNo];
 
   const { save } = useProgress();
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PASTPERFCONT_PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   useEffect(() => {
     if (checked && score) {
@@ -414,12 +427,17 @@ export default function HadBeenIngClient() {
 
         {/* Layout */}
         <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
-          <AdUnit variant="sidebar-dark" />
+          {isPro ? (
+            <div className=""><SpeedRound gameId="pastperfcont-had-been-ing" subject="Past Perfect Continuous" questions={PASTPERFCONT_SPEED_QUESTIONS} variant="sidebar" /></div>
+          ) : (
+            <AdUnit variant="sidebar-dark" />
+          )}
 
           <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
             <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
               <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
               <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Explanation</button>
+              <PDFButton onDownload={handlePDF} loading={pdfLoading} />
               <div className="ml-auto hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs">Set:</span>
                 {([1, 2, 3, 4] as const).map((n) => (
@@ -511,7 +529,11 @@ export default function HadBeenIngClient() {
             </div>
           </section>
 
-          <AdUnit variant="sidebar-dark" />
+          {isPro ? (
+            <TenseRecommendations tense="past-perfect-continuous" />
+          ) : (
+            <AdUnit variant="sidebar-light" />
+          )}
         </div>
 
         <AdUnit variant="mobile-dark" />

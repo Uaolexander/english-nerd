@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Where do you borrow books?", options: ["museum", "library", "bakery", "gym"], answer: 1 },
+  { q: "Where do you buy medicine?", options: ["café", "school", "pharmacy", "hotel"], answer: 2 },
+  { q: "Where do you exercise?", options: ["bank", "gym", "hospital", "church"], answer: 1 },
+  { q: "Where do you stay when travelling?", options: ["restaurant", "library", "hotel", "market"], answer: 2 },
+  { q: "Where do you see old paintings?", options: ["supermarket", "museum", "bakery", "post office"], answer: 1 },
+  { q: "Where do you send a letter?", options: ["post office", "police station", "park", "cinema"], answer: 0 },
+  { q: "Where do you watch a film?", options: ["theatre", "museum", "cinema", "library"], answer: 2 },
+  { q: "Where do you get money?", options: ["baker", "bank", "butcher", "café"], answer: 1 },
+  { q: "Straight ahead means:", options: ["turn left", "turn right", "go forward", "stop here"], answer: 2 },
+  { q: "Near means:", options: ["far", "expensive", "close", "loud"], answer: 2 },
+  { q: "A bus ___ is where buses stop.", options: ["stop", "meal", "window", "park"], answer: 0 },
+  { q: "The pharmacy is ___ the bank and the post office.", options: ["beside", "inside", "between", "above"], answer: 2 },
+  { q: "Next ___ means directly beside.", options: ["of", "to", "at", "on"], answer: 1 },
+  { q: "Lost means you don't know ___.", options: ["where you are", "what time it is", "the price", "the name"], answer: 0 },
+  { q: "A turning is a road that ___.", options: ["goes straight", "goes off to the side", "goes underground", "stops"], answer: 1 },
+  { q: "Far away means a ___.", options: ["long distance", "short distance", "quick journey", "wrong turn"], answer: 0 },
+  { q: "The right side is the opposite of ___.", options: ["straight", "left", "back", "above"], answer: 1 },
+  { q: "A bank is for ___.", options: ["food", "books", "money", "medicine"], answer: 2 },
+  { q: "A museum shows ___ objects.", options: ["food", "historical", "new", "cheap"], answer: 1 },
+  { q: "A gym has equipment for ___.", options: ["sleeping", "reading", "exercise", "cooking"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Around the Town",
+  subtitle: "A2 vocabulary — places in town + directions",
+  level: "A2",
+  keyRule: "Places: library · pharmacy · gym · museum · post office · cinema · bank",
+  exercises: [
+    {
+      number: 1, title: "Exercise 1 — Multiple Choice", difficulty: "Easy",
+      instruction: "Choose the correct answer.",
+      questions: [
+        "Where do you go to borrow books? (Museum / Library / Bakery / Gym)",
+        "Where do you go to buy medicine? (Café / School / Pharmacy / Hotel)",
+        "Where do you go to exercise? (Bank / Gym / Hospital / Church)",
+        "Where do you stay when you travel? (Restaurant / Library / Hotel / Market)",
+        "Where do you go to see old paintings? (Supermarket / Museum / Bakery / Post office)",
+        "Where do you go to send a letter? (Post office / Police station / Park / Cinema)",
+        "Where do you go to see a film? (Theatre / Museum / Cinema / Library)",
+        "Where can you get money? (Baker / Bank / Butcher / Café)",
+        "What word means 'to go in a direction'? (Wait / Turn / Stop / Sit)",
+        "What does 'straight ahead' mean? (Turn left / Turn right / Go forward / Stop here)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["Library", "Pharmacy", "Gym", "Hotel", "Museum", "Post office", "Cinema", "Bank", "Turn", "Go forward without turning"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +150,18 @@ function normalize(s: string) {
 }
 
 export default function AroundTheTownClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +244,28 @@ export default function AroundTheTownClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-around-the-town" subject="Around the Town Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <AroundTheTownExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -547,40 +628,60 @@ export default function AroundTheTownClient() {
               All A2 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Town and directions words</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A2 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-yellow-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a2" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function AroundTheTownExplanation() {
+  const words = [
+    ["library", "бібліотека — borrow books for free"],
+    ["pharmacy", "аптека — buy medicine"],
+    ["gym", "спортзал — exercise equipment"],
+    ["museum", "музей — historical/art objects"],
+    ["hotel", "готель — stay overnight when travelling"],
+    ["post office", "пошта — send letters and parcels"],
+    ["cinema", "кінотеатр — watch films"],
+    ["bank", "банк — manage money"],
+    ["near", "близько — not far away"],
+    ["straight ahead", "прямо — go forward without turning"],
+    ["turn left/right", "повернути ліворуч/праворуч"],
+    ["bus stop", "автобусна зупинка — where buses stop"],
+    ["turning", "поворот — road that goes off to the side"],
+    ["next to", "поруч із — directly beside"],
+    ["between", "між — in the middle of two things"],
+    ["far away", "далеко — a long distance"],
+    ["lost", "заблукати — don't know where you are"],
+    ["police station", "поліцейська дільниця"],
+    ["park", "парк — outdoor green area"],
+    ["market", "ринок — outdoor shopping area"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Around the Town — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A2 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar!</p>
       </div>
     </div>
   );

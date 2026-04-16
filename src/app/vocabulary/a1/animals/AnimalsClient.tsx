@@ -2,6 +2,119 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "What sound does a dog make?", options: ["Meow", "Moo", "Woof", "Roar"], answer: 2 },
+  { q: "Where do fish live?", options: ["In trees", "In water", "In the sky", "Underground"], answer: 1 },
+  { q: "Which animal can fly?", options: ["Dog", "Cat", "Horse", "Bird"], answer: 3 },
+  { q: "What do rabbits eat?", options: ["Meat", "Fish", "Carrots", "Chocolate"], answer: 2 },
+  { q: "How many legs does a dog have?", options: ["Two", "Four", "Six", "Eight"], answer: 1 },
+  { q: "Which is the biggest land animal?", options: ["Cat", "Rabbit", "Elephant", "Bird"], answer: 2 },
+  { q: "What do birds use to fly?", options: ["Legs", "Tail", "Fins", "Wings"], answer: 3 },
+  { q: "What is a baby cat called?", options: ["Puppy", "Kitten", "Cub", "Chick"], answer: 1 },
+  { q: "Which is the fastest land animal?", options: ["Turtle", "Snail", "Elephant", "Cheetah"], answer: 3 },
+  { q: "What is a baby dog called?", options: ["Kitten", "Cub", "Puppy", "Chick"], answer: 2 },
+  { q: "What part does an elephant have instead of a nose?", options: ["Fin", "Trunk", "Tail", "Wing"], answer: 1 },
+  { q: "Which animal wags its tail when happy?", options: ["Fish", "Bird", "Dog", "Cat"], answer: 2 },
+  { q: "What do bears love to eat?", options: ["Honey", "Pizza", "Bread", "Rice"], answer: 0 },
+  { q: "Which word describes a lion?", options: ["Tiny", "Friendly", "Dangerous", "Slow"], answer: 2 },
+  { q: "Fish use ___ to swim.", options: ["Legs", "Fins", "Wings", "Arms"], answer: 1 },
+  { q: "Dolphins are very ___.", options: ["Boring", "Clever", "Slow", "Small"], answer: 1 },
+  { q: "Which animal lives in the forest?", options: ["Dolphin", "Fish", "Bear", "Bird"], answer: 2 },
+  { q: "Pet animals live ___.", options: ["In forests", "In water", "With people", "Underground"], answer: 2 },
+  { q: "A cheetah can run at ___ km/h.", options: ["10", "50", "100", "200"], answer: 2 },
+  { q: "Cats use their ___ to balance.", options: ["Wings", "Fins", "Tail", "Trunk"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Animals Vocabulary",
+  subtitle: "A1 vocabulary exercises — 3 activities + key words",
+  level: "A1",
+  keyRule: "Animals vocabulary: pet vs wild · body parts · actions",
+  exercises: [
+    {
+      number: 1,
+      title: "Exercise 1 — Multiple Choice",
+      difficulty: "Easy",
+      instruction: "Choose the correct answer (A, B, C or D).",
+      questions: [
+        "What sound does a dog make? (Meow / Moo / Woof / Roar)",
+        "Where do fish live? (In trees / In water / In the sky / Underground)",
+        "Which animal can fly? (Dog / Cat / Horse / Bird)",
+        "What do rabbits eat? (Meat / Fish / Carrots and grass / Chocolate)",
+        "How many legs does a dog have? (Two / Four / Six / Eight)",
+        "Which animal is the biggest? (Cat / Rabbit / Elephant / Bird)",
+        "What do birds use to fly? (Legs / Tail / Fins / Wings)",
+        "What is a baby cat called? (Puppy / Kitten / Cub / Chick)",
+        "Which animal is the fastest on land? (Turtle / Snail / Elephant / Cheetah)",
+        "What is a baby dog called? (Kitten / Cub / Puppy / Chick)",
+      ],
+    },
+    {
+      number: 2,
+      title: "Exercise 2 — Choose the Word",
+      difficulty: "Easy",
+      instruction: "Choose the word that fits each sentence.",
+      questions: [
+        "My dog loves to ___ in the park. (run / sleep / cook)",
+        "Birds use their ___ to fly. (fins / wings / paws)",
+        "Cats are popular ___ animals. (wild / pet / dangerous)",
+        "Fish use their ___ to swim. (legs / fins / arms)",
+        "A lion is very ___. (friendly / dangerous / tiny)",
+        "Dogs wag their ___ when happy. (wings / trunk / tail)",
+        "An elephant uses its long ___. (ear / trunk / leg)",
+        "Dolphins are very ___. (boring / clever / slow)",
+        "Bears love to eat ___. (honey / bread / soup)",
+        "A horse is a very ___ animal. (tiny / useful / lazy)",
+      ],
+    },
+    {
+      number: 3,
+      title: "Exercise 3 — Fill in the Blanks",
+      difficulty: "Medium",
+      instruction: "Use words from the box: fly / water / friendly / forest / fast / eat / wild / trunk / swim / tail",
+      questions: [
+        "All animals need to ___ every day to survive.",
+        "Fish live in ___. They cannot breathe air.",
+        "Birds can ___ because they have wings.",
+        "Dogs are very ___ — they love people.",
+        "Bears and wolves live in the ___.",
+        "A cheetah is very ___ — 100 km/h!",
+        "Lions and tigers are ___ animals.",
+        "An elephant's ___ is like a very long nose.",
+        "Dolphins love to ___ in the ocean.",
+        "A cat uses its ___ to keep balance.",
+      ],
+    },
+    {
+      number: 4,
+      title: "Key Vocabulary",
+      difficulty: "Reference",
+      instruction: "Remember these animal words.",
+      questions: [
+        "wild — living in nature, not with people",
+        "pet — an animal that lives with you at home",
+        "trunk — an elephant's long nose",
+        "fins — flat parts on a fish's body",
+        "honey — a sweet food made by bees",
+        "tail — the long part at the back of an animal",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["Woof", "In water", "Bird", "Carrots and grass", "Four", "Elephant", "Wings", "Kitten", "Cheetah", "Puppy"] },
+    { exercise: 2, subtitle: "Choose the Word", answers: ["run", "wings", "pet", "fins", "dangerous", "tail", "trunk", "clever", "honey", "useful"] },
+    { exercise: 3, subtitle: "Fill in the Blanks", answers: ["eat", "water", "fly", "friendly", "forest", "fast", "wild", "trunk", "swim", "tail"] },
+    { exercise: 4, subtitle: "Key Words", answers: ["wild", "pet", "trunk", "fins", "honey", "tail"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -93,10 +206,18 @@ function normalize(s: string) {
 }
 
 export default function AnimalsClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -179,13 +300,28 @@ export default function AnimalsClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-animals" subject="Animals Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <AnimalsExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -550,40 +686,60 @@ export default function AnimalsClient() {
               All A1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Animal words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-4">
-              <p className="text-xs font-black text-yellow-700 uppercase tracking-wide mb-2">A1 Tip</p>
-              <p className="text-xs text-yellow-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-yellow-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="a1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function AnimalsExplanation() {
+  const words = [
+    ["dog", "собака — friendly pet mammal"],
+    ["cat", "кіт — popular pet, says meow"],
+    ["bird", "птах — has wings, can fly"],
+    ["fish", "риба — lives in water, has fins"],
+    ["elephant", "слон — biggest land animal, has a trunk"],
+    ["cheetah", "гепард — fastest land animal"],
+    ["rabbit", "кролик — eats carrots and grass"],
+    ["dolphin", "дельфін — very clever, lives in the ocean"],
+    ["bear", "ведмідь — lives in the forest, loves honey"],
+    ["horse", "кінь — useful, people can ride it"],
+    ["wild", "дикий — lives in nature, not with people"],
+    ["pet", "домашній — lives with people at home"],
+    ["trunk", "хобот — elephant's long nose"],
+    ["fins", "плавці — help fish swim"],
+    ["tail", "хвіст — back part of an animal's body"],
+    ["wings", "крила — help birds fly"],
+    ["puppy", "цуценя — baby dog"],
+    ["kitten", "кошеня — baby cat"],
+    ["honey", "мед — sweet food made by bees"],
+    ["woof", "гав — sound a dog makes"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Animals Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[80px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">A1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar!</p>
       </div>
     </div>
   );

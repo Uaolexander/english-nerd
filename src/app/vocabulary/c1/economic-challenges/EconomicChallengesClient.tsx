@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "Economists discuss the main ___ facing the global economy.", options: ["hobbies", "challenges", "colours", "trends"], answer: 1 },
+  { q: "Rising ___ has eroded the purchasing power of ordinary people.", options: ["weather", "music", "inflation", "taxation"], answer: 2 },
+  { q: "___ measures involve cutting public spending to reduce deficits.", options: ["Austerity", "Generous", "Holiday", "Cultural"], answer: 0 },
+  { q: "Central banks used ___ to inject money into the economy.", options: ["budget cuts", "tax increases", "quantitative easing", "austerity"], answer: 2 },
+  { q: "___ policy refers to central bank decisions about interest rates.", options: ["Social", "Cultural", "Monetary", "Personal"], answer: 2 },
+  { q: "A ___ is a period when GDP falls for two or more quarters.", options: ["celebration", "recession", "improvement", "boom"], answer: 1 },
+  { q: "The ___ deficit refers to the gap between spending and revenue.", options: ["personal", "minor", "fiscal", "cultural"], answer: 2 },
+  { q: "Unemployment and stagnation are closely ___.", options: ["confused", "compared", "contrasted", "correlated"], answer: 3 },
+  { q: "Structural ___ change the fundamental workings of an economy.", options: ["holidays", "delays", "collapses", "reforms"], answer: 3 },
+  { q: "The ___ between developed and emerging economies continues to narrow.", options: ["colour", "weather", "gap", "similarity"], answer: 2 },
+  { q: "A ___ tax is a percentage of earnings paid to the government.", options: ["income", "value", "trade", "property"], answer: 0 },
+  { q: "The ___ of a country is the total value of goods and services produced.", options: ["inflation", "GDP", "deficit", "tax"], answer: 1 },
+  { q: "To ___ the economy means to encourage growth.", options: ["stagnate", "stimulate", "deflate", "restrict"], answer: 1 },
+  { q: "A ___ policy involves how governments spend and collect taxes.", options: ["monetary", "fiscal", "cultural", "social"], answer: 1 },
+  { q: "A ___ is a period of sustained economic growth.", options: ["recession", "deflation", "boom", "deficit"], answer: 2 },
+  { q: "___ is a sustained fall in the general level of prices.", options: ["Inflation", "Deflation", "Austerity", "Stagnation"], answer: 1 },
+  { q: "An emerging ___ is a developing country with rapid growth.", options: ["deficit", "economy", "recession", "policy"], answer: 1 },
+  { q: "To ___ means to officially reduce the value of a currency.", options: ["inflate", "deflate", "devalue", "stimulate"], answer: 2 },
+  { q: "The ___ rate measures the proportion of people without work.", options: ["inflation", "fiscal", "unemployment", "interest"], answer: 2 },
+  { q: "___ refers to the amount of goods and services bought and sold internationally.", options: ["Trade", "Inflation", "Deficit", "Austerity"], answer: 0 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Economic Challenges",
+  subtitle: "C1 economics vocabulary — dialogue",
+  level: "C1",
+  keyRule: "Economics vocabulary: inflation · austerity · quantitative easing · monetary policy · recession · fiscal · structural reforms",
+  exercises: [
+    {
+      number: 1, title: "Dialogue Exercise", difficulty: "Advanced",
+      instruction: "Choose the correct word for each gap.",
+      questions: [
+        "Two economists discuss the main ___ facing the global economy. (challenges / hobbies / colours)",
+        "Rising ___ has eroded the purchasing power of ordinary people. (inflation / weather / music)",
+        "Governments responded with ___ measures — cutting spending to reduce the deficit. (austerity / generous / holiday)",
+        "Central banks used ___ to inject money into the economy. (quantitative easing / tax increases / budget cuts)",
+        "The ___ policy of keeping interest rates low stimulated borrowing. (monetary / cultural / social)",
+        "The country experienced a severe ___ — GDP fell for three consecutive quarters. (recession / celebration / improvement)",
+        "Increasing the ___ deficit can stimulate growth in the short term. (fiscal / personal / minor)",
+        "Rising unemployment is ___ with economic stagnation. (correlated / confused / compared)",
+        "We need structural ___ to make the economy more competitive long-term. (reforms / holidays / delays)",
+        "The ___ between developed and emerging economies continues to narrow. (gap / colour / weather)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Dialogue Exercise", answers: ["challenges", "inflation", "austerity", "quantitative easing", "monetary", "recession", "fiscal", "correlated", "reforms", "gap"] },
+  ],
+};
 
 /*
   Dialogue: "Economic Challenges"
@@ -121,8 +179,16 @@ const VOCAB_FOCUS = [
 ];
 
 export default function EconomicChallengesClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const answeredCount = QUESTIONS.filter((q) => answers[q.id] != null).length;
   const allAnswered = answeredCount === QUESTIONS.length;

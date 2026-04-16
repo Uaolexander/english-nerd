@@ -2,6 +2,64 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import SpeedRound from "@/components/games/SpeedRound";
+import type { SRQuestion } from "@/components/games/SpeedRound";
+import PDFButton from "@/components/PDFButton";
+import { useIsPro } from "@/lib/ProContext";
+import { generateLessonPDF } from "@/lib/generateLessonPDF";
+import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import VocabRecommendations from "@/components/VocabRecommendations";
+
+const SPEED_QUESTIONS: SRQuestion[] = [
+  { q: "To exercise means to do ___.", options: ["physical activity", "homework", "cooking", "sleeping"], answer: 0 },
+  { q: "A balanced diet includes ___.", options: ["only fruit", "same food daily", "a variety of healthy foods", "no food"], answer: 2 },
+  { q: "A symptom is a sign that you are ___.", options: ["healthy", "ill", "tired", "hungry"], answer: 1 },
+  { q: "To recover means to get ___ after illness.", options: ["sick", "tired", "better", "worried"], answer: 2 },
+  { q: "Stress is a feeling of ___ and pressure.", options: ["happiness", "worry", "excitement", "love"], answer: 1 },
+  { q: "A GP gives ___ advice and treatment.", options: ["legal", "financial", "medical", "cooking"], answer: 2 },
+  { q: "A prescription is a document saying what ___ to take.", options: ["food", "exercise", "medicine", "vitamins"], answer: 2 },
+  { q: "Overweight means weighing ___ than is healthy.", options: ["less", "more", "exactly right", "about"], answer: 1 },
+  { q: "Mental health refers to your ___ wellbeing.", options: ["physical", "financial", "emotional", "social"], answer: 2 },
+  { q: "To warm up means to do ___ exercise before sport.", options: ["intense", "gentle", "competitive", "heavy"], answer: 1 },
+  { q: "A high temperature is a common ___ of illness.", options: ["cure", "treatment", "symptom", "prescription"], answer: 2 },
+  { q: "An appointment is a fixed ___ arranged to meet someone.", options: ["place", "time", "date", "room"], answer: 1 },
+  { q: "Antibiotics are a type of ___.", options: ["food", "exercise", "medicine", "vitamin"], answer: 2 },
+  { q: "Stressed means having too much ___ and worry.", options: ["fun", "food", "pressure", "sleep"], answer: 2 },
+  { q: "Fitness is the ability to do ___ without getting tired.", options: ["maths", "physical activities", "cooking", "reading"], answer: 1 },
+  { q: "To drink ___ glasses of water a day is healthy.", options: ["two", "four", "eight", "twelve"], answer: 2 },
+  { q: "Recovering from flu means getting gradually ___.", options: ["worse", "older", "better", "tired"], answer: 2 },
+  { q: "A cool down is done ___ exercise.", options: ["before", "during", "after", "instead of"], answer: 2 },
+  { q: "Hydrated means having enough ___ in your body.", options: ["food", "sleep", "water", "vitamins"], answer: 2 },
+  { q: "Exercise at least ___ times a week is recommended.", options: ["one", "two", "three", "seven"], answer: 2 },
+];
+
+const PDF_CONFIG: LessonPDFConfig = {
+  title: "Health & Fitness",
+  subtitle: "B1 health vocabulary — symptoms, treatment, fitness",
+  level: "B1",
+  keyRule: "Health vocabulary: symptom · recover · prescription · balanced diet · mental health · warm up",
+  exercises: [
+    {
+      number: 1, title: "Exercise 1 — Multiple Choice", difficulty: "Medium",
+      instruction: "Choose the correct answer.",
+      questions: [
+        "To exercise = to do ___ activity. (mental / physical / social)",
+        "A balanced diet includes ___. (only fruit / one food / a variety)",
+        "A symptom is a sign of ___. (fitness / illness / exercise)",
+        "To recover = to get ___ after illness. (worse / better / bigger)",
+        "Stress = a feeling of ___. (happiness / worry / excitement)",
+        "A GP = a ___ doctor. (family / hospital / sports)",
+        "A prescription = a document for ___. (food / medicine / exercise)",
+        "Overweight = weighing ___ than is healthy. (less / more / same)",
+        "Mental health = emotional ___. (fitness / diet / wellbeing)",
+        "To warm up = to do ___ exercise before sport. (gentle / intense / competitive)",
+      ],
+    },
+  ],
+  answerKey: [
+    { exercise: 1, subtitle: "Multiple Choice", answers: ["physical", "a variety of healthy foods", "illness", "better", "worry", "family", "medicine", "more", "wellbeing", "gentle"] },
+  ],
+};
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -92,10 +150,18 @@ function normalize(s: string) {
 }
 
 export default function HealthFitnessClient() {
+  const isPro = useIsPro();
+  const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [exNo, setExNo] = useState<1 | 2 | 3>(1);
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+
+  async function handlePDF() {
+    setPdfLoading(true);
+    try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
+  }
 
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
@@ -178,13 +244,28 @@ export default function HealthFitnessClient() {
       </div>
 
       {/* 3-col grid */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr_240px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[300px_1fr_300px]">
 
-        {/* Left ad */}
-        <AdUnit variant="sidebar-light" />
+        {/* Left column */}
+        {isPro ? (
+          <div className=""><SpeedRound gameId="vocab-health-fitness" subject="Health & Fitness Vocabulary" questions={SPEED_QUESTIONS} variant="sidebar" /></div>
+        ) : (
+          <AdUnit variant="sidebar-dark" />
+        )}
 
         {/* Main */}
-        <div className="min-w-0 space-y-5">
+        <section className="rounded-2xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-white/60 p-3 flex-wrap">
+            <button onClick={() => setTab("exercises")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "exercises" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Exercises</button>
+            <button onClick={() => setTab("explanation")} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${tab === "explanation" ? "bg-[#F5DA20] text-black" : "text-slate-700 hover:bg-black/5"}`}>Vocabulary</button>
+            <PDFButton onDownload={handlePDF} loading={pdfLoading} />
+          </div>
+
+          <div className="p-6 md:p-8">
+          {tab === "explanation" ? <HealthFitnessExplanation /> : (
+          <div className="space-y-5">
 
           {/* Exercise switcher */}
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -547,40 +628,60 @@ export default function HealthFitnessClient() {
               All B1 Exercises
             </a>
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Key Vocabulary</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Health and fitness words to know</p>
-              </div>
-              <div className="px-4 py-3 space-y-4">
-                {VOCAB.map(({ word, pos, def }) => (
-                  <div key={word}>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-black text-[#b8a200]">{word}</span>
-                      <span className="text-[10px] text-slate-300 font-semibold italic">{pos}</span>
-                    </div>
-                    <p className="mt-0.5 text-[12px] text-slate-500 leading-snug">{def}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4">
-              <p className="text-xs font-black text-violet-700 uppercase tracking-wide mb-2">B1 Tip</p>
-              <p className="text-xs text-violet-800/70 leading-relaxed">
-                Do all three exercises in order. Each one uses the <span className="font-semibold text-violet-800">same vocabulary</span> — by Exercise 3, the words will feel much more familiar!
-              </p>
-            </div>
-
-            <AdUnit variant="inline-light" />
           </div>
-        </aside>
+          )}
+          </div>
+        </section>
 
+        {/* Right column */}
+        {isPro ? (
+          <VocabRecommendations level="b1" />
+        ) : (
+          <AdUnit variant="sidebar-light" />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function HealthFitnessExplanation() {
+  const words = [
+    ["exercise", "вправлятися — do physical activity"],
+    ["balanced diet", "збалансоване харчування — variety of healthy foods"],
+    ["symptom", "симптом — sign that you are ill"],
+    ["recover", "одужувати — get better after illness"],
+    ["stress", "стрес — feeling of worry and pressure"],
+    ["GP", "лікар загальної практики — family doctor"],
+    ["prescription", "рецепт — document for medicine"],
+    ["overweight", "надмірна вага — weighing too much"],
+    ["mental health", "психічне здоров'я — emotional wellbeing"],
+    ["warm up", "розминка — gentle exercise before sport"],
+    ["cool down", "заспокоєння — gentle exercise after sport"],
+    ["appointment", "прийом — fixed time to meet doctor"],
+    ["antibiotics", "антибіотики — medicine that kills bacteria"],
+    ["temperature", "температура — body heat level"],
+    ["fitness", "фізична форма — ability to do physical activities"],
+    ["hydrated", "зволожений — having enough water"],
+    ["recovery", "одужання — the process of getting better"],
+    ["wellbeing", "благополуччя — overall health and happiness"],
+    ["nutrition", "харчування — the food you eat"],
+    ["injury", "травма — physical damage to the body"],
+  ];
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xl font-black text-slate-900">Health & Fitness — Vocabulary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {words.map(([en, ua]) => (
+          <div key={en} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm flex gap-2">
+            <span className="font-bold text-slate-900 min-w-[100px]">{en}</span>
+            <span className="text-slate-500">{ua}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="text-sm font-black text-amber-800 mb-1">B1 Tip</div>
+        <p className="text-xs text-amber-700 leading-relaxed">Do all three exercises in order. Each one uses the <strong>same vocabulary</strong> — by Exercise 3, the words will feel much more familiar!</p>
       </div>
     </div>
   );

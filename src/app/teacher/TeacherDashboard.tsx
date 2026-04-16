@@ -1,8 +1,274 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { StudentRow, ClassRow, AssignmentRow } from "./page";
+
+// ── Exercise catalogue ────────────────────────────────────────────────────────
+type ExerciseEntry = { slug: string; label: string };
+type LevelMap = Record<string, ExerciseEntry[]>;
+
+const EXERCISE_CATALOGUE: Record<string, LevelMap | ExerciseEntry[]> = {
+  grammar: {
+    a1: [
+      { slug: "articles-a-an", label: "Articles: a / an" },
+      { slug: "countable-uncountable", label: "Countable & Uncountable" },
+      { slug: "there-is-there-are", label: "There is / There are" },
+      { slug: "can-cant", label: "Can / Can't" },
+      { slug: "present-simple-questions", label: "Present Simple – Questions" },
+      { slug: "much-many-basic", label: "Much / Many (basic)" },
+      { slug: "this-that-these-those", label: "This / That / These / Those" },
+      { slug: "present-simple-negative", label: "Present Simple – Negative" },
+      { slug: "prepositions-time-in-on-at", label: "Prepositions of Time" },
+      { slug: "possessive-adjectives", label: "Possessive Adjectives" },
+      { slug: "subject-pronouns", label: "Subject Pronouns" },
+      { slug: "present-simple-he-she-it", label: "Present Simple – He/She/It" },
+      { slug: "plural-nouns", label: "Plural Nouns" },
+      { slug: "have-has-got", label: "Have / Has Got" },
+      { slug: "to-be-am-is-are", label: "To Be – Am/Is/Are" },
+      { slug: "wh-questions", label: "Wh- Questions" },
+      { slug: "present-simple-i-you-we-they", label: "Present Simple – I/You/We/They" },
+      { slug: "prepositions-place", label: "Prepositions of Place" },
+      { slug: "adverbs-frequency", label: "Adverbs of Frequency" },
+      { slug: "some-any", label: "Some / Any" },
+    ],
+    a2: [
+      { slug: "will-future", label: "Will – Future" },
+      { slug: "going-to", label: "Going To" },
+      { slug: "present-perfect-intro", label: "Present Perfect – Intro" },
+      { slug: "have-to", label: "Have To" },
+      { slug: "adverbs-manner", label: "Adverbs of Manner" },
+      { slug: "should-shouldnt", label: "Should / Shouldn't" },
+      { slug: "object-pronouns", label: "Object Pronouns" },
+      { slug: "past-simple-regular", label: "Past Simple – Regular" },
+      { slug: "verb-infinitive", label: "Verb + Infinitive" },
+      { slug: "verb-ing", label: "Verb + -ing" },
+      { slug: "present-continuous", label: "Present Continuous" },
+      { slug: "time-expressions-past", label: "Time Expressions (Past)" },
+      { slug: "past-simple-irregular", label: "Past Simple – Irregular" },
+      { slug: "comparative-adjectives", label: "Comparative Adjectives" },
+      { slug: "possessive-pronouns", label: "Possessive Pronouns" },
+      { slug: "articles-the", label: "Articles: The" },
+      { slug: "prepositions-movement", label: "Prepositions of Movement" },
+      { slug: "conjunctions", label: "Conjunctions" },
+      { slug: "superlative-adjectives", label: "Superlative Adjectives" },
+      { slug: "past-simple-negative-questions", label: "Past Simple – Negative & Questions" },
+    ],
+    b1: [
+      { slug: "relative-clauses-defining", label: "Relative Clauses – Defining" },
+      { slug: "used-to", label: "Used To" },
+      { slug: "so-such", label: "So / Such" },
+      { slug: "passive-past", label: "Passive – Past" },
+      { slug: "too-enough", label: "Too / Enough" },
+      { slug: "present-perfect-continuous", label: "Present Perfect Continuous" },
+      { slug: "would-past-habits", label: "Would – Past Habits" },
+      { slug: "relative-clauses-non-defining", label: "Relative Clauses – Non-defining" },
+      { slug: "past-perfect", label: "Past Perfect" },
+      { slug: "modal-deduction", label: "Modal – Deduction" },
+      { slug: "reported-questions", label: "Reported Questions" },
+      { slug: "second-conditional", label: "Second Conditional" },
+      { slug: "all-conditionals", label: "All Conditionals" },
+      { slug: "reported-statements", label: "Reported Statements" },
+      { slug: "phrasal-verbs", label: "Phrasal Verbs" },
+      { slug: "wish-past", label: "Wish + Past" },
+      { slug: "passive-present", label: "Passive – Present" },
+      { slug: "as-as-comparison", label: "As…as Comparison" },
+      { slug: "zero-first-conditional", label: "Zero & First Conditional" },
+      { slug: "past-continuous", label: "Past Continuous" },
+      { slug: "modal-possibility", label: "Modal – Possibility" },
+    ],
+    b2: [
+      { slug: "causative", label: "Causative Have/Get" },
+      { slug: "gerunds-infinitives", label: "Gerunds & Infinitives" },
+      { slug: "modal-perfect", label: "Modal Perfect" },
+      { slug: "all-conditionals-b2", label: "All Conditionals B2" },
+      { slug: "third-conditional", label: "Third Conditional" },
+      { slug: "past-perfect-continuous", label: "Past Perfect Continuous" },
+      { slug: "mixed-conditionals", label: "Mixed Conditionals" },
+      { slug: "linking-words", label: "Linking Words" },
+      { slug: "cleft-sentences", label: "Cleft Sentences" },
+      { slug: "wish-would", label: "Wish + Would" },
+      { slug: "quantifiers-advanced", label: "Quantifiers – Advanced" },
+      { slug: "relative-clauses-advanced", label: "Relative Clauses – Advanced" },
+      { slug: "passive-advanced", label: "Passive – Advanced" },
+      { slug: "inversion", label: "Inversion" },
+      { slug: "reported-speech-advanced", label: "Reported Speech – Advanced" },
+      { slug: "future-continuous", label: "Future Continuous" },
+      { slug: "participle-clauses", label: "Participle Clauses" },
+      { slug: "future-perfect", label: "Future Perfect" },
+    ],
+    c1: [
+      { slug: "advanced-modals", label: "Advanced Modals" },
+      { slug: "subjunctive", label: "Subjunctive" },
+      { slug: "advanced-participle-clauses", label: "Advanced Participle Clauses" },
+      { slug: "inverted-conditionals", label: "Inverted Conditionals" },
+      { slug: "ellipsis-substitution", label: "Ellipsis & Substitution" },
+      { slug: "nominalisation", label: "Nominalisation" },
+      { slug: "fronting-emphasis", label: "Fronting & Emphasis" },
+      { slug: "hedging-language", label: "Hedging Language" },
+      { slug: "concession-contrast", label: "Concession & Contrast" },
+      { slug: "extraposition", label: "Extraposition" },
+      { slug: "reported-speech-c1", label: "Reported Speech C1" },
+      { slug: "advanced-relative-clauses", label: "Advanced Relative Clauses" },
+      { slug: "word-formation", label: "Word Formation" },
+      { slug: "passive-infinitives", label: "Passive Infinitives" },
+      { slug: "advanced-discourse-markers", label: "Advanced Discourse Markers" },
+      { slug: "complex-passives", label: "Complex Passives" },
+      { slug: "advanced-inversion", label: "Advanced Inversion" },
+      { slug: "complex-noun-phrases", label: "Complex Noun Phrases" },
+    ],
+  },
+  reading: {
+    a1: [
+      { slug: "four-friends", label: "Four Friends" },
+      { slug: "my-school-day", label: "My School Day" },
+      { slug: "at-the-market", label: "At the Market" },
+    ],
+    a2: [
+      { slug: "city-or-country", label: "City or Country?" },
+      { slug: "a-weekend-trip", label: "A Weekend Trip" },
+      { slug: "pen-pals", label: "Pen Pals" },
+    ],
+    b1: [
+      { slug: "digital-lives", label: "Digital Lives" },
+      { slug: "work-from-home", label: "Work from Home" },
+      { slug: "the-slow-travel-movement", label: "The Slow Travel Movement" },
+    ],
+    b2: [
+      { slug: "the-gig-economy", label: "The Gig Economy" },
+      { slug: "changing-cities", label: "Changing Cities" },
+      { slug: "the-psychology-of-habits", label: "The Psychology of Habits" },
+    ],
+    c1: [
+      { slug: "rethinking-intelligence", label: "Rethinking Intelligence" },
+      { slug: "language-and-thought", label: "Language and Thought" },
+      { slug: "the-attention-economy", label: "The Attention Economy" },
+    ],
+  },
+  listening: {
+    b2: [
+      { slug: "work-life-balance", label: "Work-Life Balance" },
+    ],
+  },
+  vocabulary: {
+    a1: [
+      { slug: "at-the-cafe", label: "At the Café" },
+      { slug: "animals", label: "Animals" },
+      { slug: "my-body", label: "My Body" },
+      { slug: "my-family", label: "My Family" },
+    ],
+    a2: [
+      { slug: "at-the-restaurant", label: "At the Restaurant" },
+      { slug: "my-weekend", label: "My Weekend" },
+      { slug: "around-the-town", label: "Around the Town" },
+      { slug: "clothes-and-shopping", label: "Clothes & Shopping" },
+    ],
+    b1: [
+      { slug: "health-and-fitness", label: "Health & Fitness" },
+      { slug: "job-interview", label: "Job Interview" },
+      { slug: "city-life", label: "City Life" },
+      { slug: "travel-plans", label: "Travel Plans" },
+    ],
+    b2: [
+      { slug: "business-meeting", label: "Business Meeting" },
+      { slug: "social-issues", label: "Social Issues" },
+      { slug: "environment", label: "Environment" },
+      { slug: "media-and-technology", label: "Media & Technology" },
+    ],
+    c1: [
+      { slug: "idioms-and-phrases", label: "Idioms & Phrases" },
+      { slug: "formal-english", label: "Formal English" },
+      { slug: "economic-challenges", label: "Economic Challenges" },
+      { slug: "academic-debate", label: "Academic Debate" },
+    ],
+  },
+  tests: {
+    general: [
+      { slug: "grammar", label: "Grammar Test" },
+      { slug: "tenses", label: "Tenses Test" },
+      { slug: "vocabulary", label: "Vocabulary Test" },
+    ],
+  },
+  tenses: {
+    "present-simple": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "do-dont-do-i", label: "Do / Does" },
+      { slug: "to-be", label: "To Be" },
+      { slug: "ps-vs-pc", label: "PS vs PC" },
+      { slug: "ps-pc-advanced", label: "PS/PC Advanced" },
+    ],
+    "past-continuous": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "when-while", label: "When / While" },
+      { slug: "interrupted-actions", label: "Interrupted Actions" },
+      { slug: "was-were-ing", label: "Was/Were + -ing" },
+      { slug: "ps-vs-pc", label: "PS vs PC" },
+    ],
+    "past-perfect": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "had-past-participle", label: "Had + Past Participle" },
+      { slug: "past-perfect-vs-past-simple", label: "PP vs Past Simple" },
+      { slug: "sequence-of-events", label: "Sequence of Events" },
+      { slug: "irregular-participles", label: "Irregular Participles" },
+    ],
+    "future-simple": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "will-vs-going-to", label: "Will vs Going To" },
+      { slug: "promises-offers", label: "Promises & Offers" },
+      { slug: "will-wont", label: "Will / Won't" },
+      { slug: "predictions", label: "Predictions" },
+    ],
+    "future-continuous": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "at-future-moment", label: "At a Future Moment" },
+      { slug: "polite-questions", label: "Polite Questions" },
+      { slug: "will-vs-will-be-ing", label: "Will vs Will be -ing" },
+      { slug: "will-be-ing", label: "Will be + -ing" },
+    ],
+    "future-perfect": [
+      { slug: "fill-in-blank", label: "Fill in the Blank" },
+      { slug: "spot-the-mistake", label: "Spot the Mistake" },
+      { slug: "sentence-builder", label: "Sentence Builder" },
+      { slug: "quiz", label: "Quiz" },
+      { slug: "irregular-participles", label: "Irregular Participles" },
+      { slug: "future-perfect-vs-simple", label: "FP vs Future Simple" },
+      { slug: "will-have-past-participle", label: "Will Have + Past Participle" },
+      { slug: "by-the-time", label: "By the Time" },
+    ],
+  },
+};
+
+const TENSE_LABELS: Record<string, string> = {
+  "present-simple": "Present Simple",
+  "past-continuous": "Past Continuous",
+  "past-perfect": "Past Perfect",
+  "future-simple": "Future Simple",
+  "future-continuous": "Future Continuous",
+  "future-perfect": "Future Perfect",
+};
+
+const LEVEL_LABELS: Record<string, string> = { a1: "A1", a2: "A2", b1: "B1", b2: "B2", c1: "C1", general: "General" };
+
+function buildHref(category: string, level: string, slug: string): string {
+  if (category === "tenses") return `/tenses/${level}/${slug}`;
+  if (category === "tests") return `/tests/${slug}`;
+  return `/${category}/${level}/${slug}`;
+}
 
 type Tab = "students" | "classes" | "assignments";
 
@@ -420,13 +686,47 @@ function AssignmentsTab({ assignments, students, classes }: {
   const [localAssignments, setLocalAssignments] = useState(assignments);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    title: "", category: "grammar", level: "b1", slug: "", exerciseNo: "", dueDate: "",
+    title: "",
+    category: "grammar",
+    level: "b1",
+    slug: ((EXERCISE_CATALOGUE["grammar"] as LevelMap)["b1"]?.[0]?.slug) ?? "",
+    exerciseNo: "",
+    dueDate: "",
     targetType: "student" as "student" | "class",
     targetId: "",
   });
   const [saving, setSaving] = useState(false);
 
   const activeStudents = students.filter((s) => s.status === "active" && s.studentId);
+
+  // Derive available level/tense keys and exercise slugs from the catalogue
+  const levelKeys = useMemo<string[]>(() => {
+    const cat = EXERCISE_CATALOGUE[form.category];
+    if (!cat) return [];
+    return Array.isArray(cat) ? [] : Object.keys(cat);
+  }, [form.category]);
+
+  const exerciseOptions = useMemo<ExerciseEntry[]>(() => {
+    const cat = EXERCISE_CATALOGUE[form.category];
+    if (!cat) return [];
+    if (Array.isArray(cat)) return cat;
+    return (cat as LevelMap)[form.level] ?? [];
+  }, [form.category, form.level]);
+
+  // Auto-select first valid level when category changes
+  function handleCategoryChange(newCat: string) {
+    const cat = EXERCISE_CATALOGUE[newCat];
+    const keys = cat && !Array.isArray(cat) ? Object.keys(cat) : [];
+    const defaultLevel = keys[0] ?? "";
+    const exercises = cat && !Array.isArray(cat) ? (cat as LevelMap)[defaultLevel] ?? [] : [];
+    setForm((f) => ({ ...f, category: newCat, level: defaultLevel, slug: exercises[0]?.slug ?? "" }));
+  }
+
+  function handleLevelChange(newLevel: string) {
+    const cat = EXERCISE_CATALOGUE[form.category];
+    const exercises = cat && !Array.isArray(cat) ? (cat as LevelMap)[newLevel] ?? [] : [];
+    setForm((f) => ({ ...f, level: newLevel, slug: exercises[0]?.slug ?? "" }));
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -451,7 +751,7 @@ function AssignmentsTab({ assignments, students, classes }: {
     const data = await res.json();
     if (data.ok) {
       setShowForm(false);
-      setForm({ title: "", category: "grammar", level: "b1", slug: "", exerciseNo: "", dueDate: "", targetType: "student", targetId: "" });
+      setForm({ title: "", category: "grammar", level: "b1", slug: ((EXERCISE_CATALOGUE["grammar"] as LevelMap)["b1"]?.[0]?.slug) ?? "", exerciseNo: "", dueDate: "", targetType: "student", targetId: "" });
       window.location.reload();
     }
     setSaving(false);
@@ -491,32 +791,38 @@ function AssignmentsTab({ assignments, students, classes }: {
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-slate-600">Category</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
+              <select value={form.category} onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
                 <option value="grammar">Grammar</option>
                 <option value="tenses">Tenses</option>
                 <option value="vocabulary">Vocabulary</option>
+                <option value="reading">Reading</option>
+                <option value="listening">Listening</option>
+                <option value="tests">Tests</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Level</label>
-              <select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                {form.category === "tenses" ? "Tense" : form.category === "tests" ? "Type" : "Level"}
+              </label>
+              <select value={form.level} onChange={(e) => handleLevelChange(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                <option value="a1">A1</option><option value="a2">A2</option>
-                <option value="b1">B1</option><option value="b2">B2</option><option value="c1">C1</option>
+                {levelKeys.map((k) => (
+                  <option key={k} value={k}>
+                    {form.category === "tenses" ? TENSE_LABELS[k] ?? k : LEVEL_LABELS[k] ?? k.toUpperCase()}
+                  </option>
+                ))}
               </select>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Topic slug</label>
-              <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                placeholder="e.g. past-continuous"
-                required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Exercise # (optional)</label>
-              <input type="number" min="1" max="4" value={form.exerciseNo} onChange={(e) => setForm({ ...form, exerciseNo: e.target.value })}
-                placeholder="1–4 or leave empty"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs font-semibold text-slate-600">Exercise</label>
+              <select value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-violet-400">
+                {exerciseOptions.length === 0 && <option value="">— no exercises available —</option>}
+                {exerciseOptions.map((ex) => (
+                  <option key={ex.slug} value={ex.slug}>{ex.label}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-slate-600">Due date (optional)</label>
@@ -561,7 +867,7 @@ function AssignmentsTab({ assignments, students, classes }: {
         <div className="space-y-3">
           {localAssignments.map((a) => {
             const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
-            const href = `/${a.category}/${a.level ? a.level + "/" : ""}${a.slug}`;
+            const href = buildHref(a.category, a.level ?? "", a.slug);
             return (
               <div key={a.id} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white px-6 py-4 shadow-sm">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black text-white ${
