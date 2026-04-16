@@ -11,10 +11,15 @@ interface Student {
   avatarUrl: string | null;
 }
 
-const EXERCISE_PATHS = ["/tenses/", "/grammar/", "/vocabulary/", "/reading/", "/listening/", "/tests/"];
+const SECTION_ROOTS = ["grammar", "tenses", "vocabulary", "reading", "listening"];
+const TEST_PAGES = ["/tests/grammar", "/tests/tenses", "/tests/vocabulary"];
 
 function isExercisePage(path: string) {
-  return EXERCISE_PATHS.some((p) => path.includes(p));
+  // Specific full-page tests
+  if (TEST_PAGES.some((t) => path === t || path.startsWith(t + "/"))) return true;
+  // Section exercise pages need at least 3 segments: /section/level/slug
+  const parts = path.split("/").filter(Boolean);
+  return parts.length >= 3 && SECTION_ROOTS.includes(parts[0]);
 }
 
 function pathToTitle(path: string): string {
