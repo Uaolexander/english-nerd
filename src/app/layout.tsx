@@ -83,14 +83,14 @@ export default async function RootLayout({
               <Suspense><AssignmentBanner /></Suspense>
               <LiveSessionProvider>
                 {children}
+                <ClientShell
+                  user={user ? { email: user.email ?? "" } : null}
+                  plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
+                />
               </LiveSessionProvider>
               <Footer />
               <SessionGuard />
               <ProgressToast />
-              <ClientShell
-                user={user ? { email: user.email ?? "" } : null}
-                plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
-              />
             </TeacherProvider>
           </StudentProvider>
         </ProProvider>
