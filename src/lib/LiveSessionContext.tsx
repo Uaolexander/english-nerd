@@ -22,6 +22,7 @@ function LiveSessionActive({
   children: React.ReactNode;
 }) {
   const session = useLiveSession(roomId);
+  console.log("[LiveSessionActive] rendering, status:", session.status, "roomId:", roomId);
   return (
     <LiveSessionContext.Provider value={session}>
       <GlobalLiveSessionBanner
@@ -32,6 +33,11 @@ function LiveSessionActive({
       {children}
     </LiveSessionContext.Provider>
   );
+}
+
+function LiveSessionProviderInner({ roomId, children }: { roomId: string; children: React.ReactNode }) {
+  console.log("[LiveSessionProvider] roomId found:", roomId);
+  return <LiveSessionActive roomId={roomId}>{children}</LiveSessionActive>;
 }
 
 /**
@@ -47,9 +53,9 @@ export function LiveSessionProvider({
 }) {
   const searchParams = useSearchParams();
   const roomId = searchParams.get("room");
+  console.log("[LiveSessionProvider] searchParams room:", roomId);
 
   if (!roomId) {
-    // No live session — pass null to context so consumers can bail out cheaply
     return (
       <LiveSessionContext.Provider value={null}>
         {children}
@@ -57,7 +63,7 @@ export function LiveSessionProvider({
     );
   }
 
-  return <LiveSessionActive roomId={roomId}>{children}</LiveSessionActive>;
+  return <LiveSessionProviderInner roomId={roomId}>{children}</LiveSessionProviderInner>;
 }
 
 /** Returns the live session from context, or null if there is no active session. */
