@@ -3,12 +3,17 @@
 import { createContext, useContext } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLiveSession } from "@/lib/useLiveSession";
+import GlobalLiveSessionBanner from "@/components/GlobalLiveSessionBanner";
 
 type LiveSessionCtx = ReturnType<typeof useLiveSession>;
 
 const LiveSessionContext = createContext<LiveSessionCtx | null>(null);
 
-/** Inner component — only rendered when a roomId exists in the URL. */
+/**
+ * Inner component — only rendered when a roomId exists in the URL.
+ * Renders the GlobalLiveSessionBanner directly (not via children/context)
+ * so it works correctly with React Server Components.
+ */
 function LiveSessionActive({
   roomId,
   children,
@@ -19,6 +24,11 @@ function LiveSessionActive({
   const session = useLiveSession(roomId);
   return (
     <LiveSessionContext.Provider value={session}>
+      <GlobalLiveSessionBanner
+        status={session.status}
+        isTeacher={session.isTeacher}
+        partnerOnline={session.partnerOnline}
+      />
       {children}
     </LiveSessionContext.Provider>
   );

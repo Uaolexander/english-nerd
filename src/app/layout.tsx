@@ -7,7 +7,6 @@ import Footer from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
 import AssignmentBanner from "@/components/AssignmentBanner";
-import GlobalLiveSessionBanner from "@/components/GlobalLiveSessionBanner";
 import { LiveSessionProvider } from "@/lib/LiveSessionContext";
 import { Suspense } from "react";
 import { ProProvider } from "@/lib/ProContext";
@@ -84,7 +83,6 @@ export default async function RootLayout({
               <Suspense><AssignmentBanner /></Suspense>
               <Suspense>
                 <LiveSessionProvider>
-                  <GlobalLiveSessionBanner />
                   {children}
                 </LiveSessionProvider>
               </Suspense>
