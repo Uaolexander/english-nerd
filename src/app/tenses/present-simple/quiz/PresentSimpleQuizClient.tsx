@@ -430,8 +430,8 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
       <div className="mx-auto max-w-7xl px-6 py-10">
 
         {/* Live session banner */}
-        {live.isLive && (
-          <LiveSessionBanner isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
+        {roomId && (
+          <LiveSessionBanner roomId={roomId} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
         )}
 
         {/* Breadcrumb */}

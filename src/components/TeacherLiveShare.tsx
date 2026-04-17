@@ -36,6 +36,7 @@ export default function TeacherLiveShare() {
   const [loaded, setLoaded] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
   const [sent, setSent] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const fetchStudents = useCallback(async () => {
     if (loaded) return;
@@ -62,6 +63,7 @@ export default function TeacherLiveShare() {
 
   async function sendToStudent(student: Student) {
     setSending(student.id);
+    setSendError(null);
     try {
       // 1. Create a live session on the server
       const sessionRes = await fetch("/api/teacher/live-session", {
@@ -69,17 +71,27 @@ export default function TeacherLiveShare() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: student.id, exercisePath: pathname }),
       });
-      const sessionData = await sessionRes.json() as { ok: boolean; roomId?: string };
-      if (!sessionData.ok || !sessionData.roomId) throw new Error("Failed to create session");
+      const sessionData = await sessionRes.json() as { ok: boolean; roomId?: string; error?: string };
+      if (!sessionData.ok || !sessionData.roomId) {
+        throw new Error(sessionData.error ?? "Failed to create session");
+      }
 
-      // 2. Build the invite URL with the room parameter
+      // 2. Build the live URL with room ID
       const base = typeof window !== "undefined" ? window.location.origin : "";
       const liveUrl = `${base}${pathname}?room=${sessionData.roomId}`;
 
-      // 3. Broadcast the invite to the student via Supabase Realtime
+      // 3. Broadcast invite to student — wait for SUBSCRIBED before sending
       const supabase = createClient();
       const channel = supabase.channel(`exercise-invite:${student.id}`);
-      await channel.subscribe();
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("Subscribe timeout")), 6000);
+        channel.subscribe((status) => {
+          if (status === "SUBSCRIBED") { clearTimeout(timer); resolve(); }
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            clearTimeout(timer); reject(new Error(`Channel ${status}`));
+          }
+        });
+      });
       await channel.send({
         type: "broadcast",
         event: "invite",
@@ -92,10 +104,10 @@ export default function TeacherLiveShare() {
       setTimeout(() => {
         setSent(null);
         setOpen(false);
-        window.location.href = `${pathname}?room=${sessionData.roomId}`;
-      }, 1000);
-    } catch {
-      // silent
+        window.location.href = liveUrl;
+      }, 1200);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSending(null);
     }
@@ -201,7 +213,12 @@ export default function TeacherLiveShare() {
               )}
             </div>
 
-            {students.length > 0 && !sent && (
+            {sendError && (
+              <div className="border-t border-red-50 bg-red-50 px-5 py-3">
+                <p className="text-xs text-red-600 text-center font-semibold">{sendError}</p>
+              </div>
+            )}
+            {students.length > 0 && !sent && !sendError && (
               <div className="border-t border-slate-100 px-5 py-3">
                 <p className="text-[11px] text-slate-400 text-center">Student receives an instant live notification</p>
               </div>
