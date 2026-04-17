@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useProgress } from "@/lib/useProgress";
-import { useLiveSession } from "@/lib/useLiveSession";
-import dynamic from "next/dynamic";
-const LiveSessionBanner = dynamic(() => import("@/components/LiveSessionBanner"), { ssr: false });
+import { useLive } from "@/lib/LiveSessionContext";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
@@ -148,7 +146,7 @@ const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
-export default function FillInBlankClient({ roomId }: { roomId?: string | null }) {
+export default function FillInBlankClient() {
   const isPro = useIsPro();
   const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -161,10 +159,10 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
   const { save } = useProgress();
 
   // ── Live session ──────────────────────────────────────────────────────────
-  const live = useLiveSession(roomId ?? null);
+  const live = useLive();
 
   // Apply state received from partner — never broadcast here (avoids ping-pong)
-  live.onSync((payload) => {
+  live?.onSync((payload) => {
     setAnswers(payload.answers as Record<string, string>);
     setChecked(payload.checked);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
@@ -183,7 +181,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
   function reset() {
     setChecked(false);
     setAnswers({});
-    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo });
+    if (live?.isLive) live.broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -191,7 +189,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
     setExNo(n);
     setChecked(false);
     setAnswers({});
-    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
+    if (live?.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   async function downloadPDF() {
@@ -424,11 +422,6 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
 
-        {/* Live session banner */}
-        {roomId && (
-          <LiveSessionBanner status={live.status} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
-        )}
-
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <a className="hover:text-slate-900 transition" href="/">Home</a>
@@ -556,7 +549,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
                                           onChange={(e) => {
                                             const newAnswers = { ...answers, [q.id]: e.target.value };
                                             setAnswers(newAnswers);
-                                            if (live.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
+                                            if (live?.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
                                           }}
                                           className={`rounded-lg border px-3 py-1 text-sm font-mono outline-none transition min-w-[120px] ${
                                             checked
@@ -611,7 +604,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
                         <button
                           onClick={() => {
                             setChecked(true);
-                            if (live.isLive) live.broadcast({ answers, checked: true, exNo });
+                            if (live?.isLive) live.broadcast({ answers, checked: true, exNo });
                           }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
                         >

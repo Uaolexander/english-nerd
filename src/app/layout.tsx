@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
 import ProgressToast from "@/components/ProgressToast";
 import AssignmentBanner from "@/components/AssignmentBanner";
+import GlobalLiveSessionBanner from "@/components/GlobalLiveSessionBanner";
+import { LiveSessionProvider } from "@/lib/LiveSessionContext";
 import { Suspense } from "react";
 import { ProProvider } from "@/lib/ProContext";
 import { StudentProvider } from "@/lib/StudentContext";
@@ -80,7 +82,12 @@ export default async function RootLayout({
             <TeacherProvider isTeacher={teacherStatus.isTeacher}>
               <Header />
               <Suspense><AssignmentBanner /></Suspense>
-              {children}
+              <Suspense>
+                <LiveSessionProvider>
+                  <GlobalLiveSessionBanner />
+                  {children}
+                </LiveSessionProvider>
+              </Suspense>
               <Footer />
               <SessionGuard />
               <ProgressToast />

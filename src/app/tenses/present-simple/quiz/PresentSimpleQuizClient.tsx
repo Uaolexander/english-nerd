@@ -2,9 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
-import { useLiveSession } from "@/lib/useLiveSession";
-import dynamic from "next/dynamic";
-const LiveSessionBanner = dynamic(() => import("@/components/LiveSessionBanner"), { ssr: false });
+import { useLive } from "@/lib/LiveSessionContext";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
@@ -137,7 +135,7 @@ const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
-export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | null }) {
+export default function PresentSimpleQuizClient() {
   const isPro = useIsPro();
   const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -150,10 +148,10 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
   const { save } = useProgress();
 
   // ── Live session ──────────────────────────────────────────────────────────
-  const live = useLiveSession(roomId ?? null);
+  const live = useLive();
 
   // Apply state received from partner — never broadcast here (avoids ping-pong)
-  live.onSync((payload) => {
+  live?.onSync((payload) => {
     setAnswers(payload.answers as Record<string, number | null>);
     setChecked(payload.checked);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
@@ -161,7 +159,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
 
   // Save progress — only if not the teacher in a live session
   useEffect(() => {
-    if (checked && score && !live.isTeacher) {
+    if (checked && score && !live?.isTeacher) {
       save(exNo, score.percent, score.total);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,7 +178,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
   function reset() {
     setChecked(false);
     setAnswers({});
-    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo });
+    if (live?.isLive) live.broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -188,7 +186,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
     setChecked(false);
     setAnswers({});
     window.scrollTo({ top: 0, behavior: "smooth" });
-    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
+    if (live?.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   async function downloadPDF() {
@@ -425,11 +423,6 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
 
-        {/* Live session banner */}
-        {roomId && (
-          <LiveSessionBanner status={live.status} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
-        )}
-
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <a className="hover:text-slate-900 transition" href="/">Home</a>
@@ -555,7 +548,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
                                       onChange={() => {
                                         const newAnswers = { ...answers, [q.id]: oi };
                                         setAnswers(newAnswers);
-                                        if (live.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
+                                        if (live?.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
                                       }}
                                       className="accent-[#F5DA20]"
                                     />
@@ -595,7 +588,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
                         <button
                           onClick={() => {
                             setChecked(true);
-                            if (live.isLive) live.broadcast({ answers, checked: true, exNo });
+                            if (live?.isLive) live.broadcast({ answers, checked: true, exNo });
                           }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
                         >

@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tenses/present-simple/fill-in-blank" },
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
-  const { room } = await searchParams;
-  return <FillInBlankClient roomId={room ?? null} />;
+export default function Page() {
+  return <FillInBlankClient />;
 }
