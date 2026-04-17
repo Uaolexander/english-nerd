@@ -81,11 +81,9 @@ export default async function RootLayout({
             <TeacherProvider isTeacher={teacherStatus.isTeacher}>
               <Header />
               <Suspense><AssignmentBanner /></Suspense>
-              <Suspense>
-                <LiveSessionProvider>
-                  {children}
-                </LiveSessionProvider>
-              </Suspense>
+              <LiveSessionProvider>
+                {children}
+              </LiveSessionProvider>
               <Footer />
               <SessionGuard />
               <ProgressToast />
