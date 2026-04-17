@@ -12,7 +12,7 @@ export default function GlobalLiveSessionBanner() {
 
   if (live.status === "loading") {
     return (
-      <div className="fixed top-14 left-0 right-0 z-40 flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2">
+      <div className="fixed top-20 left-0 right-0 z-40 flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2">
         <svg
           className="h-3.5 w-3.5 animate-spin shrink-0 text-slate-400"
           viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ export default function GlobalLiveSessionBanner() {
 
   if (live.status === "error" || live.status === "expired") {
     return (
-      <div className="fixed top-14 left-0 right-0 z-40 flex items-center gap-3 border-b border-red-200 bg-red-50 px-4 py-2">
+      <div className="fixed top-20 left-0 right-0 z-40 flex items-center gap-3 border-b border-red-200 bg-red-50 px-4 py-2">
         <svg
           className="h-3.5 w-3.5 shrink-0 text-red-500"
           viewBox="0 0 24 24"
@@ -51,7 +51,7 @@ export default function GlobalLiveSessionBanner() {
 
   // ready
   return (
-    <div className="fixed top-14 left-0 right-0 z-40 flex items-center gap-3 border-b border-violet-200 bg-violet-50 px-4 py-2">
+    <div className="fixed top-20 left-0 right-0 z-40 flex items-center gap-3 border-b border-violet-200 bg-violet-50 px-4 py-2">
       <span className="relative flex h-2 w-2 shrink-0">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
