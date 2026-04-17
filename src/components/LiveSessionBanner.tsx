@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 export default function LiveSessionBanner({
   status,
   isTeacher,
@@ -11,12 +9,6 @@ export default function LiveSessionBanner({
   isTeacher: boolean;
   partnerOnline: boolean;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  // Don't render on server — avoids SSR/client hydration mismatch
-  if (!mounted) return null;
-
   if (status === "loading") {
     return (
       <div className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">

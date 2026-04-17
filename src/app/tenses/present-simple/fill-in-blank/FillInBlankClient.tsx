@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { useLiveSession } from "@/lib/useLiveSession";
-import LiveSessionBanner from "@/components/LiveSessionBanner";
+import dynamic from "next/dynamic";
+const LiveSessionBanner = dynamic(() => import("@/components/LiveSessionBanner"), { ssr: false });
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
