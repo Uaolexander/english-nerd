@@ -9,6 +9,7 @@ import { useLive } from "@/lib/LiveSessionContext";
  */
 export default function GlobalLiveSessionBanner() {
   const live = useLive();
+  console.log("[GlobalBanner] live:", live, "status:", live?.status);
   if (!live) return null;
 
   if (live.status === "loading") {
