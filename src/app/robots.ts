@@ -9,10 +9,12 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/account",
           "/dashboard",
+          "/teacher/",
           "/api/",
           "/auth/",
           "/forgot-password",
           "/reset-password",
+          "/logo.mp4",
         ],
       },
     ],
