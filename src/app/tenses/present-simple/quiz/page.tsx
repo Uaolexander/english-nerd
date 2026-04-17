@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tenses/present-simple/quiz" },
 };
 
-export default function Page() {
-  return <PresentSimpleQuizClient />;
+export default async function Page({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
+  const { room } = await searchParams;
+  return <PresentSimpleQuizClient roomId={room ?? null} />;
 }
 

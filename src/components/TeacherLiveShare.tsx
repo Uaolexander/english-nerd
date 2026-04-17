@@ -63,15 +63,30 @@ export default function TeacherLiveShare() {
   async function sendToStudent(student: Student) {
     setSending(student.id);
     try {
+      // 1. Create a live session on the server
+      const sessionRes = await fetch("/api/teacher/live-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId: student.id, exercisePath: pathname }),
+      });
+      const sessionData = await sessionRes.json() as { ok: boolean; roomId?: string };
+      if (!sessionData.ok || !sessionData.roomId) throw new Error("Failed to create session");
+
+      // 2. Build the invite URL with the room parameter
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const liveUrl = `${base}${pathname}?room=${sessionData.roomId}`;
+
+      // 3. Broadcast the invite to the student via Supabase Realtime
       const supabase = createClient();
       const channel = supabase.channel(`exercise-invite:${student.id}`);
       await channel.subscribe();
       await channel.send({
         type: "broadcast",
         event: "invite",
-        payload: { url: exerciseUrl, title: exerciseTitle, path: pathname },
+        payload: { url: liveUrl, title: exerciseTitle, path: pathname, roomId: sessionData.roomId },
       });
       supabase.removeChannel(channel);
+
       setSent(student.id);
       setTimeout(() => { setSent(null); setOpen(false); }, 1800);
     } catch {

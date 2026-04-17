@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useProgress } from "@/lib/useProgress";
+import { useLiveSession } from "@/lib/useLiveSession";
+import LiveSessionBanner from "@/components/LiveSessionBanner";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
@@ -134,7 +136,7 @@ const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
-export default function PresentSimpleQuizClient() {
+export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | null }) {
   const isPro = useIsPro();
   const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -146,8 +148,30 @@ export default function PresentSimpleQuizClient() {
 
   const { save } = useProgress();
 
+  // ── Live session ──────────────────────────────────────────────────────────
+  const live = useLiveSession(roomId ?? null);
+  const isLiveIgnoreRef = useRef(false);
+
+  // Register sync handler — when partner sends state, apply it locally
+  live.onSync((payload) => {
+    isLiveIgnoreRef.current = true;
+    setAnswers(payload.answers);
+    setChecked(payload.checked);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+    // Reset flag after React re-render cycle
+    requestAnimationFrame(() => { isLiveIgnoreRef.current = false; });
+  });
+
+  // Broadcast local state changes to partner (skip if change came FROM partner)
   useEffect(() => {
-    if (checked && score) {
+    if (!live.isLive || isLiveIgnoreRef.current) return;
+    live.broadcast({ answers, checked, exNo });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, checked, exNo]);
+
+  // Save progress — only if not the teacher in a live session
+  useEffect(() => {
+    if (checked && score && !live.isTeacher) {
       save(exNo, score.percent, score.total);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -408,6 +432,11 @@ export default function PresentSimpleQuizClient() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
+
+        {/* Live session banner */}
+        {live.isLive && (
+          <LiveSessionBanner isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
+        )}
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500">
