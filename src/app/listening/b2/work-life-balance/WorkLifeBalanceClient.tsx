@@ -171,7 +171,7 @@ export default function WorkLifeBalanceClient() {
             <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)]">
               <div className="relative aspect-video bg-black">
                 <iframe
-                  src="https://www.youtube.com/embed/VONZpE3eghQ"
+                  src="https://www.youtube.com/embed/7QUP82DH-s8"
                   title="Work-Life Balance — B2 Listening"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
