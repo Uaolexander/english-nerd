@@ -1,9 +1,4 @@
-"use client";
-
-import { useIsPro } from "@/lib/ProContext";
-
-export default function Footer() {
-  const isPro = useIsPro();
+export default function Footer({ isPro }: { isPro: boolean }) {
 
   return (
     <footer className="border-t border-white/8 bg-[#0B0B0D] px-6 py-10">

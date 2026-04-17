@@ -88,7 +88,7 @@ export default async function RootLayout({
                   plan={teacherStatus.isTeacher ? "Teacher" : studentStatus.isStudent ? "Student" : isPro ? "PRO" : "Free"}
                 />
               </LiveSessionProvider>
-              <Footer />
+              <Footer isPro={isPro || studentStatus.isStudent || teacherStatus.isTeacher} />
               <SessionGuard />
               <ProgressToast />
             </TeacherProvider>
