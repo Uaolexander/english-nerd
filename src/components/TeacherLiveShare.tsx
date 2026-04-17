@@ -88,7 +88,12 @@ export default function TeacherLiveShare() {
       supabase.removeChannel(channel);
 
       setSent(student.id);
-      setTimeout(() => { setSent(null); setOpen(false); }, 1800);
+      // Redirect teacher to the live URL so they also join the session
+      setTimeout(() => {
+        setSent(null);
+        setOpen(false);
+        window.location.href = `${pathname}?room=${sessionData.roomId}`;
+      }, 1000);
     } catch {
       // silent
     } finally {
