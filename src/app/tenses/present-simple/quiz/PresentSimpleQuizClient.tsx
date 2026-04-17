@@ -151,19 +151,12 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
   // ── Live session ──────────────────────────────────────────────────────────
   const live = useLiveSession(roomId ?? null);
 
-  // Apply state received from partner
+  // Apply state received from partner — never broadcast here (avoids ping-pong)
   live.onSync((payload) => {
     setAnswers(payload.answers as Record<string, number | null>);
     setChecked(payload.checked);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
   });
-
-  // Broadcast local state changes (echo is filtered by _senderId in the hook)
-  useEffect(() => {
-    if (!live.isLive) return;
-    live.broadcast({ answers, checked, exNo });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, checked, exNo]);
 
   // Save progress — only if not the teacher in a live session
   useEffect(() => {
@@ -186,6 +179,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
   function reset() {
     setChecked(false);
     setAnswers({});
+    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -193,6 +187,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
     setChecked(false);
     setAnswers({});
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   async function downloadPDF() {
@@ -431,7 +426,7 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
 
         {/* Live session banner */}
         {roomId && (
-          <LiveSessionBanner roomId={roomId} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
+          <LiveSessionBanner status={live.status} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
         )}
 
         {/* Breadcrumb */}
@@ -556,9 +551,11 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
                                       name={q.id}
                                       disabled={checked}
                                       checked={chosen === oi}
-                                      onChange={() =>
-                                        setAnswers((p) => ({ ...p, [q.id]: oi }))
-                                      }
+                                      onChange={() => {
+                                        const newAnswers = { ...answers, [q.id]: oi };
+                                        setAnswers(newAnswers);
+                                        if (live.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
+                                      }}
                                       className="accent-[#F5DA20]"
                                     />
                                     <span className="text-sm text-slate-900">{opt}</span>
@@ -595,7 +592,10 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
                     <div className="flex flex-wrap gap-3 items-center">
                       {!checked ? (
                         <button
-                          onClick={() => setChecked(true)}
+                          onClick={() => {
+                            setChecked(true);
+                            if (live.isLive) live.broadcast({ answers, checked: true, exNo });
+                          }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
                         >
                           Check Answers

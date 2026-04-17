@@ -1,17 +1,14 @@
 "use client";
 
-import { useLiveSession } from "@/lib/useLiveSession";
-
 export default function LiveSessionBanner({
-  roomId,
+  status,
   isTeacher,
   partnerOnline,
 }: {
-  roomId: string;
+  status: "loading" | "ready" | "error" | "expired";
   isTeacher: boolean;
   partnerOnline: boolean;
 }) {
-  const { status } = useLiveSession(roomId);
 
   if (status === "loading") {
     return (

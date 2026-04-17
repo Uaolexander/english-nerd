@@ -80,7 +80,12 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
 
     // Listen for state sync — ignore messages sent by ourselves (echo filter)
     channel.on("broadcast", { event: "sync" }, ({ payload }: { payload: LiveSyncPayload }) => {
-      if (payload._senderId && payload._senderId === currentUserIdRef.current) return;
+      console.log("[LiveSession] received broadcast, senderId:", payload._senderId, "me:", currentUserIdRef.current);
+      if (payload._senderId && payload._senderId === currentUserIdRef.current) {
+        console.log("[LiveSession] filtered self-broadcast");
+        return;
+      }
+      console.log("[LiveSession] applying sync payload:", payload);
       syncHandlerRef.current?.(payload);
     });
 
@@ -89,10 +94,12 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       const state = channel.presenceState();
       const onlineIds = Object.keys(state);
       const partnerId = currentUserId === session.teacherId ? session.studentId : session.teacherId;
+      console.log("[LiveSession] presence sync, online:", onlineIds, "partner:", partnerId);
       setPartnerOnline(onlineIds.includes(partnerId));
     });
 
     channel.subscribe(async (subStatus) => {
+      console.log("[LiveSession] channel subscribe status:", subStatus, "channel:", channelName);
       if (subStatus === "SUBSCRIBED") {
         await channel.track({ userId: currentUserId, joinedAt: Date.now() });
       }
@@ -107,11 +114,18 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
   }, [status, session, currentUserId]);
 
   const broadcast = useCallback((payload: Omit<LiveSyncPayload, "_senderId">) => {
-    if (!channelRef.current) return;
+    if (!channelRef.current) {
+      console.warn("[LiveSession] broadcast called but channel is not ready");
+      return;
+    }
+    const fullPayload = { ...payload, _senderId: currentUserIdRef.current };
+    console.log("[LiveSession] broadcasting:", fullPayload);
     channelRef.current.send({
       type: "broadcast",
       event: "sync",
-      payload: { ...payload, _senderId: currentUserIdRef.current },
+      payload: fullPayload,
+    }).then((result) => {
+      console.log("[LiveSession] broadcast result:", result);
     });
   }, []);
 

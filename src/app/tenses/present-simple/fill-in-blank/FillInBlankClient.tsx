@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { useLiveSession } from "@/lib/useLiveSession";
 import LiveSessionBanner from "@/components/LiveSessionBanner";
@@ -162,17 +162,12 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
   // ── Live session ──────────────────────────────────────────────────────────
   const live = useLiveSession(roomId ?? null);
 
+  // Apply state received from partner — never broadcast here (avoids ping-pong)
   live.onSync((payload) => {
     setAnswers(payload.answers as Record<string, string>);
     setChecked(payload.checked);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
   });
-
-  useEffect(() => {
-    if (!live.isLive) return;
-    live.broadcast({ answers, checked, exNo });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, checked, exNo]);
 
   const score = useMemo(() => {
     if (!checked) return null;
@@ -187,6 +182,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
   function reset() {
     setChecked(false);
     setAnswers({});
+    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -194,6 +190,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
     setExNo(n);
     setChecked(false);
     setAnswers({});
+    if (live.isLive) live.broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   async function downloadPDF() {
@@ -428,7 +425,7 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
 
         {/* Live session banner */}
         {roomId && (
-          <LiveSessionBanner roomId={roomId} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
+          <LiveSessionBanner status={live.status} isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
         )}
 
         {/* Breadcrumb */}
@@ -555,9 +552,11 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
                                           autoCapitalize="off"
                                           spellCheck={false}
                                           placeholder={q.hint}
-                                          onChange={(e) =>
-                                            setAnswers((p) => ({ ...p, [q.id]: e.target.value }))
-                                          }
+                                          onChange={(e) => {
+                                            const newAnswers = { ...answers, [q.id]: e.target.value };
+                                            setAnswers(newAnswers);
+                                            if (live.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
+                                          }}
                                           className={`rounded-lg border px-3 py-1 text-sm font-mono outline-none transition min-w-[120px] ${
                                             checked
                                               ? correct
@@ -609,7 +608,10 @@ export default function FillInBlankClient({ roomId }: { roomId?: string | null }
                     <div className="flex flex-wrap gap-3 items-center">
                       {!checked ? (
                         <button
-                          onClick={() => setChecked(true)}
+                          onClick={() => {
+                            setChecked(true);
+                            if (live.isLive) live.broadcast({ answers, checked: true, exNo });
+                          }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
                         >
                           Check Answers
