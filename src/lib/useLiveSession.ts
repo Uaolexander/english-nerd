@@ -12,27 +12,20 @@ export type LiveSessionInfo = {
 };
 
 export type LiveSyncPayload = {
-  answers: Record<string, number | null>;
+  answers: Record<string, unknown>;
   checked: boolean;
   exNo: number;
+  _senderId?: string; // internal — used to filter echo
 };
 
 type UseLiveSessionResult = {
-  /** Whether we are in a valid live session */
   isLive: boolean;
-  /** Current user is the teacher in this session */
   isTeacher: boolean;
-  /** Current user is the student in this session */
   isStudent: boolean;
-  /** Is the other participant currently connected? */
   partnerOnline: boolean;
-  /** Broadcast the current exercise state to the partner */
-  broadcast: (payload: LiveSyncPayload) => void;
-  /** Register a handler called whenever a sync arrives from the partner */
+  broadcast: (payload: Omit<LiveSyncPayload, "_senderId">) => void;
   onSync: (handler: (payload: LiveSyncPayload) => void) => void;
-  /** Session info (null while loading) */
   session: LiveSessionInfo | null;
-  /** Loading / error state */
   status: "loading" | "ready" | "error" | "expired";
 };
 
@@ -44,6 +37,7 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const syncHandlerRef = useRef<((p: LiveSyncPayload) => void) | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
 
   // Load current user + session info
   useEffect(() => {
@@ -57,6 +51,7 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setStatus("error"); return; }
       setCurrentUserId(user.id);
+      currentUserIdRef.current = user.id;
 
       const res = await fetch(`/api/teacher/live-session?room=${roomId}`);
       if (!res.ok) {
@@ -83,8 +78,9 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       config: { presence: { key: currentUserId } },
     });
 
-    // Listen for state sync from partner
+    // Listen for state sync — ignore messages sent by ourselves (echo filter)
     channel.on("broadcast", { event: "sync" }, ({ payload }: { payload: LiveSyncPayload }) => {
+      if (payload._senderId && payload._senderId === currentUserIdRef.current) return;
       syncHandlerRef.current?.(payload);
     });
 
@@ -96,8 +92,8 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       setPartnerOnline(onlineIds.includes(partnerId));
     });
 
-    channel.subscribe(async (status) => {
-      if (status === "SUBSCRIBED") {
+    channel.subscribe(async (subStatus) => {
+      if (subStatus === "SUBSCRIBED") {
         await channel.track({ userId: currentUserId, joinedAt: Date.now() });
       }
     });
@@ -110,11 +106,12 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
     };
   }, [status, session, currentUserId]);
 
-  const broadcast = useCallback((payload: LiveSyncPayload) => {
-    channelRef.current?.send({
+  const broadcast = useCallback((payload: Omit<LiveSyncPayload, "_senderId">) => {
+    if (!channelRef.current) return;
+    channelRef.current.send({
       type: "broadcast",
       event: "sync",
-      payload,
+      payload: { ...payload, _senderId: currentUserIdRef.current },
     });
   }, []);
 

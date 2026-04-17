@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import { useLiveSession } from "@/lib/useLiveSession";
+import LiveSessionBanner from "@/components/LiveSessionBanner";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
@@ -145,7 +147,7 @@ const SET_LABELS: Record<1 | 2 | 3 | 4, string> = {
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
-export default function FillInBlankClient() {
+export default function FillInBlankClient({ roomId }: { roomId?: string | null }) {
   const isPro = useIsPro();
   const [pdfLoading, setPdfLoading] = useState(false);
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
@@ -157,12 +159,20 @@ export default function FillInBlankClient() {
 
   const { save } = useProgress();
 
+  // ── Live session ──────────────────────────────────────────────────────────
+  const live = useLiveSession(roomId ?? null);
+
+  live.onSync((payload) => {
+    setAnswers(payload.answers as Record<string, string>);
+    setChecked(payload.checked);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   useEffect(() => {
-    if (checked && score) {
-      save(exNo, score.percent, score.total);
-    }
+    if (!live.isLive) return;
+    live.broadcast({ answers, checked, exNo });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked]);
+  }, [answers, checked, exNo]);
 
   const score = useMemo(() => {
     if (!checked) return null;
@@ -415,6 +425,11 @@ export default function FillInBlankClient() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
+
+        {/* Live session banner */}
+        {live.isLive && (
+          <LiveSessionBanner isTeacher={live.isTeacher} partnerOnline={live.partnerOnline} />
+        )}
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500">

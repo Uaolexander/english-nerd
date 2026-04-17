@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { useLiveSession } from "@/lib/useLiveSession";
 import LiveSessionBanner from "@/components/LiveSessionBanner";
@@ -150,21 +150,17 @@ export default function PresentSimpleQuizClient({ roomId }: { roomId?: string | 
 
   // ── Live session ──────────────────────────────────────────────────────────
   const live = useLiveSession(roomId ?? null);
-  const isLiveIgnoreRef = useRef(false);
 
-  // Register sync handler — when partner sends state, apply it locally
+  // Apply state received from partner
   live.onSync((payload) => {
-    isLiveIgnoreRef.current = true;
-    setAnswers(payload.answers);
+    setAnswers(payload.answers as Record<string, number | null>);
     setChecked(payload.checked);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
-    // Reset flag after React re-render cycle
-    requestAnimationFrame(() => { isLiveIgnoreRef.current = false; });
   });
 
-  // Broadcast local state changes to partner (skip if change came FROM partner)
+  // Broadcast local state changes (echo is filtered by _senderId in the hook)
   useEffect(() => {
-    if (!live.isLive || isLiveIgnoreRef.current) return;
+    if (!live.isLive) return;
     live.broadcast({ answers, checked, exNo });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers, checked, exNo]);
