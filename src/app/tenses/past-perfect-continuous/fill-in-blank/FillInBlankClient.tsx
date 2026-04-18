@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -368,6 +369,12 @@ export default function FillInBlankClient() {
 
   const { save } = useProgress();
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setInputs(payload.answers as Record<string, string>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   async function handlePDF() {
     setPdfLoading(true);
     try { await generateLessonPDF(PASTPERFCONT_PDF_CONFIG); } finally { setPdfLoading(false); }
@@ -394,6 +401,7 @@ export default function FillInBlankClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
     setInputs({});
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -401,6 +409,7 @@ export default function FillInBlankClient() {
     setExNo(n);
     setChecked(false);
     setInputs({});
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   return (
@@ -519,9 +528,11 @@ export default function FillInBlankClient() {
                                 disabled={checked}
                                 value={val}
                                 placeholder="Type your answer…"
-                                onChange={(e) =>
-                                  setInputs((p) => ({ ...p, [q.id]: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                  const newAnswers = { ...inputs, [q.id]: e.target.value };
+                                  setInputs(newAnswers);
+                                  broadcast({ answers: newAnswers, checked, exNo });
+                                }}
                                 className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition ${
                                   checked
                                     ? correct
@@ -557,6 +568,7 @@ export default function FillInBlankClient() {
                         <button
                           onClick={() => {
                             setChecked(true);
+                            broadcast({ answers: inputs, checked: true, exNo });
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"

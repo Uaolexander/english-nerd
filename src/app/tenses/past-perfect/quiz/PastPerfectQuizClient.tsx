@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -356,6 +357,12 @@ export default function PastPerfectQuizClient() {
 
   const { save } = useProgress();
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number | null>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   async function handlePDF() {
     setPdfLoading(true);
     try { await generateLessonPDF(PASTPERF_PDF_CONFIG); } finally { setPdfLoading(false); }
@@ -382,6 +389,7 @@ export default function PastPerfectQuizClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -389,6 +397,7 @@ export default function PastPerfectQuizClient() {
     setExNo(n);
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   return (
@@ -512,7 +521,11 @@ export default function PastPerfectQuizClient() {
                                       name={q.id}
                                       disabled={checked}
                                       checked={chosen === oi}
-                                      onChange={() => setAnswers((p) => ({ ...p, [q.id]: oi }))}
+                                      onChange={() => {
+                                        const newAnswers = { ...answers, [q.id]: oi };
+                                        setAnswers(newAnswers);
+                                        broadcast({ answers: newAnswers, checked, exNo });
+                                      }}
                                       className="accent-[#F5DA20]"
                                     />
                                     <span className="text-sm text-slate-900">{opt}</span>
@@ -549,6 +562,7 @@ export default function PastPerfectQuizClient() {
                         <button
                           onClick={() => {
                             setChecked(true);
+                            broadcast({ answers, checked: true, exNo });
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
