@@ -16,7 +16,7 @@ VALUES
     NULL,            -- any account can use it
     'plus',
     40,              -- Teacher Plus: up to 40 students
-    30,              -- 1 month
+    90,              -- 3 months
     true,
     '2026-01-01 00:00:00+00',
     '2027-12-31 23:59:59+00'
