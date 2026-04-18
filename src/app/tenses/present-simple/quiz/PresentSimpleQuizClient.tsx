@@ -548,6 +548,7 @@ export default function PresentSimpleQuizClient() {
                                       onChange={() => {
                                         const newAnswers = { ...answers, [q.id]: oi };
                                         setAnswers(newAnswers);
+                                        console.log("[Quiz] answer changed, isLive:", live?.isLive, "status:", live?.status);
                                         if (live?.isLive) live.broadcast({ answers: newAnswers, checked, exNo });
                                       }}
                                       className="accent-[#F5DA20]"
