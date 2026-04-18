@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -252,6 +253,35 @@ export default function SentenceBuilderClient() {
     try { await generateLessonPDF(PASTPERF_PDF_CONFIG); } finally { setPdfLoading(false); }
   }
 
+  const { broadcast } = useLiveSync((payload) => {
+    const a = payload.answers as {
+      tiles: Record<string, number[]>;
+      qIdx: number;
+      checked: Record<string, boolean>;
+    };
+    setAnswers(a.tiles ?? {});
+    setQIdx(a.qIdx ?? 0);
+    setChecked(a.checked ?? {});
+    setExNo((payload.exNo ?? 1) as 1 | 2 | 3);
+  });
+
+  function broadcastSB(params: {
+    tiles?: Record<string, number[]>;
+    qIdx?: number;
+    checked?: Record<string, boolean>;
+    exNo?: number;
+  } = {}) {
+    broadcast({
+      answers: {
+        tiles: params.tiles ?? answers,
+        qIdx: params.qIdx ?? qIdx,
+        checked: params.checked ?? checked,
+      },
+      checked: false,
+      exNo: params.exNo ?? exNo,
+    });
+  }
+
   const current = SETS[exNo];
   const q = current.questions[qIdx];
   const ans = answers[q.id] ?? [];
@@ -266,42 +296,54 @@ export default function SentenceBuilderClient() {
     setQIdx(0);
     setAnswers({});
     setChecked({});
+    broadcastSB({ tiles: {}, qIdx: 0, checked: {}, exNo: n });
   }
 
   function addWord(wordIdx: number) {
     if (isChecked) return;
-    setAnswers((p) => ({ ...p, [q.id]: [...(p[q.id] ?? []), wordIdx] }));
+    const newAnswers = { ...answers, [q.id]: [...(answers[q.id] ?? []), wordIdx] };
+    setAnswers(newAnswers);
+    broadcastSB({ tiles: newAnswers });
   }
 
   function removeWord(posIdx: number) {
     if (isChecked) return;
-    setAnswers((p) => {
-      const arr = [...(p[q.id] ?? [])];
-      arr.splice(posIdx, 1);
-      return { ...p, [q.id]: arr };
-    });
+    const arr = [...(answers[q.id] ?? [])];
+    arr.splice(posIdx, 1);
+    const newAnswers = { ...answers, [q.id]: arr };
+    setAnswers(newAnswers);
+    broadcastSB({ tiles: newAnswers });
   }
 
   function checkAnswer() {
-    setChecked((p) => ({ ...p, [q.id]: true }));
+    const newChecked = { ...checked, [q.id]: true };
+    setChecked(newChecked);
+    broadcastSB({ checked: newChecked });
   }
 
   function resetQ() {
-    setAnswers((p) => ({ ...p, [q.id]: [] }));
-    setChecked((p) => ({ ...p, [q.id]: false }));
+    const newAnswers = { ...answers, [q.id]: [] };
+    const newChecked = { ...checked, [q.id]: false };
+    setAnswers(newAnswers);
+    setChecked(newChecked);
+    broadcastSB({ tiles: newAnswers, checked: newChecked });
   }
 
   function goNext() {
     if (qIdx < current.questions.length - 1) {
-      setQIdx(qIdx + 1);
+      const nq = qIdx + 1;
+      setQIdx(nq);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      broadcastSB({ qIdx: nq });
     }
   }
 
   function goPrev() {
     if (qIdx > 0) {
-      setQIdx(qIdx - 1);
+      const nq = qIdx - 1;
+      setQIdx(nq);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      broadcastSB({ qIdx: nq });
     }
   }
 
@@ -421,7 +463,7 @@ export default function SentenceBuilderClient() {
                         return (
                           <button
                             key={cq.id}
-                            onClick={() => setQIdx(i)}
+                            onClick={() => { setQIdx(i); broadcastSB({ qIdx: i }); }}
                             className={`h-2.5 w-2.5 rounded-full transition ${i === qIdx ? "bg-slate-900 scale-125" : isDone ? (isOk ? "bg-emerald-400" : "bg-red-400") : "bg-slate-200"}`}
                           />
                         );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -109,6 +110,35 @@ export default function SentenceBuilderClient() {
     try { await generateLessonPDF(PP_PDF_CONFIG); } finally { setPdfLoading(false); }
   }
 
+  const { broadcast } = useLiveSync((payload) => {
+    const a = payload.answers as {
+      tiles: Record<string, number[]>;
+      qIdx: number;
+      checked: Record<string, boolean>;
+    };
+    setAnswers(a.tiles ?? {});
+    setQIdx(a.qIdx ?? 0);
+    setChecked(a.checked ?? {});
+    setExNo((payload.exNo ?? 1) as 1 | 2 | 3);
+  });
+
+  function broadcastSB(params: {
+    tiles?: Record<string, number[]>;
+    qIdx?: number;
+    checked?: Record<string, boolean>;
+    exNo?: number;
+  } = {}) {
+    broadcast({
+      answers: {
+        tiles: params.tiles ?? answers,
+        qIdx: params.qIdx ?? qIdx,
+        checked: params.checked ?? checked,
+      },
+      checked: false,
+      exNo: params.exNo ?? exNo,
+    });
+  }
+
   const current = SETS[exNo];
   const q = current.questions[qIdx];
   const ans = answers[q.id] ?? [];
@@ -121,29 +151,39 @@ export default function SentenceBuilderClient() {
 
   function addWord(idx: number) {
     if (isChecked) return;
-    setAnswers((p) => ({ ...p, [q.id]: [...(p[q.id] ?? []), idx] }));
+    const newAnswers = { ...answers, [q.id]: [...(answers[q.id] ?? []), idx] };
+    setAnswers(newAnswers);
+    broadcastSB({ tiles: newAnswers });
   }
 
   function removeWord(pos: number) {
     if (isChecked) return;
-    setAnswers((p) => ({ ...p, [q.id]: (p[q.id] ?? []).filter((_, i) => i !== pos) }));
+    const newAnswers = { ...answers, [q.id]: (answers[q.id] ?? []).filter((_, i) => i !== pos) };
+    setAnswers(newAnswers);
+    broadcastSB({ tiles: newAnswers });
   }
 
   function checkAnswer() {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setChecked((p) => ({ ...p, [q.id]: true }));
+    const newChecked = { ...checked, [q.id]: true };
+    setChecked(newChecked);
+    broadcastSB({ checked: newChecked });
   }
 
   function resetQuestion() {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setAnswers((p) => ({ ...p, [q.id]: [] }));
-    setChecked((p) => ({ ...p, [q.id]: false }));
+    const newAnswers = { ...answers, [q.id]: [] };
+    const newChecked = { ...checked, [q.id]: false };
+    setAnswers(newAnswers);
+    setChecked(newChecked);
+    broadcastSB({ tiles: newAnswers, checked: newChecked });
   }
 
   function switchSet(n: 1 | 2 | 3) {
     setExNo(n);
     setQIdx(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    broadcastSB({ tiles: {}, qIdx: 0, checked: {}, exNo: n });
   }
 
   const completedCount = current.questions.filter((sq) => {
@@ -235,7 +275,7 @@ export default function SentenceBuilderClient() {
                       const sqCorrect = sqDone && normalize(sqBuilt) === normalize(sq.correct);
                       const sqWrong = sqDone && !sqCorrect;
                       return (
-                        <button key={sq.id} onClick={() => setQIdx(i)}
+                        <button key={sq.id} onClick={() => { setQIdx(i); broadcastSB({ qIdx: i }); }}
                           className={`h-8 w-8 rounded-lg border text-xs font-black transition ${
                             i === qIdx ? "border-[#F5DA20] bg-[#F5DA20] text-black"
                             : sqCorrect ? "border-emerald-300 bg-emerald-100 text-emerald-700"
@@ -351,7 +391,7 @@ export default function SentenceBuilderClient() {
                             </button>
                           )}
                           {qIdx < current.questions.length - 1 && (
-                            <button onClick={() => setQIdx((p) => p + 1)} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">
+                            <button onClick={() => { const nq = qIdx + 1; setQIdx(nq); broadcastSB({ qIdx: nq }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">
                               Next →
                             </button>
                           )}

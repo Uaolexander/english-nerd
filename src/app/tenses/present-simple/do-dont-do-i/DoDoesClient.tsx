@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useLiveSync } from "@/lib/useLiveSync";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
@@ -178,6 +179,12 @@ export default function DoDoesClient() {
 
   const current = SETS[exNo];
 
+  const { broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number | null>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   const { save } = useProgress();
 
   useEffect(() => {
@@ -200,6 +207,7 @@ export default function DoDoesClient() {
   function reset() {
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -207,11 +215,13 @@ export default function DoDoesClient() {
     setExNo(n);
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: n });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function checkAnswers() {
     setChecked(true);
+    broadcast({ answers, checked: true, exNo });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -570,7 +580,7 @@ export default function DoDoesClient() {
                                       disabled={checked}
                                       checked={chosen === oi}
                                       onChange={() =>
-                                        setAnswers((p) => ({ ...p, [q.id]: oi }))
+                                        { const newAnswers = { ...answers, [q.id]: oi }; setAnswers(newAnswers); broadcast({ answers: newAnswers, checked, exNo }); }
                                       }
                                       className="accent-[#F5DA20]"
                                     />

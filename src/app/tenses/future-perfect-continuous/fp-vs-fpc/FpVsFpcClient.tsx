@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useLiveSync } from "@/lib/useLiveSync";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
@@ -357,6 +358,12 @@ export default function FpVsFpcClient() {
 
   const current = SETS[exNo];
 
+  const { broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number | null>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   async function handlePDF() {
     setPdfLoading(true);
     try { await generateLessonPDF(FUTPERFCONT_PDF_CONFIG); } finally { setPdfLoading(false); }
@@ -385,6 +392,7 @@ export default function FpVsFpcClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
@@ -392,6 +400,7 @@ export default function FpVsFpcClient() {
     setExNo(n);
     setChecked(false);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   return (
@@ -476,7 +485,7 @@ export default function FpVsFpcClient() {
                                 {q.options.map((opt, oi) => (
                                   <label key={oi} className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 transition ${chosen === oi ? "border-[#F5DA20] bg-[#F5DA20]/20" : "border-black/10 bg-white hover:bg-black/5"} ${checked ? "cursor-default" : ""}`}>
                                     <input type="radio" name={q.id} disabled={checked} checked={chosen === oi}
-                                      onChange={() => setAnswers((p) => ({ ...p, [q.id]: oi }))}
+                                      onChange={() => { const newAnswers = { ...answers, [q.id]: oi }; setAnswers(newAnswers); broadcast({ answers: newAnswers, checked, exNo }); }}
                                       className="accent-[#F5DA20]" />
                                     <span className="text-sm text-slate-900">{opt}</span>
                                   </label>
@@ -502,7 +511,7 @@ export default function FpVsFpcClient() {
                   <div className="mt-8 space-y-4">
                     <div className="flex flex-wrap gap-3 items-center">
                       {!checked ? (
-                        <button onClick={() => { setChecked(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        <button onClick={() => { setChecked(true); broadcast({ answers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                           className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">
                           Check Answers
                         </button>
