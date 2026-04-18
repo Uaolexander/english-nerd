@@ -9,7 +9,7 @@ const TeacherLiveShare         = dynamic(() => import("@/components/TeacherLiveS
 const ExerciseInviteListener   = dynamic(() => import("@/components/ExerciseInviteListener"),   { ssr: false });
 const BackToTop                = dynamic(() => import("@/components/BackToTop"),                { ssr: false });
 const FeedbackWidget           = dynamic(() => import("@/components/FeedbackWidget"),           { ssr: false });
-import GlobalLiveSessionBanner from "@/components/GlobalLiveSessionBanner";
+const GlobalLiveSessionBanner  = dynamic(() => import("@/components/GlobalLiveSessionBanner"),  { ssr: false });
 
 export default function ClientShell({
   user,
