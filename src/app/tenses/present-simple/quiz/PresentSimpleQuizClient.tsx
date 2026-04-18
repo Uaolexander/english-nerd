@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { useLive } from "@/lib/LiveSessionContext";
 import AdUnit from "@/components/AdUnit";
@@ -150,24 +150,12 @@ export default function PresentSimpleQuizClient() {
   // ── Live session ──────────────────────────────────────────────────────────
   const live = useLive();
 
-  // Apply state received from partner — use refs to avoid stale closure issues
-  const setAnswersRef = useRef(setAnswers);
-  const setCheckedRef = useRef(setChecked);
-  const setExNoRef = useRef(setExNo);
-  setAnswersRef.current = setAnswers;
-  setCheckedRef.current = setChecked;
-  setExNoRef.current = setExNo;
-
   useEffect(() => {
-    if (!live) return;
-    live.onSync((payload) => {
-      console.log("[Quiz] onSync received:", payload);
-      setAnswersRef.current(payload.answers as Record<string, number | null>);
-      setCheckedRef.current(payload.checked);
-      setExNoRef.current(payload.exNo as 1 | 2 | 3 | 4);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live?.onSync]);
+    if (!live?.lastSync) return;
+    setAnswers(live.lastSync.answers as Record<string, number | null>);
+    setChecked(live.lastSync.checked);
+    setExNo(live.lastSync.exNo as 1 | 2 | 3 | 4);
+  }, [live?.lastSync]);
 
   // Save progress — only if not the teacher in a live session
   useEffect(() => {

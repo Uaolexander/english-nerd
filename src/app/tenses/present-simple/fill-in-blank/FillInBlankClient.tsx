@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { useLive } from "@/lib/LiveSessionContext";
 import AdUnit from "@/components/AdUnit";
@@ -161,22 +161,12 @@ export default function FillInBlankClient() {
   // ── Live session ──────────────────────────────────────────────────────────
   const live = useLive();
 
-  const setAnswersRef = useRef(setAnswers);
-  const setCheckedRef = useRef(setChecked);
-  const setExNoRef = useRef(setExNo);
-  setAnswersRef.current = setAnswers;
-  setCheckedRef.current = setChecked;
-  setExNoRef.current = setExNo;
-
   useEffect(() => {
-    if (!live) return;
-    live.onSync((payload) => {
-      setAnswersRef.current(payload.answers as Record<string, string>);
-      setCheckedRef.current(payload.checked);
-      setExNoRef.current(payload.exNo as 1 | 2 | 3 | 4);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live?.onSync]);
+    if (!live?.lastSync) return;
+    setAnswers(live.lastSync.answers as Record<string, string>);
+    setChecked(live.lastSync.checked);
+    setExNo(live.lastSync.exNo as 1 | 2 | 3 | 4);
+  }, [live?.lastSync]);
 
   const score = useMemo(() => {
     if (!checked) return null;

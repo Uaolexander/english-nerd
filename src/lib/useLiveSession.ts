@@ -15,7 +15,7 @@ export type LiveSyncPayload = {
   answers: Record<string, unknown>;
   checked: boolean;
   exNo: number;
-  _senderId?: string; // internal — used to filter echo
+  _senderId?: string;
 };
 
 type UseLiveSessionResult = {
@@ -24,7 +24,7 @@ type UseLiveSessionResult = {
   isStudent: boolean;
   partnerOnline: boolean;
   broadcast: (payload: Omit<LiveSyncPayload, "_senderId">) => void;
-  onSync: (handler: (payload: LiveSyncPayload) => void) => void;
+  lastSync: LiveSyncPayload | null;
   session: LiveSessionInfo | null;
   status: "loading" | "ready" | "error" | "expired";
 };
@@ -34,9 +34,9 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
   const [status, setStatus] = useState<"loading" | "ready" | "error" | "expired">("loading");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [partnerOnline, setPartnerOnline] = useState(false);
+  const [lastSync, setLastSync] = useState<LiveSyncPayload | null>(null);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const syncHandlerRef = useRef<((p: LiveSyncPayload) => void) | null>(null);
   const currentUserIdRef = useRef<string | null>(null);
 
   // Load current user + session info
@@ -78,15 +78,10 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       config: { presence: { key: currentUserId } },
     });
 
-    // Listen for state sync — ignore messages sent by ourselves (echo filter)
+    // Listen for state sync — ignore echo (messages we sent ourselves)
     channel.on("broadcast", { event: "sync" }, ({ payload }: { payload: LiveSyncPayload }) => {
-      console.log("[LiveSession] received broadcast, senderId:", payload._senderId, "me:", currentUserIdRef.current);
-      if (payload._senderId && payload._senderId === currentUserIdRef.current) {
-        console.log("[LiveSession] filtered self-broadcast");
-        return;
-      }
-      console.log("[LiveSession] applying sync payload:", payload);
-      syncHandlerRef.current?.(payload);
+      if (payload._senderId && payload._senderId === currentUserIdRef.current) return;
+      setLastSync({ ...payload });
     });
 
     // Track presence (who's online)
@@ -94,12 +89,10 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
       const state = channel.presenceState();
       const onlineIds = Object.keys(state);
       const partnerId = currentUserId === session.teacherId ? session.studentId : session.teacherId;
-      console.log("[LiveSession] presence sync, online:", onlineIds, "partner:", partnerId);
       setPartnerOnline(onlineIds.includes(partnerId));
     });
 
     channel.subscribe(async (subStatus) => {
-      console.log("[LiveSession] channel subscribe status:", subStatus, "channel:", channelName);
       if (subStatus === "SUBSCRIBED") {
         await channel.track({ userId: currentUserId, joinedAt: Date.now() });
       }
@@ -114,23 +107,12 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
   }, [status, session, currentUserId]);
 
   const broadcast = useCallback((payload: Omit<LiveSyncPayload, "_senderId">) => {
-    if (!channelRef.current) {
-      console.warn("[LiveSession] broadcast called but channel is not ready");
-      return;
-    }
-    const fullPayload = { ...payload, _senderId: currentUserIdRef.current };
-    console.log("[LiveSession] broadcasting:", fullPayload);
+    if (!channelRef.current) return;
     channelRef.current.send({
       type: "broadcast",
       event: "sync",
-      payload: fullPayload,
-    }).then((result) => {
-      console.log("[LiveSession] broadcast result:", result);
+      payload: { ...payload, _senderId: currentUserIdRef.current },
     });
-  }, []);
-
-  const onSync = useCallback((handler: (payload: LiveSyncPayload) => void) => {
-    syncHandlerRef.current = handler;
   }, []);
 
   const isTeacher = !!session && currentUserId === session.teacherId;
@@ -142,7 +124,7 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
     isStudent,
     partnerOnline,
     broadcast,
-    onSync,
+    lastSync,
     session,
     status,
   };
