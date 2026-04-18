@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type Question = {
   id: number;
@@ -108,6 +109,12 @@ export default function SlowTravelClient() {
     Object.fromEntries(QUESTIONS.map((q) => [q.id, null]))
   );
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, number | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [saved, setSaved] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -137,7 +144,7 @@ export default function SlowTravelClient() {
   const handleSelect = useCallback(
     (id: number, idx: number) => {
       if (checked) return;
-      setAnswers((prev) => ({ ...prev, [id]: idx }));
+      setAnswers((prev) => { const n = { ...prev, [id]: idx }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
     },
     [checked]
   );
@@ -145,6 +152,7 @@ export default function SlowTravelClient() {
   const handleCheck = useCallback(async () => {
     if (answered < QUESTIONS.length) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     const correct = QUESTIONS.filter((q) => answers[q.id] === q.correctIndex).length;
     const score = Math.round((correct / QUESTIONS.length) * 100);
     if (!saved) {
@@ -157,6 +165,7 @@ export default function SlowTravelClient() {
     setAnswers(Object.fromEntries(QUESTIONS.map((q) => [q.id, null])));
     setChecked(false);
     setSaved(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }, []);
 
   const correct = checked

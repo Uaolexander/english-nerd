@@ -6,6 +6,7 @@ import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 import DownloadWorksheet from "../DownloadWorksheet";
 
 /* ─── Data ───────────────────────────────────────────────────────────────── */
@@ -353,10 +354,17 @@ export default function LivePhrasesB1Client({ isPro }: { isPro: boolean }) {
   const [mcqAnswers, setMcqAnswers]     = useState<Record<string, number>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setMcqAnswers(payload.answers as Record<string, number>);
+    setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   const visiblePhrases = showAll ? PHRASES : PHRASES.slice(0, 5);
   const currentSet     = SETS[exNo];
 
-  function switchEx(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); }
+  function switchEx(n: 1 | 2 | 3 | 4) { setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
 
   async function handleDownloadPDF() {
     const { generateLessonPDF } = await import("@/lib/generateLessonPDF");
@@ -481,14 +489,14 @@ export default function LivePhrasesB1Client({ isPro }: { isPro: boolean }) {
               <h3 className="mb-4 text-lg font-black text-slate-900">{currentSet.title}</h3>
               {currentSet.type === "mcq" ? (
                 <MCQExercise set={currentSet} checked={checked} answers={mcqAnswers}
-                  onAnswer={(id, i) => setMcqAnswers((p) => ({ ...p, [id]: i }))}
-                  onCheck={() => setChecked(true)}
-                  onReset={() => { setChecked(false); setMcqAnswers({}); }} />
+                  onAnswer={(id, i) => setMcqAnswers((p) => { const n = { ...p, [id]: i }; broadcast({ answers: n, checked: false, exNo }); return n; })}
+                  onCheck={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); }}
+                  onReset={() => { setChecked(false); setMcqAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }} />
               ) : (
                 <InputExercise set={currentSet} checked={checked} answers={inputAnswers}
-                  onAnswer={(id, v) => setInputAnswers((p) => ({ ...p, [id]: v }))}
-                  onCheck={() => setChecked(true)}
-                  onReset={() => { setChecked(false); setInputAnswers({}); }} />
+                  onAnswer={(id, v) => setInputAnswers((p) => { const n = { ...p, [id]: v }; broadcast({ answers: mcqAnswers, checked: false, exNo }); return n; })}
+                  onCheck={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); }}
+                  onReset={() => { setChecked(false); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }} />
               )}
             </div>
 

@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 import VocabRecommendations from "@/components/VocabRecommendations";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "What do you use to see?", options: ["ears", "nose", "eyes", "mouth"], answer: 2 },
@@ -193,6 +194,13 @@ export default function MyBodyClient() {
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, string | null>);
+    setFillAnswers((payload as unknown as { fillAnswers: Record<number, string> }).fillAnswers ?? {});
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3);
+  });
+
   async function handlePDF() {
     setPdfLoading(true);
     try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
@@ -223,11 +231,13 @@ export default function MyBodyClient() {
     setAnswers({});
     setFillAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -235,6 +245,7 @@ export default function MyBodyClient() {
     setAnswers({});
     setFillAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   useEffect(() => {
@@ -444,7 +455,7 @@ export default function MyBodyClient() {
                             return (
                               <button
                                 key={oi}
-                                onClick={() => { if (!checked) setAnswers((p) => ({ ...p, [q.id]: String(oi) })); }}
+                                onClick={() => { if (!checked) setAnswers((p) => { const n = { ...p, [q.id]: String(oi) }; broadcast({ answers: n, checked: false, exNo }); return n; }); }}
                                 disabled={checked}
                                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-left transition-all duration-150 ${
                                   ok     ? "bg-emerald-500 text-white shadow-sm" :
@@ -527,7 +538,7 @@ export default function MyBodyClient() {
                             return (
                               <button
                                 key={opt}
-                                onClick={() => { if (!checked) setAnswers((p) => ({ ...p, [q.id]: opt })); }}
+                                onClick={() => { if (!checked) setAnswers((p) => { const n = { ...p, [q.id]: opt }; broadcast({ answers: n, checked: false, exNo }); return n; }); }}
                                 disabled={checked}
                                 className={`rounded-xl px-5 py-2 text-sm font-bold transition-all duration-150 ${
                                   ok     ? "bg-emerald-500 text-white shadow-sm" :
@@ -632,6 +643,7 @@ export default function MyBodyClient() {
                         EX3.forEach((q) => { all[q.id] = q.correct; });
                         setFillAnswers(all);
                         setChecked(true);
+                        broadcast({ answers, checked: true, exNo });
                       }}
                       className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition underline underline-offset-2"
                     >

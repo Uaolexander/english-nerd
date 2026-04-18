@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const TEXT = `Sofia and her family drove to the mountains last weekend. They left home on Saturday morning at eight o'clock. The drive took two hours. When they arrived, they checked into a small hotel near a lake. The hotel was cosy and the staff were very friendly. In the afternoon, Sofia and her brother went for a walk in the forest. The trees were tall and the path was quiet. They saw a deer near the river and took many photos. That evening, the family played board games in the hotel lounge. On Sunday morning, they had breakfast at the hotel. It was a big breakfast with eggs, bread, cheese, and fresh orange juice. After breakfast, they rented bicycles and rode around the lake. The weather was perfect, sunny and not too hot. They stopped at a small cafe for lunch and had soup and sandwiches. In the afternoon, they visited a local market and bought some honey and jam to take home. They drove home on Sunday evening. The children slept in the car. Sofia said it was the best weekend of the summer.`;
 
@@ -84,6 +85,12 @@ export default function AWeekendTripClient() {
   const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, string | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const questionsTopRef = useRef<HTMLDivElement>(null);
@@ -121,12 +128,13 @@ export default function AWeekendTripClient() {
 
   function pick(id: number, label: string) {
     if (checked) return;
-    setAnswers((p) => ({ ...p, [id]: label }));
+    setAnswers((p) => { const n = { ...p, [id]: label }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     setTimeout(() => {
       if (!questionsTopRef.current) return;
       const top =
@@ -140,6 +148,7 @@ export default function AWeekendTripClient() {
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

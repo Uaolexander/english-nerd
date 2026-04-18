@@ -5,6 +5,7 @@ import CertificateModal from "./CertificateModal";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import { useIsPro } from "@/lib/ProContext";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 type Topic =
@@ -154,6 +155,13 @@ export default function GrammarTestClient() {
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
   const [showCert, setShowCert] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number | null>);
+    setSubmitted(payload.checked as boolean);
+    setIdx(payload.exNo as number);
+    setStarted(true);
+  });
+
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = questions[idx];
@@ -227,10 +235,15 @@ export default function GrammarTestClient() {
     setSubmitted(false);
     setIdx(0);
     setAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: 0 });
   }
 
   function pick(optionIndex: number) {
-    setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }));
+    setAnswers((prev) => {
+      const n = { ...prev, [current.id]: optionIndex };
+      broadcast({ answers: n, checked: false, exNo: idx });
+      return n;
+    });
 
     // Cancel any previous pending auto-advance
     if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
@@ -238,9 +251,13 @@ export default function GrammarTestClient() {
     // Auto-advance after 420ms (gives user time to see selection)
     autoAdvanceRef.current = setTimeout(() => {
       setIdx((currentIdx) => {
-        if (currentIdx < total - 1) return currentIdx + 1;
+        if (currentIdx < total - 1) {
+          broadcast({ answers, checked: false, exNo: currentIdx + 1 });
+          return currentIdx + 1;
+        }
         // On last question, auto-submit
         setSubmitted(true);
+        broadcast({ answers, checked: true, exNo: currentIdx });
         return currentIdx;
       });
     }, 420);
@@ -248,13 +265,13 @@ export default function GrammarTestClient() {
 
   function skip() {
     if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
-    setAnswers((prev) => ({ ...prev, [current.id]: null }));
+    setAnswers((prev) => { const n = { ...prev, [current.id]: null }; broadcast({ answers: n, checked: false, exNo: idx }); return n; });
     if (idx < total - 1) setIdx((x) => x + 1);
   }
 
   function next() {
     if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
-    if (idx < total - 1) setIdx((x) => x + 1);
+    if (idx < total - 1) { const newIdx = idx + 1; setIdx(newIdx); broadcast({ answers, checked: false, exNo: newIdx }); }
   }
 
   function prev() {

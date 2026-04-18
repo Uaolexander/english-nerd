@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 // ── Exercise 1: ABCD Multiple Choice ────────────────────────────────────────
 
@@ -97,6 +98,13 @@ export default function IdiomsPhrasesClient() {
   const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, string | null>);
+    setFillAnswers((payload as unknown as { fillAnswers: Record<number, string> }).fillAnswers ?? {});
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3);
+  });
+
   const questions = exNo === 1 ? EX1 : exNo === 2 ? EX2 : EX3;
   const total = questions.length;
 
@@ -122,11 +130,13 @@ export default function IdiomsPhrasesClient() {
     setAnswers({});
     setFillAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -134,6 +144,7 @@ export default function IdiomsPhrasesClient() {
     setAnswers({});
     setFillAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   useEffect(() => {
@@ -327,7 +338,7 @@ export default function IdiomsPhrasesClient() {
                             return (
                               <button
                                 key={oi}
-                                onClick={() => { if (!checked) setAnswers((p) => ({ ...p, [q.id]: String(oi) })); }}
+                                onClick={() => { if (!checked) setAnswers((p) => { const n = { ...p, [q.id]: String(oi) }; broadcast({ answers: n, checked: false, exNo }); return n; }); }}
                                 disabled={checked}
                                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-left transition-all duration-150 ${
                                   ok     ? "bg-emerald-500 text-white shadow-sm" :
@@ -410,7 +421,7 @@ export default function IdiomsPhrasesClient() {
                             return (
                               <button
                                 key={opt}
-                                onClick={() => { if (!checked) setAnswers((p) => ({ ...p, [q.id]: opt })); }}
+                                onClick={() => { if (!checked) setAnswers((p) => { const n = { ...p, [q.id]: opt }; broadcast({ answers: n, checked: false, exNo }); return n; }); }}
                                 disabled={checked}
                                 className={`rounded-xl px-5 py-2 text-sm font-bold transition-all duration-150 ${
                                   ok     ? "bg-emerald-500 text-white shadow-sm" :
@@ -515,6 +526,7 @@ export default function IdiomsPhrasesClient() {
                         EX3.forEach((q) => { all[q.id] = q.correct; });
                         setFillAnswers(all);
                         setChecked(true);
+                        broadcast({ answers, checked: true, exNo });
                       }}
                       className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition underline underline-offset-2"
                     >

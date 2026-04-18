@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const TRANSCRIPT: { speaker: "I" | "D"; text: string }[] = [
   { speaker: "I", text: "Welcome back to the podcast. Today I'm speaking with Daniel, who recently made a big change in his career. Daniel, thanks for joining us." },
@@ -51,6 +52,12 @@ const VOCAB = [
 export default function WorkLifeBalanceClient() {
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, boolean | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [transcriptOpen, setTranscriptOpen] = useState(false);
 
   const questionsTopRef = useRef<HTMLDivElement>(null);
@@ -66,7 +73,7 @@ export default function WorkLifeBalanceClient() {
 
   function pick(id: number, val: boolean) {
     if (checked) return;
-    setAnswers((p) => ({ ...p, [id]: val }));
+    setAnswers((p) => { const n = { ...p, [id]: val }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function scrollToRef(ref: React.RefObject<HTMLElement | null>, offset = 80) {
@@ -78,12 +85,14 @@ export default function WorkLifeBalanceClient() {
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     setTimeout(() => scrollToRef(questionsTopRef, 80), 50);
   }
 
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

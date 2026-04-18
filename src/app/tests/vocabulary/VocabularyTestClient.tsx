@@ -5,6 +5,7 @@ import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import { useIsPro } from "@/lib/ProContext";
 import VocabCertificateModal from "./VocabCertificateModal";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type Band = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -199,6 +200,13 @@ export default function VocabularyTestClient() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showCertModal, setShowCertModal] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setSelected(payload.answers as Record<string, boolean>);
+    setFinished(payload.checked as boolean);
+    setStepIndex(payload.exNo as number);
+    setStarted(true);
+  });
+
   const step = steps[stepIndex];
 
   const selectedCount = useMemo(
@@ -273,20 +281,20 @@ export default function VocabularyTestClient() {
   const weakestBands = bandStats.weakest.slice(0, 3);
 
   function toggle(id: string) {
-    setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
+    setSelected((prev) => { const n = { ...prev, [id]: !prev[id] }; broadcast({ answers: n, checked: false, exNo: stepIndex }); return n; });
   }
 
   function toggleAll() {
     const allOn = step.words.every((w) => selected[w.id]);
     const patch: Record<string, boolean> = {};
     for (const w of step.words) patch[w.id] = !allOn;
-    setSelected((prev) => ({ ...prev, ...patch }));
+    setSelected((prev) => { const n = { ...prev, ...patch }; broadcast({ answers: n, checked: false, exNo: stepIndex }); return n; });
   }
 
   function clearStep() {
     const patch: Record<string, boolean> = {};
     for (const w of step.words) patch[w.id] = false;
-    setSelected((prev) => ({ ...prev, ...patch }));
+    setSelected((prev) => { const n = { ...prev, ...patch }; broadcast({ answers: n, checked: false, exNo: stepIndex }); return n; });
   }
 
   function start() {
@@ -294,18 +302,20 @@ export default function VocabularyTestClient() {
     setFinished(false);
     setStepIndex(0);
     setSelected({});
+    broadcast({ answers: {}, checked: false, exNo: 0 });
   }
 
   function next() {
-    if (stepIndex < totalSteps - 1) setStepIndex((x) => x + 1);
+    if (stepIndex < totalSteps - 1) { const n = stepIndex + 1; setStepIndex(n); broadcast({ answers: selected, checked: false, exNo: n }); }
   }
 
   function prev() {
-    if (stepIndex > 0) setStepIndex((x) => x - 1);
+    if (stepIndex > 0) { const n = stepIndex - 1; setStepIndex(n); broadcast({ answers: selected, checked: false, exNo: n }); }
   }
 
   function finish() {
     setFinished(true);
+    broadcast({ answers: selected, checked: true, exNo: stepIndex });
   }
 
   const progressPct = Math.round(((stepIndex + 1) / totalSteps) * 100);
@@ -541,6 +551,7 @@ export default function VocabularyTestClient() {
                       setFinished(false);
                       setStepIndex(0);
                       setSelected({});
+                      broadcast({ answers: {}, checked: false, exNo: 0 });
                     }}
                     className="rounded-2xl border border-black/10 bg-white px-5 py-2.5 text-sm font-bold text-black/50 hover:bg-black/5 transition"
                   >

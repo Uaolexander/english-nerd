@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const WORD_BOX = [
   "precarious",
@@ -61,6 +62,12 @@ export default function GigEconomyClient() {
   const [selected, setSelected] = useState<Record<number, Word | null>>({});
   const [activeGap, setActiveGap] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setSelected(payload.answers as Record<number, Word | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const resultsRef = useRef<HTMLDivElement>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -125,6 +132,7 @@ export default function GigEconomyClient() {
       } else {
         next[activeGap] = word;
       }
+      broadcast({ answers: next, checked: false, exNo: 1 });
       return next;
     });
     setActiveGap(null);
@@ -133,6 +141,7 @@ export default function GigEconomyClient() {
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers: selected, checked: true, exNo: 1 });
     setTimeout(() => {
       if (resultsRef.current) {
         const top =
@@ -146,6 +155,7 @@ export default function GigEconomyClient() {
     setSelected({});
     setChecked(false);
     setActiveGap(null);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

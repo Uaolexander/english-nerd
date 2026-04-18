@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const WORD_BANK = [
   "contested",
@@ -73,6 +74,13 @@ export default function LanguageAndThoughtClient() {
   );
   const [activeGap, setActiveGap] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    const rec = payload.answers as Record<number, string | null>;
+    setSelected(Array(ANSWERS.length).fill(null).map((_, i) => rec[i] ?? null));
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +113,7 @@ export default function LanguageAndThoughtClient() {
       const next = [...selected];
       next[activeGap] = null;
       setSelected(next);
+      broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
       setActiveGap(null);
       return;
     }
@@ -116,6 +125,7 @@ export default function LanguageAndThoughtClient() {
     }
     next[activeGap] = word;
     setSelected(next);
+    broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
     setActiveGap(null);
   }
 
@@ -124,12 +134,14 @@ export default function LanguageAndThoughtClient() {
     const next = [...selected];
     next[index] = null;
     setSelected(next);
+    broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
     setActiveGap(index);
   }
 
   function check() {
     if (!allFilled) return;
     setChecked(true);
+    broadcast({ answers: Object.fromEntries(selected.map((v, i) => [i, v])), checked: true, exNo: 1 });
     setTimeout(() => {
       if (resultsRef.current) {
         const top =
@@ -143,6 +155,7 @@ export default function LanguageAndThoughtClient() {
     setSelected(Array(ANSWERS.length).fill(null));
     setActiveGap(null);
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   async function downloadPDF() {

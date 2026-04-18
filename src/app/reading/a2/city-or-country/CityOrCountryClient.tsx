@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const WORD_BOX = ["quiet", "transport", "nature", "exciting", "neighbours", "expensive", "fresh", "busy"];
 
@@ -39,6 +40,13 @@ export default function CityOrCountryClient() {
   const [filled, setFilled] = useState<(string | null)[]>(Array(8).fill(null));
   const [selectedGap, setSelectedGap] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    const rec = payload.answers as Record<number, string | null>;
+    setFilled(Array(8).fill(null).map((_, i) => rec[i] ?? null));
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const questionsTopRef = useRef<HTMLDivElement>(null);
@@ -98,6 +106,7 @@ export default function CityOrCountryClient() {
       // If a word was already in this gap, return it to box
       // (handled automatically since we filter usedWords)
       next[selectedGap] = word;
+      broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
       return next;
     });
     setSelectedGap(null);
@@ -108,6 +117,7 @@ export default function CityOrCountryClient() {
     setFilled((prev) => {
       const next = [...prev];
       next[index] = null;
+      broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
       return next;
     });
     setSelectedGap(null);
@@ -116,6 +126,7 @@ export default function CityOrCountryClient() {
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers: Object.fromEntries(filled.map((v, i) => [i, v])), checked: true, exNo: 1 });
     setTimeout(() => {
       if (!questionsTopRef.current) return;
       const top =
@@ -130,6 +141,7 @@ export default function CityOrCountryClient() {
     setFilled(Array(8).fill(null));
     setSelectedGap(null);
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import { useLiveSync } from "@/lib/useLiveSync";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -136,6 +137,12 @@ export default function PhrasalVerbsLessonClient() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [pdfLoading, setPdfLoading] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setMcqAnswers(payload.answers as Record<string, number | null>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
     1: {
       type: "mcq",
@@ -232,8 +239,8 @@ export default function PhrasalVerbsLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers]);
 
-  function resetExercise() { setChecked(false); setMcqAnswers({}); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); }
+  function resetExercise() { setChecked(false); setMcqAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -307,7 +314,7 @@ export default function PhrasalVerbsLessonClient() {
                             <div className="mt-3 grid gap-2 sm:grid-cols-3">
                               {q.options.map((opt, oi) => (
                                 <label key={oi} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 transition ${chosen === oi ? "border-[#F5DA20] bg-[#F5DA20]/20" : "border-black/10 bg-white hover:bg-black/5"} ${checked ? "cursor-default" : ""}`}>
-                                  <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => setMcqAnswers((p) => ({ ...p, [q.id]: oi }))} />
+                                  <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => { setMcqAnswers((p) => { const n = { ...p, [q.id]: oi }; broadcast({ answers: n, checked, exNo }); return n; }); }} />
                                   <span className="text-slate-900 text-sm">{opt}</span>
                                 </label>
                               ))}
@@ -329,7 +336,7 @@ export default function PhrasalVerbsLessonClient() {
                 <div className="mt-8 space-y-4">
                   <div className="flex flex-wrap gap-3 items-center">
                     {!checked ? (
-                      <button onClick={() => { setChecked(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
+                      <button onClick={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}

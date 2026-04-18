@@ -9,6 +9,7 @@ import { useIsPro } from "@/lib/ProContext";
 import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 import VocabRecommendations from "@/components/VocabRecommendations";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "A meeting agenda is a list of ___ to be discussed.", options: ["people", "items", "dates", "rooms"], answer: 1 },
@@ -183,6 +184,11 @@ export default function BusinessMeetingClient() {
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, string | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   async function handlePDF() {
     setPdfLoading(true);
     try { await generateLessonPDF(PDF_CONFIG); } finally { setPdfLoading(false); }
@@ -198,18 +204,20 @@ export default function BusinessMeetingClient() {
 
   function pick(id: number, val: string) {
     if (checked) return;
-    setAnswers((p) => ({ ...p, [id]: val }));
+    setAnswers((p) => { const n = { ...p, [id]: val }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

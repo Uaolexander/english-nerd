@@ -10,6 +10,7 @@ import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type MCQ = {
   id: string;
@@ -144,6 +145,13 @@ export default function GoingToLessonClient() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setMcqAnswers(payload.answers as Record<string, number | null>);
+    setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   const current = sets[exNo];
 
   const { save } = useProgress();
@@ -226,6 +234,7 @@ export default function GoingToLessonClient() {
     setChecked(false);
     setMcqAnswers({});
     setInputAnswers({});
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchExercise(n: 1 | 2 | 3 | 4) {
@@ -234,6 +243,7 @@ export default function GoingToLessonClient() {
     setChecked(false);
     setMcqAnswers({});
     setInputAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   return (
@@ -316,7 +326,7 @@ export default function GoingToLessonClient() {
                               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                                 {q.options.map((opt, oi) => (
                                   <label key={oi} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 transition ${chosen === oi ? "border-[#F5DA20] bg-[#F5DA20]/20" : "border-black/10 bg-white hover:bg-black/5"} ${checked ? "cursor-default" : ""}`}>
-                                    <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => setMcqAnswers((p) => ({ ...p, [q.id]: oi }))} />
+                                    <input type="radio" name={q.id} disabled={checked} checked={chosen === oi} onChange={() => { setMcqAnswers((p) => { const n = { ...p, [q.id]: oi }; broadcast({ answers: n, checked, exNo }); return n; }); }} />
                                     <span className="text-slate-900">{opt}</span>
                                   </label>
                                 ))}
@@ -369,7 +379,7 @@ export default function GoingToLessonClient() {
                 <div className="mt-8 space-y-4">
                   <div className="flex flex-wrap gap-3 items-center">
                     {!checked ? (
-                      <button onClick={() => { setChecked(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
+                      <button onClick={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}

@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const ARTICLE = `Habits are remarkably powerful forces in human behaviour. Research suggests that approximately 40 per cent of daily actions are habitual rather than the result of conscious decision-making. Understanding how habits form can help people change unwanted behaviours and establish new, positive ones.
 
@@ -93,6 +94,12 @@ export default function PsychologyHabitsClient() {
   const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, number | null>>({});
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, number | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const resultsRef = useRef<HTMLDivElement>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -129,12 +136,13 @@ export default function PsychologyHabitsClient() {
 
   function pick(id: number, idx: number) {
     if (checked) return;
-    setAnswers((prev) => ({ ...prev, [id]: idx }));
+    setAnswers((prev) => { const n = { ...prev, [id]: idx }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     setTimeout(() => {
       if (resultsRef.current) {
         const top =
@@ -147,6 +155,7 @@ export default function PsychologyHabitsClient() {
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

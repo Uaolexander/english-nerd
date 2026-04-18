@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const WORD_BOX = [
   "productive",
@@ -74,6 +75,12 @@ export default function WorkFromHomeClient() {
   // activeGap: which gap is currently selected for input
   const [activeGap, setActiveGap] = useState<number | null>(1);
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setGapAnswers(payload.answers as Record<number, Word | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [saved, setSaved] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -122,6 +129,7 @@ export default function WorkFromHomeClient() {
       // If the active gap already has a word, unplace it
       next[activeGap] = word;
 
+      broadcast({ answers: next, checked: false, exNo: 1 });
       return next;
     });
 
@@ -144,6 +152,7 @@ export default function WorkFromHomeClient() {
   const handleCheck = useCallback(async () => {
     if (answered < 8) return;
     setChecked(true);
+    broadcast({ answers: gapAnswers, checked: true, exNo: 1 });
     const correctCount = Object.entries(ANSWERS).filter(
       ([gap, word]) => gapAnswers[Number(gap)] === word
     ).length;
@@ -155,10 +164,12 @@ export default function WorkFromHomeClient() {
   }, [answered, gapAnswers, saved]);
 
   const handleReset = useCallback(() => {
-    setGapAnswers({ 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null });
+    const empty = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
+    setGapAnswers(empty);
     setActiveGap(1);
     setChecked(false);
     setSaved(false);
+    broadcast({ answers: empty, checked: false, exNo: 1 });
   }, []);
 
   const correctCount = checked

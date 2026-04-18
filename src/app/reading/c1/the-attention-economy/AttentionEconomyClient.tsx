@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const TEXT = `The concept of the attention economy rests on a simple but profound premise: in an age of information abundance, human attention has become the scarcest and most valuable resource. Technology companies, media platforms and advertisers compete aggressively for a finite commodity that cannot be manufactured or expanded. The phrase was popularised by psychologist and Nobel laureate Herbert Simon, who observed in 1971 that information consumes the attention of its recipients and that a wealth of information creates a poverty of attention. Economists later extended this insight, arguing that time and cognitive focus are the true bottlenecks in modern information markets, not bandwidth or storage.
 
@@ -89,6 +90,12 @@ export default function AttentionEconomyClient() {
   const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, string | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -105,12 +112,13 @@ export default function AttentionEconomyClient() {
 
   function pick(id: number, label: string) {
     if (checked) return;
-    setAnswers((prev) => ({ ...prev, [id]: label }));
+    setAnswers((prev) => { const n = { ...prev, [id]: label }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     setTimeout(() => {
       if (resultsRef.current) {
         const top =
@@ -123,6 +131,7 @@ export default function AttentionEconomyClient() {
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   async function downloadPDF() {

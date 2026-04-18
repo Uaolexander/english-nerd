@@ -10,6 +10,7 @@ import { generateLessonPDF } from "@/lib/generateLessonPDF";
 import PDFButton from "@/components/PDFButton";
 import type { LessonPDFConfig } from "@/lib/generateLessonPDF";
 import GrammarRecommended, { type GrammarRec } from "@/components/GrammarRecommended";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type MCQ = {
   id: string;
@@ -69,6 +70,13 @@ export default function PastSimpleIrregularLessonClient() {
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setMcqAnswers(payload.answers as Record<string, number | null>);
+    setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
   const isPro = useIsPro();
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -448,6 +456,7 @@ export default function PastSimpleIrregularLessonClient() {
     setChecked(false);
     setMcqAnswers({});
     setInputAnswers({});
+    broadcast({ answers: {}, checked: false, exNo });
   }
 
   function switchExercise(n: 1 | 2 | 3 | 4) {
@@ -456,6 +465,7 @@ export default function PastSimpleIrregularLessonClient() {
     setChecked(false);
     setMcqAnswers({});
     setInputAnswers({});
+    broadcast({ answers: {}, checked: false, exNo: n });
   }
 
   return (
@@ -594,7 +604,7 @@ export default function PastSimpleIrregularLessonClient() {
                                         name={q.id}
                                         disabled={checked}
                                         checked={chosen === oi}
-                                        onChange={() => setMcqAnswers((p) => ({ ...p, [q.id]: oi }))}
+                                        onChange={() => { setMcqAnswers((p) => { const n = { ...p, [q.id]: oi }; broadcast({ answers: n, checked, exNo }); return n; }); }}
                                       />
                                       <span className="text-slate-900">{opt}</span>
                                     </label>
@@ -661,7 +671,7 @@ export default function PastSimpleIrregularLessonClient() {
                   <div className="flex flex-wrap gap-3 items-center">
                     {!checked ? (
                       <button
-                        onClick={() => { setChecked(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        onClick={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                         className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm"
                       >
                         Check Answers

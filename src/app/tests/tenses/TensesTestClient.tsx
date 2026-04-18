@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
 import AdUnit from "@/components/AdUnit";
 import { useIsPro } from "@/lib/ProContext";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type Tense =
   | "Present Simple"
@@ -127,6 +128,11 @@ export default function TensesTestClient() {
   const [submitted, setSubmitted] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number>>({});
 
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number>);
+    setSubmitted(payload.checked as boolean);
+  });
+
   const score = useMemo(() => {
     let correct = 0;
     for (const q of questions) {
@@ -163,19 +169,23 @@ export default function TensesTestClient() {
   function pick(qId: string, optionIndex: number) {
     setAnswers((prev) => {
       if (prev[qId] !== undefined) return prev;
-      return { ...prev, [qId]: optionIndex };
+      const n = { ...prev, [qId]: optionIndex };
+      broadcast({ answers: n, checked: false, exNo: 1 });
+      return n;
     });
   }
 
   function retake() {
     setAnswers({});
     setSubmitted(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   function showResults() {
     window.scrollTo({ top: 0, behavior: "instant" });
     setSubmitted(true);
+    broadcast({ answers, checked: true, exNo: 1 });
   }
 
   const answeredCount = Object.keys(answers).length;

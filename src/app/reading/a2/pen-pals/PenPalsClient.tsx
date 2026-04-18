@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 type PenPal = {
   name: string;
@@ -71,6 +72,12 @@ export default function PenPalsClient() {
   const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<number, boolean | null>);
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const questionsTopRef = useRef<HTMLDivElement>(null);
@@ -104,12 +111,13 @@ export default function PenPalsClient() {
 
   function pick(id: number, val: boolean) {
     if (checked) return;
-    setAnswers((p) => ({ ...p, [id]: val }));
+    setAnswers((p) => { const n = { ...p, [id]: val }; broadcast({ answers: n, checked: false, exNo: 1 }); return n; });
   }
 
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers, checked: true, exNo: 1 });
     setTimeout(() => {
       if (!questionsTopRef.current) return;
       const top =
@@ -123,6 +131,7 @@ export default function PenPalsClient() {
   function reset() {
     setAnswers({});
     setChecked(false);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   useEffect(() => {

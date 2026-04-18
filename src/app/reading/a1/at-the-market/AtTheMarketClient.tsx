@@ -6,6 +6,7 @@ import { useIsPro } from "@/lib/ProContext";
 import ReadingRecommendations from "@/components/ReadingRecommendations";
 import PDFButton from "@/components/PDFButton";
 import { generateReadingPDF, type ReadingPDFConfig } from "@/lib/generateReadingPDF";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 const WORD_BANK = ["fruit", "flowers", "money", "open", "people", "buy", "cold", "favourite"];
 
@@ -41,6 +42,13 @@ export default function AtTheMarketClient() {
   const [activeGap, setActiveGap] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
+
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    const rec = payload.answers as Record<number, string | null>;
+    setFilled(Array(8).fill(null).map((_, i) => rec[i] ?? null));
+    setChecked(payload.checked as boolean);
+  });
+
   const [pdfLoading, setPdfLoading] = useState(false);
 
   async function downloadPDF() {
@@ -98,6 +106,7 @@ export default function AtTheMarketClient() {
       }
       // If gap already had a word, return it to pool (just set to null)
       next[activeGap] = word;
+      broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
       return next;
     });
     setActiveGap(null);
@@ -108,6 +117,7 @@ export default function AtTheMarketClient() {
     setFilled((prev) => {
       const next = [...prev];
       next[gapIndex] = null;
+      broadcast({ answers: Object.fromEntries(next.map((v, i) => [i, v])), checked: false, exNo: 1 });
       return next;
     });
     setActiveGap(gapIndex);
@@ -116,6 +126,7 @@ export default function AtTheMarketClient() {
   function check() {
     if (!allAnswered) return;
     setChecked(true);
+    broadcast({ answers: Object.fromEntries(filled.map((v, i) => [i, v])), checked: true, exNo: 1 });
     setActiveGap(null);
   }
 
@@ -124,6 +135,7 @@ export default function AtTheMarketClient() {
     setChecked(false);
     setShowAnswers(false);
     setActiveGap(null);
+    broadcast({ answers: {}, checked: false, exNo: 1 });
   }
 
   function revealAnswers() {
