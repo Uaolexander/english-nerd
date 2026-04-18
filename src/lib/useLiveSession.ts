@@ -80,12 +80,7 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
 
     // Listen for state sync — ignore echo (messages we sent ourselves)
     channel.on("broadcast", { event: "sync" }, ({ payload }: { payload: LiveSyncPayload }) => {
-      console.log("[LS] received broadcast, sender:", payload._senderId, "me:", currentUserIdRef.current);
-      if (payload._senderId && payload._senderId === currentUserIdRef.current) {
-        console.log("[LS] filtered self");
-        return;
-      }
-      console.log("[LS] applying sync");
+      if (payload._senderId && payload._senderId === currentUserIdRef.current) return;
       setLastSync({ ...payload });
     });
 
@@ -98,7 +93,6 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
     });
 
     channel.subscribe(async (subStatus) => {
-      console.log("[LS] subscribe status:", subStatus, "channel:", channelName);
       if (subStatus === "SUBSCRIBED") {
         await channel.track({ userId: currentUserId, joinedAt: Date.now() });
       }
@@ -113,13 +107,12 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
   }, [status, session, currentUserId]);
 
   const broadcast = useCallback((payload: Omit<LiveSyncPayload, "_senderId">) => {
-    console.log("[LS] broadcast called, channel:", channelRef.current ? "ok" : "NULL", "senderId:", currentUserIdRef.current);
     if (!channelRef.current) return;
     channelRef.current.send({
       type: "broadcast",
       event: "sync",
       payload: { ...payload, _senderId: currentUserIdRef.current },
-    }).then((r) => console.log("[LS] send result:", r));
+    });
   }, []);
 
   const isTeacher = !!session && currentUserId === session.teacherId;

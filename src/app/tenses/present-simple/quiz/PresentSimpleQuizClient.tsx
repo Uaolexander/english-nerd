@@ -680,7 +680,7 @@ export default function PresentSimpleQuizClient() {
               {[
                 { title: "Fill in the Blank", href: "/tenses/present-simple/fill-in-blank", img: "/topics/exercises/fill-in-blank.jpg", level: "A1", badge: "bg-emerald-500", reason: "Type the correct form" },
                 { title: "Spot the Mistake", href: "/tenses/present-simple/spot-the-mistake", img: "/topics/exercises/spot-the-mistake.jpg", level: "A1–A2", badge: "bg-amber-500", reason: "Find & fix errors" },
-                { title: "Sentence Builder", href: "/tenses/present-simple/sentence-builder", img: "/topics/exercises/sentence-builder.jpg", level: "A1", badge: "bg-emerald-500", reason: "Build sentences word by word" },
+                { title: "Sentence Builder", href: "/tenses/present-simple/sentence-builder", img: "/topics/exercises/sentence-builder-present-simple.jpg", level: "A1", badge: "bg-emerald-500", reason: "Build sentences word by word" },
               ].map((rec) => (
                 <a key={rec.href} href={rec.href} className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md">
                   <div className="relative h-32 w-full overflow-hidden bg-slate-100">
