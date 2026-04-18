@@ -356,6 +356,12 @@ export default function AllFutureTensesClient() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const isPro = useIsPro();
 
+  const { broadcast } = useLiveSync((payload) => {
+    setAnswers(payload.answers as Record<string, number | null>);
+    setChecked(payload.checked as boolean);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+  });
+
   const current = SETS[exNo];
 
   async function handlePDF() {
