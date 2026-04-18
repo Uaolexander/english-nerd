@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     // Not a Pro promo code — check if it's a teacher voucher
     const { data: voucher } = await service
       .from("teacher_vouchers")
-      .select("id, allowed_email, plan, student_limit, duration_days, is_active, valid_from, valid_until")
+      .select("id, allowed_email, plan, student_limit, duration_days, is_active, valid_from, valid_until, one_time_only")
       .eq("code", code)
       .maybeSingle();
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: false, error: "This voucher has expired." }, { status: 400 });
       }
 
-      // Monthly reuse check
+      // Redemption history check
       const { data: lastRedemption } = await service
         .from("teacher_voucher_redemptions")
         .select("redeemed_at")
@@ -80,6 +80,11 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (lastRedemption) {
+        // One-time-only vouchers can never be reused
+        if (voucher.one_time_only) {
+          return NextResponse.json({ ok: false, error: "You have already redeemed this voucher. It can only be used once per account." }, { status: 400 });
+        }
+        // Monthly renewable vouchers: block within the current period
         const daysSinceLast = (Date.now() - new Date(lastRedemption.redeemed_at).getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceLast < voucher.duration_days) {
           const nextAvailable = new Date(lastRedemption.redeemed_at);
