@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useProgress } from "@/lib/useProgress";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import type { SRQuestion } from "@/components/games/SpeedRound";
@@ -186,18 +187,57 @@ export default function SpotTheMistakeClient() {
   // rewrite state
   const [typed, setTyped] = useState<Record<string, string>>({});
 
+  const { broadcast } = useLiveSync((payload) => {
+    const a = payload.answers as {
+      clickedIdx: Record<string, number>;
+      typedFix: Record<string, string>;
+      typed: Record<string, string>;
+      checked: Record<string, boolean>;
+      exNo: number;
+    };
+    setClickedIdx(a.clickedIdx ?? {});
+    setTypedFix(a.typedFix ?? {});
+    setTyped(a.typed ?? {});
+    setChecked(a.checked ?? {});
+    setExNo((a.exNo ?? 1) as 1 | 2 | 3 | 4);
+  });
+
+  function broadcastState(params: {
+    clickedIdx?: Record<string, number>;
+    typedFix?: Record<string, string>;
+    typed?: Record<string, string>;
+    checked?: Record<string, boolean>;
+    exNo?: number;
+  } = {}) {
+    broadcast({
+      answers: {
+        clickedIdx: params.clickedIdx ?? clickedIdx,
+        typedFix: params.typedFix ?? typedFix,
+        typed: params.typed ?? typed,
+        checked: params.checked ?? checked,
+        exNo: params.exNo ?? exNo,
+      },
+      checked: false,
+      exNo: params.exNo ?? exNo,
+    });
+  }
+
   const current = SETS[exNo];
   const allChecked = current.questions.every((q) => checked[q.id]);
 
   function checkOne(qId: string) {
-    setChecked((p) => ({ ...p, [qId]: true }));
+    const newChecked = { ...checked, [qId]: true };
+    setChecked(newChecked);
+    broadcastState({ checked: newChecked });
   }
 
   function checkAll() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     const all: Record<string, boolean> = {};
     for (const q of current.questions) all[q.id] = true;
-    setChecked((p) => ({ ...p, ...all }));
+    const newChecked = { ...checked, ...all };
+    setChecked(newChecked);
+    broadcastState({ checked: newChecked });
   }
 
   function reset() {
@@ -206,12 +246,17 @@ export default function SpotTheMistakeClient() {
     setClickedIdx({});
     setTypedFix({});
     setTyped({});
+    broadcastState({ clickedIdx: {}, typedFix: {}, typed: {}, checked: {} });
   }
 
   function switchSet(n: 1 | 2 | 3 | 4) {
     setExNo(n);
-    reset();
+    setChecked({});
+    setClickedIdx({});
+    setTypedFix({});
+    setTyped({});
     window.scrollTo({ top: 0, behavior: "smooth" });
+    broadcastState({ clickedIdx: {}, typedFix: {}, typed: {}, checked: {}, exNo: n });
   }
 
   const { save } = useProgress();
@@ -573,8 +618,8 @@ export default function SpotTheMistakeClient() {
                           clickedIdx={clickedIdx[q.id]}
                           typedFix={typedFix[q.id] ?? ""}
                           isChecked={checked[q.id] ?? false}
-                          onClickToken={(i) => !checked[q.id] && setClickedIdx((p) => ({ ...p, [q.id]: i }))}
-                          onTypeFix={(v) => setTypedFix((p) => ({ ...p, [q.id]: v }))}
+                          onClickToken={(i) => { if (!checked[q.id]) { const newClickedIdx = { ...clickedIdx, [q.id]: i }; setClickedIdx(newClickedIdx); broadcastState({ clickedIdx: newClickedIdx }); } }}
+                          onTypeFix={(v) => { const newTypedFix = { ...typedFix, [q.id]: v }; setTypedFix(newTypedFix); broadcastState({ typedFix: newTypedFix }); }}
                           onCheck={() => checkOne(q.id)}
                         />
                       ) : (
@@ -584,7 +629,7 @@ export default function SpotTheMistakeClient() {
                           idx={idx}
                           value={typed[q.id] ?? ""}
                           isChecked={checked[q.id] ?? false}
-                          onChange={(v) => setTyped((p) => ({ ...p, [q.id]: v }))}
+                          onChange={(v) => { const newTyped = { ...typed, [q.id]: v }; setTyped(newTyped); broadcastState({ typed: newTyped }); }}
                           onCheck={() => checkOne(q.id)}
                         />
                       )

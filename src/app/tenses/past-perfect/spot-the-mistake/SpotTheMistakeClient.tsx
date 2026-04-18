@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLiveSync } from "@/lib/useLiveSync";
 import AdUnit from "@/components/AdUnit";
 import SpeedRound from "@/components/games/SpeedRound";
 import PDFButton from "@/components/PDFButton";
@@ -435,6 +436,34 @@ export default function SpotTheMistakeClient() {
   >({});
   const [pdfLoading, setPdfLoading] = useState(false);
   const isPro = useIsPro();
+
+  const { broadcast } = useLiveSync((payload) => {
+    const a = payload.answers as {
+      clickStates: Record<string, { clicked: string | null; input: string; submitted: boolean }>;
+      rewriteStates: Record<string, { input: string; submitted: boolean }>;
+      exNo: number;
+    };
+    setClickStates(a.clickStates ?? {});
+    setRewriteStates(a.rewriteStates ?? {});
+    setExNo((a.exNo ?? 1) as 1 | 2 | 3 | 4);
+  });
+
+  function broadcastState(params: {
+    clickStates?: Record<string, { clicked: string | null; input: string; submitted: boolean }>;
+    rewriteStates?: Record<string, { input: string; submitted: boolean }>;
+    exNo?: number;
+  } = {}) {
+    broadcast({
+      answers: {
+        clickStates: params.clickStates ?? clickStates,
+        rewriteStates: params.rewriteStates ?? rewriteStates,
+        exNo: params.exNo ?? exNo,
+      },
+      checked: false,
+      exNo: params.exNo ?? exNo,
+    });
+  }
+
   const current = SETS[exNo];
 
   async function handlePDF() {
@@ -447,6 +476,7 @@ export default function SpotTheMistakeClient() {
     setExNo(n);
     setClickStates({});
     setRewriteStates({});
+    broadcastState({ clickStates: {}, rewriteStates: {}, exNo: n });
   }
 
   function ClickCard({ q, idx }: { q: ClickQ; idx: number }) {
@@ -474,16 +504,13 @@ export default function SpotTheMistakeClient() {
                   <button
                     key={ti}
                     disabled={state.submitted}
-                    onClick={() =>
-                      !state.submitted &&
-                      setClickStates((p) => ({
-                        ...p,
-                        [q.id]: {
-                          ...(p[q.id] ?? { clicked: null, input: "", submitted: false }),
-                          clicked: tok + ti,
-                        },
-                      }))
-                    }
+                    onClick={() => {
+                      if (!state.submitted) {
+                        const newClickStates = { ...clickStates, [q.id]: { ...(clickStates[q.id] ?? { clicked: null, input: "", submitted: false }), clicked: tok + ti } };
+                        setClickStates(newClickStates);
+                        broadcastState({ clickStates: newClickStates });
+                      }
+                    }}
                     className={`rounded-lg px-2 py-1 text-sm border transition ${
                       isClicked
                         ? "border-[#F5DA20] bg-[#F5DA20]/20 font-bold"
@@ -505,29 +532,26 @@ export default function SpotTheMistakeClient() {
                   autoComplete="off"
                   value={state.input}
                   placeholder="Type correction…"
-                  onChange={(e) =>
-                    setClickStates((p) => ({
-                      ...p,
-                      [q.id]: { ...p[q.id], input: e.target.value },
-                    }))
-                  }
+                  onChange={(e) => {
+                    const newClickStates = { ...clickStates, [q.id]: { ...clickStates[q.id], input: e.target.value } };
+                    setClickStates(newClickStates);
+                    broadcastState({ clickStates: newClickStates });
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      setClickStates((p) => ({
-                        ...p,
-                        [q.id]: { ...p[q.id], submitted: true },
-                      }));
+                      const newClickStates = { ...clickStates, [q.id]: { ...clickStates[q.id], submitted: true } };
+                      setClickStates(newClickStates);
+                      broadcastState({ clickStates: newClickStates });
                     }
                   }}
                   className="flex-1 rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[#F5DA20]"
                 />
                 <button
-                  onClick={() =>
-                    setClickStates((p) => ({
-                      ...p,
-                      [q.id]: { ...p[q.id], submitted: true },
-                    }))
-                  }
+                  onClick={() => {
+                    const newClickStates = { ...clickStates, [q.id]: { ...clickStates[q.id], submitted: true } };
+                    setClickStates(newClickStates);
+                    broadcastState({ clickStates: newClickStates });
+                  }}
                   className="rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-black text-black hover:opacity-90"
                 >
                   ✓
@@ -576,18 +600,16 @@ export default function SpotTheMistakeClient() {
               disabled={state.submitted}
               value={state.input}
               placeholder="Type the corrected sentence…"
-              onChange={(e) =>
-                setRewriteStates((p) => ({
-                  ...p,
-                  [q.id]: { ...(p[q.id] ?? { input: "", submitted: false }), input: e.target.value },
-                }))
-              }
+              onChange={(e) => {
+                const newRewriteStates = { ...rewriteStates, [q.id]: { ...(rewriteStates[q.id] ?? { input: "", submitted: false }), input: e.target.value } };
+                setRewriteStates(newRewriteStates);
+                broadcastState({ rewriteStates: newRewriteStates });
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  setRewriteStates((p) => ({
-                    ...p,
-                    [q.id]: { ...p[q.id], submitted: true },
-                  }));
+                  const newRewriteStates = { ...rewriteStates, [q.id]: { ...rewriteStates[q.id], submitted: true } };
+                  setRewriteStates(newRewriteStates);
+                  broadcastState({ rewriteStates: newRewriteStates });
                 }
               }}
               className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition ${
@@ -600,12 +622,11 @@ export default function SpotTheMistakeClient() {
             />
             {!state.submitted && state.input.trim() && (
               <button
-                onClick={() =>
-                  setRewriteStates((p) => ({
-                    ...p,
-                    [q.id]: { ...p[q.id], submitted: true },
-                  }))
-                }
+                onClick={() => {
+                  const newRewriteStates = { ...rewriteStates, [q.id]: { ...rewriteStates[q.id], submitted: true } };
+                  setRewriteStates(newRewriteStates);
+                  broadcastState({ rewriteStates: newRewriteStates });
+                }}
                 className="mt-2 rounded-xl bg-[#F5DA20] px-4 py-2 text-sm font-black text-black hover:opacity-90"
               >
                 Check
@@ -740,6 +761,7 @@ export default function SpotTheMistakeClient() {
                         window.scrollTo({ top: 0, behavior: "smooth" });
                         setClickStates({});
                         setRewriteStates({});
+                        broadcastState({ clickStates: {}, rewriteStates: {} });
                       }}
                       className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition"
                     >
