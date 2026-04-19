@@ -19,7 +19,7 @@ const organizationSchema = {
   "@type": "EducationalOrganization",
   name: "English Nerd",
   url: "https://englishnerd.cc",
-  logo: "https://englishnerd.cc/logo.png",
+  logo: "https://englishnerd.cc/logo.jpg",
   sameAs: [],
   description: "English Nerd provides free interactive grammar exercises for English learners at all levels from A1 to C1.",
   knowsAbout: ["English grammar", "ESL", "EFL", "Language learning"],
