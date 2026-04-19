@@ -210,6 +210,8 @@ export const searchIndex: SearchItem[] = [
   { title: "Listening — All Levels", keywords: ["listening", "audio", "overview", "comprehension", "exercises"], href: "/listening", badge: "Listening" },
   { title: "Listening B2", keywords: ["listening b2", "upper intermediate listening", "b2 audio"], href: "/listening/b2", badge: "B2" },
   { title: "Work-Life Balance (Listening)", keywords: ["listening", "work life balance", "b2", "audio", "podcast"], href: "/listening/b2/work-life-balance", badge: "B2" },
+  { title: "Listening C1", keywords: ["listening c1", "advanced listening", "c1 audio"], href: "/listening/c1", badge: "C1" },
+  { title: "The Ethics of AI-Generated Art (Listening)", keywords: ["listening", "ai art", "ethics", "c1", "dialogue", "illustrator", "gallery", "copyright"], href: "/listening/c1/ethics-of-ai-art", badge: "C1" },
 
   // ─── Nerd Zone ────────────────────────────────────────────────────────────
   { title: "Nerd Zone — Bonus Content", keywords: ["nerd zone", "extras", "bonus", "pro content", "extra content"], href: "/nerd-zone", badge: "PRO" },

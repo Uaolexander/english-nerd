@@ -343,6 +343,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     u("/listening/b1", 0.8, "monthly"),
     u("/listening/b2", 0.8, "monthly"),
     u("/listening/b2/work-life-balance", 0.7, "monthly"),
+    u("/listening/c1", 0.8, "monthly"),
+    u("/listening/c1/ethics-of-ai-art", 0.7, "monthly"),
 
     // ── Tests ─────────────────────────────────────────────────────────────
     u("/tests/grammar", 0.8, "monthly"),

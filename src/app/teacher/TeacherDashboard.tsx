@@ -149,6 +149,9 @@ const EXERCISE_CATALOGUE: Record<string, LevelMap | ExerciseEntry[]> = {
     b2: [
       { slug: "work-life-balance", label: "Work-Life Balance" },
     ],
+    c1: [
+      { slug: "ethics-of-ai-art", label: "The Ethics of AI-Generated Art" },
+    ],
   },
   vocabulary: {
     a1: [

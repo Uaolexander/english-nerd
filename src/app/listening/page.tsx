@@ -55,9 +55,8 @@ const LEVELS: Level[] = [
     lvl: "C1",
     label: "Advanced",
     description: "Complex academic and professional audio with implicit meaning and fast speech.",
-    topics: 14,
+    topics: 1,
     color: "bg-sky-400",
-    comingSoon: true,
   },
 ];
 
