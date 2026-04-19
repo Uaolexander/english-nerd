@@ -175,6 +175,9 @@ export async function generateListeningPDF(config: ListeningPDFConfig): Promise<
   config.trueFalse.forEach((stmt, i) => {
     const numStr = `${i + 1}.`;
     const numW = 7;
+    // Set font before splitTextToSize so line widths match rendering size
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9.5);
     const stmtLines = pdf.splitTextToSize(stmt.text, textMaxW - numW);
     const rowH = Math.max(ansBoxH + 2, stmtLines.length * lineH + 4);
     ensureSpace(rowH + 2);
@@ -191,9 +194,7 @@ export async function generateListeningPDF(config: ListeningPDFConfig): Promise<
     pdf.setTextColor("#555555");
     pdf.text(numStr, ml, y + lineH + 0.5);
 
-    // Statement text
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(9.5);
+    // Statement text (font already set above)
     pdf.setTextColor("#222222");
     stmtLines.forEach((line: string, li: number) => {
       pdf.text(line, ml + numW, y + lineH + 0.5 + li * lineH);
