@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
 import { useLiveSync } from "@/lib/useLiveSync";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF } from "@/lib/generateReadingPDF";
+import { useIsPro } from "@/lib/ProContext";
 
 const TRANSCRIPT: { speaker: "I" | "D"; text: string }[] = [
   { speaker: "I", text: "Welcome back to the podcast. Today I'm speaking with Daniel, who recently made a big change in his career. Daniel, thanks for joining us." },
@@ -50,8 +53,28 @@ const VOCAB = [
 ];
 
 export default function WorkLifeBalanceClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      await generateReadingPDF({
+        title: "Work-Life Balance",
+        level: "B2",
+        filename: "EnglishNerd_Work-Life-Balance_B2.pdf",
+        passages: TRANSCRIPT.map((line) => ({
+          speaker: line.speaker === "D" ? "Daniel" : "Interviewer",
+          text: line.text,
+        })),
+        trueFalse: QUESTIONS.map((q) => ({ text: q.text, answer: q.answer })),
+      });
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   const { isLive, broadcast } = useLiveSync((payload) => {
     setAnswers(payload.answers as Record<number, boolean | null>);
@@ -133,6 +156,7 @@ export default function WorkLifeBalanceClient() {
               <span className="rounded-full bg-orange-400 px-3 py-0.5 text-[11px] font-black text-black">B2</span>
               <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Dialogue</span>
               <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">~4 min</span>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             </div>
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.05]">
               Work-Life{" "}
@@ -442,14 +466,6 @@ export default function WorkLifeBalanceClient() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* B2 Tip */}
-              <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4">
-                <p className="text-xs font-black text-orange-600 uppercase tracking-wide mb-2">B2 Tip</p>
-                <p className="text-xs text-orange-900/60 leading-relaxed">
-                  At B2 level, focus on <span className="font-semibold text-orange-900/80">implied meaning</span>. Speakers often suggest something without saying it directly — pay attention to hesitations and tone.
-                </p>
               </div>
 
               {/* Ad */}

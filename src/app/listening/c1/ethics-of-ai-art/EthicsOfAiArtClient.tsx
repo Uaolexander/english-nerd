@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
 import { useLiveSync } from "@/lib/useLiveSync";
+import PDFButton from "@/components/PDFButton";
+import { generateReadingPDF } from "@/lib/generateReadingPDF";
+import { useIsPro } from "@/lib/ProContext";
 
 const TRANSCRIPT: { speaker: "M" | "C"; text: string }[] = [
   { speaker: "M", text: "Chloe, I've been meaning to pick your brain about something that's been eating away at me for weeks. A guy I went to art school with just won a rather prestigious digital art competition — and it turns out he generated the whole piece with an AI model. He barely even tweaked it." },
@@ -52,9 +55,29 @@ const VOCAB = [
 ];
 
 export default function EthicsOfAiArtClient() {
+  const isPro = useIsPro();
   const [answers, setAnswers] = useState<Record<number, boolean | null>>({});
   const [checked, setChecked] = useState(false);
   const [transcriptOpen, setTranscriptOpen] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      await generateReadingPDF({
+        title: "The Ethics of AI-Generated Art",
+        level: "C1",
+        filename: "EnglishNerd_Ethics-of-AI-Art_C1.pdf",
+        passages: TRANSCRIPT.map((line) => ({
+          speaker: line.speaker === "M" ? "Martin" : "Chloe",
+          text: line.text,
+        })),
+        trueFalse: QUESTIONS.map((q) => ({ text: q.text, answer: q.answer })),
+      });
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   const { broadcast } = useLiveSync((payload) => {
     setAnswers(payload.answers as Record<number, boolean | null>);
@@ -134,6 +157,7 @@ export default function EthicsOfAiArtClient() {
               <span className="rounded-full bg-sky-400 px-3 py-0.5 text-[11px] font-black text-black">C1</span>
               <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">Dialogue</span>
               <span className="rounded-full border border-slate-200 px-3 py-0.5 text-[11px] font-semibold text-slate-400">~6 min</span>
+              <PDFButton onDownload={downloadPDF} loading={pdfLoading} />
             </div>
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.05]">
               The Ethics of{" "}
