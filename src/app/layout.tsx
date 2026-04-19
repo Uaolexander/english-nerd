@@ -46,7 +46,16 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "English Nerd",
     type: "website",
+    locale: "en_US",
+    url: "https://englishnerd.cc",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "English Nerd — Free English Grammar Lessons & Exercises" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@englishnerdcc",
+    title: "English Nerd — Free English Grammar Lessons & Exercises",
+    description: "Free English grammar lessons, vocabulary tests, and exercises for all levels A1 to C1.",
+    images: ["/og-image.png"],
   },
   other: {
     "google-adsense-account": "ca-pub-2015658649191943",
