@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
 import { useLiveSync } from "@/lib/useLiveSync";
 import PDFButton from "@/components/PDFButton";
-import { generateReadingPDF } from "@/lib/generateReadingPDF";
+import { generateListeningPDF } from "@/lib/generateListeningPDF";
 import { useIsPro } from "@/lib/ProContext";
 
 const TRANSCRIPT: { speaker: "I" | "D"; text: string }[] = [
@@ -61,11 +61,11 @@ export default function WorkLifeBalanceClient() {
   async function downloadPDF() {
     setPdfLoading(true);
     try {
-      await generateReadingPDF({
+      await generateListeningPDF({
         title: "Work-Life Balance",
         level: "B2",
         filename: "EnglishNerd_Work-Life-Balance_B2.pdf",
-        passages: TRANSCRIPT.map((line) => ({
+        dialogue: TRANSCRIPT.map((line) => ({
           speaker: line.speaker === "D" ? "Daniel" : "Interviewer",
           text: line.text,
         })),

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import AdUnit from "@/components/AdUnit";
 import { useLiveSync } from "@/lib/useLiveSync";
 import PDFButton from "@/components/PDFButton";
-import { generateReadingPDF } from "@/lib/generateReadingPDF";
+import { generateListeningPDF } from "@/lib/generateListeningPDF";
 import { useIsPro } from "@/lib/ProContext";
 
 const TRANSCRIPT: { speaker: "M" | "C"; text: string }[] = [
@@ -64,11 +64,11 @@ export default function EthicsOfAiArtClient() {
   async function downloadPDF() {
     setPdfLoading(true);
     try {
-      await generateReadingPDF({
+      await generateListeningPDF({
         title: "The Ethics of AI-Generated Art",
         level: "C1",
         filename: "EnglishNerd_Ethics-of-AI-Art_C1.pdf",
-        passages: TRANSCRIPT.map((line) => ({
+        dialogue: TRANSCRIPT.map((line) => ({
           speaker: line.speaker === "M" ? "Martin" : "Chloe",
           text: line.text,
         })),
