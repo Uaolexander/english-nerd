@@ -3049,17 +3049,17 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
         const daysLeft = Math.ceil((new Date(teacherData.subscriptionExpiresAt).getTime() - Date.now()) / 86400000);
         if (daysLeft > 14 || daysLeft < 0) return null;
         return (
-          <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <span className="text-xl">⏰</span>
-            <div className="flex-1">
+          <div className="mb-4 flex items-center gap-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+            <span className="text-xl shrink-0">⏰</span>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-black text-amber-800">
                 {daysLeft <= 1 ? "Subscription expires today!" : `Subscription expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`}
               </p>
               <p className="text-xs text-amber-600 mt-0.5">Renew your Teacher plan to keep your classroom running.</p>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <a href="/pro" className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-600">Renew →</a>
-              <a href="/billing-portal" className="text-[11px] text-amber-600 underline underline-offset-2 hover:text-amber-800 transition">Manage</a>
+            <div className="flex items-center gap-3 shrink-0">
+              <a href="/billing-portal" className="text-xs font-semibold text-amber-700 hover:text-amber-900 transition">Manage</a>
+              <a href="/pro" className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-black text-white transition hover:bg-amber-600">Renew</a>
             </div>
           </div>
         );
@@ -5594,7 +5594,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                       </p>
                       <p className="text-[11px] text-amber-600">Renew now to keep your access.</p>
                     </div>
-                    <a href="/pro" className="shrink-0 rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-black text-amber-900 transition hover:bg-amber-500">Renew →</a>
+                    <a href="/pro" className="shrink-0 rounded-xl bg-amber-400 px-4 py-2 text-sm font-black text-amber-900 transition hover:bg-amber-500">Renew</a>
                   </div>
                 );
               })()}
