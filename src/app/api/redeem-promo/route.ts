@@ -7,6 +7,10 @@ import { sendProGainedEmail, sendTeacherWelcomeEmail } from "@/lib/email";
 const rateMap = new Map<string, { count: number; reset: number }>();
 function isRateLimited(userId: string): boolean {
   const now = Date.now();
+  // Purge expired entries to prevent unbounded growth
+  for (const [key, val] of rateMap) {
+    if (now > val.reset) rateMap.delete(key);
+  }
   const entry = rateMap.get(userId);
   if (!entry || now > entry.reset) {
     rateMap.set(userId, { count: 1, reset: now + 10 * 60 * 1000 });

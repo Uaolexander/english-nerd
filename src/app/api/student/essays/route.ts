@@ -36,8 +36,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "assignmentId and content required" }, { status: 400 });
   }
 
-  const wordCount = content.trim().split(/\s+/).length;
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
   const svc = createServiceClient();
+
+  // Validate word count against the assignment's minimum requirement
+  const { data: assignment } = await svc
+    .from("teacher_assignments")
+    .select("min_words")
+    .eq("id", assignmentId)
+    .maybeSingle();
+
+  if (assignment?.min_words && wordCount < assignment.min_words) {
+    return NextResponse.json({
+      ok: false,
+      error: `Your essay is too short. Minimum ${assignment.min_words} words required (you have ${wordCount}).`,
+    }, { status: 400 });
+  }
 
   const { data: existing } = await svc
     .from("essay_submissions")

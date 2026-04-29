@@ -196,6 +196,7 @@ function MobileAccordion({
       <button
         type="button"
         onClick={onToggle}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[15px] font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
       >
         {label}

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   const service = createServiceClient();
 
-  // Allow max 2 concurrent sessions — if limit reached, deactivate the oldest one
+  // Allow max 2 concurrent sessions — deactivate oldest when limit would be exceeded
   const { data: activeSessions } = await service
     .from("user_sessions")
     .select("id, created_at")
@@ -33,9 +33,9 @@ export async function POST(request: Request) {
     .eq("is_active", true)
     .order("created_at", { ascending: true });
 
-  if (activeSessions && activeSessions.length >= 3) {
-    // Deactivate the oldest session(s) to keep the count at 2 (we're about to add a new one)
-    const toDeactivate = activeSessions.slice(0, activeSessions.length - 2);
+  if (activeSessions && activeSessions.length >= 2) {
+    // Keep only the newest 1 before adding this new session → total stays at 2
+    const toDeactivate = activeSessions.slice(0, activeSessions.length - 1);
     await service
       .from("user_sessions")
       .update({ is_active: false })

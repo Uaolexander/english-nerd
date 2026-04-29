@@ -12,6 +12,7 @@ export async function verifyTurnstile(token: string): Promise<boolean> {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ secret, response: token }),
+      signal: AbortSignal.timeout(5000),
     });
 
     const data = await res.json() as { success: boolean; "error-codes"?: string[] };

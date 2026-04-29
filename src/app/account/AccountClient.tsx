@@ -266,6 +266,74 @@ function scoreBg(score: number) {
   return "bg-red-50 border-red-100 text-red-700";
 }
 
+// ── MyWordsSection ─────────────────────────────────────────────────────────
+
+function MyWordsSection() {
+  const [words, setWords] = useState<Array<{ word: string; definition: string; topic: string; addedAt: string }>>([]);
+
+  useEffect(() => {
+    function load() {
+      try {
+        setWords(JSON.parse(localStorage.getItem("eng_my_words") ?? "[]"));
+      } catch { setWords([]); }
+    }
+    load();
+    window.addEventListener("my-words-updated", load);
+    return () => window.removeEventListener("my-words-updated", load);
+  }, []);
+
+  function removeWord(word: string) {
+    const updated = words.filter((w) => w.word !== word);
+    localStorage.setItem("eng_my_words", JSON.stringify(updated));
+    window.dispatchEvent(new Event("my-words-updated"));
+  }
+
+  return (
+    <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.04] p-6 sm:p-7">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">My Words</p>
+          <p className="mt-0.5 text-xs text-slate-400">
+            {words.length > 0 ? `${words.length} saved word${words.length > 1 ? "s" : ""}` : "Save words from vocabulary exercises"}
+          </p>
+        </div>
+        <a href="/vocabulary" className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:border-[#F5DA20] hover:bg-[#F5DA20]/10 hover:text-slate-800">
+          Browse vocabulary →
+        </a>
+      </div>
+      {words.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5DA20]/20 mb-3">
+            <svg className="h-6 w-6 text-[#c8b000]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <p className="text-sm font-bold text-slate-500">No saved words yet</p>
+          <p className="mt-1 text-xs text-slate-400">Click the star icon next to any word in a Vocabulary exercise to save it here.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {words.map((w) => (
+            <div key={w.word} className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-900">{w.word}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{w.definition}</p>
+              </div>
+              <span className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-400">{w.topic}</span>
+              <button
+                onClick={() => removeWord(w.word)}
+                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 transition hover:bg-red-50 hover:text-red-500"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── CertificateRow: renders one saved certificate + re-download button ─────
 
 const CERT_LEVEL_COLORS: Record<string, string> = {
@@ -286,6 +354,10 @@ const BAND_BG_HEX: Record<string, string> = {
   B2: "#c4b5fd", C1: "#fdba74", C2: "#fda4af",
 };
 
+function escHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete: () => void }) {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
@@ -303,6 +375,7 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
 
       const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
       const levelLabel = BAND_LABEL_SHORT[cert.level] ?? "";
+      const safeHolderName = escHtml(cert.holderName);
 
       if (isVocab) {
         const accentColor = BAND_BG_HEX[cert.level] ?? "#F5DA20";
@@ -316,7 +389,7 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
               <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
               <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Vocabulary Certificate</p>
               <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
-              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
+              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${safeHolderName}</div>
               <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has demonstrated an estimated active vocabulary of</p>
               <div style="display:flex;align-items:center;gap:20px;margin-bottom:22px;">
                 <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
@@ -353,7 +426,7 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
               <div style="position:absolute;top:28px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(0,0,0,0.35);text-transform:uppercase;">EnglishNerd</div>
               <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:12px;margin-top:0;">Certificate of Achievement</p>
               <p style="font-size:14px;color:rgba(0,0,0,0.45);margin-bottom:10px;margin-top:0;font-style:italic;">This certifies that</p>
-              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${cert.holderName}</div>
+              <div style="font-size:38px;font-weight:700;color:#0F0F12;letter-spacing:-0.5px;text-align:center;margin-bottom:14px;line-height:1.1;">${safeHolderName}</div>
               <p style="font-size:13px;color:rgba(0,0,0,0.45);margin-bottom:22px;margin-top:0;font-style:italic;text-align:center;">has successfully completed the English Grammar Level Test</p>
               <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;">
                 <div style="background:#F5DA20;border-radius:10px;padding:10px 28px;display:flex;flex-direction:column;align-items:center;">
@@ -389,9 +462,10 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       pdf.addImage(imgData, "PNG", 0, 0, 297, 210);
+      const safeName = cert.holderName.replace(/[^a-zA-Z0-9\s\-_]/g, "").replace(/\s+/g, "_");
       const fileName = isVocab
-        ? `EnglishNerd_Vocabulary_${cert.holderName.replace(/\s+/g, "_")}.pdf`
-        : `EnglishNerd_Certificate_${cert.holderName.replace(/\s+/g, "_")}.pdf`;
+        ? `EnglishNerd_Vocabulary_${safeName}.pdf`
+        : `EnglishNerd_Certificate_${safeName}.pdf`;
       pdf.save(fileName);
     } catch (e) {
       console.error(e);
@@ -422,6 +496,18 @@ function CertificateRow({ cert, onDelete }: { cert: CertificateRecord; onDelete:
             : <p className="text-xs text-slate-400">{issuedDate} · {cert.scorePercent}% ({cert.scoreCorrect}/{cert.scoreTotal})</p>
           }
         </div>
+        {/* Share link (grammar certs only) */}
+        {!isVocab && (
+          <a
+            href={`/certificate/${cert.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share
+          </a>
+        )}
         {/* Download */}
         <button
           onClick={reDownload}
@@ -475,12 +561,16 @@ function parseExerciseUrl(raw: string): ParsedExercise | null {
     const item = searchIndex.find((i) => i.href.startsWith(`/${cat}/${level}/${slug}`));
     return { category: cat, level, slug, title: item?.title ?? slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") };
   }
-  // /tenses/present-simple
-  const tMatch = pathname.match(/^\/tenses\/([a-z0-9-]+)/);
+  // /tenses/present-simple  OR  /tenses/present-simple/quiz
+  const tMatch = pathname.match(/^\/tenses\/([a-z0-9-]+(?:\/[a-z0-9-]+)?)/);
   if (tMatch) {
-    const slug = tMatch[1];
-    const item = searchIndex.find((i) => i.href === `/tenses/${slug}`);
-    return { category: "tenses", level: null, slug, title: item?.title ?? slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") };
+    const fullSlug = tMatch[1]; // "past-simple" or "past-simple/quiz"
+    const baseSlug = fullSlug.split("/")[0];
+    const subpage = fullSlug.split("/")[1];
+    const item = searchIndex.find((i) => i.href === `/tenses/${baseSlug}`);
+    const baseTitle = item?.title ?? baseSlug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+    const subLabel = subpage ? ` — ${subpage.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}` : "";
+    return { category: "tenses", level: null, slug: fullSlug, title: baseTitle + subLabel };
   }
   // /tests/grammar  OR  /tests/vocabulary  OR  /tests/tenses
   const testsMatch = pathname.match(/^\/tests\/([a-z0-9-]+)/);
@@ -490,6 +580,19 @@ function parseExerciseUrl(raw: string): ParsedExercise | null {
     return { category: "tests", level: null, slug, title: item?.title ?? slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") };
   }
   return null;
+}
+
+function getExerciseCount(parsed: ParsedExercise): number {
+  switch (parsed.category) {
+    case "grammar": return 4;
+    case "vocabulary": return 3;
+    case "tenses": {
+      const subpage = parsed.slug.split("/")[1];
+      if (!subpage) return 0;
+      return subpage === "sentence-builder" ? 3 : 4;
+    }
+    default: return 0; // tests, listening, reading — no numbered sub-exercises
+  }
 }
 
 // Assignable topics from searchIndex (all exercise categories)
@@ -567,6 +670,7 @@ function NewAssignmentModal({
   const [browseCategory, setBrowseCategory] = useState("grammar");
   const [browseLevel, setBrowseLevel] = useState("b1");
   const [browseSlug, setBrowseSlug] = useState("");
+  const [browseTenseSubpage, setBrowseTenseSubpage] = useState("quiz");
 
   // Essay fields
   const [essayTitle, setEssayTitle] = useState("");
@@ -586,6 +690,7 @@ function NewAssignmentModal({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  // Scroll page to top when modal opens so the header is visible
   // Auto-parse URL as user types
   useEffect(() => {
     if (!urlInput.trim()) { setParsed(null); setParseError(""); return; }
@@ -593,6 +698,9 @@ function NewAssignmentModal({
     if (result) { setParsed(result); setParseError(""); setTitle(result.title); }
     else { setParsed(null); setParseError("Couldn't recognise this URL. Paste a link like /grammar/b1/past-continuous"); }
   }, [urlInput]);
+
+  // Reset exercise selection when topic changes
+  useEffect(() => { setSelectedExercises([]); }, [parsed?.slug]);
 
   // When browse selection changes, update parsed
   useEffect(() => {
@@ -603,10 +711,13 @@ function NewAssignmentModal({
     const parts = item.href.split("/");
     const cat = parts[1];
     const level = (browseCategory === "tenses" || browseCategory === "tests") ? null : parts[2];
-    const slug = parts[parts.length - 1];
-    setParsed({ category: cat, level, slug, title: item.title });
-    setTitle(item.title);
-  }, [browseCategory, browseLevel, browseSlug, findMode]);
+    const baseSlug = parts[parts.length - 1];
+    const slug = browseCategory === "tenses" ? `${baseSlug}/${browseTenseSubpage}` : baseSlug;
+    const subLabel = browseCategory === "tenses"
+      ? ` — ${browseTenseSubpage.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}` : "";
+    setParsed({ category: cat, level, slug, title: item.title + subLabel });
+    setTitle(item.title + subLabel);
+  }, [browseCategory, browseLevel, browseSlug, browseTenseSubpage, findMode]);
 
   // Reset slug when category/level changes
   useEffect(() => { setBrowseSlug(""); }, [browseCategory, browseLevel]);
@@ -680,8 +791,9 @@ function NewAssignmentModal({
     }
 
     if (!parsed) return;
+    const exCount = getExerciseCount(parsed);
     // Create one assignment per selected exercise (or one without exercise_no if all/none selected)
-    const exerciseNums = selectedExercises.length === 0 || selectedExercises.length === 4 ? [undefined] : selectedExercises;
+    const exerciseNums = exCount === 0 || selectedExercises.length === 0 || selectedExercises.length === exCount ? [undefined] : selectedExercises;
     let lastError = "";
     for (let i = 0; i < exerciseNums.length; i++) {
       const exNo = exerciseNums[i];
@@ -842,6 +954,24 @@ function NewAssignmentModal({
                         })}
                       </select>
                     </div>
+                    {browseCategory === "tenses" && browseSlug && (
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Exercise Type</label>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {([
+                            { id: "quiz",             label: "Quiz" },
+                            { id: "sentence-builder", label: "Sentence Builder" },
+                            { id: "spot-the-mistake", label: "Spot the Mistake" },
+                            { id: "fill-in-blank",    label: "Fill in the Blank" },
+                          ]).map(({ id, label }) => (
+                            <button key={id} type="button" onClick={() => setBrowseTenseSubpage(id)}
+                              className={`rounded-xl py-2 text-xs font-bold transition ${browseTenseSubpage === id ? `${tc.btnSolid} text-white shadow-sm` : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -875,26 +1005,32 @@ function NewAssignmentModal({
                           className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition" />
                       </div>
 
-                      <div>
-                        <label className="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                          Exercises <span className="text-slate-300 normal-case font-normal">(leave unchecked = all)</span>
-                        </label>
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4].map((n) => {
-                            const checked = selectedExercises.includes(n);
-                            return (
-                              <button key={n} type="button"
-                                onClick={() => setSelectedExercises((p) => checked ? p.filter((x) => x !== n) : [...p, n])}
-                                className={`flex-1 rounded-xl border py-2 text-xs font-bold transition ${checked ? `${tc.borderActive} ${tc.bgActive} ${tc.textActive}` : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}>
-                                Ex {n}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {selectedExercises.length > 0 && selectedExercises.length < 4 && (
-                          <p className={`mt-1.5 text-[11px] ${tc.infoText}`}>Will create {selectedExercises.length} separate assignment{selectedExercises.length > 1 ? "s" : ""}</p>
-                        )}
-                      </div>
+                      {(() => {
+                        const exCount = getExerciseCount(parsed);
+                        if (exCount < 2) return null;
+                        return (
+                          <div>
+                            <label className="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                              Exercises <span className="text-slate-300 normal-case font-normal">(leave unchecked = all)</span>
+                            </label>
+                            <div className="flex gap-2">
+                              {Array.from({ length: exCount }, (_, i) => i + 1).map((n) => {
+                                const checked = selectedExercises.includes(n);
+                                return (
+                                  <button key={n} type="button"
+                                    onClick={() => setSelectedExercises((p) => checked ? p.filter((x) => x !== n) : [...p, n])}
+                                    className={`flex-1 rounded-xl border py-2 text-xs font-bold transition ${checked ? `${tc.borderActive} ${tc.bgActive} ${tc.textActive}` : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}>
+                                    Ex {n}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {selectedExercises.length > 0 && selectedExercises.length < exCount && (
+                              <p className={`mt-1.5 text-[11px] ${tc.infoText}`}>Will create {selectedExercises.length} separate assignment{selectedExercises.length > 1 ? "s" : ""}</p>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       <div>
                         <label className="mb-1 flex cursor-pointer items-center gap-2">
@@ -1561,7 +1697,7 @@ const LEVEL_BADGE: Record<string, string> = {
 };
 
 function StudentDetailPanel({
-  student, assignments: allAssignments, classes: allClasses, onBack, onOpenAssignment, onNewAssignment, initialNotes, linkId, plan = "plus",
+  student, assignments: allAssignments, classes: allClasses, onBack, onOpenAssignment, onNewAssignment, onCancelAssignment, initialNotes, linkId, plan = "plus",
 }: {
   student: { id: string; name: string | null; email: string; avatarUrl: string | null };
   assignments: TeacherData["assignments"];
@@ -1569,6 +1705,7 @@ function StudentDetailPanel({
   onBack: () => void;
   onOpenAssignment: (a: TeacherData["assignments"][0]) => void;
   onNewAssignment: () => void;
+  onCancelAssignment: (assignmentId: string, studentId: string) => void;
   initialNotes: string | null;
   linkId: string;
   plan?: "starter" | "solo" | "plus";
@@ -1584,6 +1721,7 @@ function StudentDetailPanel({
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [notesSaving, setNotesSaving] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
   const [weakOpen, setWeakOpen] = useState(false);
   const weakLsKey = `eng_teacher_dismissed_weak_${student.id}`;
   const [dismissedWeak, setDismissedWeak] = useState<Set<string>>(() => {
@@ -1802,10 +1940,6 @@ function StudentDetailPanel({
                             <p className="text-[11px] text-slate-400">{t.category}{t.level ? ` · ${t.level.toUpperCase()}` : ""}</p>
                           </div>
                           <span className={`shrink-0 rounded-lg border px-2.5 py-0.5 text-xs font-black ${scoreCls}`}>{t.bestScore}%</span>
-                          <a href={t.href} target="_blank" rel="noopener noreferrer"
-                            className="shrink-0 rounded-xl bg-rose-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-600 transition">
-                            Open
-                          </a>
                           <button
                             onClick={() => dismissWeakTopic(key)}
                             title="Hide this topic"
@@ -1851,7 +1985,10 @@ function StudentDetailPanel({
                 const isExpanded = expandedId === row.id;
                 const href = `/${row.category}${row.level ? `/${row.level}` : ""}/${row.slug}`;
                 return (
-                  <div key={row.id} className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden">
+                  <div key={row.id}
+                    className={`rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] overflow-hidden ${rowAnswers.length > 0 ? "cursor-pointer" : ""}`}
+                    onClick={rowAnswers.length > 0 ? () => setExpandedId(isExpanded ? null : row.id) : undefined}
+                  >
                     <div className="flex items-center gap-3 px-5 py-4">
                       {row.level && (
                         <span className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[10px] font-black text-white ${LEVEL_BADGE[row.level] ?? "bg-slate-400"}`}>
@@ -1868,21 +2005,17 @@ function StudentDetailPanel({
                         </p>
                       </div>
                       <span className={`rounded-xl border px-3 py-1 text-sm font-black ${scoreBg(row.score)}`}>{row.score}%</span>
-                      <div className="flex items-center gap-2">
-                        <a href={href} target="_blank" rel="noopener noreferrer"
-                          className="hidden sm:flex rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition">
-                          Open
-                        </a>
-                        {rowAnswers.length > 0 && (
-                          <button onClick={() => setExpandedId(isExpanded ? null : row.id)}
-                            className={`rounded-lg border px-2 py-1 text-xs font-semibold transition ${tc.infoBox} ${tc.textActive}`}>
-                            {isExpanded ? "Hide" : "Details"}
-                          </button>
-                        )}
-                      </div>
+                      {rowAnswers.length > 0 && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : row.id); }}
+                          className={`rounded-lg border px-2 py-1 text-xs font-semibold transition ${tc.infoBox} ${tc.textActive}`}
+                        >
+                          {isExpanded ? "Hide" : "Details"}
+                        </button>
+                      )}
                     </div>
                     {isExpanded && rowAnswers.length > 0 && (
-                      row.category === "test" ? (
+                      (row.category === "test" || row.category === "tests") ? (
                         <TestBreakdown slug={row.slug} answers={rowAnswers} />
                       ) : (
                         <div className="border-t border-slate-50 px-5 py-4">
@@ -1958,41 +2091,64 @@ function StudentDetailPanel({
                   const due = a.dueDate ? new Date(a.dueDate) : null;
                   const isOverdue = due && due < new Date();
                   const catColor = a.category === "grammar" ? "bg-violet-500" : a.category === "tenses" ? "bg-sky-500" : a.category === "reading" ? "bg-emerald-500" : a.category === "listening" ? "bg-rose-400" : a.category === "tests" ? "bg-orange-500" : isEssay ? "bg-rose-500" : "bg-amber-500";
+                  const canRevoke = a.targetStudentIds.includes(student.id);
                   return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => onOpenAssignment(a)}
-                      className="group w-full flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/[0.04] text-left transition hover:ring-slate-200 hover:shadow-md"
-                    >
-                      <div className={`flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-xl text-white ${isDone ? "bg-emerald-500" : catColor}`}>
-                        {isDone ? (
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        ) : isEssay ? (
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        ) : (
-                          <>
-                            <span className="text-[8px] font-black uppercase leading-none opacity-75">{a.category.slice(0, 3)}</span>
-                            <span className="text-[10px] font-black leading-none">{a.level ? a.level.toUpperCase() : "ALL"}</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-800">
-                          {a.title}
-                          {!isEssay && a.exerciseNo && <span className="ml-1.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Ex. {a.exerciseNo}</span>}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs">
-                          {isEssay && <span className="text-rose-500 font-semibold">Essay</span>}
-                          {!isEssay && <span className={isDone ? "text-emerald-600 font-semibold" : "text-slate-400"}>{isDone ? "Completed" : "Not done"}</span>}
-                          {due && <><span className="text-slate-200">·</span><span className={isOverdue ? "text-red-500 font-semibold" : "text-slate-400"}>{isOverdue ? "Overdue" : "Due"} {due.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span></>}
+                    <div key={a.id} className="group relative flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenAssignment(a)}
+                        className="flex-1 flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/[0.04] text-left transition hover:ring-slate-200 hover:shadow-md"
+                      >
+                        <div className={`flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-xl text-white ${isDone ? "bg-emerald-500" : catColor}`}>
+                          {isDone ? (
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          ) : isEssay ? (
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          ) : (
+                            <>
+                              <span className="text-[8px] font-black uppercase leading-none opacity-75">{a.category.slice(0, 3)}</span>
+                              <span className="text-[10px] font-black leading-none">{a.level ? a.level.toUpperCase() : "ALL"}</span>
+                            </>
+                          )}
                         </div>
-                      </div>
-                      <span className={`hidden shrink-0 items-center gap-1 text-xs font-semibold ${tc.infoText} group-hover:flex`}>
-                        Results
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                      </span>
-                    </button>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-800">
+                            {a.title}
+                            {!isEssay && a.exerciseNo && <span className="ml-1.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Ex. {a.exerciseNo}</span>}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 text-xs">
+                            {isEssay && <span className="text-rose-500 font-semibold">Essay</span>}
+                            {!isEssay && <span className={isDone ? "text-emerald-600 font-semibold" : "text-slate-400"}>{isDone ? "Completed" : "Not done"}</span>}
+                            {due && <><span className="text-slate-200">·</span><span className={isOverdue ? "text-red-500 font-semibold" : "text-slate-400"}>{isOverdue ? "Overdue" : "Due"} {due.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span></>}
+                          </div>
+                        </div>
+                        <span className={`hidden shrink-0 items-center gap-1 text-xs font-semibold ${tc.infoText} group-hover:flex`}>
+                          Results
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                      </button>
+                      {canRevoke && (
+                        <button
+                          type="button"
+                          disabled={revokingId === a.id}
+                          title="Revoke assignment for this student"
+                          onClick={async () => {
+                            if (!confirm(`Revoke "${a.title}" for this student?`)) return;
+                            setRevokingId(a.id);
+                            await fetch(`/api/teacher/assignment-targets?assignmentId=${a.id}&studentId=${student.id}`, { method: "DELETE" });
+                            onCancelAssignment(a.id, student.id);
+                            setRevokingId(null);
+                          }}
+                          className="shrink-0 flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                        >
+                          {revokingId === a.id ? (
+                            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                          ) : (
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -2994,6 +3150,13 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
           onBack={() => setSelectedStudent(null)}
           onOpenAssignment={(a) => { setSelectedStudent(null); setSelectedAssignment(a); markAssignmentSeen(a.id); }}
           onNewAssignment={() => { setPrefilledStudentId(selectedStudent.id); setShowAssignModal(true); }}
+          onCancelAssignment={(assignmentId, studentId) => {
+            setAssignments((prev) => prev.map((a) =>
+              a.id === assignmentId
+                ? { ...a, targetStudentIds: a.targetStudentIds.filter((id) => id !== studentId) }
+                : a
+            ));
+          }}
           initialNotes={students.find((s) => s.studentId === selectedStudent.id)?.notes ?? null}
           linkId={students.find((s) => s.studentId === selectedStudent.id)?.linkId ?? ""}
         />
@@ -3146,7 +3309,10 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
                   if (a.status === "active" && b.status !== "active") return -1;
                   return (b.lastActivity ?? "").localeCompare(a.lastActivity ?? "");
                 }).map((s) => (
-                  <div key={s.linkId} className="flex items-center gap-3 px-5 py-4">
+                  <div key={s.linkId}
+                    className={`flex items-center gap-3 px-5 py-4 ${s.status === "active" && s.studentId ? "cursor-pointer hover:bg-slate-50 transition-colors" : ""}`}
+                    onClick={s.status === "active" && s.studentId ? () => setSelectedStudent({ id: s.studentId!, name: s.studentName, email: s.email, avatarUrl: s.studentAvatarUrl }) : undefined}
+                  >
                     <div className="relative h-9 w-9 shrink-0">
                       <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black overflow-hidden ${tc.avatarBg}`}>
                         {s.studentAvatarUrl ? (
@@ -3163,7 +3329,7 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
                     </div>
                     <div className="flex-1 min-w-0">
                       {renamingStudent?.linkId === s.linkId ? (
-                        <form onSubmit={(e) => { e.preventDefault(); handleRename(s.linkId, renamingStudent.value); }} className="flex items-center gap-1.5">
+                        <form onSubmit={(e) => { e.preventDefault(); handleRename(s.linkId, renamingStudent.value); }} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5">
                           <input
                             autoFocus
                             value={renamingStudent.value}
@@ -3202,7 +3368,7 @@ function TeacherTab({ teacherData, siteUrl, isPaymentFailed }: { teacherData: Te
                         <div><p className={`text-sm font-black ${s.avgScore !== null ? scoreColor(s.avgScore) : "text-slate-400"}`}>{s.avgScore !== null ? `${s.avgScore}%` : "—"}</p><p className="text-[10px] text-slate-400 uppercase tracking-wide">Avg</p></div>
                       </div>
                     )}
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
                       {s.status === "active" && s.studentId && <button onClick={() => setSelectedStudent({ id: s.studentId!, name: s.studentName, email: s.email, avatarUrl: s.studentAvatarUrl })} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition">View</button>}
                       {s.status === "pending" && <button onClick={() => { navigator.clipboard.writeText(`${siteUrl}/teacher/join?token=${s.inviteToken}`); setCopiedToken(s.inviteToken); setTimeout(() => setCopiedToken(null), 2000); }} className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${tc.infoBox} ${tc.textActive}`}>{copiedToken === s.inviteToken ? "Copied!" : "Copy link"}</button>}
                       {s.status === "pending_student" && (
@@ -5408,7 +5574,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
         onDone={() => setShowOnboarding(false)}
       />
     )}
-    {showStudentTour && !showOnboarding && (
+    {showStudentTour && !showOnboarding && newAssignmentPopup.length === 0 && (
       <StudentTour userEmail={email} hasAssignments={studentAssignments.length > 0} onDone={() => setShowStudentTour(false)} />
     )}
     {showProTour && !showOnboarding && !showStudentTour && !showWelcome && (
@@ -5863,6 +6029,9 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               </div>
             )}
           </div>
+
+          {/* ── My Words ─────────────────────────────────────────── */}
+          <MyWordsSection />
 
           </div>
         )}

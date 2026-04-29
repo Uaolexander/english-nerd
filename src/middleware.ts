@@ -83,7 +83,8 @@ export async function middleware(request: NextRequest) {
   ) {
     const next = request.nextUrl.searchParams.get("next");
     const url = request.nextUrl.clone();
-    url.pathname = next && next.startsWith("/") ? next : "/account";
+    const isSafePath = next && next.startsWith("/") && !next.startsWith("//");
+    url.pathname = isSafePath ? next : "/account";
     url.search = "";
     return NextResponse.redirect(url);
   }

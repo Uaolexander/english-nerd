@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getIsPro } from "@/lib/getIsPro";
 import { getRecommendations } from "@/lib/getRecommendations";
+import { computeStreak, weeklyActivity } from "@/lib/activityStats";
 import DashboardClient from "./DashboardClient";
 
 export const metadata: Metadata = {
@@ -11,35 +12,6 @@ export const metadata: Metadata = {
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function computeStreak(dates: string[]): number {
-  if (!dates.length) return 0;
-  const days = Array.from(new Set(dates.map((d) => d.slice(0, 10)))).sort().reverse();
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  if (days[0] !== today && days[0] !== yesterday) return 0;
-  let streak = 1;
-  for (let i = 1; i < days.length; i++) {
-    const diff = Math.round(
-      (new Date(days[i - 1]).getTime() - new Date(days[i]).getTime()) / 86_400_000
-    );
-    if (diff === 1) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function weeklyActivity(dates: string[]): { day: string; label: string; count: number }[] {
-  const result = [];
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86_400_000);
-    const iso = d.toISOString().slice(0, 10);
-    const count = dates.filter((x) => x.slice(0, 10) === iso).length;
-    result.push({ day: iso, label: dayNames[d.getDay()], count });
-  }
-  return result;
-}
 
 function levelFromScore(score: number): string {
   if (score >= 90) return "C1";

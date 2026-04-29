@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   const { data: invite } = await supabase
     .from("teacher_students")
-    .select("id, teacher_id, invite_email, status, student_id")
+    .select("id, teacher_id, invite_email, status, student_id, invite_expires_at")
     .eq("invite_token", token)
     .maybeSingle();
 
@@ -26,6 +26,10 @@ export async function POST(req: Request) {
 
   if (invite.status === "removed") {
     return NextResponse.json({ ok: false, error: "This invite is no longer valid" }, { status: 410 });
+  }
+
+  if (invite.invite_expires_at && new Date() > new Date(invite.invite_expires_at)) {
+    return NextResponse.json({ ok: false, error: "This invite link has expired. Please ask your teacher to send a new invitation." }, { status: 410 });
   }
 
   // Verify the logged-in user's email matches the invite email

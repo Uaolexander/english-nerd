@@ -17,6 +17,10 @@ function getIp(req: NextRequest): string {
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+  // Purge expired entries to prevent unbounded growth
+  for (const [key, val] of rateLimitMap) {
+    if (now > val.reset) rateLimitMap.delete(key);
+  }
   const entry = rateLimitMap.get(ip);
   if (!entry || now > entry.reset) {
     rateLimitMap.set(ip, { count: 1, reset: now + WINDOW_MS });
@@ -162,6 +166,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: chatId, photo: imageUrl, caption, ...replyOpts }),
+        signal: AbortSignal.timeout(8000),
       });
     } else {
       // Text-only message
@@ -170,6 +175,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: chatId, text, ...replyOpts }),
+        signal: AbortSignal.timeout(8000),
       });
     }
 

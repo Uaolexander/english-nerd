@@ -6,6 +6,7 @@ import { getProStatus } from "@/lib/getProStatus";
 import { getTeacherStatus } from "@/lib/getTeacherStatus";
 import { getStudentStatus } from "@/lib/getStudentStatus";
 import { getRecommendations } from "@/lib/getRecommendations";
+import { computeStreak, weeklyActivity } from "@/lib/activityStats";
 import AccountClient from "./AccountClient";
 import type { ProgressStats, CertificateRecord, TeacherData, StudentAssignment } from "./AccountClient";
 import type { WeakTopic } from "./DashboardTab";
@@ -14,37 +15,6 @@ const LEVEL_TOTALS: Record<string, number> = {
   a1: 76, a2: 80, b1: 84, b2: 72, c1: 72,
 };
 const TOTAL_EXERCISES = Object.values(LEVEL_TOTALS).reduce((a, b) => a + b, 0);
-
-function computeStreak(dates: string[], freezeDates: string[] = []): number {
-  if (!dates.length && !freezeDates.length) return 0;
-  const days = Array.from(new Set([
-    ...dates.map((d) => d.slice(0, 10)),
-    ...freezeDates,
-  ])).sort().reverse();
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  if (days[0] !== today && days[0] !== yesterday) return 0;
-  let streak = 1;
-  for (let i = 1; i < days.length; i++) {
-    const diff = Math.round(
-      (new Date(days[i - 1]).getTime() - new Date(days[i]).getTime()) / 86_400_000
-    );
-    if (diff === 1) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function weeklyActivity(dates: string[]): { day: string; label: string; count: number }[] {
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const result = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86_400_000);
-    const iso = d.toISOString().slice(0, 10);
-    result.push({ day: iso, label: dayNames[d.getDay()], count: dates.filter((x) => x.slice(0, 10) === iso).length });
-  }
-  return result;
-}
 
 function levelFromScore(score: number): string {
   if (score >= 90) return "C1";
@@ -234,11 +204,11 @@ export default async function AccountPage() {
     let profileByStudent: Record<string, { name: string; avatarUrl: string }> = {};
     if (allKnownStudentIds.length > 0) {
       const serviceClient = createServiceClient();
-      const [pRowsRes, profileResults] = await Promise.all([
+      const [pRowsRes, profilesRes] = await Promise.all([
         activeStudentIds.length > 0
           ? supabase.from("user_progress").select("user_id, score, completed_at").in("user_id", activeStudentIds)
           : Promise.resolve({ data: [] }),
-        Promise.all(allKnownStudentIds.map((id) => serviceClient.auth.admin.getUserById(id))),
+        serviceClient.from("profiles").select("id, full_name, avatar_url").in("id", allKnownStudentIds),
       ]);
       for (const sid of activeStudentIds) {
         const rows = (pRowsRes.data ?? []).filter((r) => r.user_id === sid);
@@ -247,14 +217,11 @@ export default async function AccountPage() {
         const last = rows.length ? rows.sort((a, b) => b.completed_at.localeCompare(a.completed_at))[0].completed_at : null;
         progressByStudent[sid] = { total, avg, last };
       }
-      for (const { data } of profileResults) {
-        if (data?.user) {
-          const m = data.user.user_metadata ?? {};
-          profileByStudent[data.user.id] = {
-            name: (m.full_name ?? m.name ?? "") as string,
-            avatarUrl: (m.avatar_url ?? m.picture ?? "") as string,
-          };
-        }
+      for (const p of (profilesRes.data ?? [])) {
+        profileByStudent[p.id as string] = {
+          name: (p.full_name as string | null) ?? "",
+          avatarUrl: (p.avatar_url as string | null) ?? "",
+        };
       }
     }
 
