@@ -15,9 +15,10 @@ type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
 type ExerciseSet =
   | { type: "mcq"; title: string; instructions: string; questions: MCQ[] }
-  | { type: "input"; title: string; instructions: string; questions: InputQ[] };
+  | { type: "input"; title: string; instructions: string; questions: InputQ[] }
+  | { type: "story"; title: string; instructions: string; passage: string; questions: InputQ[] };
 
-function normalize(s: string) { return s.trim().toLowerCase(); }
+function normalize(s: string) { return s.trim().toLowerCase().replace(/[.,!?;:]+/g, "").replace(/\s+/g, " "); }
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "Second conditional formula:", options: ["if + present → will + verb", "if + past → would + verb", "if + present → would + verb", "if + past → will + verb"], answer: 1 },
@@ -137,7 +138,7 @@ const RECOMMENDATIONS: GrammarRec[] = [
 
 export default function SecondConditionalLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
-  const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
+  const [exNo, setExNo] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -146,11 +147,11 @@ export default function SecondConditionalLessonClient() {
     setMcqAnswers(payload.answers as Record<string, number | null>);
     setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
     setChecked(payload.checked as boolean);
-    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4 | 5);
   });
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
+  const sets: Record<1 | 2 | 3 | 4 | 5, ExerciseSet> = useMemo(() => ({
     1: {
       type: "mcq",
       title: "Exercise 1 (Easy) — Choose the correct form",
@@ -219,6 +220,22 @@ export default function SecondConditionalLessonClient() {
         { id: "e4q10", prompt: "Context: Imagining a perfect world. → If everyone ___ each other, there would be no wars.", options: ["respected", "respects"], correctIndex: 0, explanation: "Hypothetical ideal → second: respected." },
       ],
     },
+    5: {
+      type: "story" as const,
+      title: "Exercise 5 (Story) — Open the brackets",
+      instructions: "Read Emma's story about her dream life. Open the brackets using the second conditional (if + past simple, would + infinitive).",
+      passage: "Emma works as a data analyst in a grey office building. She dreams about a different life.\n\nIf Emma (1)(have) more free time, she would learn to paint. She has always loved art but never had the chance to study it properly.\n\nShe also thinks about travel. If she (2)(not / have) a mortgage to pay, she would quit her job tomorrow and travel around South America for a year. But that is not realistic right now.\n\nHer friend Dan says: \"If you (3)(be) really serious about it, you would save a little every month.\" He is probably right. If Emma (4)(start) saving now, she would have enough money in three years.\n\nEmma imagines the perfect scenario: if she (5)(win) a large sum of money, she would open a small gallery in her hometown. She would hire local artists, and if the gallery (6)(be) a success, she would expand it into a school.\n\nOf course, deep down Emma knows that if she (7)(truly / want) a change, she (8)(not / wait) for luck — she would make it happen herself.",
+      questions: [
+        { id: "e5q1", prompt: "(1) If Emma _____ (have) more free time", correct: "had", explanation: "Second conditional if-clause → past simple: had." },
+        { id: "e5q2", prompt: "(2) If she _____ (not / have) a mortgage", correct: "didn't have", explanation: "Second conditional if-clause → past simple negative: didn't have." },
+        { id: "e5q3", prompt: "(3) If you _____ (be) really serious about it", correct: "were", explanation: "Second conditional if-clause → past simple (were for all persons): were." },
+        { id: "e5q4", prompt: "(4) If Emma _____ (start) saving now", correct: "started", explanation: "Second conditional if-clause → past simple: started." },
+        { id: "e5q5", prompt: "(5) if she _____ (win) a large sum of money", correct: "won", explanation: "Second conditional if-clause → past simple: won." },
+        { id: "e5q6", prompt: "(6) if the gallery _____ (be) a success", correct: "were", explanation: "Second conditional if-clause → were (formal/subjunctive): were." },
+        { id: "e5q7", prompt: "(7) if she _____ (truly / want) a change", correct: "truly wanted", explanation: "Second conditional if-clause → past simple: truly wanted." },
+        { id: "e5q8", prompt: "(8) she _____ (not / wait) for luck", correct: "wouldn't wait", explanation: "Second conditional result clause → would not + infinitive: wouldn't wait." },
+      ],
+    },
   }), []);
 
   const current = sets[exNo];
@@ -253,7 +270,7 @@ export default function SecondConditionalLessonClient() {
   }, [checked, current, mcqAnswers, inputAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
+  function switchExercise(n: 1 | 2 | 3 | 4 | 5) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -293,7 +310,7 @@ export default function SecondConditionalLessonClient() {
             <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
-              {([1, 2, 3, 4] as const).map((n) => (
+              {([1, 2, 3, 4, 5] as const).map((n) => (
                 <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
               ))}
             </div>
@@ -307,7 +324,7 @@ export default function SecondConditionalLessonClient() {
                   <p className="text-slate-700">{current.instructions}</p>
                   <div className="mt-2 flex sm:hidden items-center gap-2 text-sm text-slate-600">
                     <span>Exercises:</span>
-                    {([1, 2, 3, 4] as const).map((n) => (
+                    {([1, 2, 3, 4, 5] as const).map((n) => (
                       <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
                     ))}
                   </div>
@@ -347,7 +364,7 @@ export default function SecondConditionalLessonClient() {
                         </div>
                       );
                     })
-                  ) : (
+                  ) : current.type === "input" ? (
                     current.questions.map((q, idx) => {
                       const val = inputAnswers[q.id] ?? "";
                       const answered = normalize(val) !== "";
@@ -376,6 +393,46 @@ export default function SecondConditionalLessonClient() {
                         </div>
                       );
                     })
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-6">
+                        <p className="text-sm font-bold uppercase tracking-wider text-violet-600 mb-3">Read the story</p>
+                        {current.passage.split('\n').filter(Boolean).map((para, i) => (
+                          <p key={i} className="text-slate-700 leading-relaxed mb-2 last:mb-0">{para}</p>
+                        ))}
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-sm font-bold text-slate-700">Open the brackets — write the correct form:</p>
+                        {current.questions.map((q, idx) => {
+                          const val = inputAnswers[q.id] ?? "";
+                          const answered = normalize(val) !== "";
+                          const isCorrect = checked && answered && normalize(val) === normalize(q.correct);
+                          const wrong = checked && answered && !isCorrect;
+                          const noAnswer = checked && !answered;
+                          return (
+                            <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                              <div className="flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-sm font-black text-violet-700">({idx + 1})</div>
+                                <div className="flex-1">
+                                  <div className="font-bold text-slate-900">{q.prompt}</div>
+                                  <div className="mt-3">
+                                    <input value={val} disabled={checked} onChange={(e) => setInputAnswers((p) => ({ ...p, [q.id]: e.target.value }))} placeholder="Type the correct form…" className="w-full max-w-sm rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
+                                  </div>
+                                  {checked && (
+                                    <div className="mt-3 text-sm">
+                                      {isCorrect && <div className="text-emerald-700 font-semibold">✅ Correct</div>}
+                                      {wrong && <div className="text-red-700 font-semibold">❌ Wrong — correct: <b>{q.correct}</b></div>}
+                                      {noAnswer && <div className="text-amber-700 font-semibold">⚠ No answer — correct: <b>{q.correct}</b></div>}
+                                      <div className="mt-1 text-slate-600">{q.explanation}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -386,8 +443,8 @@ export default function SecondConditionalLessonClient() {
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}
-                    {checked && exNo < 4 && (
-                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
+                    {checked && exNo < 5 && (
+                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4 | 5)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
                     )}
                   </div>
                   {score && (

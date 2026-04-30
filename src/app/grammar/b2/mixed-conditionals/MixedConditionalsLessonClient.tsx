@@ -125,9 +125,10 @@ type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
 type ExerciseSet =
   | { type: "mcq"; title: string; instructions: string; questions: MCQ[] }
-  | { type: "input"; title: string; instructions: string; questions: InputQ[] };
+  | { type: "input"; title: string; instructions: string; questions: InputQ[] }
+  | { type: "story"; title: string; instructions: string; passage: string; questions: InputQ[] };
 
-function normalize(s: string) { return s.trim().toLowerCase(); }
+function normalize(s: string) { return s.trim().toLowerCase().replace(/[.,!?;:]+/g, "").replace(/\s+/g, " "); }
 
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Third Conditional", href: "/grammar/b2/third-conditional", level: "B2", badge: "bg-orange-500", reason: "Foundation for mixed conditionals" },
@@ -137,7 +138,7 @@ const RECOMMENDATIONS: GrammarRec[] = [
 
 export default function MixedConditionalsLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
-  const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
+  const [exNo, setExNo] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -146,11 +147,11 @@ export default function MixedConditionalsLessonClient() {
     setMcqAnswers(payload.answers as Record<string, number | null>);
     setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
     setChecked(payload.checked as boolean);
-    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4 | 5);
   });
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
+  const sets: Record<1 | 2 | 3 | 4 | 5, ExerciseSet> = useMemo(() => ({
     1: {
       type: "mcq",
       title: "Exercise 1 (Easy) — Identify the mixed conditional type",
@@ -219,6 +220,22 @@ export default function MixedConditionalsLessonClient() {
         { id: "e4q10", prompt: "They didn't build the dam (past). The valley (still/flood) ___ every year now.", correct: "would still be flooding", explanation: "would still be flooding = past failure to act → present ongoing situation (Type A)." },
       ],
     },
+    5: {
+      type: "story" as const,
+      title: "Exercise 5 (Story) — Open the brackets",
+      instructions: "Read the story about Maria's career choices. Open the brackets using mixed conditionals: past condition → present result (if + past perfect, would + infinitive now) or present condition → past result (if + past simple, would have + past participle).",
+      passage: "Maria is a school librarian. She enjoys her job, but sometimes she wonders what life might have been like if she had made different choices.\n\nShe studied literature at university but dropped out in her second year. If she (1)(finish) her degree, she would be a qualified teacher today. Instead, she has always worked in libraries.\n\nShe was offered a promotion five years ago but turned it down because she lacked confidence. If she (2)(accept) that promotion, she would be managing her own library branch by now.\n\nHer colleague says: \"If you (3)(be) more confident in yourself, you would have taken the chance when it appeared.\" Maria knows he is right — her self-doubt has held her back.\n\nMaria thinks about the future. If she (4)(start) an online teaching course now, she would have a teaching qualification within two years. That is still possible.\n\nShe also reflects on a specific decision. She once refused to relocate to the capital for a senior role. If she (5)(not / be) so attached to her hometown, she would have accepted the offer — and her salary would be much higher now.\n\nLooking ahead, if Maria (6)(apply) for the head librarian position next spring, she might finally get the recognition she deserves. It is not too late.\n\nShe tells herself: \"If I (7)(know) then what I know now, I (8)(make) very different decisions.\" But she is still optimistic about the years ahead.",
+      questions: [
+        { id: "e5q1", prompt: "(1) If she _____ (finish) her degree", correct: "had finished", explanation: "Mixed conditional: past if-clause → past perfect; result is present state (would be today)." },
+        { id: "e5q2", prompt: "(2) If she _____ (accept) that promotion", correct: "had accepted", explanation: "Mixed conditional: past if-clause → past perfect; result refers to the present (by now)." },
+        { id: "e5q3", prompt: "(3) If you _____ (be) more confident in yourself", correct: "were", explanation: "Mixed conditional: present condition → past result; if + past simple (were)." },
+        { id: "e5q4", prompt: "(4) If she _____ (start) an online course now", correct: "started", explanation: "Second conditional: hypothetical present condition → future result; past simple." },
+        { id: "e5q5", prompt: "(5) If she _____ (not / be) so attached to her hometown", correct: "hadn't been", explanation: "Mixed conditional: past if-clause → past perfect negative; result is present (salary now)." },
+        { id: "e5q6", prompt: "(6) if Maria _____ (apply) for the position", correct: "applies", explanation: "First conditional: real future possibility → present simple in if-clause." },
+        { id: "e5q7", prompt: "(7) If I _____ (know) then what I know now", correct: "had known", explanation: "Mixed conditional: past if-clause → past perfect; contrasting past knowledge with present awareness." },
+        { id: "e5q8", prompt: "(8) I _____ (make) very different decisions", correct: "would have made", explanation: "Mixed conditional: result of past condition → would have + past participle." },
+      ],
+    },
   }), []);
 
   const current = sets[exNo];
@@ -254,7 +271,7 @@ export default function MixedConditionalsLessonClient() {
   }, [checked, current, mcqAnswers, inputAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
+  function switchExercise(n: 1 | 2 | 3 | 4 | 5) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -294,7 +311,7 @@ export default function MixedConditionalsLessonClient() {
             <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
-              {([1, 2, 3, 4] as const).map((n) => (
+              {([1, 2, 3, 4, 5] as const).map((n) => (
                 <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
               ))}
             </div>
@@ -308,7 +325,7 @@ export default function MixedConditionalsLessonClient() {
                   <p className="text-slate-700">{current.instructions}</p>
                   <div className="mt-2 flex sm:hidden items-center gap-2 text-sm text-slate-600">
                     <span>Exercises:</span>
-                    {([1, 2, 3, 4] as const).map((n) => (
+                    {([1, 2, 3, 4, 5] as const).map((n) => (
                       <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
                     ))}
                   </div>
@@ -348,7 +365,7 @@ export default function MixedConditionalsLessonClient() {
                         </div>
                       );
                     })
-                  ) : (
+                  ) : current.type === "input" ? (
                     current.questions.map((q, idx) => {
                       const val = inputAnswers[q.id] ?? "";
                       const answered = normalize(val) !== "";
@@ -377,6 +394,46 @@ export default function MixedConditionalsLessonClient() {
                         </div>
                       );
                     })
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-6">
+                        <p className="text-sm font-bold uppercase tracking-wider text-violet-600 mb-3">Read the story</p>
+                        {current.passage.split('\n').filter(Boolean).map((para, i) => (
+                          <p key={i} className="text-slate-700 leading-relaxed mb-2 last:mb-0">{para}</p>
+                        ))}
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-sm font-bold text-slate-700">Open the brackets — write the correct form:</p>
+                        {current.questions.map((q, idx) => {
+                          const val = inputAnswers[q.id] ?? "";
+                          const answered = normalize(val) !== "";
+                          const isCorrect = checked && answered && normalize(val) === normalize(q.correct);
+                          const wrong = checked && answered && !isCorrect;
+                          const noAnswer = checked && !answered;
+                          return (
+                            <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                              <div className="flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-sm font-black text-violet-700">({idx + 1})</div>
+                                <div className="flex-1">
+                                  <div className="font-bold text-slate-900">{q.prompt}</div>
+                                  <div className="mt-3">
+                                    <input value={val} disabled={checked} onChange={(e) => setInputAnswers((p) => ({ ...p, [q.id]: e.target.value }))} placeholder="Type the correct form…" className="w-full max-w-sm rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
+                                  </div>
+                                  {checked && (
+                                    <div className="mt-3 text-sm">
+                                      {isCorrect && <div className="text-emerald-700 font-semibold">✅ Correct</div>}
+                                      {wrong && <div className="text-red-700 font-semibold">❌ Wrong — correct: <b>{q.correct}</b></div>}
+                                      {noAnswer && <div className="text-amber-700 font-semibold">⚠ No answer — correct: <b>{q.correct}</b></div>}
+                                      <div className="mt-1 text-slate-600">{q.explanation}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -387,8 +444,8 @@ export default function MixedConditionalsLessonClient() {
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}
-                    {checked && exNo < 4 && (
-                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
+                    {checked && exNo < 5 && (
+                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4 | 5)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
                     )}
                   </div>
                   {score && (

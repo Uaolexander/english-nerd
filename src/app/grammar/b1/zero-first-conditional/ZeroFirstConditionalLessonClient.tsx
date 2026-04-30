@@ -15,9 +15,10 @@ type MCQ = { id: string; prompt: string; options: string[]; correctIndex: number
 type InputQ = { id: string; prompt: string; correct: string; explanation: string };
 type ExerciseSet =
   | { type: "mcq"; title: string; instructions: string; questions: MCQ[] }
-  | { type: "input"; title: string; instructions: string; questions: InputQ[] };
+  | { type: "input"; title: string; instructions: string; questions: InputQ[] }
+  | { type: "story"; title: string; instructions: string; passage: string; questions: InputQ[] };
 
-function normalize(s: string) { return s.trim().toLowerCase(); }
+function normalize(s: string) { return s.trim().toLowerCase().replace(/[.,!?;:]+/g, "").replace(/\s+/g, " "); }
 
 const SPEED_QUESTIONS: SRQuestion[] = [
   { q: "Zero conditional formula:", options: ["if + past, present", "if + present, will + verb", "if + present, present", "if + past, would + verb"], answer: 2 },
@@ -137,7 +138,7 @@ const RECOMMENDATIONS: GrammarRec[] = [
 
 export default function ZeroFirstConditionalLessonClient() {
   const [tab, setTab] = useState<"exercises" | "explanation">("exercises");
-  const [exNo, setExNo] = useState<1 | 2 | 3 | 4>(1);
+  const [exNo, setExNo] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [checked, setChecked] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, number | null>>({});
   const [inputAnswers, setInputAnswers] = useState<Record<string, string>>({});
@@ -146,11 +147,11 @@ export default function ZeroFirstConditionalLessonClient() {
     setMcqAnswers(payload.answers as Record<string, number | null>);
     setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
     setChecked(payload.checked as boolean);
-    setExNo(payload.exNo as 1 | 2 | 3 | 4);
+    setExNo(payload.exNo as 1 | 2 | 3 | 4 | 5);
   });
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const sets: Record<1 | 2 | 3 | 4, ExerciseSet> = useMemo(() => ({
+  const sets: Record<1 | 2 | 3 | 4 | 5, ExerciseSet> = useMemo(() => ({
     1: {
       type: "mcq",
       title: "Exercise 1 (Easy) — Zero Conditional: facts and habits",
@@ -219,6 +220,22 @@ export default function ZeroFirstConditionalLessonClient() {
         { id: "e4q10", prompt: "If you ___ (mix) yellow and blue, you get green. (zero)", correct: "mix", explanation: "Scientific fact → zero: mix." },
       ],
     },
+    5: {
+      type: "story" as const,
+      title: "Exercise 5 (Story) — Open the brackets",
+      instructions: "Read the story about Sam's science fair. Open the brackets using the correct conditional form (zero or first).",
+      passage: "Sam is preparing for the school science fair. He knows from experience that if you (1)(want) to win, you must plan carefully — that is just how competitions work.\n\nHis experiment tests how plants grow. Scientists know that plants always grow taller if they (2)(receive) enough light. Sam has placed two plants by the window and two in a dark cupboard.\n\nIf Sam (3)(finish) his report by Friday, his teacher will let him present it to the class. He is almost done. However, if he (4)(not / proofread) his work, he always makes careless mistakes — so he will check it twice.\n\nSam's friend Lucy has entered the fair too. She told him: \"If our experiments (5)(impress) the judges, both of us will get through to the regional round.\"\n\nOn the day of the fair, if it (6)(rain), the event will be moved indoors. If everything (7)(go) to plan, he (8)(have) a real chance of winning the gold ribbon.",
+      questions: [
+        { id: "e5q1", prompt: "(1) if you _____ (want) to win", correct: "want", explanation: "Zero conditional — general truth: if + present simple, present simple." },
+        { id: "e5q2", prompt: "(2) if they _____ (receive) enough light", correct: "receive", explanation: "Zero conditional — scientific fact: present simple in both clauses." },
+        { id: "e5q3", prompt: "(3) If Sam _____ (finish) his report by Friday", correct: "finishes", explanation: "First conditional if-clause → present simple (not 'will'): finishes." },
+        { id: "e5q4", prompt: "(4) if he _____ (not / proofread) his work", correct: "doesn't proofread", explanation: "Zero conditional — habitual fact: if + present simple negative." },
+        { id: "e5q5", prompt: "(5) If our experiments _____ (impress) the judges", correct: "impress", explanation: "First conditional if-clause → present simple: impress." },
+        { id: "e5q6", prompt: "(6) if it _____ (rain)", correct: "rains", explanation: "First conditional if-clause → present simple: rains." },
+        { id: "e5q7", prompt: "(7) If everything _____ (go) to plan", correct: "goes", explanation: "First conditional if-clause → present simple: goes." },
+        { id: "e5q8", prompt: "(8) he _____ (have) a real chance", correct: "will have", explanation: "First conditional result clause → will + infinitive: will have." },
+      ],
+    },
   }), []);
 
   const current = sets[exNo];
@@ -253,7 +270,7 @@ export default function ZeroFirstConditionalLessonClient() {
   }, [checked, current, mcqAnswers, inputAnswers]);
 
   function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
+  function switchExercise(n: 1 | 2 | 3 | 4 | 5) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -293,7 +310,7 @@ export default function ZeroFirstConditionalLessonClient() {
             <PDFButton onDownload={handleDownloadPDF} loading={pdfLoading} />
             <div className="ml-auto hidden sm:flex items-center gap-2 text-sm text-slate-600">
               Exercises:
-              {([1, 2, 3, 4] as const).map((n) => (
+              {([1, 2, 3, 4, 5] as const).map((n) => (
                 <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
               ))}
             </div>
@@ -307,7 +324,7 @@ export default function ZeroFirstConditionalLessonClient() {
                   <p className="text-slate-700">{current.instructions}</p>
                   <div className="mt-2 flex sm:hidden items-center gap-2 text-sm text-slate-600">
                     <span>Exercises:</span>
-                    {([1, 2, 3, 4] as const).map((n) => (
+                    {([1, 2, 3, 4, 5] as const).map((n) => (
                       <button key={n} onClick={() => switchExercise(n)} className={`h-9 w-9 rounded-xl border border-black/10 font-bold transition ${exNo === n ? "bg-[#F5DA20] text-black" : "bg-white text-slate-800 hover:bg-black/5"}`}>{n}</button>
                     ))}
                   </div>
@@ -347,7 +364,7 @@ export default function ZeroFirstConditionalLessonClient() {
                         </div>
                       );
                     })
-                  ) : (
+                  ) : current.type === "input" ? (
                     current.questions.map((q, idx) => {
                       const val = inputAnswers[q.id] ?? "";
                       const answered = normalize(val) !== "";
@@ -376,6 +393,46 @@ export default function ZeroFirstConditionalLessonClient() {
                         </div>
                       );
                     })
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-6">
+                        <p className="text-sm font-bold uppercase tracking-wider text-violet-600 mb-3">Read the story</p>
+                        {current.passage.split('\n').filter(Boolean).map((para, i) => (
+                          <p key={i} className="text-slate-700 leading-relaxed mb-2 last:mb-0">{para}</p>
+                        ))}
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-sm font-bold text-slate-700">Open the brackets — write the correct form:</p>
+                        {current.questions.map((q, idx) => {
+                          const val = inputAnswers[q.id] ?? "";
+                          const answered = normalize(val) !== "";
+                          const isCorrect = checked && answered && normalize(val) === normalize(q.correct);
+                          const wrong = checked && answered && !isCorrect;
+                          const noAnswer = checked && !answered;
+                          return (
+                            <div key={q.id} className="rounded-2xl border border-black/10 bg-white p-5">
+                              <div className="flex items-start gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-sm font-black text-violet-700">({idx + 1})</div>
+                                <div className="flex-1">
+                                  <div className="font-bold text-slate-900">{q.prompt}</div>
+                                  <div className="mt-3">
+                                    <input value={val} disabled={checked} onChange={(e) => setInputAnswers((p) => ({ ...p, [q.id]: e.target.value }))} placeholder="Type the correct form…" className="w-full max-w-sm rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
+                                  </div>
+                                  {checked && (
+                                    <div className="mt-3 text-sm">
+                                      {isCorrect && <div className="text-emerald-700 font-semibold">✅ Correct</div>}
+                                      {wrong && <div className="text-red-700 font-semibold">❌ Wrong — correct: <b>{q.correct}</b></div>}
+                                      {noAnswer && <div className="text-amber-700 font-semibold">⚠ No answer — correct: <b>{q.correct}</b></div>}
+                                      <div className="mt-1 text-slate-600">{q.explanation}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -386,8 +443,8 @@ export default function ZeroFirstConditionalLessonClient() {
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}
-                    {checked && exNo < 4 && (
-                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
+                    {checked && exNo < 5 && (
+                      <button onClick={() => switchExercise((exNo + 1) as 1 | 2 | 3 | 4 | 5)} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-black/5 transition">Next Exercise →</button>
                     )}
                   </div>
                   {score && (
