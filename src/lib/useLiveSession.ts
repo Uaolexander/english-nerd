@@ -13,6 +13,7 @@ export type LiveSessionInfo = {
 
 export type LiveSyncPayload = {
   answers: Record<string, unknown>;
+  inputAnswers?: Record<string, string>; // typed text inputs (grammar input exercises)
   checked: boolean;
   exNo: number;
   ns?: string;        // namespace — isolates SpeedRound from exercise components
@@ -102,6 +103,7 @@ export function useLiveSession(roomId: string | null): UseLiveSessionResult {
     channelRef.current = channel;
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
       channelRef.current = null;
     };

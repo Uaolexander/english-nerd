@@ -144,7 +144,7 @@ export default function CausativeLessonClient() {
 
   const { isLive, broadcast } = useLiveSync((payload) => {
     setMcqAnswers(payload.answers as Record<string, number | null>);
-    setInputAnswers((payload as unknown as { inputAnswers: Record<string, string> }).inputAnswers ?? {});
+    setInputAnswers(payload.inputAnswers ?? {});
     setChecked(payload.checked as boolean);
     setExNo(payload.exNo as 1 | 2 | 3 | 4);
   });
@@ -253,8 +253,8 @@ export default function CausativeLessonClient() {
     return { correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
   }, [checked, current, mcqAnswers, inputAnswers]);
 
-  function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo }); }
-  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, checked: false, exNo: n }); }
+  function resetExercise() { setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, inputAnswers: {}, checked: false, exNo }); }
+  function switchExercise(n: 1 | 2 | 3 | 4) { window.scrollTo({ top: 0, behavior: "smooth" }); setExNo(n); setChecked(false); setMcqAnswers({}); setInputAnswers({}); broadcast({ answers: {}, inputAnswers: {}, checked: false, exNo: n }); }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -362,7 +362,7 @@ export default function CausativeLessonClient() {
                             <div className="flex-1">
                               <div className="font-bold text-slate-900">{q.prompt}</div>
                               <div className="mt-3">
-                                <input value={val} disabled={checked} onChange={(e) => setInputAnswers((p) => ({ ...p, [q.id]: e.target.value }))} placeholder="Type here…" className="w-full max-w-sm rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
+                                <input value={val} disabled={checked} onChange={(e) => { const n = { ...inputAnswers, [q.id]: e.target.value }; setInputAnswers(n); broadcast({ answers: mcqAnswers, inputAnswers: n, checked, exNo }); }} placeholder="Type here…" className="w-full max-w-sm rounded-xl border border-black/10 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5DA20]" />
                               </div>
                               {checked && (
                                 <div className="mt-3 text-sm">
@@ -383,7 +383,7 @@ export default function CausativeLessonClient() {
                 <div className="mt-8 space-y-4">
                   <div className="flex flex-wrap gap-3 items-center">
                     {!checked ? (
-                      <button onClick={() => { setChecked(true); broadcast({ answers: mcqAnswers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
+                      <button onClick={() => { setChecked(true); broadcast({ answers: mcqAnswers, inputAnswers, checked: true, exNo }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-2xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black hover:opacity-90 transition shadow-sm">Check Answers</button>
                     ) : (
                       <button onClick={resetExercise} className="rounded-2xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-black/5 transition">Try Again</button>
                     )}

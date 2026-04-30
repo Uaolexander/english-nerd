@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useLiveSession } from "@/lib/useLiveSession";
