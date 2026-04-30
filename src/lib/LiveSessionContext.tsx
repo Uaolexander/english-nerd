@@ -1,18 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useLiveSession } from "@/lib/useLiveSession";
 
 type LiveSessionCtx = ReturnType<typeof useLiveSession>;
 
 const LiveSessionContext = createContext<LiveSessionCtx | null>(null);
 
-/**
- * Always rendered with the same component type regardless of whether
- * there's a live session. This keeps the React tree stable — no
- * unmounting/remounting children when the session starts.
- * Never renders extra DOM nodes; only the context value changes.
- */
 function LiveSessionBridge({
   roomId,
   children,
@@ -20,8 +16,6 @@ function LiveSessionBridge({
   roomId: string | null;
   children: React.ReactNode;
 }) {
-  // useLiveSession(null) is cheap — returns immediately with status "error",
-  // no network calls, no channel subscriptions.
   const session = useLiveSession(roomId);
   return (
     <LiveSessionContext.Provider value={roomId ? session : null}>
@@ -30,24 +24,23 @@ function LiveSessionBridge({
   );
 }
 
-/**
- * Reads ?room= from the URL after mount (client-only via useEffect).
- * Avoids hydration mismatches: server always renders the same DOM,
- * context value updates on the client without touching the DOM tree.
- */
-export function LiveSessionProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [roomId, setRoomId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setRoomId(params.get("room"));
-  }, []);
-
+function LiveSessionProviderInner({ children }: { children: React.ReactNode }) {
+  const searchParams = useSearchParams();
+  const roomId = searchParams.get("room");
   return <LiveSessionBridge roomId={roomId}>{children}</LiveSessionBridge>;
+}
+
+/**
+ * Reads ?room= reactively via useSearchParams so the live session
+ * automatically activates/deactivates as the user navigates between pages.
+ * Wrapped in Suspense per Next.js requirements for useSearchParams.
+ */
+export function LiveSessionProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<LiveSessionBridge roomId={null}>{children}</LiveSessionBridge>}>
+      <LiveSessionProviderInner>{children}</LiveSessionProviderInner>
+    </Suspense>
+  );
 }
 
 /** Returns the live session from context, or null if no active session. */

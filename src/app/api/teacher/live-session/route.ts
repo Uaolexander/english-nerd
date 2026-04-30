@@ -35,6 +35,34 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, roomId: data.room_id });
 }
 
+// DELETE — teacher ends a live session immediately
+export async function DELETE(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const roomId = searchParams.get("room");
+  if (!roomId) return NextResponse.json({ ok: false, error: "Missing room" }, { status: 400 });
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+
+  const { data } = await supabase
+    .from("live_sessions")
+    .select("teacher_id")
+    .eq("room_id", roomId)
+    .single();
+
+  if (!data || data.teacher_id !== user.id) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
+  await supabase
+    .from("live_sessions")
+    .update({ expires_at: new Date().toISOString() })
+    .eq("room_id", roomId);
+
+  return NextResponse.json({ ok: true });
+}
+
 // GET — teacher or student fetches session info by room_id
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

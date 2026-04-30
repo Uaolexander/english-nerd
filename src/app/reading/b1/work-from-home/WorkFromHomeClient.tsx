@@ -115,31 +115,22 @@ export default function WorkFromHomeClient() {
   const handleWordClick = useCallback((word: Word) => {
     if (checked || activeGap === null) return;
 
-    setGapAnswers((prev) => {
-      const next = { ...prev };
+    // Compute new state outside the setter so we can broadcast it
+    const next = { ...gapAnswers };
+    for (const [key, val] of Object.entries(next)) {
+      if (val === word) next[Number(key)] = null;
+    }
+    next[activeGap] = word;
 
-      // If word is already placed in another gap, remove it from there
-      for (const [key, val] of Object.entries(next)) {
-        if (val === word) {
-          next[Number(key)] = null;
-        }
-      }
-
-      // If the active gap already has a word, unplace it
-      next[activeGap] = word;
-
-      broadcast({ answers: next, checked: false, exNo: 1 });
-      return next;
-    });
+    setGapAnswers(next);
+    broadcast({ answers: next, checked: false, exNo: 1 });
 
     // Advance to next empty gap
-    setActiveGap((prev) => {
-      const nextEmpty = [1, 2, 3, 4, 5, 6, 7].find(
-        (n) => n !== prev && gapAnswers[n] === null && n !== activeGap
-      );
-      return nextEmpty ?? null;
-    });
-  }, [checked, activeGap, gapAnswers]);
+    const nextEmpty = [1, 2, 3, 4, 5, 6, 7].find(
+      (n) => n !== activeGap && next[n] === null
+    );
+    setActiveGap(nextEmpty ?? null);
+  }, [checked, activeGap, gapAnswers, broadcast]);
 
   const handleRemoveGap = useCallback((gapNo: number, e: React.MouseEvent) => {
     e.stopPropagation();

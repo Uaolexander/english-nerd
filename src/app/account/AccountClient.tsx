@@ -5768,11 +5768,11 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           ) : isStudent ? (
             <div className="pro-shine relative flex h-10 items-center justify-center gap-2.5 overflow-hidden bg-gradient-to-r from-amber-400 via-[#F5DA20] to-amber-400">
               <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/>
               </svg>
               <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-900">Student</span>
               <svg aria-hidden="true" className="h-3.5 w-3.5 text-amber-800" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/>
               </svg>
             </div>
           ) : (
@@ -5815,7 +5815,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
               ) : isStudent ? (
                 <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-600 ring-2 ring-white shadow-sm">
                   <svg aria-hidden="true" className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/>
                   </svg>
                 </span>
               ) : null}
@@ -5848,7 +5848,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
                 ) : isStudent ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-[#F5DA20] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-900 shadow-sm">
                     <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                      <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/>
                     </svg>
                     Student
                   </span>
@@ -5919,7 +5919,7 @@ export default function AccountClient({ email, fullName, avatarUrl, createdAt, p
           {([
             { key: "dashboard" as const, label: "Dashboard", badge: 0, icon: "M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z", show: true },
             { key: "teacher"   as const, label: "Teacher",   badge: 0, icon: "M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z", show: isTeacher },
-            { key: "student"   as const, label: "Student",   badge: pendingAssignments, icon: "M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z", show: isStudent || !!pendingTeacherInvite },
+            { key: "student"   as const, label: "Student",   badge: pendingAssignments, icon: "M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z", show: isStudent || !!pendingTeacherInvite },
             { key: "profile"   as const, label: "Profile",   badge: 0, icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", show: true },
             { key: "security"  as const, label: "Security",  badge: 0, icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", show: true },
           ]).filter((t) => t.show).map((t) => (

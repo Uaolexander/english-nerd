@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useIsPro } from "@/lib/ProContext";
+import { useLiveSync } from "@/lib/useLiveSync";
 
 export type SRQuestion = {
   q: string;
@@ -252,6 +253,17 @@ function useGameAudio() {
   return { startAmbient, stopAmbient, setAmbientUrgency, playTick, playCorrect, playWrong, playEnd };
 }
 
+/* ─── Live sync payload type for Speed Round ────────────────────────────── */
+type SRSyncPayload = {
+  phase: Phase;
+  score: number;
+  attempted: number;
+  timeLeft: number;
+  qi: number;
+  chosen: number | null;
+  flash: "correct" | "wrong" | null;
+};
+
 /* ─── Component ─────────────────────────────────────────────────────────── */
 export default function SpeedRound({ questions, gameId, subject, variant }: Props) {
   const isPro = useIsPro();
@@ -277,6 +289,20 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
   const locked   = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Live session sync — observer role (teacher sees student's game state)
+  const { isLive, broadcast } = useLiveSync((payload) => {
+    const p = payload.answers as unknown as SRSyncPayload;
+    if (!p) return;
+    if (p.phase !== undefined) setPhase(p.phase);
+    if (p.score !== undefined) setScore(p.score);
+    if (p.attempted !== undefined) setAttempted(p.attempted);
+    if (p.timeLeft !== undefined) setTimeLeft(p.timeLeft);
+    if (p.qi !== undefined) setQi(p.qi);
+    if (p.chosen !== undefined) setChosen(p.chosen);
+    if (p.flash !== undefined) setFlash(p.flash);
+    if (p.phase === "playing" || p.phase === "result") setOpen(true);
+  });
+
   useEffect(() => {
     try { const v = localStorage.getItem(bestKey(gameId)); if (v) setPb(parseInt(v, 10)); }
     catch { /* ignore */ }
@@ -288,6 +314,14 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
+  function broadcastState(overrides: Partial<SRSyncPayload> = {}) {
+    broadcast({
+      answers: { phase, score, attempted, timeLeft, qi, chosen, flash, ...overrides } as unknown as Record<string, unknown>,
+      checked: false,
+      exNo: 0,
+    });
+  }
+
   function startGame() {
     locked.current = false;
     setPool(buildPool(questions));
@@ -296,6 +330,7 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
     setScore(0); setAttempted(0); setStreak(0); setMaxStreak(0);
     setQi(0); setChosen(null); setFlash(null); setNewBest(false);
     setOpen(true);
+    broadcast({ answers: { phase: "countdown", score: 0, attempted: 0, timeLeft: DURATION, qi: 0, chosen: null, flash: null } as unknown as Record<string, unknown>, checked: false, exNo: 0 });
   }
 
   function closeModal() {
@@ -331,6 +366,12 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
     return () => { clearInterval(timerRef.current!); };
   }, [phase]); // eslint-disable-line
 
+  // Broadcast result when game ends
+  useEffect(() => {
+    if (phase !== "result") return;
+    broadcast({ answers: { phase: "result", score, attempted, timeLeft: 0, qi, chosen: null, flash: null } as unknown as Record<string, unknown>, checked: true, exNo: 0 });
+  }, [phase]); // eslint-disable-line
+
   // Count-up + personal best
   useEffect(() => {
     if (phase !== "result") return;
@@ -354,11 +395,14 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
     if (locked.current || flash !== null) return;
     locked.current = true;
     const correct = idx === pool[qi]?.answer;
+    const newAttempted = attempted + 1;
+    const newScore = correct ? score + 1 : score;
+    const newFlash: "correct" | "wrong" = correct ? "correct" : "wrong";
     setChosen(idx);
-    setAttempted(a => a + 1);
+    setAttempted(newAttempted);
     if (correct) {
       audio.playCorrect();
-      setScore(s => s + 1);
+      setScore(newScore);
       setStreak(s => { const ns = s + 1; setMaxStreak(ms => Math.max(ms, ns)); return ns; });
       setFlash("correct");
       setPlusAnim(n => n + 1);
@@ -367,9 +411,14 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
       setStreak(0);
       setFlash("wrong");
     }
+    broadcast({ answers: { phase: "playing", score: newScore, attempted: newAttempted, timeLeft, qi, chosen: idx, flash: newFlash } as unknown as Record<string, unknown>, checked: false, exNo: 0 });
     setTimeout(() => {
       setFlash(null); setChosen(null);
-      setQi(i => i + 1);
+      setQi(i => {
+        const nextQi = i + 1;
+        broadcast({ answers: { phase: "playing", score: newScore, attempted: newAttempted, timeLeft, qi: nextQi, chosen: null, flash: null } as unknown as Record<string, unknown>, checked: false, exNo: 0 });
+        return nextQi;
+      });
       locked.current = false;
     }, 500);
   }
