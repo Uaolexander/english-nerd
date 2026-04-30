@@ -12,6 +12,8 @@ export type StudentRow = {
   linkId: string;
   studentId: string | null;
   email: string;
+  nickname: string | null;
+  avatarUrl: string | null;
   status: "pending" | "pending_student" | "active" | "declined";
   joinedAt: string | null;
   inviteToken: string;
@@ -55,7 +57,7 @@ export default async function TeacherPage() {
   // ── Fetch students ──────────────────────────────────────────────────────
   const { data: studentLinks } = await supabase
     .from("teacher_students")
-    .select("id, student_id, invite_email, status, joined_at, invite_token")
+    .select("id, student_id, invite_email, nickname, status, joined_at, invite_token")
     .eq("teacher_id", user.id)
     .neq("status", "removed")
     .order("invited_at", { ascending: false });
@@ -64,14 +66,21 @@ export default async function TeacherPage() {
     .filter((s) => s.status === "active" && s.student_id)
     .map((s) => s.student_id as string);
 
-  // Fetch progress summary for all active students
+  // Fetch progress summary + profiles (avatar) for all active students
   let progressByStudent: Record<string, { total: number; avg: number | null; last: string | null }> = {};
+  let profileByStudent: Record<string, { avatarUrl: string | null }> = {};
 
   if (activeStudentIds.length > 0) {
-    const { data: progressRows } = await supabase
-      .from("user_progress")
-      .select("user_id, score, completed_at")
-      .in("user_id", activeStudentIds);
+    const [{ data: progressRows }, { data: profileRows }] = await Promise.all([
+      supabase
+        .from("user_progress")
+        .select("user_id, score, completed_at")
+        .in("user_id", activeStudentIds),
+      supabase
+        .from("profiles")
+        .select("id, avatar_url")
+        .in("id", activeStudentIds),
+    ]);
 
     for (const sid of activeStudentIds) {
       const rows = (progressRows ?? []).filter((r) => r.user_id === sid);
@@ -80,12 +89,18 @@ export default async function TeacherPage() {
       const last = rows.length ? rows.sort((a, b) => b.completed_at.localeCompare(a.completed_at))[0].completed_at : null;
       progressByStudent[sid] = { total, avg, last };
     }
+
+    for (const p of profileRows ?? []) {
+      profileByStudent[p.id as string] = { avatarUrl: p.avatar_url as string | null };
+    }
   }
 
   const students: StudentRow[] = (studentLinks ?? []).map((s) => ({
     linkId: s.id,
     studentId: s.student_id,
     email: s.invite_email,
+    nickname: s.nickname as string | null,
+    avatarUrl: s.student_id ? (profileByStudent[s.student_id]?.avatarUrl ?? null) : null,
     status: s.status as "pending" | "pending_student" | "active" | "declined",
     joinedAt: s.joined_at,
     inviteToken: s.invite_token,

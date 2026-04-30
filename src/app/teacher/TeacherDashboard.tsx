@@ -442,12 +442,16 @@ function StudentsTab({ students, classes, studentLimit, siteUrl }: {
             {localStudents.map((s) => (
               <div key={s.linkId} className="flex items-center gap-4 px-6 py-4">
                 {/* Avatar */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-600">
-                  {s.email.slice(0, 2).toUpperCase()}
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-600 overflow-hidden">
+                  {s.avatarUrl ? (
+                    <img src={s.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (s.nickname || s.email).slice(0, 2).toUpperCase()
+                  )}
                 </div>
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-800">{s.email}</p>
+                  <p className="truncate text-sm font-semibold text-slate-800">{s.nickname || s.email}</p>
                   <p className="text-xs text-slate-400">
                     {s.status === "active" ? (
                       <>Active · Last: {timeAgo(s.lastActivity)}</>
