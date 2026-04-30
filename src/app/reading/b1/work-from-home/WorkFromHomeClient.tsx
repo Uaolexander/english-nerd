@@ -21,7 +21,7 @@ const WORD_BOX = [
 
 type Word = (typeof WORD_BOX)[number];
 
-// Correct answer for each gap (1-indexed)
+// Correct answer for each gap (1-indexed). "routine" is a distractor — it stays in the box unused.
 const ANSWERS: Record<number, Word> = {
   1: "flexible",
   2: "commute",
@@ -30,7 +30,6 @@ const ANSWERS: Record<number, Word> = {
   5: "isolation",
   6: "colleagues",
   7: "boundaries",
-  8: "routine",
 };
 
 // Text segments between gaps
@@ -57,7 +56,7 @@ async function saveResult(score: number) {
         slug: "work-from-home",
         exerciseNo: 1,
         score,
-        questionsTotal: 8,
+        questionsTotal: 7,
       }),
     });
   } catch {
@@ -67,10 +66,10 @@ async function saveResult(score: number) {
 
 export default function WorkFromHomeClient() {
   const isPro = useIsPro();
-  // gapAnswers: gap index (1-8) -> word placed there or null
+  // gapAnswers: gap index (1-7) -> word placed there or null
   const [gapAnswers, setGapAnswers] = useState<Record<number, Word | null>>({
     1: null, 2: null, 3: null, 4: null,
-    5: null, 6: null, 7: null, 8: null,
+    5: null, 6: null, 7: null,
   });
   // activeGap: which gap is currently selected for input
   const [activeGap, setActiveGap] = useState<number | null>(1);
@@ -95,7 +94,7 @@ export default function WorkFromHomeClient() {
         fillBlank: {
           wordBank: [...WORD_BOX],
           textParts: TEXT_PARTS,
-          answers: [ANSWERS[1], ANSWERS[2], ANSWERS[3], ANSWERS[4], ANSWERS[5], ANSWERS[6], ANSWERS[7], ANSWERS[8]],
+          answers: [ANSWERS[1], ANSWERS[2], ANSWERS[3], ANSWERS[4], ANSWERS[5], ANSWERS[6], ANSWERS[7]],
         },
       };
       await generateReadingPDF(config);
@@ -106,7 +105,7 @@ export default function WorkFromHomeClient() {
 
   const usedWords = new Set(Object.values(gapAnswers).filter(Boolean) as Word[]);
   const answered = Object.values(gapAnswers).filter((v) => v !== null).length;
-  const progress = Math.round((answered / 8) * 100);
+  const progress = Math.round((answered / 7) * 100);
 
   const handleGapClick = useCallback((gapNo: number) => {
     if (checked) return;
@@ -135,7 +134,7 @@ export default function WorkFromHomeClient() {
 
     // Advance to next empty gap
     setActiveGap((prev) => {
-      const nextEmpty = [1, 2, 3, 4, 5, 6, 7, 8].find(
+      const nextEmpty = [1, 2, 3, 4, 5, 6, 7].find(
         (n) => n !== prev && gapAnswers[n] === null && n !== activeGap
       );
       return nextEmpty ?? null;
@@ -150,13 +149,13 @@ export default function WorkFromHomeClient() {
   }, [checked]);
 
   const handleCheck = useCallback(async () => {
-    if (answered < 8) return;
+    if (answered < 7) return;
     setChecked(true);
     broadcast({ answers: gapAnswers, checked: true, exNo: 1 });
     const correctCount = Object.entries(ANSWERS).filter(
       ([gap, word]) => gapAnswers[Number(gap)] === word
     ).length;
-    const score = Math.round((correctCount / 8) * 100);
+    const score = Math.round((correctCount / 7) * 100);
     if (!saved) {
       setSaved(true);
       await saveResult(score);
@@ -164,7 +163,7 @@ export default function WorkFromHomeClient() {
   }, [answered, gapAnswers, saved]);
 
   const handleReset = useCallback(() => {
-    const empty = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
+    const empty = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null };
     setGapAnswers(empty);
     setActiveGap(1);
     setChecked(false);
@@ -269,7 +268,10 @@ export default function WorkFromHomeClient() {
               {/* Word box */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Word box -- click a gap first, then choose your word
+                  Word box — click a gap first, then choose your word
+                </p>
+                <p className="mb-3 text-xs text-slate-400 italic">
+                  One word does not fit any gap — it is a distractor.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {WORD_BOX.map((word) => {
@@ -298,7 +300,7 @@ export default function WorkFromHomeClient() {
               {/* Progress bar */}
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
-                  <span>{answered} / 8 gaps filled</span>
+                  <span>{answered} / 7 gaps filled</span>
                   <span>{progress}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
@@ -327,9 +329,9 @@ export default function WorkFromHomeClient() {
                   {renderGap(6)}
                   {TEXT_PARTS[6]}
                   {renderGap(7)}
-                  {" between work and personal time, for example by finishing work at the same time every day. Having a dedicated workspace also helps. Overall, remote work suits some people very well, but others prefer the structure and social environment of an office."}
+                  {TEXT_PARTS[7]}
                 </p>
-                {answered < 8 && !checked && (
+                {answered < 7 && !checked && (
                   <p className="mt-4 text-xs text-slate-400 italic">
                     {activeGap !== null
                       ? `Gap ${activeGap} is selected. Click a word from the box above.`
@@ -342,10 +344,10 @@ export default function WorkFromHomeClient() {
               {checked && (
                 <div className="rounded-2xl border-2 border-[#F5DA20] bg-[#F5DA20]/10 p-5 text-center">
                   <p className="text-2xl font-black text-slate-800">
-                    {correctCount} / 8
+                    {correctCount} / 7
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
-                    {correctCount === 8
+                    {correctCount === 7
                       ? "Perfect! All gaps filled correctly."
                       : correctCount >= 6
                       ? "Great job! Just a couple of mistakes."
@@ -362,7 +364,7 @@ export default function WorkFromHomeClient() {
                   <button
                     type="button"
                     onClick={handleCheck}
-                    disabled={answered < 8}
+                    disabled={answered < 7}
                     className="inline-flex items-center rounded-xl bg-[#F5DA20] px-6 py-3 text-sm font-black text-black transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Check Answers

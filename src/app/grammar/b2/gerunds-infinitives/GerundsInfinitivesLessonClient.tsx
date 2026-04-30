@@ -127,7 +127,7 @@ type ExerciseSet =
   | { type: "mcq"; title: string; instructions: string; questions: MCQ[] }
   | { type: "input"; title: string; instructions: string; questions: InputQ[] };
 
-function normalize(s: string) { return s.trim().toLowerCase(); }
+function normalize(s: string) { return s.trim().toLowerCase().replace(/[.,!?;:]+/g, "").replace(/\s+/g, " "); }
 
 const RECOMMENDATIONS: GrammarRec[] = [
   { title: "Causative have/get", href: "/grammar/b2/causative", level: "B2", badge: "bg-orange-500", reason: "Causative uses object + infinitive patterns from this topic" },
@@ -434,36 +434,77 @@ function Explanation() {
   return (
     <div className="prose max-w-none prose-slate">
       <h2>Gerunds &amp; Infinitives (B2)</h2>
-      <div className="not-prose mt-4 space-y-3">
-        {[
-          { pair: "remember doing", use: "Memory of a past event", ex: "I remember meeting her at the party." },
-          { pair: "remember to do", use: "Don't forget to do it (future action)", ex: "Remember to lock the door." },
-          { pair: "stop doing", use: "End an activity", ex: "He stopped smoking two years ago." },
-          { pair: "stop to do", use: "Pause in order to do something else", ex: "She stopped to check the map." },
-          { pair: "try doing", use: "Experiment — see if it helps", ex: "Try restarting the router." },
-          { pair: "try to do", use: "Attempt / make an effort", ex: "He tried to lift the box but couldn't." },
-          { pair: "regret doing", use: "Feel bad about a past action", ex: "I regret spending so much money." },
-          { pair: "regret to do", use: "Be sorry about what you're about to say (formal)", ex: "We regret to inform you that…" },
-          { pair: "forget doing", use: "Can't forget a past experience", ex: "I'll never forget visiting Rome." },
-          { pair: "forget to do", use: "Failed to do something", ex: "He forgot to send the email." },
-          { pair: "go on doing", use: "Continue the same activity", ex: "She went on talking for an hour." },
-          { pair: "go on to do", use: "Move on to a new activity", ex: "He went on to discuss the budget." },
-        ].map(({ pair, use, ex }) => (
-          <div key={pair} className="rounded-2xl border border-black/10 bg-white p-4">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="font-black text-orange-700 text-sm">{pair}</span>
-              <span className="text-xs text-slate-500">— {use}</span>
-            </div>
-            <div className="italic text-slate-700 text-sm">{ex}</div>
-          </div>
-        ))}
+
+      {/* Section 1: Gerund-only verbs */}
+      <div className="not-prose mt-4">
+        <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-500">1. Verbs always followed by gerund (-ing)</h3>
+        <div className="flex flex-wrap gap-2">
+          {["enjoy", "suggest", "avoid", "imagine", "admit", "keep", "mind", "consider", "finish", "deny", "can't help", "can't stand", "it's worth"].map((v) => (
+            <span key={v} className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm font-bold text-slate-700">{v}</span>
+          ))}
+        </div>
+        <div className="mt-3 space-y-1 text-sm text-slate-600">
+          <div><i>She enjoys <b>walking</b> by the sea.</i></div>
+          <div><i>He suggested <b>taking</b> a different route.</i></div>
+          <div><i>I can&apos;t help <b>laughing</b> when I see that film.</i></div>
+          <div><i>It&apos;s worth <b>checking</b> the price first.</i></div>
+        </div>
       </div>
-      <div className="not-prose mt-4 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
+
+      {/* Section 2: Infinitive-only verbs */}
+      <div className="not-prose mt-6">
+        <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-500">2. Verbs always followed by infinitive (to + verb)</h3>
+        <div className="flex flex-wrap gap-2">
+          {["want", "decide", "manage", "refuse", "agree", "promise", "tend", "seem", "need", "hope", "plan", "expect"].map((v) => (
+            <span key={v} className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm font-bold text-slate-700">{v}</span>
+          ))}
+        </div>
+        <div className="mt-3 space-y-1 text-sm text-slate-600">
+          <div><i>He decided <b>to buy</b> a new laptop.</i></div>
+          <div><i>She managed <b>to open</b> the door without a key.</i></div>
+          <div><i>They refused <b>to accept</b> the offer.</i></div>
+          <div><i>He tends <b>to avoid</b> difficult conversations.</i></div>
+        </div>
+      </div>
+
+      {/* Section 3: Meaning-change verbs */}
+      <div className="not-prose mt-6">
+        <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-500">3. Verbs that change meaning</h3>
+        <div className="space-y-3">
+          {[
+            { pair: "remember doing", use: "Memory of a past event", ex: "I remember meeting her at the party." },
+            { pair: "remember to do", use: "Don't forget to do it (future action)", ex: "Remember to lock the door." },
+            { pair: "stop doing", use: "End an activity", ex: "He stopped smoking two years ago." },
+            { pair: "stop to do", use: "Pause in order to do something else", ex: "She stopped to check the map." },
+            { pair: "try doing", use: "Experiment — see if it helps", ex: "Try restarting the router." },
+            { pair: "try to do", use: "Attempt / make an effort", ex: "He tried to lift the box but couldn't." },
+            { pair: "regret doing", use: "Feel bad about a past action", ex: "I regret spending so much money." },
+            { pair: "regret to do", use: "Be sorry about what you're about to say (formal)", ex: "We regret to inform you that…" },
+            { pair: "forget doing", use: "Can't forget a past experience", ex: "I'll never forget visiting Rome." },
+            { pair: "forget to do", use: "Failed to do something", ex: "He forgot to send the email." },
+            { pair: "go on doing", use: "Continue the same activity", ex: "She went on talking for an hour." },
+            { pair: "go on to do", use: "Move on to a new activity", ex: "He went on to discuss the budget." },
+          ].map(({ pair, use, ex }) => (
+            <div key={pair} className="rounded-2xl border border-black/10 bg-white p-4">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="font-black text-orange-700 text-sm">{pair}</span>
+                <span className="text-xs text-slate-500">— {use}</span>
+              </div>
+              <div className="italic text-slate-700 text-sm">{ex}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Section 4: Prepositions + gerund */}
+      <div className="not-prose mt-6 rounded-2xl border border-black/10 bg-[#F5DA20]/25 p-5">
+        <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-600">4. Special phrases &amp; prepositions + gerund</h3>
         <div className="text-sm text-slate-800 space-y-2">
           <div><span className="font-black">be used to + gerund:</span> <i>She is used to working late</i> (it&apos;s normal for her).</div>
-          <div><span className="font-black">used to + infinitive:</span> <i>She used to work late</i> (past habit — she no longer does).</div>
+          <div><span className="font-black">used to + bare infinitive:</span> <i>She used to work late</i> (past habit — she no longer does).</div>
           <div><span className="font-black">look forward to + gerund:</span> <i>I look forward to seeing you</i> (to is a preposition here).</div>
           <div><span className="font-black">can&apos;t help + gerund:</span> <i>I can&apos;t help laughing</i> (can&apos;t stop yourself).</div>
+          <div className="pt-2 border-t border-black/10"><span className="font-black">Prepositions are always followed by gerund:</span> <i>interested in <b>learning</b>, good at <b>solving</b>, tired of <b>waiting</b>, capable of <b>doing</b>.</i></div>
         </div>
       </div>
     </div>
