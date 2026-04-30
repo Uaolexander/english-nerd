@@ -7,7 +7,7 @@ const FILE_PATHS: Record<string, string> = {
   "speaking-games":    "Speaking games.pdf",
   "common-mistakes":   "100 Most Common English Mistakes.pdf",
   "irregular-verbs":   "Irregular Verbs.pdf",
-  "irregular-verbs-50":"50 irregulat verbs.pdf",
+  "irregular-verbs-50":"50 irregular verbs.pdf",
   "look-think-speak":  "Look, Think, Speak!.pdf",
   "never-have-i-ever": "Never have I ever.pdf",
 };

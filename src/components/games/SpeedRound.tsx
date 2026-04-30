@@ -289,7 +289,8 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
   const locked   = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Live session sync — observer role (teacher sees student's game state)
+  // Live session sync — scoped to "speedround" namespace so exercise components
+  // on the same page don't receive SpeedRound broadcasts (and vice versa)
   const { isLive, broadcast } = useLiveSync((payload) => {
     const p = payload.answers as unknown as SRSyncPayload;
     if (!p) return;
@@ -301,7 +302,7 @@ export default function SpeedRound({ questions, gameId, subject, variant }: Prop
     if (p.chosen !== undefined) setChosen(p.chosen);
     if (p.flash !== undefined) setFlash(p.flash);
     if (p.phase === "playing" || p.phase === "result") setOpen(true);
-  });
+  }, "speedround");
 
   useEffect(() => {
     try { const v = localStorage.getItem(bestKey(gameId)); if (v) setPb(parseInt(v, 10)); }

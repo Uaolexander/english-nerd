@@ -111,17 +111,18 @@ export async function GET() {
         score: null,
         time: e.feedback_at as string,
       });
+    } else {
+      activities.push({
+        id: `essay-sub-${e.id}`,
+        type: "essay_submitted",
+        studentId: e.student_id as string,
+        studentName: name,
+        studentAvatar: profile?.avatar_url ?? null,
+        title: assignTitle,
+        score: null,
+        time: e.submitted_at as string,
+      });
     }
-    activities.push({
-      id: `essay-sub-${e.id}`,
-      type: "essay_submitted",
-      studentId: e.student_id as string,
-      studentName: name,
-      studentAvatar: profile?.avatar_url ?? null,
-      title: assignTitle,
-      score: null,
-      time: e.submitted_at as string,
-    });
   }
 
   activities.sort((a, b) => b.time.localeCompare(a.time));

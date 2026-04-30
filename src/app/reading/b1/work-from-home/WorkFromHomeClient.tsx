@@ -135,9 +135,11 @@ export default function WorkFromHomeClient() {
   const handleRemoveGap = useCallback((gapNo: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (checked) return;
-    setGapAnswers((prev) => ({ ...prev, [gapNo]: null }));
+    const next = { ...gapAnswers, [gapNo]: null };
+    setGapAnswers(next);
     setActiveGap(gapNo);
-  }, [checked]);
+    broadcast({ answers: next, checked: false, exNo: 1 });
+  }, [checked, gapAnswers, broadcast]);
 
   const handleCheck = useCallback(async () => {
     if (answered < 7) return;

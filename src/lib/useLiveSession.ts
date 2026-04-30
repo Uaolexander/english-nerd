@@ -15,6 +15,7 @@ export type LiveSyncPayload = {
   answers: Record<string, unknown>;
   checked: boolean;
   exNo: number;
+  ns?: string;        // namespace — isolates SpeedRound from exercise components
   _senderId?: string;
 };
 
