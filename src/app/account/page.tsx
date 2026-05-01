@@ -223,6 +223,25 @@ export default async function AccountPage() {
           avatarUrl: (p.avatar_url as string | null) ?? "",
         };
       }
+
+      // For students whose profiles table has no avatar, fall back to auth metadata
+      // (covers Google OAuth users where avatar_url isn't synced to profiles yet)
+      const missingAvatar = allKnownStudentIds.filter((sid) => !profileByStudent[sid]?.avatarUrl);
+      if (missingAvatar.length > 0) {
+        const authResults = await Promise.all(
+          missingAvatar.map((sid) => serviceClient.auth.admin.getUserById(sid))
+        );
+        for (const { data } of authResults) {
+          if (!data?.user) continue;
+          const uid = data.user.id;
+          const metaAvatar = (data.user.user_metadata?.avatar_url as string | null) ?? "";
+          const metaName = (data.user.user_metadata?.full_name as string | null) ?? "";
+          profileByStudent[uid] = {
+            name: profileByStudent[uid]?.name || metaName,
+            avatarUrl: profileByStudent[uid]?.avatarUrl || metaAvatar,
+          };
+        }
+      }
     }
 
     teacherData = {
