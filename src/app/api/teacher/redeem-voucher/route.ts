@@ -35,12 +35,17 @@ export async function POST(req: Request) {
   // Look up voucher
   const { data: voucher } = await service
     .from("teacher_vouchers")
-    .select("id, allowed_email, plan, student_limit, duration_days, is_active")
+    .select("id, allowed_email, plan, student_limit, duration_days, is_active, one_time_per_user, voucher_expires_at")
     .eq("code", normalizedCode)
     .maybeSingle();
 
   if (!voucher || !voucher.is_active) {
     return NextResponse.json({ ok: false, error: "Invalid or inactive voucher code." }, { status: 400 });
+  }
+
+  // Check if the voucher itself has expired
+  if (voucher.voucher_expires_at && new Date(voucher.voucher_expires_at) < new Date()) {
+    return NextResponse.json({ ok: false, error: "This voucher has expired." }, { status: 400 });
   }
 
   // Personal voucher check — must match logged-in user's email
@@ -53,7 +58,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // Monthly reuse check — find the most recent redemption for this user+voucher
+  // Check previous redemptions for this user + voucher
   const { data: lastRedemption } = await service
     .from("teacher_voucher_redemptions")
     .select("redeemed_at, expires_at")
@@ -64,6 +69,15 @@ export async function POST(req: Request) {
     .maybeSingle();
 
   if (lastRedemption) {
+    // One-time vouchers can never be reused by the same person
+    if (voucher.one_time_per_user) {
+      return NextResponse.json({
+        ok: false,
+        error: "You have already used this voucher code.",
+      }, { status: 400 });
+    }
+
+    // Renewable vouchers: block reuse within the current period
     const daysSinceLast = (Date.now() - new Date(lastRedemption.redeemed_at).getTime()) / (1000 * 60 * 60 * 24);
     if (daysSinceLast < voucher.duration_days) {
       const nextAvailable = new Date(lastRedemption.redeemed_at);
