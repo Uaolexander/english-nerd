@@ -57,7 +57,7 @@ const EXERCISES: Exercise[] = [
       "Watch Graham Hill's TED talk about owning less and fill in 20 missing words.",
     duration: "~5 min",
     tag: "TED Talk",
-    image: "/topics/listening/b1/less-stuff-more-happiness.jpg",
+    image: "/topics/listening/b1/graham-hill-less-stuff.jpg",
   },
   {
     slug: "10000-steps",
