@@ -23,6 +23,34 @@ type Exercise = {
 
 const EXERCISES: Exercise[] = [
   {
+    slug: "girl-who-fell-from-sky",
+    title: "The Girl Who Fell from the Sky",
+    description:
+      "Fill in 25 gaps in the extraordinary true story of Juliane Koepcke, the sole survivor of a plane crash in the Amazon rainforest.",
+    duration: "~10 min",
+    tag: "Documentary",
+    image: "/topics/listening/c1/girl-who-fell-from-sky.jpg",
+    isNew: true,
+  },
+  {
+    slug: "cillian-murphy-60-minutes",
+    title: "Cillian Murphy — 60 Minutes",
+    description:
+      "Cillian Murphy discusses Oppenheimer, his acting philosophy, Peaky Blinders, and 30 years of craft. 10 advanced comprehension questions.",
+    duration: "~12 min",
+    tag: "Interview",
+    image: "/topics/listening/c1/cillian-murphy-60-minutes.jpg",
+  },
+  {
+    slug: "anne-hathaway-interview",
+    title: "Anne Hathaway Interview",
+    description:
+      "Watch an interview with Anne Hathaway and answer 10 multiple-choice questions about implicit meaning, humour, and vocabulary.",
+    duration: "~8 min",
+    tag: "Interview",
+    image: "/topics/listening/c1/anne-hathaway-interview.jpg",
+  },
+  {
     slug: "ethics-of-ai-art",
     title: "The Ethics of AI-Generated Art",
     description:
@@ -30,7 +58,6 @@ const EXERCISES: Exercise[] = [
     duration: "~6 min",
     tag: "Dialogue",
     image: "/topics/listening/c1/ethics-of-ai-art.jpg",
-    isNew: true,
   },
 ];
 

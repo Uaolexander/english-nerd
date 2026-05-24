@@ -23,6 +23,34 @@ type Exercise = {
 
 const EXERCISES: Exercise[] = [
   {
+    slug: "mrbeast-interview",
+    title: "MrBeast on The Tonight Show",
+    description:
+      "Watch MrBeast on The Tonight Show and answer 10 multiple-choice questions about his name, early videos, business, and Beast Games.",
+    duration: "~5 min",
+    tag: "Interview",
+    image: "/topics/listening/b2/mrbeast-interview.jpg",
+    isNew: true,
+  },
+  {
+    slug: "ant-dec-prank",
+    title: "Ant & Dec Prank James Corden",
+    description:
+      "Watch Ant & Dec's undercover prank on James Corden and answer 12 True / False questions.",
+    duration: "~5 min",
+    tag: "Comedy",
+    image: "/topics/listening/b2/ant-dec-prank.jpg",
+  },
+  {
+    slug: "adam-ruins-everything",
+    title: "Adam Ruins Everything",
+    description:
+      "Adam Conover debunks 13 popular myths — Napoleon's height, Einstein's grades, Viking helmets and more. 10 myth-busting questions.",
+    duration: "~10 min",
+    tag: "Comedy",
+    image: "/topics/listening/b2/adam-ruins-everything.jpg",
+  },
+  {
     slug: "work-life-balance",
     title: "Work-Life Balance",
     description:
@@ -30,7 +58,6 @@ const EXERCISES: Exercise[] = [
     duration: "~4 min",
     tag: "Dialogue",
     image: "/topics/listening/b2/work-life-balance.jpg",
-    isNew: true,
   },
 ];
 
